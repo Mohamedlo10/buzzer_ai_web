@@ -14,7 +14,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="fr">
-      <body className="bg-dark-bg min-h-screen items-center justify-center p-2 md:px-12 md:min-w-2xl text-white antialiased">
+      <body className="bg-dark-bg min-h-screen items-center justify-center md:py-2 md:px-12 md:min-w-2xl text-white antialiased">
         <AppProviders>{children}</AppProviders>
       </body>
     </html>

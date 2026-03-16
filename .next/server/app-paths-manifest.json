@@ -1,9 +1,7 @@
 {
   "/onboarding/page": "app/onboarding/page.js",
-  "/room/create/page": "app/room/create/page.js",
   "/(tabs)/dashboard/page": "app/(tabs)/dashboard/page.js",
   "/(tabs)/rankings/page": "app/(tabs)/rankings/page.js",
-  "/(tabs)/profile/page": "app/(tabs)/profile/page.js",
   "/(tabs)/rooms/page": "app/(tabs)/rooms/page.js",
-  "/(tabs)/friends/page": "app/(tabs)/friends/page.js"
+  "/(tabs)/profile/page": "app/(tabs)/profile/page.js"
 }
