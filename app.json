@@ -1,0 +1,38 @@
+{
+  "expo": {
+    "name": "BuzzMaster AI",
+    "slug": "buzzmaster-ai",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "scheme": "buzzmaster",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0F1419"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.buzzmaster.ai"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0F1419"
+      },
+      "edgeToEdgeEnabled": true,
+      "package": "com.buzzmaster.ai"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "expo-font"
+    ]
+  }
+}
