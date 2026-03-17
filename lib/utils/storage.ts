@@ -39,15 +39,18 @@ export const tokenStorage = {
   async setTokens(accessToken: string, refreshToken: string): Promise<void> {
     await this.setAccessToken(accessToken);
     await this.setRefreshToken(refreshToken);
+    if (isClient) document.cookie = 'has_session=1; path=/; SameSite=Lax';
   },
   async clearTokens(): Promise<void> {
     await this.removeAccessToken();
     await this.removeRefreshToken();
+    if (isClient) document.cookie = 'has_session=; path=/; max-age=0; SameSite=Lax';
   },
   async clearAll(): Promise<void> {
     if (!isClient) return;
     localStorage.removeItem(ACCESS_TOKEN_KEY);
     localStorage.removeItem(REFRESH_TOKEN_KEY);
+    document.cookie = 'has_session=; path=/; max-age=0; SameSite=Lax';
   },
 };
 

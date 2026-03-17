@@ -63,6 +63,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
     if (!token) {
       console.log('❌ [AuthStore] No access token found');
+      if (typeof document !== 'undefined')
+        document.cookie = 'has_session=; path=/; max-age=0; SameSite=Lax';
       return false;
     }
 

@@ -258,7 +258,7 @@ export default function LoginPage() {
           </button>
 
           {/* Forgot Password */}
-          <button type="button" className="mt-4 w-full flex justify-center">
+          <button type="button" className="mt-4 sm:flex w-full hidden justify-center">
  <span className="text-white/60 text-base">Pas encore de compte ? </span>
           <button
             type="button"
@@ -271,7 +271,7 @@ export default function LoginPage() {
         </div>
 
         {/* Footer */}
-        {/* <div className="flex flex-row justify-center mt-8 mb-8 items-center">
+        <div className="sm:hidden flex flex-row justify-center mt-8 mb-8 items-center">
           <span className="text-white/60 text-base">Pas encore de compte ? </span>
           <button
             type="button"
@@ -281,7 +281,7 @@ export default function LoginPage() {
             <span className="text-[#00D397] text-base font-bold mr-1">Créer un compte</span>
             <Sparkles size={16} color="#FFD700" />
           </button>
-        </div> */}
+        </div>
       </div>
     </div>
   );
