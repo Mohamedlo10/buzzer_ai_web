@@ -106,6 +106,13 @@ export async function changePlayerTeam(
   await apiClient.put(`/api/sessions/${sessionId}/players/${playerId}/team`, { teamId });
 }
 
+export async function updateSessionConfig(
+  sessionId: string,
+  data: { questionsPerCategory?: number },
+): Promise<void> {
+  await apiClient.patch(`/api/sessions/${sessionId}`, data);
+}
+
 export async function cancelGeneration(sessionId: string): Promise<{ message: string }> {
   const res = await apiClient.post<{ message: string }>(`/api/sessions/${sessionId}/cancel-generation`);
   return res.data;

@@ -27,6 +27,9 @@ import {
   QrCode,
   PenLine,
   PenBox,
+  TrendingUp,
+  Minus,
+  Plus,
 } from 'lucide-react';
 
 import { SafeScreen } from '~/components/layout/SafeScreen';
@@ -37,6 +40,7 @@ import { useGameSocket } from '~/lib/websocket/useGameSocket';
 import { appStorage } from '~/lib/utils/storage';
 import * as roomsApi from '~/lib/api/rooms';
 import * as sessionsApi from '~/lib/api/sessions';
+import { Slider } from '~/components/ui/Slider';
 import type { RoomInfo, PlayerResponse, TeamResponse } from '~/types/api';
 
 // Player Item Component
@@ -588,6 +592,9 @@ export default function LobbyPage() {
   const [showTeamPicker, setShowTeamPicker] = useState(false);
   const [teamPickerTargetPlayer, setTeamPickerTargetPlayer] = useState<{ id: string; name: string } | null>(null);
   const [isChangingTeam, setIsChangingTeam] = useState(false);
+  const [showQLimit, setShowQLimit] = useState(false);
+  const [adjustedQPerCat, setAdjustedQPerCat] = useState(1);
+  const [isSavingConfig, setIsSavingConfig] = useState(false);
 
   const user = useAuthStore((state) => state.user);
   const {
@@ -712,8 +719,42 @@ export default function LobbyPage() {
     }
   };
 
+  const Q_LIMIT = 60;
+
   const handleStartGame = async () => {
     if (!session?.id || !code) return;
+
+    // Only check limit in AI mode
+    if (session.questionMode === 'AI') {
+      const realPlayers = players.filter((p) => !p.isSpectator).length;
+      const total = (session.maxCategoriesPerPlayer ?? 1) * (session.questionsPerCategory ?? 1) * realPlayers;
+      if (total > Q_LIMIT) {
+        const maxAllowed = Math.max(1, Math.floor(Q_LIMIT / ((session.maxCategoriesPerPlayer ?? 1) * realPlayers)));
+        setAdjustedQPerCat(maxAllowed);
+        setShowQLimit(true);
+        return;
+      }
+    }
+
+    try {
+      await startSession(session.id);
+    } catch (err: any) {
+      window.alert(err?.message || 'Impossible de démarrer la partie');
+    }
+  };
+
+  const handleStartWithAdjustedQ = async () => {
+    if (!session?.id) return;
+    setIsSavingConfig(true);
+    try {
+      await sessionsApi.updateSessionConfig(session.id, { questionsPerCategory: adjustedQPerCat });
+      await fetchSession(session.id);
+    } catch {
+      // If update fails, proceed anyway
+    } finally {
+      setIsSavingConfig(false);
+    }
+    setShowQLimit(false);
     try {
       await startSession(session.id);
     } catch (err: any) {
@@ -994,6 +1035,135 @@ export default function LobbyPage() {
 
         <div className="h-8" />
       </div>
+
+      {/* Question Limit Warning Modal */}
+      {showQLimit && session && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-5">
+          <div className="w-full max-w-sm bg-[#342D5B] rounded-3xl border border-[#D5442F50] overflow-hidden">
+            {/* Header */}
+            <div className="px-5 pt-5 pb-4 border-b border-[#3E3666]">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#D5442F20] flex items-center justify-center flex-shrink-0">
+                  <TrendingUp size={20} color="#D5442F" />
+                </div>
+                <div>
+                  <p className="text-white font-bold text-lg">Limite dépassée</p>
+                  <p className="text-white/50 text-xs">Le total de questions dépasse 60</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="px-5 py-4">
+              {/* Real count recap */}
+              {(() => {
+                const realPlayers = players.filter((p) => !p.isSpectator).length;
+                const cats = session.maxCategoriesPerPlayer ?? 1;
+                const totalCurrent = cats * (session.questionsPerCategory ?? 1) * realPlayers;
+                const totalAdjusted = cats * adjustedQPerCat * realPlayers;
+                const maxAllowed = Math.max(1, Math.floor(Q_LIMIT / (cats * realPlayers)));
+                return (
+                  <>
+                    {/* Formula — current */}
+                    <div className="bg-[#292349] rounded-2xl p-4 mb-4">
+                      <p className="text-white/40 text-xs mb-3 uppercase tracking-wider">Situation actuelle</p>
+                      <div className="flex items-center justify-center gap-2 flex-wrap">
+                        <div className="flex flex-col items-center bg-[#342D5B] rounded-xl px-3 py-2">
+                          <span className="text-[#C084FC] font-bold text-lg">{cats}</span>
+                          <span className="text-white/40 text-[10px]">cat/joueur</span>
+                        </div>
+                        <span className="text-white/30 font-bold">×</span>
+                        <div className="flex flex-col items-center bg-[#342D5B] rounded-xl px-3 py-2">
+                          <span className="text-[#4A90D9] font-bold text-lg">{session.questionsPerCategory}</span>
+                          <span className="text-white/40 text-[10px]">Q/cat</span>
+                        </div>
+                        <span className="text-white/30 font-bold">×</span>
+                        <div className="flex flex-col items-center bg-[#342D5B] rounded-xl px-3 py-2">
+                          <span className="text-[#FFD700] font-bold text-lg">{realPlayers}</span>
+                          <span className="text-white/40 text-[10px]">joueurs</span>
+                        </div>
+                        <span className="text-white/30 font-bold">=</span>
+                        <div className="flex flex-col items-center bg-[#D5442F20] rounded-xl px-3 py-2">
+                          <span className="text-[#D5442F] font-bold text-lg">{totalCurrent}</span>
+                          <span className="text-white/40 text-[10px]">/ 60 max</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Slider adjust */}
+                    <div className="mb-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <p className="text-white font-medium text-sm">Questions par catégorie</p>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => setAdjustedQPerCat((v) => Math.max(1, v - 1))}
+                            className="w-7 h-7 rounded-lg bg-[#3E3666] flex items-center justify-center hover:bg-[#4E4676] transition-colors"
+                          >
+                            <Minus size={14} color="#FFFFFF" />
+                          </button>
+                          <div className="bg-[#00D39720] px-3 py-1 rounded-lg min-w-[48px] text-center">
+                            <span className="text-[#00D397] font-bold text-lg">{adjustedQPerCat}</span>
+                          </div>
+                          <button
+                            onClick={() => setAdjustedQPerCat((v) => Math.min(maxAllowed, v + 1))}
+                            className="w-7 h-7 rounded-lg bg-[#3E3666] flex items-center justify-center hover:bg-[#4E4676] transition-colors"
+                          >
+                            <Plus size={14} color="#FFFFFF" />
+                          </button>
+                        </div>
+                      </div>
+                      <Slider
+                        label=""
+                        value={adjustedQPerCat}
+                        onValueChange={setAdjustedQPerCat}
+                        min={1}
+                        max={maxAllowed}
+                        suffix=""
+                      />
+                      <div className="flex items-center justify-between mt-2">
+                        <span className="text-white/40 text-xs">Total ajusté :</span>
+                        <span className={`text-sm font-semibold ${totalAdjusted <= Q_LIMIT ? 'text-[#00D397]' : 'text-[#D5442F]'}`}>
+                          {totalAdjusted} questions
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Info note */}
+                    <div className="bg-[#292349] rounded-xl p-3 mb-5 flex items-start gap-2">
+                      <AlertCircle size={14} color="#F39C12" className="flex-shrink-0 mt-0.5" />
+                      <p className="text-white/50 text-xs leading-relaxed">
+                        Maximum recommandé : <span className="text-white font-semibold">{maxAllowed} question{maxAllowed > 1 ? 's' : ''}/catégorie</span> avec {realPlayers} joueur{realPlayers > 1 ? 's' : ''}.
+                      </p>
+                    </div>
+
+                    {/* Buttons */}
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => setShowQLimit(false)}
+                        className="flex-1 py-3.5 rounded-2xl bg-[#3E3666] hover:bg-[#4E4676] transition-colors flex items-center justify-center"
+                      >
+                        <X size={16} color="#FFFFFF80" />
+                        <span className="text-white/60 font-medium ml-2 text-sm">Annuler</span>
+                      </button>
+                      <button
+                        onClick={handleStartWithAdjustedQ}
+                        disabled={isSavingConfig || isStarting}
+                        className="flex-1 py-3.5 rounded-2xl bg-[#00D397] hover:bg-[#00B377] transition-colors flex items-center justify-center disabled:opacity-60"
+                      >
+                        {isSavingConfig || isStarting ? (
+                          <div className="w-4 h-4 border-2 border-[#292349] border-t-transparent rounded-full animate-spin" />
+                        ) : (
+                          <Play size={16} color="#292349" fill="#292349" />
+                        )}
+                        <span className="text-[#292349] font-bold ml-2 text-sm">Démarrer</span>
+                      </button>
+                    </div>
+                  </>
+                );
+              })()}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* QR Code Modal */}
       <QRCodeModal

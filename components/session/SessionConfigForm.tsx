@@ -17,6 +17,8 @@ import {
   Plus,
   X,
   Palette,
+  Info,
+  TrendingUp,
 } from 'lucide-react';
 
 import { Slider } from '~/components/ui/Slider';
@@ -234,6 +236,120 @@ function TeamEditor({
           <span className="text-[#D5442F] text-xs">Minimum 2 équipes requises</span>
         </div>
       )}
+    </div>
+  );
+}
+
+const Q_LIMIT = 60;
+
+function QuestionLimitIndicator({
+  categories,
+  questionsPerCat,
+  maxPlayers,
+}: {
+  categories: number;
+  questionsPerCat: number;
+  maxPlayers: number;
+}) {
+  const total = categories * questionsPerCat * maxPlayers;
+  const pct = Math.min((total / Q_LIMIT) * 100, 100);
+  const isOver = total > Q_LIMIT;
+  const isClose = total > Q_LIMIT * 0.7 && !isOver;
+
+  const color = isOver ? '#D5442F' : isClose ? '#F39C12' : '#00D397';
+  const bgColor = isOver ? '#D5442F15' : isClose ? '#F39C1215' : '#00D39715';
+  const borderColor = isOver ? '#D5442F40' : isClose ? '#F39C1240' : '#3E3666';
+
+  return (
+    <div className="mx-4 mb-4">
+      <div
+        className="rounded-3xl border overflow-hidden transition-colors"
+        style={{ backgroundColor: '#342D5B', borderColor }}
+      >
+        {/* Header */}
+        <div className="px-5 py-4 border-b border-[#3E3666] flex items-center gap-3">
+          <div
+            className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+            style={{ backgroundColor: bgColor }}
+          >
+            <TrendingUp size={20} color={color} />
+          </div>
+          <div className="flex-1">
+            <p className="text-white font-bold text-base">Limite de questions</p>
+            <p className="text-white/50 text-xs">Maximum 60 questions générées</p>
+          </div>
+          {/* Badge total */}
+          <div
+            className="px-3 py-1.5 rounded-xl flex-shrink-0"
+            style={{ backgroundColor: bgColor }}
+          >
+            <span className="font-bold text-lg" style={{ color }}>
+              {total}
+              <span className="text-sm font-normal text-white/40"> / {Q_LIMIT}</span>
+            </span>
+          </div>
+        </div>
+
+        <div className="px-5 py-4">
+          {/* Formula display */}
+          <div className="flex items-center justify-center gap-2 mb-4 flex-wrap">
+            <div className="flex flex-col items-center bg-[#292349] rounded-2xl px-4 py-2.5 min-w-[64px]">
+              <span className="text-[#C084FC] font-bold text-xl">{categories}</span>
+              <span className="text-white/40 text-[10px] mt-0.5 text-center">cat/joueur</span>
+            </div>
+            <span className="text-white/30 font-bold text-lg">×</span>
+            <div className="flex flex-col items-center bg-[#292349] rounded-2xl px-4 py-2.5 min-w-[64px]">
+              <span className="text-[#4A90D9] font-bold text-xl">{questionsPerCat}</span>
+              <span className="text-white/40 text-[10px] mt-0.5 text-center">Q/cat</span>
+            </div>
+            <span className="text-white/30 font-bold text-lg">×</span>
+            <div className="flex flex-col items-center bg-[#292349] rounded-2xl px-4 py-2.5 min-w-[64px]">
+              <span className="text-[#FFD700] font-bold text-xl">{maxPlayers}</span>
+              <span className="text-white/40 text-[10px] mt-0.5 text-center">joueurs max</span>
+            </div>
+            <span className="text-white/30 font-bold text-lg">=</span>
+            <div
+              className="flex flex-col items-center rounded-2xl px-4 py-2.5 min-w-[64px]"
+              style={{ backgroundColor: bgColor }}
+            >
+              <span className="font-bold text-xl" style={{ color }}>{total}</span>
+              <span className="text-white/40 text-[10px] mt-0.5 text-center">questions</span>
+            </div>
+          </div>
+
+          {/* Progress bar */}
+          <div className="h-2.5 bg-[#292349] rounded-full overflow-hidden mb-3">
+            <div
+              className="h-full rounded-full transition-all duration-500"
+              style={{ width: `${pct}%`, backgroundColor: color }}
+            />
+          </div>
+
+          {/* Status message */}
+          {isOver ? (
+            <div className="flex items-start gap-2 p-3 rounded-2xl" style={{ backgroundColor: '#D5442F15', border: '1px solid #D5442F30' }}>
+              <AlertCircle size={15} color="#D5442F" className="flex-shrink-0 mt-0.5" />
+              <p className="text-[#D5442F] text-xs leading-relaxed">
+                <span className="font-semibold">Limite dépassée.</span> Réduisez le nombre de catégories/joueur, de questions/catégorie ou le nombre max de joueurs. Au démarrage, un ajustement vous sera proposé.
+              </p>
+            </div>
+          ) : isClose ? (
+            <div className="flex items-start gap-2 p-3 rounded-2xl" style={{ backgroundColor: '#F39C1215', border: '1px solid #F39C1230' }}>
+              <AlertCircle size={15} color="#F39C12" className="flex-shrink-0 mt-0.5" />
+              <p className="text-[#F39C12] text-xs leading-relaxed">
+                <span className="font-semibold">Proche de la limite.</span> Cette estimation est basée sur le nombre max de joueurs. Avec moins de participants, tout ira bien.
+              </p>
+            </div>
+          ) : (
+            <div className="flex items-start gap-2 p-3 rounded-2xl bg-[#00D39710] border border-[#00D39730]">
+              <Info size={15} color="#00D397" className="flex-shrink-0 mt-0.5" />
+              <p className="text-white/50 text-xs leading-relaxed">
+                Estimation basée sur le nombre max de joueurs. Le calcul exact se fait au démarrage avec les participants réels.
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
@@ -474,6 +590,15 @@ export function SessionConfigForm({ onSuccess, roomId }: SessionConfigFormProps)
           </div>
         )}
       </ConfigSection>
+
+      {/* Question Limit Indicator — AI mode only */}
+      {questionMode === 'AI' && (
+        <QuestionLimitIndicator
+          categories={config.maxCategoriesPerPlayer}
+          questionsPerCat={config.questionsPerCategory}
+          maxPlayers={config.maxPlayers}
+        />
+      )}
 
       {/* Options Section */}
       <ConfigSection icon={Crown} iconColor="#00D397" title="Options de jeu">
