@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 
 import { SafeScreen } from '~/components/layout/SafeScreen';
+import { Avatar } from '~/components/ui/Avatar';
 import { BuzzerButton } from '~/components/game/BuzzerButton';
 import { useBuzzStore } from '~/stores/useBuzzStore';
 import { useAuthStore } from '~/stores/useAuthStore';
@@ -934,7 +935,17 @@ export default function GamePage() {
                       'bg-[#3E3666]'
                     }`}
                   >
-                    <div className="flex flex-row items-center mb-1">
+                    <div className="flex flex-row items-center gap-1.5 mb-1.5">
+                      <Avatar
+                        avatarUrl={player.avatarUrl}
+                        username={player.name}
+                        size={28}
+                        borderColor={
+                          index === 0 ? '#FFD700' :
+                          index === 1 ? '#C0C0C0' :
+                          '#CD7F32'
+                        }
+                      />
                       <span className={`font-bold text-xs ${
                         index === 0 ? 'text-[#FFD700]' :
                         index === 1 ? 'text-[#C0C0C0]' :
@@ -970,7 +981,13 @@ export default function GamePage() {
                     className="flex flex-row items-center px-4 py-2 border-b border-[#3E3666] last:border-b-0"
                   >
                     <span className="text-white/40 text-xs w-6">{index + 4}</span>
-                    <div className="flex-1">
+                    <Avatar
+                      avatarUrl={player.avatarUrl}
+                      username={player.name}
+                      size={32}
+                      borderColor={player.userId === user?.id ? '#00D397' : undefined}
+                    />
+                    <div className="flex-1 ml-2">
                       <p className={`font-medium text-sm ${player.userId === user?.id ? 'text-[#00D397]' : 'text-white/80'}`}>
                         {player.name}
                       </p>

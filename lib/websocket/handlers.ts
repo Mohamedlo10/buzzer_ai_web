@@ -16,6 +16,7 @@ export function handleWSEvent(event: WSEvent, currentUserId?: string): void {
         id: event.player.userId,
         userId: event.player.userId,
         name: event.player.username,
+        avatarUrl: event.player.avatarUrl ?? null,
         score: 0,
         isManager: false,
         isSpectator: event.player.isSpectator,

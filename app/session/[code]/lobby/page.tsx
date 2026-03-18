@@ -34,6 +34,7 @@ import {
 
 import { SafeScreen } from '~/components/layout/SafeScreen';
 import { QRCodeModal } from '~/components/ui/QRCodeModal';
+import { Avatar } from '~/components/ui/Avatar';
 import { useBuzzStore } from '~/stores/useBuzzStore';
 import { useAuthStore } from '~/stores/useAuthStore';
 import { useGameSocket } from '~/lib/websocket/useGameSocket';
@@ -68,13 +69,18 @@ function PlayerItem({
       className={`flex flex-row items-center py-3 px-4 border-b border-[#3E3666] last:border-b-0 ${isCurrentUser ? 'bg-[#00D39710]' : ''}`}
     >
       {/* Avatar */}
-      <div
-        className={`w-12 h-12 rounded-2xl flex items-center justify-center mr-3 ${player.isSpectator ? 'bg-[#FFD70020]' : 'bg-[#3E3666]'}`}
-      >
+      <div className="relative mr-3">
         {player.isSpectator ? (
-          <Eye size={20} color="#FFD700" />
+          <div className="w-12 h-12 rounded-2xl bg-[#FFD70020] flex items-center justify-center">
+            <Eye size={20} color="#FFD700" />
+          </div>
         ) : (
-          <User size={20} color="#FFFFFF" />
+          <Avatar
+            avatarUrl={player.avatarUrl}
+            username={player.name}
+            size={48}
+            borderColor={isCurrentUser ? '#00D397' : undefined}
+          />
         )}
       </div>
 
@@ -405,9 +411,12 @@ function TeamsCard({
                     key={member.id}
                     className={`flex flex-row items-center px-5 py-2 ${isMe ? 'bg-[#00D39708]' : ''}`}
                   >
-                    <div className="w-7 h-7 rounded-xl bg-[#3E3666] flex items-center justify-center mr-3">
-                      <User size={14} color={isMe ? '#00D397' : '#FFFFFF80'} />
-                    </div>
+                    <Avatar
+                      avatarUrl={member.avatarUrl}
+                      username={member.name}
+                      size={28}
+                      borderColor={isMe ? '#00D397' : undefined}
+                    />
                     <span className={`flex-1 text-sm ${isMe ? 'text-[#00D397] font-semibold' : 'text-white/80'}`}>
                       {member.name}{isMe ? ' (vous)' : ''}
                     </span>

@@ -188,6 +188,7 @@ export interface PlayerResponse {
   id: string;
   userId: string;
   name: string;
+  avatarUrl: string | null;
   score: number;
   isManager: boolean;
   isSpectator: boolean;

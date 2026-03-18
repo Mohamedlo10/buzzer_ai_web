@@ -18,6 +18,7 @@ export interface PlayerJoinedEvent extends BaseWSMessage {
   player: {
     userId: string;
     username: string;
+    avatarUrl?: string | null;
     categories: Array<{ name: string; difficulty: Difficulty; isCustom: boolean }>;
     isSpectator: boolean;
   };

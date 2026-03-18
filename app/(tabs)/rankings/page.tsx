@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 
 import { SafeScreen } from '~/components/layout/SafeScreen';
+import { Avatar } from '~/components/ui/Avatar';
 import { Card } from '~/components/ui/Card';
 import { Spinner } from '~/components/loading/Spinner';
 import { useAuthStore } from '~/stores/useAuthStore';
@@ -42,8 +43,8 @@ function Podium({ rankings, currentPage }: { rankings: GlobalRanking[]; currentP
     <div className="flex flex-row justify-center items-end mb-6 mt-4">
       {/* 2nd */}
       <div className="flex flex-col items-center mx-2">
-        <div className="w-16 h-16 rounded-full bg-[#342D5B] flex items-center justify-center border-2 border-[#C0C0C0] mb-2">
-          <span className="text-white font-bold text-lg">{top3[1].username?.[0] || '?'}</span>
+        <div className="mb-2">
+          <Avatar avatarUrl={top3[1].avatarUrl} username={top3[1].username || '?'} size={64} borderColor="#C0C0C0" />
         </div>
         <div className="w-20 h-24 bg-[#342D5B] rounded-t-xl flex flex-col items-center justify-end pb-2 border-t-2 border-x-2 border-[#C0C0C0]">
           <Medal size={24} color="#C0C0C0" />
@@ -57,8 +58,11 @@ function Podium({ rankings, currentPage }: { rankings: GlobalRanking[]; currentP
 
       {/* 1st */}
       <div className="flex flex-col items-center mx-2">
-        <div className="w-20 h-20 rounded-full bg-[#FFD70020] flex items-center justify-center border-2 border-[#FFD700] mb-2">
-          <Crown size={28} color="#FFD700" />
+        <div className="relative mb-2">
+          <Avatar avatarUrl={top3[0].avatarUrl} username={top3[0].username || '?'} size={80} borderColor="#FFD700" />
+          <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+            <Crown size={18} color="#FFD700" />
+          </div>
         </div>
         <div className="w-24 h-32 bg-[#FFD70020] rounded-t-xl flex flex-col items-center justify-end pb-2 border-t-2 border-x-2 border-[#FFD700]">
           <Crown size={28} color="#FFD700" />
@@ -72,8 +76,8 @@ function Podium({ rankings, currentPage }: { rankings: GlobalRanking[]; currentP
 
       {/* 3rd */}
       <div className="flex flex-col items-center mx-2">
-        <div className="w-16 h-16 rounded-full bg-[#342D5B] flex items-center justify-center border-2 border-[#CD7F32] mb-2">
-          <span className="text-white font-bold text-lg">{top3[2].username?.[0] || '?'}</span>
+        <div className="mb-2">
+          <Avatar avatarUrl={top3[2].avatarUrl} username={top3[2].username || '?'} size={64} borderColor="#CD7F32" />
         </div>
         <div className="w-20 h-16 bg-[#342D5B] rounded-t-xl flex flex-col items-center justify-end pb-2 border-t-2 border-x-2 border-[#CD7F32]">
           <Medal size={24} color="#CD7F32" />
@@ -160,7 +164,16 @@ function RankingRow({
     >
       <div className="w-8 flex items-center justify-center">{getRankIcon(rank)}</div>
 
-      <div className="flex-1 ml-3">
+      <div className="mx-2">
+        <Avatar
+          avatarUrl={entry.avatarUrl}
+          username={entry.username || '?'}
+          size={36}
+          borderColor={isCurrentUser ? '#00D397' : undefined}
+        />
+      </div>
+
+      <div className="flex-1">
         <span
           className={`font-semibold ${isCurrentUser ? 'text-[#00D397]' : getRankColor(rank)}`}
         >
