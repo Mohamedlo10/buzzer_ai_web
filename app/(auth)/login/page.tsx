@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Zap, Eye, EyeOff, User, Lock, ArrowRight, Sparkles, Crown } from 'lucide-react';
 import { useAuthStore } from '~/stores/useAuthStore';
@@ -11,18 +11,22 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<{ username?: string; password?: string }>({});
 
+  // Refs to read DOM values directly — handles browser autofill which bypasses onChange
+  const usernameRef = useRef<HTMLInputElement>(null);
+  const passwordRef = useRef<HTMLInputElement>(null);
+
   const login = useAuthStore((s) => s.login);
   const isLoading = useAuthStore((s) => s.isLoading);
   const router = useRouter();
 
-  function validate(): boolean {
+  function validate(u: string, p: string): boolean {
     const newErrors: typeof errors = {};
-    if (!username.trim()) {
+    if (!u.trim()) {
       newErrors.username = "Nom d'utilisateur requis";
     }
-    if (!password) {
+    if (!p) {
       newErrors.password = 'Mot de passe requis';
-    } else if (password.length < 8) {
+    } else if (p.length < 8) {
       newErrors.password = 'Minimum 8 caractères';
     }
     setErrors(newErrors);
@@ -30,10 +34,14 @@ export default function LoginPage() {
   }
 
   async function handleLogin() {
-    if (!validate()) return;
+    // Read from DOM to capture autofilled values that didn't trigger onChange
+    const u = usernameRef.current?.value ?? username;
+    const p = passwordRef.current?.value ?? password;
+
+    if (!validate(u, p)) return;
 
     try {
-      await login(username.trim(), password);
+      await login(u.trim(), p);
       router.replace('/dashboard');
     } catch (err: any) {
       const message =
@@ -153,6 +161,7 @@ export default function LoginPage() {
                 <User size={20} color="rgba(255,255,255,0.502)" />
               </div>
               <input
+                ref={usernameRef}
                 type="text"
                 className="w-full pl-12 pr-4 py-4 rounded-2xl bg-[#292349] text-white text-lg outline-none focus:ring-2 focus:ring-[#00D397]/50 placeholder:text-white/25"
                 style={{
@@ -182,6 +191,7 @@ export default function LoginPage() {
                 <Lock size={20} color="rgba(255,255,255,0.502)" />
               </div>
               <input
+                ref={passwordRef}
                 type={showPassword ? 'text' : 'password'}
                 className="w-full pl-12 pr-16 py-4 rounded-2xl bg-[#292349] text-white text-lg outline-none focus:ring-2 focus:ring-[#00D397]/50 placeholder:text-white/25"
                 style={{

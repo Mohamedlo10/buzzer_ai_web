@@ -80,6 +80,11 @@ export default function OnboardingPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const router = useRouter();
 
+  const goToRegister = async () => {
+    await appStorage.setOnboardingDone();
+    router.push('/register');
+  };
+
   const goToLogin = async () => {
     await appStorage.setOnboardingDone();
     router.push('/login');
@@ -89,12 +94,12 @@ export default function OnboardingPage() {
     if (currentIndex < slides.length - 1) {
       setCurrentIndex(currentIndex + 1);
     } else {
-      goToLogin();
+      goToRegister();
     }
   };
 
   const handleSkip = () => {
-    goToLogin();
+    goToRegister();
   };
 
   const currentSlide = slides[currentIndex];
