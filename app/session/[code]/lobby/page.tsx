@@ -755,13 +755,13 @@ export default function LobbyPage() {
   };
 
   const handleEditCategories = (player: PlayerResponse) => {
-    router.push(`/session/${code}/categories?playerId=${player.id}&playerName=${encodeURIComponent(player.name)}&isEditing=true`);
+    router.push(`/session/${code}/categories?playerId=${player.id}&playerName=${encodeURIComponent(player.name)}&isEditing=true&sessionId=${session?.id || ''}`);
   };
 
   const handleEditMyCategories = () => {
     const me = players.find(p => p.userId === user?.id);
     if (!me) return;
-    router.push(`/session/${code}/categories?playerId=${me.id}&playerName=${encodeURIComponent(me.name)}&isEditing=true`);
+    router.push(`/session/${code}/categories?playerId=${me.id}&playerName=${encodeURIComponent(me.name)}&isEditing=true&sessionId=${session?.id || ''}`);
   };
 
   const handleAssignTeam = async (playerId: string, teamId: string) => {
