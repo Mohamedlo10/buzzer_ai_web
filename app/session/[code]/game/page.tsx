@@ -100,6 +100,10 @@ export default function GamePage() {
   const code = params.code;
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSkipping, setIsSkipping] = useState(false);
+  const [isValidating, setIsValidating] = useState(false);
+  const [isResettingBuzzer, setIsResettingBuzzer] = useState(false);
+  const [isPauseToggling, setIsPauseToggling] = useState(false);
   const [showBuzzOverlay, setShowBuzzOverlay] = useState(false);
   const [showCategoryOverlay, setShowCategoryOverlay] = useState(false);
   const buzzLockRef = useRef(false);
@@ -340,8 +344,9 @@ export default function GamePage() {
   }, [session?.id, buzzQueue, user?.id, isSpectator]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleValidate = useCallback(async (isCorrect: boolean, applyPenalty: boolean = true) => {
-    if (!session?.id || !buzzQueue[0]) return;
+    if (!session?.id || !buzzQueue[0] || isValidating) return;
 
+    setIsValidating(true);
     try {
       await gameApi.validateAnswer(session.id, {
         playerId: buzzQueue[0].playerId,
@@ -350,28 +355,36 @@ export default function GamePage() {
       });
     } catch (err: any) {
       window.alert(err?.message || 'Action impossible');
+    } finally {
+      setIsValidating(false);
     }
-  }, [session?.id, buzzQueue]);
+  }, [session?.id, buzzQueue, isValidating]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSkip = useCallback(async () => {
-    if (!session?.id) return;
+    if (!session?.id || isSkipping) return;
 
+    setIsSkipping(true);
     try {
       await gameApi.skipQuestion(session.id);
     } catch (err: any) {
       window.alert(err?.message || 'Action impossible');
+    } finally {
+      setIsSkipping(false);
     }
-  }, [session?.id]);
+  }, [session?.id, isSkipping]);
 
   const handleResetBuzzer = useCallback(async () => {
-    if (!session?.id) return;
+    if (!session?.id || isResettingBuzzer) return;
 
+    setIsResettingBuzzer(true);
     try {
       await gameApi.resetBuzzer(session.id);
     } catch (err: any) {
       window.alert(err?.message || 'Action impossible');
+    } finally {
+      setIsResettingBuzzer(false);
     }
-  }, [session?.id]);
+  }, [session?.id, isResettingBuzzer]);
 
   const handleScoreCorrection = useCallback(async (playerId: string, points: number, reason: string) => {
     if (!session?.id) return;
@@ -388,22 +401,28 @@ export default function GamePage() {
   }, [session?.id]);
 
   const handlePause = useCallback(async () => {
-    if (!session?.id) return;
+    if (!session?.id || isPauseToggling) return;
+    setIsPauseToggling(true);
     try {
       await pauseSession(session.id);
     } catch (err: any) {
       window.alert(err?.message || 'Impossible de mettre en pause');
+    } finally {
+      setIsPauseToggling(false);
     }
-  }, [session?.id, pauseSession]);
+  }, [session?.id, pauseSession, isPauseToggling]);
 
   const handleResume = useCallback(async () => {
-    if (!session?.id) return;
+    if (!session?.id || isPauseToggling) return;
+    setIsPauseToggling(true);
     try {
       await resumeSession(session.id);
     } catch (err: any) {
       window.alert(err?.message || 'Impossible de reprendre');
+    } finally {
+      setIsPauseToggling(false);
     }
-  }, [session?.id, resumeSession]);
+  }, [session?.id, resumeSession, isPauseToggling]);
 
   if (!session || !currentQuestion) {
     return (
@@ -505,8 +524,12 @@ export default function GamePage() {
             {isManager && (
               <button
                 onClick={handleResume}
-                className="mt-6 px-8 py-4 bg-[#00D397] rounded-2xl hover:bg-[#00B377] transition-colors"
+                disabled={isPauseToggling}
+                className="mt-6 px-8 py-4 bg-[#00D397] rounded-2xl hover:bg-[#00B377] transition-colors disabled:opacity-60 flex items-center gap-2"
               >
+                {isPauseToggling && (
+                  <div className="w-4 h-4 border-2 border-[#292349] border-t-transparent rounded-full animate-spin" />
+                )}
                 <span className="text-[#292349] font-bold text-lg">Reprendre</span>
               </button>
             )}
@@ -748,25 +771,36 @@ export default function GamePage() {
                     <div className="flex flex-row gap-2 mt-3">
                       <button
                         onClick={() => handleValidate(true)}
-                        className="flex-1 py-3 rounded-xl bg-[#00D397] flex items-center justify-center hover:bg-[#00B377] transition-colors"
+                        disabled={isValidating}
+                        className="flex-1 py-3 rounded-xl bg-[#00D397] flex items-center justify-center hover:bg-[#00B377] transition-colors disabled:opacity-60"
                       >
-                        <div className="flex flex-row items-center">
-                          <CheckCircle size={18} color="#292349" />
-                          <span className="text-[#292349] font-bold ml-1.5">Correct</span>
-                        </div>
+                        {isValidating ? (
+                          <div className="w-4 h-4 border-2 border-[#292349] border-t-transparent rounded-full animate-spin" />
+                        ) : (
+                          <div className="flex flex-row items-center">
+                            <CheckCircle size={18} color="#292349" />
+                            <span className="text-[#292349] font-bold ml-1.5">Correct</span>
+                          </div>
+                        )}
                       </button>
                       <button
                         onClick={() => handleValidate(false, true)}
-                        className="flex-1 py-3 rounded-xl bg-[#D5442F] flex items-center justify-center hover:bg-[#B53320] transition-colors"
+                        disabled={isValidating}
+                        className="flex-1 py-3 rounded-xl bg-[#D5442F] flex items-center justify-center hover:bg-[#B53320] transition-colors disabled:opacity-60"
                       >
-                        <div className="flex flex-row items-center">
-                          <XCircle size={18} color="#FFFFFF" />
-                          <span className="text-white font-bold ml-1.5">Faux</span>
-                        </div>
+                        {isValidating ? (
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        ) : (
+                          <div className="flex flex-row items-center">
+                            <XCircle size={18} color="#FFFFFF" />
+                            <span className="text-white font-bold ml-1.5">Faux</span>
+                          </div>
+                        )}
                       </button>
                       <button
                         onClick={() => handleValidate(false, false)}
-                        className="px-3 py-3 rounded-xl bg-[#3E3666] flex items-center justify-center hover:bg-[#4E4676] transition-colors"
+                        disabled={isValidating}
+                        className="px-3 py-3 rounded-xl bg-[#3E3666] flex items-center justify-center hover:bg-[#4E4676] transition-colors disabled:opacity-60"
                       >
                         <span className="text-white/70 text-xs">Sans pénalité</span>
                       </button>
@@ -816,33 +850,45 @@ export default function GamePage() {
             <div className="flex flex-row gap-2">
               <button
                 onClick={handleSkip}
-                className="flex-1 py-3 rounded-xl bg-[#3E3666] flex items-center justify-center hover:bg-[#4E4676] transition-colors"
+                disabled={isSkipping}
+                className="flex-1 py-3 rounded-xl bg-[#3E3666] flex items-center justify-center hover:bg-[#4E4676] transition-colors disabled:opacity-60"
               >
-                <span className="text-white/80 font-medium text-sm">Passer</span>
+                {isSkipping ? (
+                  <div className="w-4 h-4 border-2 border-white/60 border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <span className="text-white/80 font-medium text-sm">Passer</span>
+                )}
               </button>
               <button
                 onClick={handleResetBuzzer}
-                disabled={buzzQueue.length === 0}
+                disabled={buzzQueue.length === 0 || isResettingBuzzer}
                 className={`flex-1 py-3 rounded-xl flex items-center justify-center transition-colors ${
-                  buzzQueue.length > 0
+                  buzzQueue.length > 0 && !isResettingBuzzer
                     ? 'bg-[#D5442F30] hover:bg-[#D5442F50]'
                     : 'bg-[#3E3666] opacity-50 cursor-not-allowed'
                 }`}
               >
-                <span className={`font-medium text-sm ${buzzQueue.length > 0 ? 'text-[#D5442F]' : 'text-white/40'}`}>
-                  Reset
-                </span>
+                {isResettingBuzzer ? (
+                  <div className="w-4 h-4 border-2 border-[#D5442F] border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <span className={`font-medium text-sm ${buzzQueue.length > 0 ? 'text-[#D5442F]' : 'text-white/40'}`}>
+                    Reset
+                  </span>
+                )}
               </button>
               <button
                 onClick={isPaused ? handleResume : handlePause}
-                className={`flex-1 py-3 rounded-xl flex items-center justify-center transition-colors ${
+                disabled={isPauseToggling}
+                className={`flex-1 py-3 rounded-xl flex items-center justify-center transition-colors disabled:opacity-60 ${
                   isPaused
                     ? 'bg-[#00D397] hover:bg-[#00B377]'
                     : 'bg-[#FFD70030] border border-[#FFD70050] hover:bg-[#FFD70050]'
                 }`}
               >
                 <div className="flex flex-row items-center justify-center">
-                  {isPaused ? (
+                  {isPauseToggling ? (
+                    <div className={`w-4 h-4 border-2 border-t-transparent rounded-full animate-spin ${isPaused ? 'border-[#292349]' : 'border-[#FFD700]'}`} />
+                  ) : isPaused ? (
                     <>
                       <PlayCircle size={18} color="#292349" className="mr-1.5" />
                       <span className="font-bold text-sm text-[#292349]">Reprendre</span>

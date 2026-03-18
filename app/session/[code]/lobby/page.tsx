@@ -52,6 +52,7 @@ function PlayerItem({
   onKick,
   onEditCategories,
   onEditSelf,
+  isKicking,
 }: {
   player: PlayerResponse;
   isManager: boolean;
@@ -60,6 +61,7 @@ function PlayerItem({
   onKick?: (playerId: string, playerName: string) => void;
   onEditCategories?: (player: PlayerResponse) => void;
   onEditSelf?: () => void;
+  isKicking?: boolean;
 }) {
   return (
     <div
@@ -125,9 +127,14 @@ function PlayerItem({
           {onKick && (
             <button
               onClick={() => onKick(player.id, player.name)}
-              className="w-8 h-8 rounded-full bg-red-500/20 flex items-center justify-center hover:bg-red-500/30 transition-colors"
+              disabled={isKicking}
+              className="w-8 h-8 rounded-full bg-red-500/20 flex items-center justify-center hover:bg-red-500/30 transition-colors disabled:opacity-60"
             >
-              <Trash2 size={14} color="#EF4444" />
+              {isKicking ? (
+                <div className="w-3.5 h-3.5 border-2 border-red-400 border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <Trash2 size={14} color="#EF4444" />
+              )}
             </button>
           )}
         </div>
@@ -446,6 +453,7 @@ function LobbyManagerControls({
   onLeaveSession,
   onDeleteSession,
   isStarting,
+  isDeleting = false,
 }: {
   playerCount: number;
   minPlayers?: number;
@@ -455,6 +463,7 @@ function LobbyManagerControls({
   onLeaveSession?: () => void;
   onDeleteSession?: () => void;
   isStarting: boolean;
+  isDeleting?: boolean;
 }) {
   const canStart = playerCount >= minPlayers && (questionMode !== 'MANUAL' || totalQuestions > 0);
 
@@ -561,17 +570,21 @@ function LobbyManagerControls({
           {/* Delete Session Button */}
           {onDeleteSession && (
             <button
-              onClick={() => {
-                if (window.confirm('Supprimer la session ? Cette action est irréversible. Tous les joueurs seront expulsés.')) {
-                  onDeleteSession();
-                }
-              }}
-              className="w-full mt-3 bg-red-600/30 py-3.5 rounded-xl flex items-center justify-center hover:bg-red-600/40 transition-colors border border-red-500/30"
+              onClick={onDeleteSession}
+              disabled={isDeleting}
+              className="w-full mt-3 bg-red-600/30 py-3.5 rounded-xl flex items-center justify-center hover:bg-red-600/40 transition-colors border border-red-500/30 disabled:opacity-60"
             >
-              <div className="flex flex-row items-center">
-                <X size={18} color="#EF4444" />
-                <span className="text-red-400 font-semibold text-sm ml-2">Supprimer la session</span>
-              </div>
+              {isDeleting ? (
+                <div className="flex flex-row items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-red-400 border-t-transparent rounded-full animate-spin" />
+                  <span className="text-red-400 font-semibold text-sm">Suppression...</span>
+                </div>
+              ) : (
+                <div className="flex flex-row items-center">
+                  <X size={18} color="#EF4444" />
+                  <span className="text-red-400 font-semibold text-sm ml-2">Supprimer la session</span>
+                </div>
+              )}
             </button>
           )}
         </div>
@@ -587,6 +600,8 @@ export default function LobbyPage() {
 
   const [isCopied, setIsCopied] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isDeletingSession, setIsDeletingSession] = useState(false);
+  const [kickingPlayerId, setKickingPlayerId] = useState<string | null>(null);
   const [roomInfo, setRoomInfo] = useState<RoomInfo | null>(null);
   const [showQRModal, setShowQRModal] = useState(false);
   const [showTeamPicker, setShowTeamPicker] = useState(false);
@@ -775,23 +790,30 @@ export default function LobbyPage() {
   };
 
   const handleDeleteSession = async () => {
-    if (!session?.id) return;
+    if (!session?.id || isDeletingSession) return;
     if (window.confirm('Supprimer la session ? Cette action est irréversible. Tous les joueurs seront expulsés.')) {
+      setIsDeletingSession(true);
       try {
         await deleteSession(session.id);
         router.replace('/');
       } catch (err: any) {
         window.alert(err?.message || 'Impossible de supprimer la session');
+        setIsDeletingSession(false);
       }
     }
   };
 
-  const handleKickPlayer = (playerId: string, playerName: string) => {
+  const handleKickPlayer = async (playerId: string, playerName: string) => {
+    if (!session?.id || kickingPlayerId) return;
     if (window.confirm(`Voulez-vous vraiment retirer ${playerName} de la session ?`)) {
-      if (!session?.id) return;
-      sessionsApi.removePlayer(session.id, playerId).catch((err: any) => {
+      setKickingPlayerId(playerId);
+      try {
+        await sessionsApi.removePlayer(session.id, playerId);
+      } catch (err: any) {
         window.alert(err?.message || "Impossible d'expulser le joueur");
-      });
+      } finally {
+        setKickingPlayerId(null);
+      }
     }
   };
 
@@ -956,6 +978,7 @@ export default function LobbyPage() {
             onLeaveSession={handleLeave}
             onDeleteSession={handleDeleteSession}
             isStarting={isStarting}
+            isDeleting={isDeletingSession}
           />
         )}
 
@@ -996,6 +1019,7 @@ export default function LobbyPage() {
                   onKick={isManager ? handleKickPlayer : undefined}
                   onEditCategories={isManager && !player.isManager && session.questionMode !== 'MANUAL' ? handleEditCategories : undefined}
                   onEditSelf={player.userId === user?.id && !player.isSpectator && !player.isManager && session.questionMode !== 'MANUAL' ? handleEditMyCategories : undefined}
+                  isKicking={kickingPlayerId === player.id}
                 />
               ))
             ) : (

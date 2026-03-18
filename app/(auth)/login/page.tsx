@@ -34,6 +34,8 @@ export default function LoginPage() {
   }
 
   async function handleLogin() {
+    if (isLoading) return;
+
     // Read from DOM to capture autofilled values that didn't trigger onChange
     const u = usernameRef.current?.value ?? username;
     const p = passwordRef.current?.value ?? password;
@@ -42,7 +44,6 @@ export default function LoginPage() {
 
     try {
       await login(u.trim(), p);
-      router.replace('/dashboard');
     } catch (err: any) {
       const message =
         err?.response?.data?.message ?? 'Échec de la connexion. Veuillez réessayer.';
@@ -176,6 +177,7 @@ export default function LoginPage() {
                   if (errors.username) setErrors((prev) => ({ ...prev, username: undefined }));
                 }}
                 onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+                disabled={isLoading}
               />
             </div>
             {errors.username && (
@@ -205,6 +207,7 @@ export default function LoginPage() {
                   if (errors.password) setErrors((prev) => ({ ...prev, password: undefined }));
                 }}
                 onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+                disabled={isLoading}
               />
               <button
                 type="button"

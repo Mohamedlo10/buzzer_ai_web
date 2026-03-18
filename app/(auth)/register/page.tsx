@@ -45,11 +45,11 @@ export default function RegisterPage() {
   }
 
   async function handleRegister() {
+    if (isLoading) return;
     if (!validate()) return;
 
     try {
       await register(username.trim(), null, password);
-      router.replace('/dashboard');
     } catch (err: any) {
       const message =
         err?.response?.data?.message ?? "Échec de l'inscription. Veuillez réessayer.";
@@ -256,6 +256,7 @@ export default function RegisterPage() {
                   clearFieldError('confirmPassword');
                 }}
                 onKeyDown={(e) => e.key === 'Enter' && handleRegister()}
+                disabled={isLoading}
               />
               <button
                 type="button"
