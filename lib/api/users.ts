@@ -16,6 +16,11 @@ export async function updateProfile(data: UpdateProfileRequest): Promise<UserRes
   return res.data;
 }
 
+export async function updateAvatar(userId: string, avatarStyle: string, avatarSeed: string): Promise<UserResponse> {
+  const res = await apiClient.patch<UserResponse>(`/api/users/${userId}/avatar`, { avatarStyle, avatarSeed });
+  return res.data;
+}
+
 export async function changePassword(data: ChangePasswordRequest): Promise<void> {
   await apiClient.put('/api/users/me/password', data);
 }

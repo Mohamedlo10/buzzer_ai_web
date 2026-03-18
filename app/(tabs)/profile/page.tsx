@@ -90,15 +90,10 @@ export default function ProfilePage() {
 
   // Modals state
   const [showLogoutModal, setShowLogoutModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [categoryRankingsData, setCategoryRankingsData] = useState<CategoryRankingResponse | null>(null);
   const [isCategoryFetching, setIsCategoryFetching] = useState(false);
-
-  // Edit profile form
-  const [editUsername, setEditUsername] = useState(user?.username || '');
-  const [editEmail, setEditEmail] = useState(user?.email || '');
 
   // Change password form
   const [currentPassword, setCurrentPassword] = useState('');
@@ -119,15 +114,6 @@ export default function ProfilePage() {
   });
 
   // Mutations
-  const updateProfileMutation = useMutation({
-    mutationFn: usersApi.updateProfile,
-    onSuccess: (updatedUser) => {
-      setUser(updatedUser);
-      setShowEditModal(false);
-      queryClient.invalidateQueries({ queryKey: ['user'] });
-    },
-  });
-
   const changePasswordMutation = useMutation({
     mutationFn: usersApi.changePassword,
     onSuccess: () => {
@@ -170,14 +156,6 @@ export default function ProfilePage() {
     } catch {
       // handle error silently
     }
-  }
-
-  function handleUpdateProfile() {
-    if (!editUsername.trim()) return;
-    updateProfileMutation.mutate({
-      username: editUsername.trim(),
-      email: editEmail.trim() || undefined,
-    });
   }
 
   function handleChangePassword() {
@@ -230,11 +208,7 @@ export default function ProfilePage() {
             </div>
             {/* Edit button on avatar */}
             <button
-              onClick={() => {
-                setEditUsername(user.username || '');
-                setEditEmail(user.email || '');
-                setShowEditModal(true);
-              }}
+              onClick={() => router.push('/profile/edit')}
               className="absolute bottom-1 right-1 w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-md hover:opacity-90 transition-opacity cursor-pointer"
             >
               <Edit3 size={18} color="#3B82F6" />
@@ -367,11 +341,7 @@ export default function ProfilePage() {
 
           {/* Edit Profile Button */}
           <button
-            onClick={() => {
-              setEditUsername(user.username || '');
-              setEditEmail(user.email || '');
-              setShowEditModal(true);
-            }}
+            onClick={() => router.push('/profile/edit')}
             className="w-full bg-[#342D5B] rounded-2xl p-4 border border-[#3E3666] flex flex-row items-center justify-between mb-3 hover:opacity-80 active:opacity-70 transition-opacity cursor-pointer"
           >
             <div className="flex flex-row items-center gap-3">
@@ -464,72 +434,6 @@ export default function ProfilePage() {
           <p className="text-white/30 text-xs text-center mt-6">BuzzMaster AI v1.0.0</p>
         </div>
       </div>
-
-      {/* ── Edit Profile Modal ── */}
-      {showEditModal && (
-        <ModalOverlay onClose={() => setShowEditModal(false)}>
-          <div className="bg-[#292349] px-6 py-5 border-b border-[#3E3666]">
-            <div className="flex flex-row items-center justify-between">
-              <div className="flex flex-row items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-indigo-500/20 flex items-center justify-center">
-                  <Edit3 size={24} color="#6366F1" />
-                </div>
-                <p className="text-white text-xl font-bold">Modifier le profil</p>
-              </div>
-              <button
-                onClick={() => setShowEditModal(false)}
-                className="w-10 h-10 rounded-xl bg-[#3E3666] flex items-center justify-center hover:opacity-80 cursor-pointer"
-              >
-                <X size={20} color="#6B7280" />
-              </button>
-            </div>
-          </div>
-
-          <div className="px-6 py-6 flex flex-col gap-4">
-            <div>
-              <p className="text-white/60 text-sm mb-2">Nom d&apos;utilisateur</p>
-              <input
-                value={editUsername}
-                onChange={(e) => setEditUsername(e.target.value)}
-                className="w-full bg-[#292349] text-white px-4 py-3 rounded-xl border border-[#3E3666] focus:border-[#6366F1] focus:outline-none"
-                autoCapitalize="none"
-              />
-            </div>
-            <div>
-              <p className="text-white/60 text-sm mb-2">Email</p>
-              <input
-                value={editEmail}
-                onChange={(e) => setEditEmail(e.target.value)}
-                type="email"
-                className="w-full bg-[#292349] text-white px-4 py-3 rounded-xl border border-[#3E3666] focus:border-[#6366F1] focus:outline-none"
-                autoCapitalize="none"
-              />
-            </div>
-          </div>
-
-          <div className="px-6 pb-6 flex flex-col gap-3">
-            <button
-              onClick={handleUpdateProfile}
-              disabled={updateProfileMutation.isPending || !editUsername.trim()}
-              className="w-full rounded-2xl py-4 flex items-center justify-center transition-opacity cursor-pointer disabled:cursor-not-allowed"
-              style={{ background: 'linear-gradient(to right, #6366F1, #8B5CF6)' }}
-            >
-              {updateProfileMutation.isPending ? (
-                <Spinner />
-              ) : (
-                <span className="text-white text-base font-bold">Enregistrer</span>
-              )}
-            </button>
-            <button
-              onClick={() => setShowEditModal(false)}
-              disabled={updateProfileMutation.isPending}
-              className="w-full rounded-2xl bg-[#3E3666] px-6 py-4 hover:opacity-80 transition-opacity cursor-pointer"
-            >
-              <span className="text-white text-base font-semibold text-center block">Annuler</span>
-            </button>
-          </div>
-        </ModalOverlay>
-      )}
 
       {/* ── Change Password Modal ── */}
       {showPasswordModal && (
