@@ -30,6 +30,7 @@ import { useBuzzStore } from '~/stores/useBuzzStore';
 import { useAuthStore } from '~/stores/useAuthStore';
 import * as sessionsApi from '~/lib/api/sessions';
 import * as categoriesApi from '~/lib/api/categories';
+import * as roomsApi from '~/lib/api/rooms';
 import { appStorage } from '~/lib/utils/storage';
 import type { CategoryRequest, Difficulty, TeamResponse } from '~/types/api';
 
@@ -128,7 +129,23 @@ export default function CategorySelectionPage() {
           sid = result.sessionId;
           setActualSessionId(sid);
         } catch {
-          setError('Impossible de trouver la session. Veuillez réessayer.');
+          // joinCheck failed — the code might be a room code (QR code de salle mal configuré côté back)
+          // Fallback : essayer de rejoindre comme salle
+          try {
+            const roomData = await roomsApi.joinRoom(code);
+            router.replace(`/room/${roomData.room.id}`);
+            return;
+          } catch (roomErr: any) {
+            // Room already joined → navigate to it
+            if (roomErr?.response?.status === 409) {
+              const roomId = roomErr?.response?.data?.roomId;
+              if (roomId) {
+                router.replace(`/room/${roomId}`);
+                return;
+              }
+            }
+          }
+          setError('Impossible de trouver la session ou la salle. Veuillez réessayer.');
           setIsCheckingJoined(false);
           return;
         }
