@@ -17,17 +17,38 @@ export default function LoadingPage() {
   const params = useParams<{ code: string }>();
   const code = params.code;
 
-  const [progress, setProgress] = useState(0);
+  // realProgress = valeur reçue du serveur (0 si rien reçu)
+  const [realProgress, setRealProgress] = useState(0);
+  // simulatedProgress monte doucement jusqu'à ~88% pour ne jamais rester à 0
+  const [simulatedProgress, setSimulatedProgress] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [totalQuestions, setTotalQuestions] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Ce que l'UI affiche : le max entre simulation et réel, plafonné à 99 tant que pas complete
+  const progress = isComplete ? 100 : Math.min(Math.max(simulatedProgress, realProgress), 99);
 
   const { session, fetchSession, leaveSession } = useBuzzStore();
   const explicitIsManager = useIsManager();
   const authUser = useAuthStore((s) => s.user);
   const isManager = explicitIsManager || (!!authUser && authUser.id === session?.managerId);
   const [isCancelling, setIsCancelling] = useState(false);
+
+  // Simulation de progression : monte vers 88% avec décélération progressive
+  useEffect(() => {
+    if (isComplete) return;
+    const CEILING = 88;
+    const interval = setInterval(() => {
+      setSimulatedProgress((prev) => {
+        if (prev >= CEILING) return prev;
+        // Plus on est proche du plafond, plus on ralentit
+        const step = (CEILING - prev) * 0.018;
+        return Math.min(prev + Math.max(step, 0.05), CEILING);
+      });
+    }, 300);
+    return () => clearInterval(interval);
+  }, [isComplete]);
 
   // WebSocket for progress updates
   const { isConnected } = useGameSocket(session?.id || null, {
@@ -37,11 +58,11 @@ export default function LoadingPage() {
           const e = event as GenerationProgressEvent;
           setCurrentQuestion(e.current);
           setTotalQuestions(e.total);
-          setProgress(e.percentage);
+          setRealProgress(e.percentage);
           break;
         }
         case 'generation_complete':
-          setProgress(100);
+          setRealProgress(100);
           setIsComplete(true);
           break;
         case 'generation_failed':
@@ -201,7 +222,8 @@ export default function LoadingPage() {
               <button
                 onClick={() => {
                   setError(null);
-                  setProgress(0);
+                  setRealProgress(0);
+                  setSimulatedProgress(0);
                   setCurrentQuestion(0);
                   setTotalQuestions(0);
                   if (session?.id) fetchSession(session.id);
