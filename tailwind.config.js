@@ -38,8 +38,14 @@ module.exports = {
         'pulse-ring': 'pulse-ring 2s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite',
         'buzz-scale': 'buzz-scale 0.15s ease-out',
         'fade-in-up': 'fade-in-up 0.3s ease-out',
+        'scan-line': 'scan-line 2s ease-in-out infinite',
       },
       keyframes: {
+        'scan-line': {
+          '0%': { top: '8px' },
+          '50%': { top: 'calc(100% - 8px)' },
+          '100%': { top: '8px' },
+        },
         'pulse-ring': {
           '0%, 100%': { transform: 'scale(1)', opacity: '0.6' },
           '50%': { transform: 'scale(1.15)', opacity: '0.2' },

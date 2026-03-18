@@ -8,11 +8,13 @@ import {
   LogIn,
   X,
   Gamepad2,
+  QrCode,
 } from 'lucide-react';
 
 import { SafeScreen } from '~/components/layout/SafeScreen';
 import { DashboardHeader, WelcomeSection } from '~/components/layout/DashboardHeader';
 import { Spinner } from '~/components/loading/Spinner';
+import { QRScannerModal } from '~/components/ui/QRScannerModal';
 import { useDashboardV2 } from '~/lib/query/hooks';
 import {
   LastSessionCard,
@@ -124,6 +126,7 @@ function JoinModal({
   const [code, setCode] = useState('');
   const [isJoining, setIsJoining] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showScanner, setShowScanner] = useState(false);
 
   const resetState = () => {
     setCode('');
@@ -221,12 +224,75 @@ function JoinModal({
     setIsJoining(false);
   };
 
-  if (!visible) return null;
+  const handleQRScan = (scannedCode: string) => {
+    setShowScanner(false);
+    setCode(scannedCode);
+    // Auto-submit after scan
+    setTimeout(() => {
+      setCode('');
+    }, 0);
+    // Trigger join directly with scanned code
+    const trimmedCode = scannedCode.trim().toUpperCase();
+    if (!trimmedCode) return;
+
+    setIsJoining(true);
+    setError(null);
+
+    sessionsApi.joinCheck(trimmedCode)
+      .then(async (data) => {
+        if (data?.session?.id) {
+          await appStorage.setActiveSession({ sessionId: data.session.id, code: trimmedCode });
+        }
+        handleClose();
+        const status = data?.session?.status;
+        if (status === 'LOBBY') router.push(`/session/${trimmedCode}/categories`);
+        else if (status === 'GENERATING') router.push(`/session/${trimmedCode}/loading`);
+        else if (['PLAYING', 'PAUSED'].includes(status)) router.push(`/session/${trimmedCode}/game`);
+        else if (status === 'RESULTS') router.push(`/session/${trimmedCode}/results`);
+        else router.push(`/session/${trimmedCode}/lobby`);
+      })
+      .catch(async (sessionErr: any) => {
+        if (sessionErr?.response?.status === 409) {
+          const sessionFromError = sessionErr?.response?.data?.session;
+          if (sessionFromError?.id) {
+            await appStorage.setActiveSession({ sessionId: sessionFromError.id, code: trimmedCode });
+            handleClose();
+            const sStatus = sessionFromError.status;
+            if (['PLAYING', 'PAUSED'].includes(sStatus)) router.push(`/session/${trimmedCode}/game`);
+            else if (sStatus === 'GENERATING') router.push(`/session/${trimmedCode}/loading`);
+            else if (sStatus === 'RESULTS') router.push(`/session/${trimmedCode}/results`);
+            else router.push(`/session/${trimmedCode}/lobby`);
+            return;
+          }
+        }
+        // Fallback: try as room code
+        roomsApi.joinRoom(trimmedCode)
+          .then((roomData) => { handleClose(); router.push(`/room/${roomData.room.id}`); })
+          .catch((roomErr: any) => {
+            const status = roomErr?.response?.status;
+            if (status === 404) setError(`Code "${trimmedCode}" non reconnu`);
+            else if (status === 409) setError('Vous avez déjà rejoint cette salle');
+            else setError(roomErr?.response?.data?.message || 'Erreur lors de la connexion');
+          })
+          .finally(() => setIsJoining(false));
+        return;
+      })
+      .finally(() => setIsJoining(false));
+  };
+
+  if (!visible && !showScanner) return null;
 
   return (
+    <>
+      <QRScannerModal
+        visible={showScanner}
+        onClose={() => setShowScanner(false)}
+        onScan={handleQRScan}
+      />
     <div
       className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-5"
       onClick={handleClose}
+      style={{ display: visible ? undefined : 'none' }}
     >
       <div
         className="w-full max-w-sm bg-[#342D5B] rounded-3xl border border-[#3E3666] overflow-hidden"
@@ -281,7 +347,7 @@ function JoinModal({
         )}
 
         {/* Submit Button */}
-        <div className="px-5 pb-5 pt-1">
+        <div className="px-5 pb-3 pt-1">
           <button
             onClick={handleJoin}
             disabled={isJoining || !code.trim()}
@@ -298,8 +364,21 @@ function JoinModal({
             )}
           </button>
         </div>
+
+        {/* QR Scanner Button */}
+        <div className="px-5 pb-5">
+          <button
+            onClick={() => setShowScanner(true)}
+            disabled={isJoining}
+            className="w-full py-3.5 rounded-2xl flex items-center justify-center gap-2 bg-[#292349] border border-[#3E3666] hover:bg-[#3E3666] transition-colors cursor-pointer"
+          >
+            <QrCode size={18} color="#00D397" />
+            <span className="text-white/80 font-medium">Scanner un QR code</span>
+          </button>
+        </div>
       </div>
     </div>
+    </>
   );
 }
 
