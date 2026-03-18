@@ -292,7 +292,7 @@ function JoinModal({
     <div
       className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-5"
       onClick={handleClose}
-      style={{ display: visible ? undefined : 'none' }}
+      style={{ display: visible && !showScanner ? undefined : 'none' }}
     >
       <div
         className="w-full max-w-sm bg-[#342D5B] rounded-3xl border border-[#3E3666] overflow-hidden"

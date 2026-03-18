@@ -122,7 +122,7 @@ export function QRScannerModal({ visible, onClose, onScan }: QRScannerModalProps
   if (!visible) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-black">
+    <div className="fixed inset-0 z-[60] flex flex-col bg-black">
       {/* Header */}
       <div className="flex items-center justify-between px-4 pt-10 pb-4 bg-black/80">
         <div className="flex items-center gap-3">
