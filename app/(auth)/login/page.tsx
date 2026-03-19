@@ -44,6 +44,7 @@ export default function LoginPage() {
 
     try {
       await login(u.trim(), p);
+      window.location.replace('/dashboard');
     } catch (err: any) {
       const message =
         err?.response?.data?.message ?? 'Échec de la connexion. Veuillez réessayer.';

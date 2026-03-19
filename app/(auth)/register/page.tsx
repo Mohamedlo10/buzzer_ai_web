@@ -50,6 +50,7 @@ export default function RegisterPage() {
 
     try {
       await register(username.trim(), null, password);
+      window.location.replace('/dashboard');
     } catch (err: any) {
       const message =
         err?.response?.data?.message ?? "Échec de l'inscription. Veuillez réessayer.";

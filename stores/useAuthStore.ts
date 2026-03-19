@@ -80,6 +80,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const user = await usersApi.getMe();
       await appStorage.setUserProfile(user);
       set({ user, isAuthenticated: true });
+      // Re-set cookie in case it was lost (session cookie cleared on browser close)
+      if (typeof document !== 'undefined') {
+        document.cookie = 'has_session=1; path=/; SameSite=Lax';
+      }
       console.log('✅ [AuthStore] Session verified with server for user:', user.username);
       return true;
     } catch (error) {
@@ -88,6 +92,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const refreshToken = await tokenStorage.getRefreshToken();
       if (cachedUser && refreshToken) {
         console.log('⚠️ [AuthStore] Keeping cached session, server unreachable');
+        // Re-set cookie even when server is unreachable, to avoid middleware loop
+        if (typeof document !== 'undefined') {
+          document.cookie = 'has_session=1; path=/; SameSite=Lax';
+        }
         return true;
       }
       // No cached user or no refresh token — full logout

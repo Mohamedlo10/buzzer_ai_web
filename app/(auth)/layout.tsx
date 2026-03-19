@@ -1,7 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
 import { useAuthStore } from '~/stores/useAuthStore';
 
 export default function AuthLayout({
@@ -10,13 +8,11 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
-  const router = useRouter();
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      router.replace('/dashboard');
-    }
-  }, [isAuthenticated, router]);
+  // Si déjà authentifié (ex: cookie absent mais session restaurée),
+  // le middleware s'en charge via has_session. On ne rend pas les pages
+  // auth pour éviter tout flash.
+  if (isAuthenticated) return null;
 
   return <>{children}</>;
 }
