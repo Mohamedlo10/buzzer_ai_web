@@ -26,7 +26,7 @@ interface Slide {
 const slides: Slide[] = [
   {
     id: '1',
-    title: 'BuzzMaster AI',
+    title: 'Quiz By Mouha_Dev',
     subtitle: 'Quiz Multijoueur en Temps Réel',
     description:
       'Affrontez vos amis sur des questions générées par intelligence artificielle. Le plus rapide buzz et gagne !',
@@ -132,7 +132,7 @@ export default function OnboardingPage() {
             className="text-white text-xl font-bold ml-2"
             style={{ textShadow: '1px 1px 10px rgba(213,68,47,0.5)' }}
           >
-            BuzzMaster
+            Quiz By Mouha_Dev
           </span>
         </div>
       </div>

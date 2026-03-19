@@ -446,9 +446,9 @@ export default function RoomDetailPage() {
 
   const handleShare = async () => {
     if (!room) return;
-    const msg = `Rejoins ma salle BuzzMaster! Code: ${room.code}`;
+    const msg = `Rejoins ma salle Quiz By Mouha_Dev! Code: ${room.code}`;
     if (navigator.share) {
-      try { await navigator.share({ title: 'Invitation BuzzMaster', text: msg }); } catch { /* cancelled */ }
+      try { await navigator.share({ title: 'Invitation Quiz By Mouha_Dev', text: msg }); } catch { /* cancelled */ }
     } else {
       await navigator.clipboard.writeText(msg);
     }

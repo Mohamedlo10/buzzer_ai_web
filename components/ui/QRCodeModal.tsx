@@ -53,12 +53,12 @@ export function QRCodeModal({ visible, onClose, type, id, code, title }: QRCodeM
     if (!code) return;
 
     const message = type === 'session'
-      ? `Rejoins ma partie BuzzMaster! Code: ${code}`
-      : `Rejoins ma salle BuzzMaster! Code: ${code}`;
+      ? `Rejoins ma partie Quiz By Mouha_Dev! Code: ${code}`
+      : `Rejoins ma salle Quiz By Mouha_Dev! Code: ${code}`;
 
     if (navigator.share) {
       try {
-        await navigator.share({ title: 'Invitation BuzzMaster', text: message });
+        await navigator.share({ title: 'Invitation Quiz By Mouha_Dev', text: message });
       } catch {
         // User cancelled
       }

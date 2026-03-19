@@ -528,9 +528,9 @@ export default function LobbyPage() {
 
   const handleShare = async () => {
     if (!code) return;
-    const msg = `Rejoins ma partie BuzzMaster! Code: ${code}`;
+    const msg = `Rejoins ma partie Quiz By Mouha_Dev! Code: ${code}`;
     if (navigator.share) {
-      try { await navigator.share({ title: 'Invitation BuzzMaster', text: msg }); } catch { /* cancelled */ }
+      try { await navigator.share({ title: 'Invitation Quiz By Mouha_Dev', text: msg }); } catch { /* cancelled */ }
     } else {
       await navigator.clipboard.writeText(msg);
       window.alert('Lien copié dans le presse-papiers !');

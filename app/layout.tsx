@@ -3,7 +3,7 @@ import { AppProviders } from '~/components/providers/AppProviders';
 import '~/global.css';
 
 export const metadata: Metadata = {
-  title: 'BuzzMaster AI',
+  title: 'Quiz By Mouha_Dev',
   description: 'Le jeu de buzzer multijoueur intelligent',
 };
 

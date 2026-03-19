@@ -431,7 +431,7 @@ export default function ProfilePage() {
             <span className="text-red-500 text-base font-semibold">Se déconnecter</span>
           </button>
 
-          <p className="text-white/30 text-xs text-center mt-6">BuzzMaster AI v1.0.0</p>
+          <p className="text-white/30 text-xs text-center mt-6">Quiz By Mouha_Dev v1.0.0</p>
         </div>
       </div>
 

@@ -364,11 +364,11 @@ export default function ResultsPage() {
     if (!rankings) return;
 
     const winner = rankings[0];
-    const message = `🏆 Partie BuzzMaster terminée !\n\n👑 Gagnant: ${winner.player.name} (${winner.finalScore} pts)\n🎮 Code: ${code}\n\nRejoins-nous pour la prochaine partie !`;
+    const message = `🏆 Partie Quiz By Mouha_Dev terminée !\n\n👑 Gagnant: ${winner.player.name} (${winner.finalScore} pts)\n🎮 Code: ${code}\n\nRejoins-nous pour la prochaine partie !`;
 
     if (navigator.share) {
       try {
-        await navigator.share({ title: 'Résultats BuzzMaster', text: message });
+        await navigator.share({ title: 'Résultats Quiz By Mouha_Dev', text: message });
       } catch {
         // cancelled
       }

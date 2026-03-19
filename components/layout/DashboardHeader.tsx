@@ -26,7 +26,7 @@ export function DashboardHeader({
           className="w-14 h-14 rounded-xl mr-3 object-cover"
         />
         <div>
-          <p className="text-white font-bold text-lg">BuzzMaster</p>
+          <p className="text-white font-bold text-lg">Quiz By Mouha_Dev</p>
           <p className="text-[#00D397] text-xs font-medium">AI Trivia Game</p>
         </div>
       </div>

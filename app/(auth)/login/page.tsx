@@ -128,7 +128,7 @@ export default function LoginPage() {
               letterSpacing: 1,
             }}
           >
-            BuzzMaster
+            Quiz By Mouha_Dev
           </h1>
 
           {/* Subtitle Badge */}

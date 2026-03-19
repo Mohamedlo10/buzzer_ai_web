@@ -141,7 +141,7 @@ export default function RegisterPage() {
               letterSpacing: 1,
             }}
           >
-            BuzzMaster
+            Quiz Buzzer - AI
           </h1>
 
           {/* Subtitle Badge */}
