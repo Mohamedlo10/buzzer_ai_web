@@ -261,6 +261,7 @@ export interface GameStateResponse {
   players: PlayerResponse[];
   buzzQueue: BuzzQueueItem[];
   myPlayer: PlayerResponse | null;
+  hasBuzzed?: boolean;
 }
 
 // ──────────────────────────────────────────────

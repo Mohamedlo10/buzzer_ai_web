@@ -198,7 +198,12 @@ export default function GamePage() {
         useBuzzStore.setState({ players: gameState.players });
       }
 
-      if (user?.id && gameState.buzzQueue?.some((b: BuzzQueueItem) => b.playerId === user.id)) {
+      // Use the backend's hasBuzzed field (includes wrong answers, not just queue presence).
+      // This ensures the button stays disabled even after fullBuzzerReset clears hasBuzzed.
+      if (gameState.hasBuzzed) {
+        useBuzzStore.getState().setHasBuzzed(true);
+        useBuzzStore.getState().setAnsweredWrongThisQuestion(true);
+      } else if (user?.id && gameState.buzzQueue?.some((b: BuzzQueueItem) => b.playerId === user.id)) {
         useBuzzStore.getState().setHasBuzzed(true);
       }
     } catch {
