@@ -299,6 +299,7 @@ export const useBuzzStore = create<BuzzState & BuzzActions>((set, get) => ({
     set({
       buzzQueue: [],
       hasBuzzed: false,
+      answeredWrongThisQuestion: false,
       myQueuePosition: null,
       buzzerEnabled: true,
     }),
