@@ -3,10 +3,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import {
-  ArrowLeft, Crown, Users, Trophy, Play, Settings, Trash2, X,
+  Crown, Users, Trophy, Play, Settings, Trash2, X,
   Gamepad2, Eye, Copy, UserPlus, LogOut, Clock, Sparkles,
   ChevronRight, BarChart3, Zap, Target, Star, Hash,
-  Swords, Medal, History, Plus, QrCode,
+  Swords, Medal, History, Plus, QrCode, Home, LayoutGrid,
 } from 'lucide-react';
 
 import { SessionConfigForm } from '~/components/session/SessionConfigForm';
@@ -536,13 +536,23 @@ export default function RoomDetailPage() {
     <div className="min-h-screen bg-[#292349]">
       {/* Header */}
       <div className="bg-[#292349] pt-6 pb-4 px-4 border-b border-[#3E3666]">
-        <div className="flex items-center">
+        <div className="flex items-center gap-2 mb-3">
           <button
-            onClick={() => router.back()}
-            className="w-10 h-10 rounded-full bg-[#342D5B] flex items-center justify-center mr-3 hover:bg-[#3E3666] transition-colors"
+            onClick={() => router.push('/dashboard')}
+            className="flex items-center gap-1.5 bg-[#342D5B] px-3 py-2 rounded-full hover:bg-[#3E3666] transition-colors"
           >
-            <ArrowLeft size={20} color="#FFFFFF" />
+            <Home size={15} color="#FFFFFF99" />
+            <span className="text-white/60 text-xs font-medium">Dashboard</span>
           </button>
+          <button
+            onClick={() => router.push('/rooms')}
+            className="flex items-center gap-1.5 bg-[#342D5B] px-3 py-2 rounded-full hover:bg-[#3E3666] transition-colors"
+          >
+            <LayoutGrid size={15} color="#FFFFFF99" />
+            <span className="text-white/60 text-xs font-medium">Mes salles</span>
+          </button>
+        </div>
+        <div className="flex items-center">
           <div className="flex-1 min-w-0">
             <p className="text-white font-bold text-xl truncate">{room.name}</p>
             <p className="text-white/50 text-xs">
