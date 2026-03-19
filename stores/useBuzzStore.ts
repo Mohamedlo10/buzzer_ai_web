@@ -34,6 +34,7 @@ interface BuzzState {
   // Buzzer
   buzzQueue: BuzzQueueItem[];
   hasBuzzed: boolean;
+  answeredWrongThisQuestion: boolean;
   myQueuePosition: number | null;
   buzzerEnabled: boolean;
 
@@ -68,6 +69,7 @@ interface BuzzActions {
   clearBuzzQueue: () => void;
   fullBuzzerReset: () => void;
   setHasBuzzed: (hasBuzzed: boolean) => void;
+  setAnsweredWrongThisQuestion: (wrong: boolean) => void;
   setBuzzerEnabled: (enabled: boolean) => void;
   setPaused: (paused: boolean) => void;
   setGameOver: (isOver: boolean) => void;
@@ -97,6 +99,7 @@ const initialState: BuzzState = {
   totalQuestions: 0,
   buzzQueue: [],
   hasBuzzed: false,
+  answeredWrongThisQuestion: false,
   myQueuePosition: null,
   buzzerEnabled: false,
   isPaused: false,
@@ -271,6 +274,7 @@ export const useBuzzStore = create<BuzzState & BuzzActions>((set, get) => ({
       totalQuestions: total,
       buzzQueue: [],
       hasBuzzed: false,
+      answeredWrongThisQuestion: false,
       myQueuePosition: null,
       buzzerEnabled: true,
     }),
@@ -300,6 +304,7 @@ export const useBuzzStore = create<BuzzState & BuzzActions>((set, get) => ({
     }),
 
   setHasBuzzed: (hasBuzzed) => set({ hasBuzzed }),
+  setAnsweredWrongThisQuestion: (wrong) => set({ answeredWrongThisQuestion: wrong }),
   setBuzzerEnabled: (enabled) => set({ buzzerEnabled: enabled }),
   setPaused: (paused) => set({ isPaused: paused, buzzerEnabled: !paused }),
   setGameOver: (isOver) => set({ isGameOver: isOver, buzzerEnabled: false }),
@@ -336,6 +341,7 @@ export const useBuzzStore = create<BuzzState & BuzzActions>((set, get) => ({
       totalQuestions: 0,
       buzzQueue: [],
       hasBuzzed: false,
+      answeredWrongThisQuestion: false,
       myQueuePosition: null,
       buzzerEnabled: false,
       isPaused: false,

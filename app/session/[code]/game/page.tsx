@@ -106,7 +106,6 @@ export default function GamePage() {
   const [isSkipping, setIsSkipping] = useState(false);
   const [showSkipConfirm, setShowSkipConfirm] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
-  const [hasAnsweredWrong, setHasAnsweredWrong] = useState(false);
   const [isResettingBuzzer, setIsResettingBuzzer] = useState(false);
   const [isPauseToggling, setIsPauseToggling] = useState(false);
   const [showBuzzOverlay, setShowBuzzOverlay] = useState(false);
@@ -126,6 +125,7 @@ export default function GamePage() {
     buzzQueue,
     isPaused,
     hasBuzzed,
+    answeredWrongThisQuestion,
     setHasBuzzed,
     setBuzzQueue,
     fetchSession,
@@ -226,9 +226,6 @@ export default function GamePage() {
           }
           break;
         case 'answer_validated':
-          if (!event.isCorrect && event.playerId === user?.id) {
-            setHasAnsweredWrong(true);
-          }
           break;
         case 'game_over':
           router.replace(`/session/${code}/results`);
@@ -321,10 +318,9 @@ export default function GamePage() {
     }
   }, [session?.status, code]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Reset buzz lock and wrong-answer flag when question changes
+  // Reset buzz lock when question changes
   useEffect(() => {
     buzzLockRef.current = false;
-    setHasAnsweredWrong(false);
   }, [currentQuestion?.id]);
 
   const handleBuzz = useCallback(async () => {
@@ -717,7 +713,7 @@ export default function GamePage() {
           <div className="px-4 py-3 flex justify-center">
             <BuzzerButton
               onBuzz={handleBuzz}
-              disabled={isSubmitting || isPaused || actualHasBuzzed || hasAnsweredWrong}
+              disabled={isSubmitting || isPaused || actualHasBuzzed || answeredWrongThisQuestion}
               hasBuzzed={actualHasBuzzed}
               queuePosition={queuePosition >= 0 ? queuePosition + 1 : null}
             />
