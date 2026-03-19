@@ -661,7 +661,7 @@ export default function LobbyPage() {
   }
 
   return (
-    <SafeScreen style={{ backgroundColor: '#0D0921' }}>
+    <SafeScreen style={{ backgroundColor: '#120d2d' }}>
       <style>{ARCADE_CSS}</style>
 
       {/* ── Fixed Background ── */}
@@ -681,7 +681,7 @@ export default function LobbyPage() {
           position: 'sticky', top: 0, zIndex: 20,
           padding: '24px 16px 14px',
           borderBottom: '1px solid #5B3E9022',
-          background: 'linear-gradient(to bottom, #0D0921 60%, transparent)',
+          background: 'linear-gradient(to bottom, #120d2d 60%, transparent)',
         }}
       >
         <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
