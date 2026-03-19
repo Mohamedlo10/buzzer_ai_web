@@ -11,8 +11,8 @@ import {
 
 import { SessionConfigForm } from '~/components/session/SessionConfigForm';
 import { FriendshipButton } from '~/components/ui/FriendshipButton';
-import { QRCodeModal } from '~/components/ui/QRCodeModal';
 import { useAuthStore } from '~/stores/useAuthStore';
+import * as qrcodeApi from '~/lib/api/qrcode';
 import * as roomsApi from '~/lib/api/rooms';
 import * as friendsApi from '~/lib/api/friends';
 import * as sessionsApi from '~/lib/api/sessions';
@@ -26,46 +26,72 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; 
   RESULTS:    { label: 'Terminée',     color: '#C0C0C0', bg: '#C0C0C020', icon: Trophy },
 };
 
-// ── Room Code Card ──────────────────────────────────────────────────────────
+// ── Room Code Card (with inline QR) ─────────────────────────────────────────
 
 function RoomCodeCard({
   code,
+  qrImage,
+  qrLoading,
   onCopy,
-  onShowQR,
+  onShare,
 }: {
   code: string;
+  qrImage: string | null;
+  qrLoading: boolean;
   onCopy: () => void;
-  onShowQR?: () => void;
+  onShare: () => void;
 }) {
   return (
     <div className="px-4 pt-4">
       <div className="bg-[#342D5B] rounded-3xl border border-[#3E3666] p-6 flex flex-col items-center">
-        <div className="flex items-center gap-2 mb-3">
-          <Hash size={16} color="#00D397" />
-          <span className="text-white/50 text-sm font-medium uppercase tracking-wider">
+        {/* QR Code */}
+        <div className="mb-5">
+          {qrLoading ? (
+            <div className="w-52 h-52 rounded-2xl bg-[#292349] flex flex-col items-center justify-center">
+              <div className="w-8 h-8 border-2 border-[#00D397] border-t-transparent rounded-full animate-spin" />
+              <p className="text-white/40 text-xs mt-3">Chargement...</p>
+            </div>
+          ) : qrImage ? (
+            <div className="bg-white p-3 rounded-2xl shadow-lg">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={qrImage} alt="QR Code" className="w-52 h-52 object-contain" />
+            </div>
+          ) : (
+            <div className="w-52 h-52 rounded-2xl bg-[#292349] flex flex-col items-center justify-center border border-dashed border-[#3E3666]">
+              <QrCode size={40} color="#FFFFFF20" />
+              <p className="text-white/30 text-xs mt-2">Indisponible</p>
+            </div>
+          )}
+        </div>
+
+        {/* Code below QR */}
+        <div className="flex items-center gap-2 mb-1">
+          <Hash size={14} color="#00D397" />
+          <span className="text-white/50 text-xs font-medium uppercase tracking-wider">
             Code de la salle
           </span>
         </div>
-        <p className="text-white text-4xl font-bold text-center tracking-[6px] mb-4 select-all">
+        <p className="text-white text-4xl font-bold text-center tracking-[6px] mb-1 select-all">
           {code}
         </p>
-        <div className="flex gap-3">
+        <p className="text-white/30 text-xs mb-5">Scannez ou partagez le code</p>
+
+        {/* Actions */}
+        <div className="flex gap-3 w-full">
           <button
             onClick={onCopy}
-            className="flex items-center bg-[#00D39720] px-6 py-3 rounded-2xl hover:bg-[#00D39730] transition-colors"
+            className="flex-1 flex items-center justify-center bg-[#00D39720] px-4 py-3 rounded-2xl hover:bg-[#00D39730] transition-colors"
           >
-            <Copy size={18} color="#00D397" />
+            <Copy size={17} color="#00D397" />
             <span className="text-[#00D397] font-semibold ml-2">Copier</span>
           </button>
-          {onShowQR && (
-            <button
-              onClick={onShowQR}
-              className="flex items-center bg-[#FFD70020] border border-[#FFD70040] px-6 py-3 rounded-2xl hover:bg-[#FFD70030] transition-colors"
-            >
-              <QrCode size={18} color="#FFD700" />
-              <span className="text-[#FFD700] font-semibold ml-2">QR</span>
-            </button>
-          )}
+          <button
+            onClick={onShare}
+            className="flex-1 flex items-center justify-center bg-[#3E3666] px-4 py-3 rounded-2xl hover:bg-[#4E4676] transition-colors"
+          >
+            <UserPlus size={17} color="#FFFFFF" />
+            <span className="text-white font-semibold ml-2">Partager</span>
+          </button>
         </div>
       </div>
     </div>
@@ -331,7 +357,8 @@ export default function RoomDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showConfigModal, setShowConfigModal] = useState(false);
-  const [showQRModal, setShowQRModal] = useState(false);
+  const [qrImage, setQrImage] = useState<string | null>(null);
+  const [qrLoading, setQrLoading] = useState(false);
 
   const user = useAuthStore((state) => state.user);
   const room = roomData?.room;
@@ -358,9 +385,27 @@ export default function RoomDetailPage() {
     }
   }, [roomId]);
 
+  const loadQR = useCallback(async (roomId: string) => {
+    setQrLoading(true);
+    try {
+      const blob = await qrcodeApi.getRoomQR(roomId);
+      const reader = new FileReader();
+      reader.onloadend = () => setQrImage(reader.result as string);
+      reader.readAsDataURL(blob);
+    } catch {
+      // silently fail — inline fallback shown
+    } finally {
+      setQrLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     loadRoom();
   }, [loadRoom]);
+
+  useEffect(() => {
+    if (roomData?.room?.id) loadQR(roomData.room.id);
+  }, [roomData?.room?.id, loadQR]);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -395,8 +440,18 @@ export default function RoomDetailPage() {
 
   const handleCopyCode = async () => {
     if (!room) return;
-    await navigator.clipboard.writeText(room.code);
+    try { await navigator.clipboard.writeText(room.code); } catch { /* fallback */ }
     window.alert(`Le code ${room.code} a été copié.`);
+  };
+
+  const handleShare = async () => {
+    if (!room) return;
+    const msg = `Rejoins ma salle BuzzMaster! Code: ${room.code}`;
+    if (navigator.share) {
+      try { await navigator.share({ title: 'Invitation BuzzMaster', text: msg }); } catch { /* cancelled */ }
+    } else {
+      await navigator.clipboard.writeText(msg);
+    }
   };
 
   const handleSendFriendRequest = async (targetUserId: string, _username: string) => {
@@ -515,11 +570,13 @@ export default function RoomDetailPage() {
       </div>
 
       <div className="overflow-y-auto">
-        {/* Room Code */}
+        {/* Room Code + QR */}
         <RoomCodeCard
           code={room.code}
+          qrImage={qrImage}
+          qrLoading={qrLoading}
           onCopy={handleCopyCode}
-          onShowQR={() => setShowQRModal(true)}
+          onShare={handleShare}
         />
 
         {/* Active Sessions */}
@@ -711,16 +768,6 @@ export default function RoomDetailPage() {
 
         <div className="h-8" />
       </div>
-
-      {/* QR Code Modal */}
-      <QRCodeModal
-        visible={showQRModal}
-        onClose={() => setShowQRModal(false)}
-        type="room"
-        id={room?.id || ''}
-        code={room?.code}
-        title={room?.name || 'Salle'}
-      />
 
       {/* Session Config Modal */}
       {showConfigModal && (
