@@ -887,7 +887,7 @@ export default function LobbyPage() {
                 </div>
               ))}
               {Array.from({ length: Math.min(5, Math.max(0, session.maxPlayers - players.length)) }).map((_, i) => (
-                <div key={`slot-${i}`} style={{ width: 28, height: 28, borderRadius: '50%', border: '2px dashed #1E1E2E', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div key={`slot-${i}`} style={{ width: 28, height: 28, borderRadius: '50%', border: '2px dashed #3c3c4d', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#1E1E2E' }} />
                 </div>
               ))}
