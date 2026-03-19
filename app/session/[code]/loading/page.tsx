@@ -203,6 +203,31 @@ export default function LoadingPage() {
           </p>
         </div>
 
+        {/* Rule explainer */}
+        <div className="mt-8 w-full max-w-sm">
+          <div className="p-4 bg-[#3E3666] rounded-xl border border-white/10">
+            <p className="text-white font-semibold text-sm mb-2">Règle du buzz anticipé</p>
+            <p className="text-white/70 text-sm leading-relaxed">
+              Si un joueur buzz avant que le modérateur de la salle ait fini de lire la question et qu&apos;il répond
+              faux, une pénalité de points est appliquée.
+            </p>
+
+            <div className="mt-3 space-y-2">
+              <div className="p-2 rounded-lg bg-[#D5442F1A] border border-[#D5442F40]">
+                <p className="text-[#FF8A7A] text-xs font-semibold">Faux avec pénalité</p>
+                <p className="text-white/70 text-xs">Buzz trop tôt + mauvaise réponse = retrait de points.</p>
+              </div>
+
+              <div className="p-2 rounded-lg bg-[#00D39714] border border-[#00D39740]">
+                <p className="text-[#00D397] text-xs font-semibold">Faux sans pénalité</p>
+                <p className="text-white/70 text-xs">
+                  Mauvaise réponse après la lecture complète de la question = pas de retrait de points.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Error display */}
         {error && !error.includes('secours') && (
           <div className="mt-8 w-full max-w-sm">
