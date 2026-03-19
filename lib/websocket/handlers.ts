@@ -145,13 +145,10 @@ export function handleWSEvent(event: WSEvent, currentUserId?: string): void {
         useGameStore.getState().setBuzzQueue(newQueue);
         useBuzzStore.getState().setBuzzQueue(newQueue);
         
-        // Reset hasBuzzed so the wrong player can buzz again
-        if (currentUserId && event.playerId === currentUserId) {
-          useGameStore.getState().setHasBuzzed(false);
-          useBuzzStore.getState().setHasBuzzed(false);
-        }
-        
-        // Keep buzzer enabled in both stores
+        // hasBuzzed intentionally NOT reset here: the wrong player stays blocked
+        // until buzzer_reset or question_start — resetting here would let them buzz
+        // again and receive AlreadyBuzzedException from the backend.
+        // Only re-enable the buzzer for OTHER players who haven't buzzed yet.
         useGameStore.getState().setBuzzerEnabled(true);
         useBuzzStore.getState().setBuzzerEnabled(true);
       }
