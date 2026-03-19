@@ -105,6 +105,7 @@ export default function GamePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSkipping, setIsSkipping] = useState(false);
   const [showSkipConfirm, setShowSkipConfirm] = useState(false);
+  const [pendingWrong, setPendingWrong] = useState<{ applyPenalty: boolean } | null>(null);
   const [isValidating, setIsValidating] = useState(false);
   const [isResettingBuzzer, setIsResettingBuzzer] = useState(false);
   const [isPauseToggling, setIsPauseToggling] = useState(false);
@@ -789,21 +790,17 @@ export default function GamePage() {
                         )}
                       </button>
                       <button
-                        onClick={() => handleValidate(false, true)}
+                        onClick={() => setPendingWrong({ applyPenalty: true })}
                         disabled={isValidating}
                         className="flex-1 py-3 rounded-xl bg-[#D5442F] flex items-center justify-center hover:bg-[#B53320] transition-colors disabled:opacity-60"
                       >
-                        {isValidating ? (
-                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                        ) : (
-                          <div className="flex flex-row items-center">
-                            <XCircle size={18} color="#FFFFFF" />
-                            <span className="text-white font-bold ml-1.5">Faux</span>
-                          </div>
-                        )}
+                        <div className="flex flex-row items-center">
+                          <XCircle size={18} color="#FFFFFF" />
+                          <span className="text-white font-bold ml-1.5">Faux</span>
+                        </div>
                       </button>
                       <button
-                        onClick={() => handleValidate(false, false)}
+                        onClick={() => setPendingWrong({ applyPenalty: false })}
                         disabled={isValidating}
                         className="px-3 py-3 rounded-xl bg-[#3E3666] flex items-center justify-center hover:bg-[#4E4676] transition-colors disabled:opacity-60"
                       >
@@ -1012,6 +1009,19 @@ export default function GamePage() {
           </div>
         </div>
       </div>
+      <ConfirmModal
+        open={pendingWrong !== null}
+        title={pendingWrong?.applyPenalty ? 'Faux avec pénalité ?' : 'Faux sans pénalité ?'}
+        message={pendingWrong?.applyPenalty
+          ? `${buzzQueue[0]?.playerName ?? 'Le joueur'} sera pénalisé et retiré de la file d'attente.`
+          : `${buzzQueue[0]?.playerName ?? 'Le joueur'} sera retiré de la file sans perdre de points.`}
+        confirmLabel={pendingWrong?.applyPenalty ? 'Faux' : 'Sans pénalité'}
+        cancelLabel="Annuler"
+        confirmColor="#D5442F"
+        icon={<XCircle size={24} color="#D5442F" />}
+        onConfirm={() => { const p = pendingWrong; setPendingWrong(null); if (p) handleValidate(false, p.applyPenalty); }}
+        onCancel={() => setPendingWrong(null)}
+      />
       <ConfirmModal
         open={showSkipConfirm}
         title="Passer la question ?"
