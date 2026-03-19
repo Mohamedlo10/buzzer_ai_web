@@ -39,6 +39,7 @@ import { useGameSocket } from '~/lib/websocket/useGameSocket';
 import { appStorage } from '~/lib/utils/storage';
 import * as roomsApi from '~/lib/api/rooms';
 import * as sessionsApi from '~/lib/api/sessions';
+import { getUserProfile } from '~/lib/api/users';
 import { Slider } from '~/components/ui/Slider';
 import type { RoomInfo, PlayerResponse, TeamResponse } from '~/types/api';
 
@@ -113,6 +114,7 @@ const ARCADE_CSS = `
 // ─── ArcadePlayerCard ─────────────────────────────────────────────────────────
 function ArcadePlayerCard({
   player,
+  avatarUrl,
   isCurrentUser,
   isSessionManager,
   onKick,
@@ -121,6 +123,7 @@ function ArcadePlayerCard({
   isKicking,
 }: {
   player: PlayerResponse;
+  avatarUrl?: string | null;
   isCurrentUser: boolean;
   isSessionManager: boolean;
   onKick?: (id: string, name: string) => void;
@@ -146,42 +149,36 @@ function ArcadePlayerCard({
           : '#342D5B',
       }}
     >
-      {/* Hexagon avatar */}
+      {/* Avatar */}
       <div style={{ position: 'relative', marginRight: 12, flexShrink: 0 }}>
         <div
           style={{
-            clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)',
             width: 52,
             height: 52,
+            borderRadius: '50%',
             padding: 2,
             background: player.isManager
               ? 'linear-gradient(135deg, #FFD700, #FF8C42)'
               : isCurrentUser
               ? 'linear-gradient(135deg, #00D397, #00B383)'
-              : 'linear-gradient(135deg, #4E4676, #968fb6)',
+              : 'linear-gradient(135deg, #4E4676, #3E3666)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
+            boxShadow: isCurrentUser
+              ? '0 0 12px #00D39740'
+              : player.isManager
+              ? '0 0 12px #FFD70040'
+              : 'none',
           }}
         >
-          <div
-            style={{
-              clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)',
-              width: '100%',
-              height: '100%',
-              background: '#292349',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              overflow: 'hidden',
-            }}
-          >
-            {player.isSpectator ? (
+          {player.isSpectator ? (
+            <div style={{ width: 46, height: 46, borderRadius: '50%', background: '#3E3666', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Eye size={18} color="#FFD700" />
-            ) : (
-              <Avatar avatarUrl={player.avatarUrl} username={player.name} size={46} />
-            )}
-          </div>
+            </div>
+          ) : (
+            <Avatar avatarUrl={avatarUrl ?? player.avatarUrl} username={player.name} size={46} />
+          )}
         </div>
         {player.isManager && (
           <div
@@ -367,6 +364,7 @@ function ArcadeTeamsSection({
   currentPlayerId,
   isManager,
   userId,
+  avatarMap,
   onChangeTeam,
   onManagerReassign,
   orbitronClass,
@@ -376,6 +374,7 @@ function ArcadeTeamsSection({
   currentPlayerId: string | null;
   isManager: boolean;
   userId?: string;
+  avatarMap: Record<string, string | null>;
   onChangeTeam: () => void;
   onManagerReassign: (id: string, name: string) => void;
   orbitronClass: string;
@@ -409,7 +408,7 @@ function ArcadeTeamsSection({
               const isMe = member.id === currentPlayerId;
               return (
                 <div key={member.id} style={{ padding: '6px 20px', display: 'flex', alignItems: 'center', gap: 10, background: isMe ? '#00D39706' : 'transparent' }}>
-                  <Avatar avatarUrl={member.avatarUrl} username={member.name} size={26} borderColor={isMe ? '#00D397' : undefined} />
+                  <Avatar avatarUrl={member.userId ? (avatarMap[member.userId] ?? member.avatarUrl) : member.avatarUrl} username={member.name} size={26} borderColor={isMe ? '#00D397' : undefined} />
                   <span className={rajdhaniClass} style={{ flex: 1, fontSize: 13, color: isMe ? '#00D397' : '#E8E8F070', fontWeight: isMe ? 600 : 400 }}>
                     {member.name}{isMe ? ' (vous)' : ''}
                   </span>
@@ -449,6 +448,7 @@ export default function LobbyPage() {
   const [showQLimit, setShowQLimit] = useState(false);
   const [adjustedQPerCat, setAdjustedQPerCat] = useState(1);
   const [isSavingConfig, setIsSavingConfig] = useState(false);
+  const [avatarMap, setAvatarMap] = useState<Record<string, string | null>>({});
 
   const user = useAuthStore((state) => state.user);
   const { session, players, teams, fetchSession, startSession, deleteSession, isStarting, leaveSession } = useBuzzStore();
@@ -500,6 +500,22 @@ export default function LobbyPage() {
     else if (session?.status === 'PLAYING') router.replace(`/session/${code}/game`);
     else if (session?.status === 'RESULTS') router.replace(`/session/${code}/results`);
   }, [session?.status, code]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!players.length) return;
+    players.forEach((player) => {
+      if (!player.userId) return;
+      if (player.userId === user?.id) {
+        setAvatarMap((prev) => ({ ...prev, [player.userId]: user.avatarUrl ?? null }));
+        return;
+      }
+      if (player.userId in avatarMap) return;
+      setAvatarMap((prev) => ({ ...prev, [player.userId]: null }));
+      getUserProfile(player.userId).then((profile) => {
+        setAvatarMap((prev) => ({ ...prev, [player.userId]: profile.avatarUrl ?? null }));
+      }).catch(() => {});
+    });
+  }, [players]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleCopyCode = async () => {
     if (!code) return;
@@ -968,22 +984,13 @@ export default function LobbyPage() {
                     </div>
                     <div
                       style={{
-                        clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)',
-                        width: 40, height: 40, padding: 2,
+                        width: 44, height: 44, borderRadius: '50%', padding: 2, flexShrink: 0,
                         background: 'linear-gradient(135deg, #FFD700, #FF8C42)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        flexShrink: 0,
+                        boxShadow: '0 0 12px #FFD70050',
                       }}
                     >
-                      <div
-                        style={{
-                          clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)',
-                          width: '100%', height: '100%',
-                          background: '#292349', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
-                        }}
-                      >
-                        <Avatar avatarUrl={managerPlayer.avatarUrl} username={managerPlayer.name} size={36} />
-                      </div>
+                      <Avatar avatarUrl={managerPlayer.avatarUrl} username={managerPlayer.name} size={40} />
                     </div>
                     <div>
                       <p className={orbitron.className} style={{ color: '#FFD700', fontSize: 15, fontWeight: 900, letterSpacing: 1 }}>
@@ -1092,6 +1099,7 @@ export default function LobbyPage() {
             currentPlayerId={currentPlayer?.id ?? null}
             isManager={isManager}
             userId={user?.id}
+            avatarMap={avatarMap}
             onChangeTeam={handleChangeTeam}
             onManagerReassign={handleManagerReassign}
             orbitronClass={orbitron.className}
@@ -1112,6 +1120,7 @@ export default function LobbyPage() {
               <ArcadePlayerCard
                 key={player.id}
                 player={player}
+                avatarUrl={player.userId ? avatarMap[player.userId] : null}
                 isCurrentUser={player.userId === user?.id}
                 isSessionManager={isManager}
                 onKick={isManager ? handleKickPlayer : undefined}
