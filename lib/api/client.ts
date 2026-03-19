@@ -44,12 +44,12 @@ export const apiClientLongTimeout = axios.create({
 
 apiClient.interceptors.request.use(async (config: InternalAxiosRequestConfig) => {
   const token = await tokenStorage.getAccessToken();
-  console.log('🔐 [ApiClient] Making request:', {
-    method: config.method?.toUpperCase(),
-    url: `${config.baseURL}${config.url}`,
-    hasToken: !!token,
-    tokenPreview: token ? `${token.slice(0, 20)}...` : null
-  });
+  // console.log('🔐 [ApiClient] Making request:', {
+  //   method: config.method?.toUpperCase(),
+  //   url: `${config.baseURL}${config.url}`,
+  //   hasToken: !!token,
+  //   tokenPreview: token ? `${token.slice(0, 20)}...` : null
+  // });
   
   if (token && config.headers) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -94,11 +94,11 @@ function processQueue(error: unknown, token: string | null) {
 
 apiClient.interceptors.response.use(
   (response) => {
-    console.log('✅ [ApiClient] Request successful:', {
-      method: response.config.method?.toUpperCase(),
-      url: response.config.url,
-      status: response.status
-    });
+    // console.log('✅ [ApiClient] Request successful:', {
+    //   method: response.config.method?.toUpperCase(),
+    //   url: response.config.url,
+    //   status: response.status
+    // });
     return response;
   },
   async (error: AxiosError) => {
@@ -126,7 +126,7 @@ apiClient.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    console.log(`🔄 [ApiClient] Attempting token refresh for ${status} error...`);
+    // console.log(`🔄 [ApiClient] Attempting token refresh for ${status} error...`);
 
     if (isRefreshing) {
       return new Promise<string>((resolve, reject) => {
@@ -148,14 +148,14 @@ apiClient.interceptors.response.use(
         throw new Error('No refresh token');
       }
 
-      console.log('🔄 [ApiClient] Calling refresh endpoint...');
+      // console.log('🔄 [ApiClient] Calling refresh endpoint...');
       const { data } = await axios.post<TokenResponse>(
         `${BASE_URL}/api/auth/refresh`,
         { refreshToken },
         { headers: { 'Content-Type': 'application/json' } },
       );
 
-      console.log('✅ [ApiClient] Token refresh successful');
+      // console.log('✅ [ApiClient] Token refresh successful');
       await tokenStorage.setAccessToken(data.accessToken);
 
       processQueue(null, data.accessToken);

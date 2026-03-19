@@ -54,8 +54,8 @@ const ARCADE_CSS = `
     right: -80%;
     height: 280%;
     background-image:
-      linear-gradient(rgba(120,90,220,0.09) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(120,90,220,0.09) 1px, transparent 1px);
+      linear-gradient(rgba(0,211,151,0.07) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,211,151,0.07) 1px, transparent 1px);
     background-size: 56px 56px;
     transform: perspective(320px) rotateX(65deg);
     transform-origin: 50% 100%;
@@ -71,8 +71,8 @@ const ARCADE_CSS = `
     50%       { opacity: 0.2; }
   }
   @keyframes neon-code {
-    0%, 100% { text-shadow: 0 0 4px #00FF88, 0 0 14px #00FF8870, 0 0 28px #00FF8840; }
-    50%       { text-shadow: 0 0 8px #00FF88, 0 0 22px #00FF88,   0 0 44px #00FF8860; }
+    0%, 100% { text-shadow: 0 0 4px #00D397, 0 0 14px #00D39770, 0 0 28px #00D39740; }
+    50%       { text-shadow: 0 0 8px #00D397, 0 0 22px #00D397,   0 0 44px #00D39760; }
   }
   @keyframes dot-pop {
     0%, 80%, 100% { transform: scale(0.55); opacity: 0.25; }
@@ -87,8 +87,8 @@ const ARCADE_CSS = `
     50%       { opacity: 0.65; }
   }
   @keyframes you-glow {
-    0%, 100% { box-shadow: 0 0 0 1px #00FF88, 0 0 14px #00FF8820, inset 0 0 12px #00FF8806; }
-    50%       { box-shadow: 0 0 0 2px #00FF88, 0 0 28px #00FF8840, inset 0 0 22px #00FF8810; }
+    0%, 100% { box-shadow: 0 0 0 1px #00D397, 0 0 14px #00D39720, inset 0 0 12px #00D39706; }
+    50%       { box-shadow: 0 0 0 2px #00D397, 0 0 28px #00D39740, inset 0 0 22px #00D39710; }
   }
   .a-blink     { animation: blink-live    1.1s ease-in-out infinite; }
   .a-neon-code { animation: neon-code     2.5s ease-in-out infinite; }
@@ -102,8 +102,8 @@ const ARCADE_CSS = `
     background: repeating-linear-gradient(
       0deg,
       transparent, transparent 2px,
-      rgba(0,255,136,0.018) 2px,
-      rgba(0,255,136,0.018) 4px
+      rgba(0,211,151,0.025) 2px,
+      rgba(0,211,151,0.025) 4px
     );
     pointer-events: none;
     border-radius: inherit;
@@ -138,12 +138,12 @@ function ArcadePlayerCard({
         padding: '14px 16px',
         borderRadius: 16,
         marginBottom: 10,
-        border: `1px solid ${isCurrentUser ? '#00FF88' : player.isManager ? '#FFD700' : '#1E1838'}`,
+        border: `1px solid ${isCurrentUser ? '#00D397' : player.isManager ? '#FFD700' : '#3E3666'}`,
         background: isCurrentUser
-          ? 'linear-gradient(135deg, #001A0E 0%, #0D0921 100%)'
+          ? 'linear-gradient(135deg, #00D39718 0%, #342D5B 100%)'
           : player.isManager
-          ? 'linear-gradient(135deg, #150F00 0%, #0D0921 100%)'
-          : '#130F26',
+          ? 'linear-gradient(135deg, #FFD70012 0%, #342D5B 100%)'
+          : '#342D5B',
       }}
     >
       {/* Hexagon avatar */}
@@ -157,8 +157,8 @@ function ArcadePlayerCard({
             background: player.isManager
               ? 'linear-gradient(135deg, #FFD700, #FF8C42)'
               : isCurrentUser
-              ? 'linear-gradient(135deg, #00FF88, #00B377)'
-              : 'linear-gradient(135deg, #3A3A5E, #1E1E30)',
+              ? 'linear-gradient(135deg, #00D397, #00B383)'
+              : 'linear-gradient(135deg, #4E4676, #342D5B)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -169,7 +169,7 @@ function ArcadePlayerCard({
               clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)',
               width: '100%',
               height: '100%',
-              background: '#0D0921',
+              background: '#292349',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -202,7 +202,7 @@ function ArcadePlayerCard({
               fontWeight: 700,
               fontSize: 15,
               letterSpacing: 0.4,
-              color: isCurrentUser ? '#00FF88' : player.isManager ? '#FFD700' : '#E8E8F0',
+              color: isCurrentUser ? '#00D397' : player.isManager ? '#FFD700' : '#E8E8F0',
             }}
           >
             {player.name}
@@ -212,7 +212,7 @@ function ArcadePlayerCard({
               className={rajdhani.className}
               style={{
                 fontSize: 10, fontWeight: 700, padding: '2px 5px', borderRadius: 4,
-                background: '#00FF8818', color: '#00FF88', border: '1px solid #00FF8840', letterSpacing: 1,
+                background: '#00D39718', color: '#00D397', border: '1px solid #00D39740', letterSpacing: 1,
               }}
             >
               VOUS
@@ -250,7 +250,7 @@ function ArcadePlayerCard({
                 className={rajdhani.className}
                 style={{
                   fontSize: 11, padding: '2px 8px', borderRadius: 999,
-                  background: '#1E1838', color: '#8B7FC7', border: '1px solid #2A2244',
+                  background: '#3E3666', color: '#8B7FC7', border: '1px solid #4E4676',
                 }}
               >
                 {cat}
@@ -268,7 +268,7 @@ function ArcadePlayerCard({
               onClick={() => onEditCategories(player)}
               style={{
                 width: 32, height: 32, borderRadius: 8,
-                background: '#1E1838', border: '1px solid #2A2244',
+                background: '#3E3666', border: '1px solid #4E4676',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
               }}
             >
@@ -300,7 +300,7 @@ function ArcadePlayerCard({
           onClick={onEditSelf}
           style={{
             width: 32, height: 32, borderRadius: 8, marginLeft: 8,
-            background: '#1E1838', border: '1px solid #2A2244',
+            background: '#3E3666', border: '1px solid #4E4676',
             display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
           }}
         >
@@ -325,7 +325,7 @@ function ManualQuestionsAlert({
 }) {
   const has = totalQuestions > 0;
   return (
-    <div style={{ borderRadius: 14, background: '#130F26', border: '1px solid #FFD70025', marginBottom: 12, overflow: 'hidden' }}>
+    <div style={{ borderRadius: 14, background: '#342D5B', border: '1px solid #FFD70025', marginBottom: 12, overflow: 'hidden' }}>
       <div style={{ padding: '12px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{ width: 34, height: 34, borderRadius: 9, background: '#FFD70015', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -383,8 +383,8 @@ function ArcadeTeamsSection({
 }) {
   return (
     <div style={{ padding: '20px 16px 0' }}>
-      <div style={{ borderRadius: 18, overflow: 'hidden', background: '#130F26', border: '1px solid #1E1838' }}>
-        <div style={{ padding: '14px 20px', borderBottom: '1px solid #1E1838', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <div style={{ borderRadius: 18, overflow: 'hidden', background: '#342D5B', border: '1px solid #3E3666' }}>
+        <div style={{ padding: '14px 20px', borderBottom: '1px solid #3E3666', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <Trophy size={14} color="#4A90D9" />
             <span className={orbitronClass} style={{ color: '#E8E8F070', fontSize: 10, letterSpacing: 2, fontWeight: 700 }}>ÉQUIPES</span>
@@ -399,7 +399,7 @@ function ArcadeTeamsSection({
           )}
         </div>
         {teams.map((team, idx) => (
-          <div key={team.id} style={{ borderBottom: idx < teams.length - 1 ? '1px solid #1E1838' : 'none' }}>
+          <div key={team.id} style={{ borderBottom: idx < teams.length - 1 ? '1px solid #3E3666' : 'none' }}>
             <div style={{ padding: '10px 20px', display: 'flex', alignItems: 'center', gap: 10 }}>
               <div style={{ width: 9, height: 9, borderRadius: '50%', background: team.color ?? '#3A3A5E', boxShadow: `0 0 5px ${team.color ?? '#3A3A5E'}` }} />
               <span className={rajdhaniClass} style={{ flex: 1, color: '#E8E8F0', fontWeight: 600, fontSize: 14 }}>{team.name}</span>
@@ -408,15 +408,15 @@ function ArcadeTeamsSection({
             {team.members.map((member) => {
               const isMe = member.id === currentPlayerId;
               return (
-                <div key={member.id} style={{ padding: '6px 20px', display: 'flex', alignItems: 'center', gap: 10, background: isMe ? '#00FF8806' : 'transparent' }}>
-                  <Avatar avatarUrl={member.avatarUrl} username={member.name} size={26} borderColor={isMe ? '#00FF88' : undefined} />
-                  <span className={rajdhaniClass} style={{ flex: 1, fontSize: 13, color: isMe ? '#00FF88' : '#E8E8F070', fontWeight: isMe ? 600 : 400 }}>
+                <div key={member.id} style={{ padding: '6px 20px', display: 'flex', alignItems: 'center', gap: 10, background: isMe ? '#00D39706' : 'transparent' }}>
+                  <Avatar avatarUrl={member.avatarUrl} username={member.name} size={26} borderColor={isMe ? '#00D397' : undefined} />
+                  <span className={rajdhaniClass} style={{ flex: 1, fontSize: 13, color: isMe ? '#00D397' : '#E8E8F070', fontWeight: isMe ? 600 : 400 }}>
                     {member.name}{isMe ? ' (vous)' : ''}
                   </span>
                   {isManager && (
                     <button
                       onClick={() => onManagerReassign(member.id, member.name)}
-                      style={{ width: 26, height: 26, borderRadius: 6, background: '#1E1838', border: '1px solid #2A2244', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                      style={{ width: 26, height: 26, borderRadius: 6, background: '#3E3666', border: '1px solid #4E4676', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
                     >
                       <ChevronRight size={11} color="#E8E8F038" />
                     </button>
@@ -643,16 +643,16 @@ export default function LobbyPage() {
   // ── Loading ──
   if (!session) {
     return (
-      <SafeScreen style={{ backgroundColor: '#0D0921' }}>
+      <SafeScreen style={{ backgroundColor: '#292349' }}>
         <style>{ARCADE_CSS}</style>
         <div style={{ position: 'fixed', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
           <div className="arcade-grid" />
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
-          <div style={{ width: 72, height: 72, borderRadius: '50%', background: '#00FF8815', border: '2px solid #00FF8840', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
-            <Gamepad2 size={34} color="#00FF88" />
+          <div style={{ width: 72, height: 72, borderRadius: '50%', background: '#00D39715', border: '2px solid #00D39740', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+            <Gamepad2 size={34} color="#00D397" />
           </div>
-          <p className={orbitron.className} style={{ color: '#00FF88', fontSize: 16, fontWeight: 700, letterSpacing: 3 }}>
+          <p className={orbitron.className} style={{ color: '#00D397', fontSize: 16, fontWeight: 700, letterSpacing: 3 }}>
             CHARGEMENT...
           </p>
         </div>
@@ -668,11 +668,11 @@ export default function LobbyPage() {
       <div style={{ position: 'fixed', inset: 0, overflow: 'hidden', zIndex: 0, pointerEvents: 'none' }}>
         <div className="arcade-grid" />
         {/* Radial fade */}
-        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at center, transparent 20%, #0D0921 85%)' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at center, transparent 20%, #292349 85%)' }} />
         {/* Top / bottom fade */}
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, #0D0921 0%, transparent 25%, transparent 70%, #0D0921 100%)' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, #292349 0%, transparent 25%, transparent 70%, #292349 100%)' }} />
         {/* Edge vignette purple */}
-        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at center, transparent 45%, #6633AA0C 75%, #6633AA1A 100%)' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at center, transparent 50%, #1F1B3B80 85%, #1A1535 100%)' }} />
       </div>
 
       {/* ── Header ── */}
@@ -690,7 +690,7 @@ export default function LobbyPage() {
             onClick={() => { if (session?.roomId) router.replace(`/room/${session.roomId}`); else router.replace('/'); }}
             style={{
               width: 40, height: 40, borderRadius: '50%', marginRight: 12,
-              background: '#1E1838', border: '1px solid #2A2244',
+              background: '#3E3666', border: '1px solid #4E4676',
               display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
             }}
           >
@@ -706,10 +706,10 @@ export default function LobbyPage() {
               MATCH EN ATTENTE
             </h1>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 3 }}>
-              <div style={{ width: 6, height: 6, borderRadius: '50%', background: isConnected ? '#00FF88' : '#FF3A5C', boxShadow: isConnected ? '0 0 6px #00FF88' : '0 0 6px #FF3A5C' }} />
+              <div style={{ width: 6, height: 6, borderRadius: '50%', background: isConnected ? '#00D397' : '#FF3A5C', boxShadow: isConnected ? '0 0 6px #00D397' : '0 0 6px #FF3A5C' }} />
               <span
                 className={rajdhani.className}
-                style={{ fontSize: 10, letterSpacing: 2, color: isConnected ? '#00FF8890' : '#FF3A5C90', fontWeight: 600 }}
+                style={{ fontSize: 10, letterSpacing: 2, color: isConnected ? '#00D39790' : '#FF3A5C90', fontWeight: 600 }}
               >
                 {isConnected ? 'CONNECTÉ' : 'DÉCONNECTÉ'}
               </span>
@@ -750,11 +750,11 @@ export default function LobbyPage() {
             disabled={isRefreshing}
             style={{
               width: 36, height: 36, borderRadius: '50%',
-              background: '#1E1838', border: '1px solid #2A2244',
+              background: '#3E3666', border: '1px solid #4E4676',
               display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
             }}
           >
-            <RefreshCw size={14} color={isRefreshing ? '#00FF88' : '#E8E8F050'} className={isRefreshing ? 'animate-spin' : ''} />
+            <RefreshCw size={14} color={isRefreshing ? '#00D397' : '#E8E8F050'} className={isRefreshing ? 'animate-spin' : ''} />
           </button>
         </div>
       </div>
@@ -767,9 +767,9 @@ export default function LobbyPage() {
           <div
             style={{
               borderRadius: 18, overflow: 'hidden', position: 'relative',
-              background: '#070D07',
-              border: '1px solid #00FF8828',
-              boxShadow: '0 0 40px #00FF8808, inset 0 0 30px #00FF8804',
+              background: '#1E1A3A',
+              border: '1px solid #00D39730',
+              boxShadow: '0 0 40px #00D39708, inset 0 0 30px #00D39704',
             }}
           >
             <div className="scanline" />
@@ -777,21 +777,21 @@ export default function LobbyPage() {
               {/* Terminal dots */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
                 <div style={{ display: 'flex', gap: 5 }}>
-                  {['#FF3A5C', '#FFD700', '#00FF88'].map((c) => (
+                  {['#FF3A5C', '#FFD700', '#00D397'].map((c) => (
                     <div key={c} style={{ width: 9, height: 9, borderRadius: '50%', background: c }} />
                   ))}
                 </div>
-                <span className={rajdhani.className} style={{ color: '#00FF8855', fontSize: 10, letterSpacing: 2 }}>
+                <span className={rajdhani.className} style={{ color: '#00D39755', fontSize: 10, letterSpacing: 2 }}>
                   SESSION_CODE.exe
                 </span>
               </div>
 
               {/* Code */}
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 16 }}>
-                <span className={rajdhani.className} style={{ color: '#00FF8855', fontSize: 13, letterSpacing: 1 }}>&gt;_</span>
+                <span className={rajdhani.className} style={{ color: '#00D39755', fontSize: 13, letterSpacing: 1 }}>&gt;_</span>
                 <span
                   className={`${orbitron.className} a-neon-code`}
-                  style={{ fontSize: 46, fontWeight: 900, letterSpacing: 8, color: '#00FF88' }}
+                  style={{ fontSize: 46, fontWeight: 900, letterSpacing: 8, color: '#00D397' }}
                 >
                   {code}
                 </span>
@@ -804,12 +804,12 @@ export default function LobbyPage() {
                   style={{
                     flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
                     padding: '10px 0', borderRadius: 11, cursor: 'pointer',
-                    background: isCopied ? '#00FF8818' : '#1E1838',
-                    border: `1px solid ${isCopied ? '#00FF8850' : '#2A2244'}`,
+                    background: isCopied ? '#00D39718' : '#3E3666',
+                    border: `1px solid ${isCopied ? '#00D39750' : '#4E4676'}`,
                   }}
                 >
-                  {isCopied ? <Check size={15} color="#00FF88" /> : <Copy size={15} color="#E8E8F060" />}
-                  <span className={rajdhani.className} style={{ fontSize: 13, fontWeight: 600, letterSpacing: 1, color: isCopied ? '#00FF88' : '#E8E8F060' }}>
+                  {isCopied ? <Check size={15} color="#00D397" /> : <Copy size={15} color="#E8E8F060" />}
+                  <span className={rajdhani.className} style={{ fontSize: 13, fontWeight: 600, letterSpacing: 1, color: isCopied ? '#00D397' : '#E8E8F060' }}>
                     {isCopied ? 'COPIÉ' : 'COPIER'}
                   </span>
                 </button>
@@ -818,11 +818,11 @@ export default function LobbyPage() {
                   style={{
                     flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
                     padding: '10px 0', borderRadius: 11, cursor: 'pointer',
-                    background: '#00FF8812', border: '1px solid #00FF8838',
+                    background: '#00D39712', border: '1px solid #00D39738',
                   }}
                 >
-                  <Share2 size={15} color="#00FF88" />
-                  <span className={rajdhani.className} style={{ fontSize: 13, fontWeight: 600, letterSpacing: 1, color: '#00FF88' }}>PARTAGER</span>
+                  <Share2 size={15} color="#00D397" />
+                  <span className={rajdhani.className} style={{ fontSize: 13, fontWeight: 600, letterSpacing: 1, color: '#00D397' }}>PARTAGER</span>
                 </button>
                 <button
                   onClick={() => setShowQRModal(true)}
@@ -841,25 +841,25 @@ export default function LobbyPage() {
 
         {/* ── PLAYER COUNT BAR ── */}
         <div style={{ padding: '14px 16px 0' }}>
-          <div style={{ borderRadius: 16, padding: '14px 18px', background: '#130F26', border: '1px solid #1E1838' }}>
+          <div style={{ borderRadius: 16, padding: '14px 18px', background: '#342D5B', border: '1px solid #3E3666' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
               <span className={orbitron.className} style={{ fontSize: 9, fontWeight: 700, color: '#e8e8f0e8', letterSpacing: 2 }}>
                 JOUEURS CONNECTÉS
               </span>
               <span className={orbitron.className} style={{ fontSize: 14, fontWeight: 900 }}>
-                <span style={{ color: '#00FF88' }}>{players.length}</span>
+                <span style={{ color: '#00D397' }}>{players.length}</span>
                 <span style={{ color: '#E8E8F025' }}> / {session.maxPlayers}</span>
               </span>
             </div>
 
             {/* Bar */}
-            <div style={{ width: '100%', height: 5, borderRadius: 999, background: '#1E1838', marginBottom: 12, overflow: 'hidden' }}>
+            <div style={{ width: '100%', height: 5, borderRadius: 999, background: '#3E3666', marginBottom: 12, overflow: 'hidden' }}>
               <div
                 style={{
                   height: '100%', borderRadius: 999,
                   width: `${(players.length / session.maxPlayers) * 100}%`,
-                  background: 'linear-gradient(90deg, #00FF88, #00C877)',
-                  boxShadow: '0 0 8px #00FF8850',
+                  background: 'linear-gradient(90deg, #00D397, #00C877)',
+                  boxShadow: '0 0 8px #00D39750',
                   transition: 'width 0.6s ease',
                 }}
               />
@@ -873,8 +873,8 @@ export default function LobbyPage() {
                   title={p.name}
                   style={{
                     borderRadius: '50%',
-                    border: `2px solid ${p.isManager ? '#FFD700' : p.userId === user?.id ? '#00FF88' : '#2A2244'}`,
-                    boxShadow: p.isManager ? '0 0 6px #FFD70040' : p.userId === user?.id ? '0 0 6px #00FF8840' : 'none',
+                    border: `2px solid ${p.isManager ? '#FFD700' : p.userId === user?.id ? '#00D397' : '#4E4676'}`,
+                    boxShadow: p.isManager ? '0 0 6px #FFD70040' : p.userId === user?.id ? '0 0 6px #00D39740' : 'none',
                   }}
                 >
                   {p.isSpectator ? (
@@ -901,10 +901,10 @@ export default function LobbyPage() {
         {/* ── Room info ── */}
         {roomInfo && (
           <div style={{ padding: '10px 16px 0' }}>
-            <div style={{ padding: '10px 14px', borderRadius: 12, background: '#130F26', border: '1px solid #1E1838', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ padding: '10px 14px', borderRadius: 12, background: '#342D5B', border: '1px solid #3E3666', display: 'flex', alignItems: 'center', gap: 8 }}>
               <Hash size={12} color="#E8E8F030" />
               <span className={rajdhani.className} style={{ fontSize: 13, color: '#e8e8f0f5' }}>Salle :</span>
-              <span className={rajdhani.className} style={{ fontSize: 13, fontWeight: 600, color: '#00FF88' }}>{roomInfo.name}</span>
+              <span className={rajdhani.className} style={{ fontSize: 13, fontWeight: 600, color: '#00D397' }}>{roomInfo.name}</span>
             </div>
           </div>
         )}
@@ -915,8 +915,8 @@ export default function LobbyPage() {
             <div
               style={{
                 borderRadius: 20, padding: '22px 18px', position: 'relative', overflow: 'hidden',
-                background: 'linear-gradient(135deg, #180A2C 0%, #0D0921 100%)',
-                border: '1px solid #FF3A5C22',
+                background: '#342D5B',
+                border: '1px solid #FF3A5C30',
               }}
             >
               {/* Ambient glow */}
@@ -960,7 +960,7 @@ export default function LobbyPage() {
                     style={{
                       display: 'flex', alignItems: 'center', gap: 12,
                       padding: '12px 16px', borderRadius: 14, marginBottom: 14,
-                      background: '#FFD7000C', border: '1px solid #FFD70022',
+                      background: '#FFD70015', border: '1px solid #FFD70030',
                     }}
                   >
                     <div className="a-crown">
@@ -979,7 +979,7 @@ export default function LobbyPage() {
                         style={{
                           clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)',
                           width: '100%', height: '100%',
-                          background: '#1A0810', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
+                          background: '#292349', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
                         }}
                       >
                         <Avatar avatarUrl={managerPlayer.avatarUrl} username={managerPlayer.name} size={36} />
@@ -1023,22 +1023,22 @@ export default function LobbyPage() {
                 width: '100%', padding: '20px 0',
                 borderRadius: 18, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12,
                 cursor: isStarting ? 'not-allowed' : 'pointer',
-                background: canStart ? 'linear-gradient(135deg, #00FF88 0%, #00C877 100%)' : '#1E1838',
-                border: canStart ? 'none' : '1px solid #2A2244',
-                boxShadow: canStart ? '0 0 40px #00FF8830, 0 6px 24px #00FF8818' : 'none',
+                background: canStart ? 'linear-gradient(135deg, #00D397 0%, #00C877 100%)' : '#3E3666',
+                border: canStart ? 'none' : '1px solid #4E4676',
+                boxShadow: canStart ? '0 0 40px #00D39730, 0 6px 24px #00D39718' : 'none',
                 marginBottom: 10,
                 transition: 'transform 0.15s ease',
               }}
             >
               {isStarting ? (
                 <>
-                  <div style={{ width: 20, height: 20, border: '2.5px solid #0D0921', borderTopColor: 'transparent', borderRadius: '50%' }} className="animate-spin" />
-                  <span className={orbitron.className} style={{ fontSize: 18, fontWeight: 900, color: '#0D0921' }}>DÉMARRAGE...</span>
+                  <div style={{ width: 20, height: 20, border: '2.5px solid #292349', borderTopColor: 'transparent', borderRadius: '50%' }} className="animate-spin" />
+                  <span className={orbitron.className} style={{ fontSize: 18, fontWeight: 900, color: '#292349' }}>DÉMARRAGE...</span>
                 </>
               ) : (
                 <>
-                  <Play size={22} color={canStart ? '#0D0921' : '#E8E8F028'} fill={canStart ? '#0D0921' : '#E8E8F028'} />
-                  <span className={orbitron.className} style={{ fontSize: 18, fontWeight: 900, color: canStart ? '#0D0921' : '#E8E8F028', letterSpacing: 1 }}>
+                  <Play size={22} color={canStart ? '#292349' : '#E8E8F028'} fill={canStart ? '#292349' : '#E8E8F028'} />
+                  <span className={orbitron.className} style={{ fontSize: 18, fontWeight: 900, color: canStart ? '#292349' : '#E8E8F028', letterSpacing: 1 }}>
                     LANCER LA PARTIE
                   </span>
                 </>
@@ -1121,7 +1121,7 @@ export default function LobbyPage() {
               />
             ))
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '32px 0', borderRadius: 16, border: '1px dashed #1E1838' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '32px 0', borderRadius: 16, border: '1px dashed #3E3666' }}>
               <Users size={28} color="#E8E8F018" />
               <p className={rajdhani.className} style={{ marginTop: 10, fontSize: 12, color: '#E8E8F030', letterSpacing: 2 }}>EN ATTENTE DE JOUEURS...</p>
             </div>
@@ -1151,8 +1151,8 @@ export default function LobbyPage() {
       {/* ── Question Limit Modal ── */}
       {showQLimit && session && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: 20 }}>
-          <div style={{ width: '100%', maxWidth: 360, borderRadius: 24, overflow: 'hidden', background: '#130F26', border: '1px solid #FF3A5C35' }}>
-            <div style={{ padding: '18px 20px 14px', borderBottom: '1px solid #1E1838', display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{ width: '100%', maxWidth: 360, borderRadius: 24, overflow: 'hidden', background: '#342D5B', border: '1px solid #FF3A5C35' }}>
+            <div style={{ padding: '18px 20px 14px', borderBottom: '1px solid #3E3666', display: 'flex', alignItems: 'center', gap: 12 }}>
               <div style={{ width: 38, height: 38, borderRadius: 11, background: '#FF3A5C12', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <TrendingUp size={18} color="#FF3A5C" />
               </div>
@@ -1170,7 +1170,7 @@ export default function LobbyPage() {
                 const maxAllowed = Math.max(1, Math.floor(Q_LIMIT / (cats * realPlayers)));
                 return (
                   <>
-                    <div style={{ borderRadius: 14, padding: '12px 14px', background: '#0D0921', marginBottom: 14 }}>
+                    <div style={{ borderRadius: 14, padding: '12px 14px', background: '#292349', marginBottom: 14 }}>
                       <p className={rajdhani.className} style={{ fontSize: 9, color: '#E8E8F038', letterSpacing: 2, marginBottom: 10 }}>SITUATION ACTUELLE</p>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, flexWrap: 'wrap' }}>
                         {[
@@ -1185,7 +1185,7 @@ export default function LobbyPage() {
                           item.val === null ? (
                             <span key={i} style={{ color: item.color, fontWeight: 700, fontSize: 14 }}>{item.label}</span>
                           ) : (
-                            <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '6px 10px', borderRadius: 9, background: item.bg ?? '#130F26' }}>
+                            <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '6px 10px', borderRadius: 9, background: item.bg ?? '#342D5B' }}>
                               <span style={{ color: item.color, fontWeight: 700, fontSize: 17 }}>{item.val}</span>
                               <span style={{ color: '#E8E8F038', fontSize: 9 }}>{item.label}</span>
                             </div>
@@ -1198,13 +1198,13 @@ export default function LobbyPage() {
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
                         <p className={rajdhani.className} style={{ color: '#E8E8F0', fontWeight: 600, fontSize: 13 }}>Questions par catégorie</p>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                          <button onClick={() => setAdjustedQPerCat((v) => Math.max(1, v - 1))} style={{ width: 28, height: 28, borderRadius: 8, background: '#1E1838', border: '1px solid #2A2244', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                          <button onClick={() => setAdjustedQPerCat((v) => Math.max(1, v - 1))} style={{ width: 28, height: 28, borderRadius: 8, background: '#3E3666', border: '1px solid #4E4676', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
                             <Minus size={13} color="#E8E8F0" />
                           </button>
-                          <div style={{ padding: '4px 12px', borderRadius: 8, background: '#00FF8812', minWidth: 44, textAlign: 'center' }}>
-                            <span style={{ color: '#00FF88', fontWeight: 700, fontSize: 16 }}>{adjustedQPerCat}</span>
+                          <div style={{ padding: '4px 12px', borderRadius: 8, background: '#00D39712', minWidth: 44, textAlign: 'center' }}>
+                            <span style={{ color: '#00D397', fontWeight: 700, fontSize: 16 }}>{adjustedQPerCat}</span>
                           </div>
-                          <button onClick={() => setAdjustedQPerCat((v) => Math.min(maxAllowed, v + 1))} style={{ width: 28, height: 28, borderRadius: 8, background: '#1E1838', border: '1px solid #2A2244', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                          <button onClick={() => setAdjustedQPerCat((v) => Math.min(maxAllowed, v + 1))} style={{ width: 28, height: 28, borderRadius: 8, background: '#3E3666', border: '1px solid #4E4676', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
                             <Plus size={13} color="#E8E8F0" />
                           </button>
                         </div>
@@ -1212,13 +1212,13 @@ export default function LobbyPage() {
                       <Slider label="" value={adjustedQPerCat} onValueChange={setAdjustedQPerCat} min={1} max={maxAllowed} suffix="" />
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8 }}>
                         <span className={rajdhani.className} style={{ fontSize: 11, color: '#E8E8F038' }}>Total ajusté :</span>
-                        <span className={rajdhani.className} style={{ fontSize: 12, fontWeight: 600, color: totalAdjusted <= Q_LIMIT ? '#00FF88' : '#FF3A5C' }}>
+                        <span className={rajdhani.className} style={{ fontSize: 12, fontWeight: 600, color: totalAdjusted <= Q_LIMIT ? '#00D397' : '#FF3A5C' }}>
                           {totalAdjusted} questions
                         </span>
                       </div>
                     </div>
 
-                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, padding: '10px 12px', borderRadius: 10, background: '#0D0921', marginBottom: 16 }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, padding: '10px 12px', borderRadius: 10, background: '#292349', marginBottom: 16 }}>
                       <AlertCircle size={13} color="#FFD700" style={{ flexShrink: 0, marginTop: 1 }} />
                       <p className={rajdhani.className} style={{ fontSize: 11, color: '#E8E8F045', lineHeight: 1.5 }}>
                         Max recommandé : <span style={{ color: '#E8E8F0', fontWeight: 600 }}>{maxAllowed} Q/catégorie</span> avec {realPlayers} joueur{realPlayers > 1 ? 's' : ''}.
@@ -1228,7 +1228,7 @@ export default function LobbyPage() {
                     <div style={{ display: 'flex', gap: 10 }}>
                       <button
                         onClick={() => setShowQLimit(false)}
-                        style={{ flex: 1, padding: '13px 0', borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, cursor: 'pointer', background: '#1E1838' }}
+                        style={{ flex: 1, padding: '13px 0', borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, cursor: 'pointer', background: '#3E3666' }}
                       >
                         <X size={14} color="#E8E8F040" />
                         <span className={rajdhani.className} style={{ fontSize: 13, color: '#E8E8F040', fontWeight: 500 }}>Annuler</span>
@@ -1238,16 +1238,16 @@ export default function LobbyPage() {
                         disabled={isSavingConfig || isStarting}
                         style={{
                           flex: 1, padding: '13px 0', borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, cursor: 'pointer',
-                          background: 'linear-gradient(135deg, #00FF88, #00C877)',
+                          background: 'linear-gradient(135deg, #00D397, #00C877)',
                           opacity: isSavingConfig || isStarting ? 0.6 : 1,
                         }}
                       >
                         {isSavingConfig || isStarting ? (
-                          <div style={{ width: 14, height: 14, border: '2px solid #0D0921', borderTopColor: 'transparent', borderRadius: '50%' }} className="animate-spin" />
+                          <div style={{ width: 14, height: 14, border: '2px solid #292349', borderTopColor: 'transparent', borderRadius: '50%' }} className="animate-spin" />
                         ) : (
-                          <Play size={14} color="#0D0921" fill="#0D0921" />
+                          <Play size={14} color="#292349" fill="#292349" />
                         )}
-                        <span className={orbitron.className} style={{ fontSize: 12, fontWeight: 700, color: '#0D0921' }}>LANCER</span>
+                        <span className={orbitron.className} style={{ fontSize: 12, fontWeight: 700, color: '#292349' }}>LANCER</span>
                       </button>
                     </div>
                   </>
@@ -1271,8 +1271,8 @@ export default function LobbyPage() {
       {/* ── Team Picker ── */}
       {showTeamPicker && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', zIndex: 50 }}>
-          <div style={{ borderRadius: '24px 24px 0 0', width: '100%', maxWidth: 480, background: '#130F26', borderTop: '1px solid #1E1838' }}>
-            <div style={{ padding: '18px 20px 12px', borderBottom: '1px solid #1E1838', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ borderRadius: '24px 24px 0 0', width: '100%', maxWidth: 480, background: '#342D5B', borderTop: '1px solid #3E3666' }}>
+            <div style={{ padding: '18px 20px 12px', borderBottom: '1px solid #3E3666', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div>
                 <p className={orbitron.className} style={{ color: '#E8E8F0', fontWeight: 700, fontSize: 15 }}>Changer d'équipe</p>
                 {teamPickerTargetPlayer && (
@@ -1281,7 +1281,7 @@ export default function LobbyPage() {
               </div>
               <button
                 onClick={() => { setShowTeamPicker(false); setTeamPickerTargetPlayer(null); }}
-                style={{ width: 34, height: 34, borderRadius: '50%', background: '#1E1838', border: '1px solid #2A2244', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                style={{ width: 34, height: 34, borderRadius: '50%', background: '#3E3666', border: '1px solid #4E4676', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
               >
                 <X size={16} color="#E8E8F0" />
               </button>
@@ -1296,8 +1296,8 @@ export default function LobbyPage() {
                     disabled={isChangingTeam || isCurrent}
                     style={{
                       display: 'flex', alignItems: 'center', padding: '14px 16px', borderRadius: 14, cursor: 'pointer',
-                      background: isCurrent ? (team.color ? `${team.color}12` : '#1E1838') : '#0D0921',
-                      border: `1px solid ${isCurrent ? (team.color ?? '#00FF88') : '#1E1838'}`,
+                      background: isCurrent ? (team.color ? `${team.color}12` : '#3E3666') : '#292349',
+                      border: `1px solid ${isCurrent ? (team.color ?? '#00D397') : '#3E3666'}`,
                       opacity: isChangingTeam ? 0.6 : 1,
                     }}
                   >
@@ -1305,8 +1305,8 @@ export default function LobbyPage() {
                     <span className={rajdhani.className} style={{ flex: 1, color: '#E8E8F0', fontWeight: 600, fontSize: 14 }}>{team.name}</span>
                     <span className={rajdhani.className} style={{ color: '#E8E8F038', fontSize: 12 }}>{team.members.length} joueur{team.members.length !== 1 ? 's' : ''}</span>
                     {isCurrent && (
-                      <div style={{ marginLeft: 10, padding: '3px 8px', borderRadius: 7, background: '#00FF8812' }}>
-                        <span className={rajdhani.className} style={{ fontSize: 11, fontWeight: 600, color: '#00FF88' }}>Actuel</span>
+                      <div style={{ marginLeft: 10, padding: '3px 8px', borderRadius: 7, background: '#00D39712' }}>
+                        <span className={rajdhani.className} style={{ fontSize: 11, fontWeight: 600, color: '#00D397' }}>Actuel</span>
                       </div>
                     )}
                   </button>
@@ -1315,7 +1315,7 @@ export default function LobbyPage() {
             </div>
             {isChangingTeam && (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '14px 0' }}>
-                <div style={{ width: 22, height: 22, border: '2.5px solid #00FF88', borderTopColor: 'transparent', borderRadius: '50%' }} className="animate-spin" />
+                <div style={{ width: 22, height: 22, border: '2.5px solid #00D397', borderTopColor: 'transparent', borderRadius: '50%' }} className="animate-spin" />
               </div>
             )}
             <div style={{ height: 28 }} />

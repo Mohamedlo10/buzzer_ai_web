@@ -199,10 +199,10 @@ export const useBuzzStore = create<BuzzState & BuzzActions>((set, get) => ({
 
   fetchSession: async (sessionId) => {
     const detail = await sessionsApi.getSession(sessionId);
-    console.log('[fetchSession] players selectedCategories:', JSON.stringify(
-      detail.players.map(p => ({ name: p.name, selectedCategories: (p as any).selectedCategories })),
-      null, 2
-    ));
+    // console.log('[fetchSession] players selectedCategories:', JSON.stringify(
+    //   detail.players.map(p => ({ name: p.name, selectedCategories: (p as any).selectedCategories })),
+    //   null, 2
+    // ));
     set({
       session: detail.session,
       players: detail.players,
