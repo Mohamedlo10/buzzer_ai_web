@@ -138,7 +138,7 @@ function ArcadePlayerCard({
         padding: '14px 16px',
         borderRadius: 16,
         marginBottom: 10,
-        border: `1px solid ${isCurrentUser ? '#00D397' : player.isManager ? '#FFD700' : '#3E3666'}`,
+        border: `1px solid ${isCurrentUser ? '#00D397' : player.isManager ? '#FFD700' : '#aba6c2'}`,
         background: isCurrentUser
           ? 'linear-gradient(135deg, #00D39718 0%, #342D5B 100%)'
           : player.isManager
@@ -158,7 +158,7 @@ function ArcadePlayerCard({
               ? 'linear-gradient(135deg, #FFD700, #FF8C42)'
               : isCurrentUser
               ? 'linear-gradient(135deg, #00D397, #00B383)'
-              : 'linear-gradient(135deg, #4E4676, #342D5B)',
+              : 'linear-gradient(135deg, #4E4676, #968fb6)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -250,7 +250,7 @@ function ArcadePlayerCard({
                 className={rajdhani.className}
                 style={{
                   fontSize: 11, padding: '2px 8px', borderRadius: 999,
-                  background: '#3E3666', color: '#8B7FC7', border: '1px solid #4E4676',
+                  background: '#3E3666', color: '#cfcbe4', border: '1px solid #4E4676',
                 }}
               >
                 {cat}
@@ -661,7 +661,7 @@ export default function LobbyPage() {
   }
 
   return (
-    <SafeScreen style={{ backgroundColor: '#120d2d' }}>
+    <SafeScreen style={{ backgroundColor: '#292349' }}>
       <style>{ARCADE_CSS}</style>
 
       {/* ── Fixed Background ── */}
@@ -694,7 +694,7 @@ export default function LobbyPage() {
               display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
             }}
           >
-            <ArrowLeft size={18} color="#E8E8F090" />
+            <ArrowLeft size={18} color="#e8e8f0" />
           </button>
 
           {/* Title */}
@@ -754,7 +754,7 @@ export default function LobbyPage() {
               display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
             }}
           >
-            <RefreshCw size={14} color={isRefreshing ? '#00D397' : '#E8E8F050'} className={isRefreshing ? 'animate-spin' : ''} />
+            <RefreshCw size={14} color={isRefreshing ? '#00D397' : '#e8e8f0'} className={isRefreshing ? 'animate-spin' : ''} />
           </button>
         </div>
       </div>
@@ -808,8 +808,8 @@ export default function LobbyPage() {
                     border: `1px solid ${isCopied ? '#00D39750' : '#4E4676'}`,
                   }}
                 >
-                  {isCopied ? <Check size={15} color="#00D397" /> : <Copy size={15} color="#E8E8F060" />}
-                  <span className={rajdhani.className} style={{ fontSize: 13, fontWeight: 600, letterSpacing: 1, color: isCopied ? '#00D397' : '#E8E8F060' }}>
+                  {isCopied ? <Check size={15} color="#00D397" /> : <Copy size={15} color="#ffffffcf" />}
+                  <span className={rajdhani.className} style={{ fontSize: 13, fontWeight: 600, letterSpacing: 1, color: isCopied ? '#00D397' : '#ffffffcf' }}>
                     {isCopied ? 'COPIÉ' : 'COPIER'}
                   </span>
                 </button>
@@ -841,7 +841,7 @@ export default function LobbyPage() {
 
         {/* ── PLAYER COUNT BAR ── */}
         <div style={{ padding: '14px 16px 0' }}>
-          <div style={{ borderRadius: 16, padding: '14px 18px', background: '#342D5B', border: '1px solid #3E3666' }}>
+          <div style={{ borderRadius: 16, padding: '14px 18px', background: '#342D5B', border: '1px solid #777099' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
               <span className={orbitron.className} style={{ fontSize: 9, fontWeight: 700, color: '#e8e8f0e8', letterSpacing: 2 }}>
                 JOUEURS CONNECTÉS
@@ -887,12 +887,12 @@ export default function LobbyPage() {
                 </div>
               ))}
               {Array.from({ length: Math.min(5, Math.max(0, session.maxPlayers - players.length)) }).map((_, i) => (
-                <div key={`slot-${i}`} style={{ width: 28, height: 28, borderRadius: '50%', border: '2px dashed #3c3c4d', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div key={`slot-${i}`} style={{ width: 28, height: 28, borderRadius: '50%', border: '2px dashed #747482', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#1E1E2E' }} />
                 </div>
               ))}
               {session.maxPlayers - players.length > 5 && (
-                <span className={rajdhani.className} style={{ color: '#e8e8f06e', fontSize: 11 }}>+{session.maxPlayers - players.length - 5} slots</span>
+                <span className={rajdhani.className} style={{ color: '#e8e8f0d3', fontSize: 11 }}>+{session.maxPlayers - players.length - 5} slots</span>
               )}
             </div>
           </div>
@@ -901,7 +901,7 @@ export default function LobbyPage() {
         {/* ── Room info ── */}
         {roomInfo && (
           <div style={{ padding: '10px 16px 0' }}>
-            <div style={{ padding: '10px 14px', borderRadius: 12, background: '#342D5B', border: '1px solid #3E3666', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ padding: '10px 14px', borderRadius: 12, background: '#342D5B', border: '1px solid #807a9e', display: 'flex', alignItems: 'center', gap: 8 }}>
               <Hash size={12} color="#E8E8F030" />
               <span className={rajdhani.className} style={{ fontSize: 13, color: '#e8e8f0f5' }}>Salle :</span>
               <span className={rajdhani.className} style={{ fontSize: 13, fontWeight: 600, color: '#00D397' }}>{roomInfo.name}</span>
