@@ -284,71 +284,11 @@ function QuestionLimitIndicator({
             style={{ backgroundColor: bgColor }}
           >
             <span className="font-bold text-lg" style={{ color }}>
-              {total}
-              <span className="text-sm font-normal text-white/40"> / {Q_LIMIT}</span>
+              <span className="text-sm font-normal text-white/40"> {Q_LIMIT}</span>
             </span>
           </div>
         </div>
 
-        <div className="px-5 py-4">
-          {/* Formula display */}
-          <div className="flex items-center justify-center gap-2 mb-4 flex-wrap">
-            <div className="flex flex-col items-center bg-[#292349] rounded-2xl px-4 py-2.5 min-w-[64px]">
-              <span className="text-[#C084FC] font-bold text-xl">{categories}</span>
-              <span className="text-white/40 text-[10px] mt-0.5 text-center">cat/joueur</span>
-            </div>
-            <span className="text-white/30 font-bold text-lg">×</span>
-            <div className="flex flex-col items-center bg-[#292349] rounded-2xl px-4 py-2.5 min-w-[64px]">
-              <span className="text-[#4A90D9] font-bold text-xl">{questionsPerCat}</span>
-              <span className="text-white/40 text-[10px] mt-0.5 text-center">Q/cat</span>
-            </div>
-            <span className="text-white/30 font-bold text-lg">×</span>
-            <div className="flex flex-col items-center bg-[#292349] rounded-2xl px-4 py-2.5 min-w-[64px]">
-              <span className="text-[#FFD700] font-bold text-xl">{maxPlayers}</span>
-              <span className="text-white/40 text-[10px] mt-0.5 text-center">joueurs max</span>
-            </div>
-            <span className="text-white/30 font-bold text-lg">=</span>
-            <div
-              className="flex flex-col items-center rounded-2xl px-4 py-2.5 min-w-[64px]"
-              style={{ backgroundColor: bgColor }}
-            >
-              <span className="font-bold text-xl" style={{ color }}>{total}</span>
-              <span className="text-white/40 text-[10px] mt-0.5 text-center">questions</span>
-            </div>
-          </div>
-
-          {/* Progress bar */}
-          <div className="h-2.5 bg-[#292349] rounded-full overflow-hidden mb-3">
-            <div
-              className="h-full rounded-full transition-all duration-500"
-              style={{ width: `${pct}%`, backgroundColor: color }}
-            />
-          </div>
-
-          {/* Status message */}
-          {isOver ? (
-            <div className="flex items-start gap-2 p-3 rounded-2xl" style={{ backgroundColor: '#D5442F15', border: '1px solid #D5442F30' }}>
-              <AlertCircle size={15} color="#D5442F" className="flex-shrink-0 mt-0.5" />
-              <p className="text-[#D5442F] text-xs leading-relaxed">
-                <span className="font-semibold">Limite dépassée.</span> Réduisez le nombre de catégories/joueur, de questions/catégorie ou le nombre max de joueurs. Au démarrage, un ajustement vous sera proposé.
-              </p>
-            </div>
-          ) : isClose ? (
-            <div className="flex items-start gap-2 p-3 rounded-2xl" style={{ backgroundColor: '#F39C1215', border: '1px solid #F39C1230' }}>
-              <AlertCircle size={15} color="#F39C12" className="flex-shrink-0 mt-0.5" />
-              <p className="text-[#F39C12] text-xs leading-relaxed">
-                <span className="font-semibold">Proche de la limite.</span> Cette estimation est basée sur le nombre max de joueurs. Avec moins de participants, tout ira bien.
-              </p>
-            </div>
-          ) : (
-            <div className="flex items-start gap-2 p-3 rounded-2xl bg-[#00D39710] border border-[#00D39730]">
-              <Info size={15} color="#00D397" className="flex-shrink-0 mt-0.5" />
-              <p className="text-white/50 text-xs leading-relaxed">
-                Estimation basée sur le nombre max de joueurs. Le calcul exact se fait au démarrage avec les participants réels.
-              </p>
-            </div>
-          )}
-        </div>
       </div>
     </div>
   );

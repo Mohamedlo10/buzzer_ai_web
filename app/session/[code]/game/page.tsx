@@ -17,10 +17,12 @@ import {
   PlayCircle,
   PauseCircle,
   Layers,
+  SkipForward,
 } from 'lucide-react';
 
 import { SafeScreen } from '~/components/layout/SafeScreen';
 import { Avatar } from '~/components/ui/Avatar';
+import { ConfirmModal } from '~/components/ui/ConfirmModal';
 import { BuzzerButton } from '~/components/game/BuzzerButton';
 import { useBuzzStore } from '~/stores/useBuzzStore';
 import { useAuthStore } from '~/stores/useAuthStore';
@@ -102,6 +104,7 @@ export default function GamePage() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSkipping, setIsSkipping] = useState(false);
+  const [showSkipConfirm, setShowSkipConfirm] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
   const [isResettingBuzzer, setIsResettingBuzzer] = useState(false);
   const [isPauseToggling, setIsPauseToggling] = useState(false);
@@ -850,7 +853,7 @@ export default function GamePage() {
           <div className="px-4 pt-3">
             <div className="flex flex-row gap-2">
               <button
-                onClick={handleSkip}
+                onClick={() => setShowSkipConfirm(true)}
                 disabled={isSkipping}
                 className="flex-1 py-3 rounded-xl bg-[#3E3666] flex items-center justify-center hover:bg-[#4E4676] transition-colors disabled:opacity-60"
               >
@@ -1008,6 +1011,17 @@ export default function GamePage() {
           </div>
         </div>
       </div>
+      <ConfirmModal
+        open={showSkipConfirm}
+        title="Passer la question ?"
+        message="Cette question sera ignorée et vous passerez à la suivante. Cette action est irréversible."
+        confirmLabel="Passer"
+        cancelLabel="Annuler"
+        confirmColor="#FFD700"
+        icon={<SkipForward size={24} color="#FFD700" />}
+        onConfirm={() => { setShowSkipConfirm(false); handleSkip(); }}
+        onCancel={() => setShowSkipConfirm(false)}
+      />
     </SafeScreen>
   );
 }

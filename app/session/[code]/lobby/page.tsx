@@ -33,6 +33,7 @@ import { Orbitron, Rajdhani } from 'next/font/google';
 import { SafeScreen } from '~/components/layout/SafeScreen';
 import { QRCodeModal } from '~/components/ui/QRCodeModal';
 import { Avatar } from '~/components/ui/Avatar';
+import { ConfirmModal } from '~/components/ui/ConfirmModal';
 import { useBuzzStore } from '~/stores/useBuzzStore';
 import { useAuthStore } from '~/stores/useAuthStore';
 import { useGameSocket } from '~/lib/websocket/useGameSocket';
@@ -449,6 +450,7 @@ export default function LobbyPage() {
   const [adjustedQPerCat, setAdjustedQPerCat] = useState(1);
   const [isSavingConfig, setIsSavingConfig] = useState(false);
   const [avatarMap, setAvatarMap] = useState<Record<string, string | null>>({});
+  const [showStartConfirm, setShowStartConfirm] = useState(false);
 
   const user = useAuthStore((state) => state.user);
   const { session, players, teams, fetchSession, startSession, deleteSession, isStarting, leaveSession } = useBuzzStore();
@@ -540,7 +542,7 @@ export default function LobbyPage() {
   const handleStartGame = async () => {
     if (!session?.id || !code) return;
     if (session.questionMode === 'AI') {
-      const realPlayers = players.filter((p) => !p.isSpectator).length;
+      const realPlayers = players.filter((p) => !p.isSpectator && !p.isManager).length;
       const total = (session.maxCategoriesPerPlayer ?? 1) * (session.questionsPerCategory ?? 1) * realPlayers;
       if (total > Q_LIMIT) {
         const maxAllowed = Math.max(1, Math.floor(Q_LIMIT / ((session.maxCategoriesPerPlayer ?? 1) * realPlayers)));
@@ -550,23 +552,14 @@ export default function LobbyPage() {
       }
     }
     try { await startSession(session.id); }
-    catch (err: any) { window.alert(err?.message || 'Impossible de démarrer la partie'); }
+    catch { /* ignore */ }
   };
 
   const handleManagerStartClick = () => {
     const realCount = players.filter((p) => !p.isSpectator).length;
-    if (realCount < 2) {
-      window.alert(`Pas assez de joueurs. Minimum 2 joueurs requis (${realCount} présent)`);
-      return;
-    }
-    if (session!.questionMode === 'MANUAL' && session!.totalQuestions === 0) {
-      window.alert("Aucune question. Veuillez d'abord ajouter vos questions avant de démarrer.");
-      return;
-    }
-    const msg = session!.questionMode === 'MANUAL'
-      ? `${session!.totalQuestions} question(s) prête(s). Les joueurs ne pourront plus rejoindre. Démarrer la partie ?`
-      : 'La génération des questions va commencer. Les joueurs ne pourront plus rejoindre. Démarrer la partie ?';
-    if (window.confirm(msg)) handleStartGame();
+    if (realCount < 2) return;
+    if (session!.questionMode === 'MANUAL' && session!.totalQuestions === 0) return;
+    setShowStartConfirm(true);
   };
 
   const handleStartWithAdjustedQ = async () => {
@@ -734,7 +727,6 @@ export default function LobbyPage() {
 
           {/* LIVE badge */}
           <div
-            className="a-blink"
             style={{
               display: 'flex', alignItems: 'center', gap: 5,
               padding: '4px 10px', borderRadius: 7, marginRight: 8,
@@ -898,7 +890,7 @@ export default function LobbyPage() {
                       <Eye size={12} color="#FFD700" />
                     </div>
                   ) : (
-                    <Avatar avatarUrl={p.avatarUrl} username={p.name} size={28} />
+                    <Avatar avatarUrl={p.userId ? (avatarMap[p.userId] ?? p.avatarUrl) : p.avatarUrl} username={p.name} size={28} />
                   )}
                 </div>
               ))}
@@ -1172,7 +1164,7 @@ export default function LobbyPage() {
             </div>
             <div style={{ padding: '16px 20px' }}>
               {(() => {
-                const realPlayers = players.filter((p) => !p.isSpectator).length;
+                const realPlayers = players.filter((p) => !p.isSpectator && !p.isManager).length;
                 const cats = session.maxCategoriesPerPlayer ?? 1;
                 const totalCurrent = cats * (session.questionsPerCategory ?? 1) * realPlayers;
                 const totalAdjusted = cats * adjustedQPerCat * realPlayers;
@@ -1240,7 +1232,7 @@ export default function LobbyPage() {
                         style={{ flex: 1, padding: '13px 0', borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, cursor: 'pointer', background: '#3E3666' }}
                       >
                         <X size={14} color="#E8E8F040" />
-                        <span className={rajdhani.className} style={{ fontSize: 13, color: '#E8E8F040', fontWeight: 500 }}>Annuler</span>
+                        <span className={rajdhani.className} style={{ fontSize: 13, color: '#e8e8f0cc', fontWeight: 500 }}>Annuler</span>
                       </button>
                       <button
                         onClick={handleStartWithAdjustedQ}
@@ -1331,6 +1323,23 @@ export default function LobbyPage() {
           </div>
         </div>
       )}
+
+      {/* ── Start Confirm Modal ── */}
+      <ConfirmModal
+        open={showStartConfirm}
+        title="Démarrer la partie ?"
+        message={
+          session?.questionMode === 'MANUAL'
+            ? `${session?.totalQuestions} question(s) prête(s). Les joueurs ne pourront plus rejoindre une fois la partie lancée.`
+            : 'La génération des questions va commencer. Les joueurs ne pourront plus rejoindre une fois la partie lancée.'
+        }
+        confirmLabel="Démarrer"
+        cancelLabel="Annuler"
+        confirmColor="#00D397"
+        icon={<Play size={24} color="#00D397" />}
+        onConfirm={() => { setShowStartConfirm(false); handleStartGame(); }}
+        onCancel={() => setShowStartConfirm(false)}
+      />
     </SafeScreen>
   );
 }
