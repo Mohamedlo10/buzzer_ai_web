@@ -47,13 +47,13 @@ function QuickActionButton({
   return (
     <button
       onClick={onClick}
-      className="flex-1 rounded-2xl overflow-hidden hover:opacity-90 active:opacity-80 transition-opacity cursor-pointer"
+      className="flex-1 sm:rounded-2xl rounded-lg overflow-hidden hover:opacity-90 active:opacity-80 transition-opacity cursor-pointer"
     >
-      <div className={`p-3 ${bgColor}`}>
-        <div className="w-11 h-11 rounded-xl bg-white/20 flex items-center justify-center mb-3">
-          <Icon size={22} color="#FFFFFF" />
+      <div className={`p-1 py-3 ${bgColor}`}>
+        <div className="sm:w-11 w-9 h-9 sm:h-11 rounded-xl bg-white/20 flex items-center justify-center ml-2 mb-3">
+          <Icon size={20} color="#FFFFFF" />
         </div>
-        <p className="text-white font-bold text-sm">{label}</p>
+        <p className="text-white font-bold text-xs sm:text-sm">{label}</p>
         {sublabel && (
           <p className="text-white/70 text-xs mt-0.5">{sublabel}</p>
         )}
