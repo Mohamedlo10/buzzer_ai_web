@@ -122,6 +122,31 @@ function mapTopicMessageToWSEvent(
       } as any;
     }
 
+    // ─── Team scores ──────────────────────
+    case 'team-scores': {
+      return {
+        type: 'team_scores',
+        sessionId,
+        teams: payload.teams ?? [],
+      } as any;
+    }
+
+    // ─── User notifications queue ─────────
+    case 'notifications': {
+      if (payload.type === 'ROOM_INVITE') {
+        return {
+          type: 'room_invite_received',
+          sessionId,
+          invitationId: payload.invitationId,
+          roomId: payload.roomId,
+          roomName: payload.roomName,
+          roomCode: payload.roomCode,
+          from: payload.from,
+        } as any;
+      }
+      return null;
+    }
+
     // ─── Players ──────────────────────────
     case 'players': {
       if (payload.event === 'JOINED' && payload.player) {
@@ -286,6 +311,7 @@ export class WebSocketManager {
     'status',
     'players',
     'teams',
+    'team-scores',
     'question',
     'buzz',
     'score',

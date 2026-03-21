@@ -217,7 +217,13 @@ export default function GamePage() {
         useBuzzStore.setState({ players: gameState.players });
       }
 
-      if (user?.id && gameState.buzzQueue?.some((b: BuzzQueueItem) => b.playerId === user.id)) {
+      if (gameState.teams?.length) {
+        useBuzzStore.getState().setTeams(gameState.teams);
+      }
+
+      if (gameState.hasBuzzed) {
+        useBuzzStore.getState().setHasBuzzed(true);
+      } else if (user?.id && gameState.buzzQueue?.some((b: BuzzQueueItem) => b.playerId === user.id)) {
         useBuzzStore.getState().setHasBuzzed(true);
       }
     } catch {

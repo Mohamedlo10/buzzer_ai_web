@@ -466,29 +466,47 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* ── Last Session ── */}
-        <div className="px-4 mb-5">
-          {data.lastSession ? (
+        {/* ── Recent Sessions ── */}
+        <div className="mb-5">
+          {data.recentSessions && data.recentSessions.length > 0 ? (
             <>
-              <SectionHeader title="Dernière session" emoji="🎮" />
-              <LastSessionCard session={data.lastSession} />
+              <div className="px-4">
+                <SectionHeader title="Sessions récentes" emoji="🎮" />
+              </div>
+              <div className="flex flex-row gap-3 overflow-x-auto px-4 pb-2 scrollbar-none">
+                {data.recentSessions.map((session) => (
+                  <div key={session.id} className="min-w-[85vw]">
+                    <LastSessionCard session={session} />
+                  </div>
+                ))}
+              </div>
             </>
           ) : (
-            <EmptyState
-              emoji="🎮"
-              title="Aucune session récente"
-              subtitle="Créez ou rejoignez une session pour commencer à jouer !"
-              actionLabel="Créer une session"
-              onAction={() => router.push('/session/create')}
-            />
+            <div className="px-4">
+              <EmptyState
+                emoji="🎮"
+                title="Aucune session récente"
+                subtitle="Créez ou rejoignez une session pour commencer à jouer !"
+                actionLabel="Créer une session"
+                onAction={() => router.push('/session/create')}
+              />
+            </div>
           )}
         </div>
 
-        {/* ── Last Room ── */}
-        {data.lastRoom && (
-          <div className="px-4 mb-5">
-            <SectionHeader title="Dernière salle" emoji="🏠" />
-            <LastRoomCard room={data.lastRoom} />
+        {/* ── Recent Rooms ── */}
+        {data.recentRooms && data.recentRooms.length > 0 && (
+          <div className="mb-5">
+            <div className="px-4">
+              <SectionHeader title="Salles récentes" emoji="🏠" />
+            </div>
+            <div className="flex flex-row gap-3 overflow-x-auto px-4 pb-2 scrollbar-none">
+              {data.recentRooms.map((room) => (
+                <div key={room.id} className="min-w-[75vw]">
+                  <LastRoomCard room={room} />
+                </div>
+              ))}
+            </div>
           </div>
         )}
 

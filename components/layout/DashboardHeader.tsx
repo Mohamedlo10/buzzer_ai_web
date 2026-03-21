@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useAuthStore } from '~/stores/useAuthStore';
 import { Bell, User } from 'lucide-react';
 
@@ -14,6 +15,7 @@ export function DashboardHeader({
   onNotificationPress,
   onProfilePress,
 }: DashboardHeaderProps) {
+  const router = useRouter();
   const user = useAuthStore((state) => state.user);
 
   return (
@@ -35,7 +37,7 @@ export function DashboardHeader({
       <div className="flex flex-row items-center">
         {/* Notification Bell */}
         <button
-          onClick={onNotificationPress}
+          onClick={onNotificationPress ?? (() => router.push('/notifications'))}
           className="relative px-2 mr-2 text-white hover:text-white/80 transition-colors"
         >
           <Bell size={24} />

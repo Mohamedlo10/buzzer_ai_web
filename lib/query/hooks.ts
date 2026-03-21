@@ -7,6 +7,7 @@ import * as dashboardApi from '~/lib/api/dashboard';
 import * as roomsApi from '~/lib/api/rooms';
 import * as friendsApi from '~/lib/api/friends';
 import * as invitationsApi from '~/lib/api/invitations';
+import * as notificationsApi from '~/lib/api/notifications';
 
 // ──────────────────────────────────────────────
 // User
@@ -210,5 +211,16 @@ export function useDeclineInvitation() {
   return useMutation({
     mutationFn: (invitationId: string) => invitationsApi.declineInvitation(invitationId),
     onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.pendingInvitations }),
+  });
+}
+
+// ──────────────────────────────────────────────
+// Notifications
+// ──────────────────────────────────────────────
+
+export function useNotifications() {
+  return useQuery({
+    queryKey: queryKeys.notifications,
+    queryFn: notificationsApi.getNotifications,
   });
 }

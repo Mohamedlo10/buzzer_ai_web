@@ -168,13 +168,17 @@ export interface PlayerOfflineEvent {
 // Room Events
 // ──────────────────────────────────────────────
 
-// ──────────────────────────────────────────────
-// Team Events
-// ──────────────────────────────────────────────
-
-export interface TeamUpdatedEvent extends BaseWSMessage {
-  type: 'team_updated';
-  teams: import('./api').TeamResponse[];
+export interface RoomInviteReceivedEvent {
+  type: 'room_invite_received';
+  invitationId: string;
+  roomId: string;
+  roomName: string;
+  roomCode: string;
+  from: {
+    id: string;
+    username: string;
+    avatarUrl: string | null;
+  };
 }
 
 export interface RoomSessionStartedEvent {
@@ -187,6 +191,26 @@ export interface RoomSessionStartedEvent {
 export interface RoomStatsUpdatedEvent {
   type: 'room_stats_updated';
   roomId: string;
+}
+
+// ──────────────────────────────────────────────
+// Team Events
+// ──────────────────────────────────────────────
+
+export interface TeamUpdatedEvent extends BaseWSMessage {
+  type: 'team_updated';
+  teams: import('./api').TeamResponse[];
+}
+
+export interface TeamScoresEvent extends BaseWSMessage {
+  type: 'team_scores';
+  teams: Array<{
+    id: string;
+    name: string;
+    color: string;
+    score: number;
+    memberIds: string[];
+  }>;
 }
 
 // ──────────────────────────────────────────────
@@ -235,6 +259,7 @@ export type WSEvent =
   | GameResumedEvent
   // Teams
   | TeamUpdatedEvent
+  | TeamScoresEvent
   // End
   | GameOverEvent
   | DebtsCalculatedEvent
@@ -245,6 +270,7 @@ export type WSEvent =
   | PlayerOnlineEvent
   | PlayerOfflineEvent
   // Rooms
+  | RoomInviteReceivedEvent
   | RoomSessionStartedEvent
   | RoomStatsUpdatedEvent
   // Sync

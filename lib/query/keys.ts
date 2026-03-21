@@ -30,6 +30,9 @@ export const queryKeys = {
   // Invitations
   pendingInvitations: ['invitations', 'pending'] as const,
 
+  // Notifications
+  notifications: ['notifications'] as const,
+
   // Users
   userProfile: (id: string) => ['users', id] as const,
   userSearch: (query: string) => ['users', 'search', query] as const,

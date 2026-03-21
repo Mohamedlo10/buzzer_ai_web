@@ -39,6 +39,18 @@ export function handleWSEvent(event: WSEvent, currentUserId?: string): void {
       useBuzzStore.getState().setTeams((event as any).teams ?? []);
       break;
 
+    case 'team_scores': {
+      // Server-pushed team score update — merge scores into existing teams
+      const updatedTeams: Array<{ id: string; score: number }> = (event as any).teams ?? [];
+      useBuzzStore.setState((state) => ({
+        teams: state.teams.map((t) => {
+          const update = updatedTeams.find((u) => u.id === t.id);
+          return update ? { ...t, score: update.score } : t;
+        }),
+      }));
+      break;
+    }
+
     case 'game_starting':
       useBuzzStore.getState().updateStatus('GENERATING');
       break;
@@ -219,6 +231,11 @@ export function handleWSEvent(event: WSEvent, currentUserId?: string): void {
       break;
 
     case 'session_invite_received':
+      break;
+
+    case 'room_invite_received':
+      // Toast/notification will be shown by the notification bell in the header
+      // The notifications page fetches fresh data when opened
       break;
 
     case 'player_online':

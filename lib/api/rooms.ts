@@ -44,3 +44,7 @@ export async function updateRoom(roomId: string, data: UpdateRoomRequest): Promi
   const res = await apiClient.put<RoomDetailResponse>(`/api/rooms/${roomId}`, data);
   return res.data;
 }
+
+export async function inviteToRoom(roomId: string, receiverIds: string[]): Promise<void> {
+  await apiClient.post(`/api/rooms/${roomId}/invite`, { receiverIds });
+}

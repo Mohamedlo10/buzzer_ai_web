@@ -262,6 +262,48 @@ export interface GameStateResponse {
   buzzQueue: BuzzQueueItem[];
   myPlayer: PlayerResponse | null;
   hasBuzzed?: boolean;
+  teams?: TeamResponse[];
+}
+
+// ──────────────────────────────────────────────
+// Notifications
+// ──────────────────────────────────────────────
+
+export interface NotificationFriendRequest {
+  id: string;
+  requester: {
+    id: string;
+    username: string;
+    avatarUrl: string | null;
+    globalRank?: number | null;
+  };
+  createdAt: string;
+}
+
+export interface NotificationGameInvitation {
+  id: string;
+  sessionId: string;
+  sessionCode: string;
+  senderName: string;
+  expiresAt: string;
+  createdAt: string;
+}
+
+export interface NotificationRoomInvitation {
+  id: string;
+  roomId: string;
+  roomName: string;
+  roomCode: string;
+  senderUsername: string;
+  senderAvatarUrl: string | null;
+  createdAt: string;
+}
+
+export interface NotificationResponse {
+  total: number;
+  friendRequests: NotificationFriendRequest[];
+  gameInvitations: NotificationGameInvitation[];
+  roomInvitations: NotificationRoomInvitation[];
 }
 
 // ──────────────────────────────────────────────
@@ -359,8 +401,8 @@ export interface DashboardResponse {
 // ──────────────────────────────────────────────
 
 export interface DashboardV2Response {
-  lastSession: LastSession | null;
-  lastRoom: LastRoom | null;
+  recentSessions: LastSession[];
+  recentRooms: LastRoom[];
   globalStats: GlobalStats;
   topCategories: CategoryPodium[];
   pendingInvitations: number;
@@ -383,6 +425,7 @@ export interface LastSession {
   myScore: number | null;
   myRank: number | null;
   totalPlayers: number | null;
+  isManager: boolean;
 }
 
 export interface LastRoom {
