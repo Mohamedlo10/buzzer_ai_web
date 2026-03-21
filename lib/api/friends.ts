@@ -1,5 +1,5 @@
 import { apiClient } from './client';
-import type { FriendRequestCreateResponse, FriendRequestResponse, FriendResponse, UserStatsResponse } from '~/types/api';
+import type { FriendRequestCreateResponse, FriendRequestResponse, SentFriendRequestResponse, FriendResponse, UserStatsResponse } from '~/types/api';
 
 export async function getFriends(): Promise<FriendResponse[]> {
   const res = await apiClient.get<FriendResponse[]>('/api/friends');
@@ -16,6 +16,15 @@ export async function sendFriendRequest(targetUserId: string): Promise<FriendReq
 export async function getPendingRequests(): Promise<FriendRequestResponse[]> {
   const res = await apiClient.get<FriendRequestResponse[]>('/api/friends/requests');
   return res.data;
+}
+
+export async function getSentRequests(): Promise<SentFriendRequestResponse[]> {
+  const res = await apiClient.get<SentFriendRequestResponse[]>('/api/friends/requests/sent');
+  return res.data;
+}
+
+export async function cancelFriendRequest(requestId: string): Promise<void> {
+  await apiClient.delete(`/api/friends/requests/${requestId}`);
 }
 
 export async function acceptFriendRequest(requestId: string): Promise<void> {

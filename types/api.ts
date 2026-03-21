@@ -555,6 +555,7 @@ export interface FriendResponse {
   avatarUrl: string | null;
   isOnline: boolean;
   lastSeenAt: string | null;
+  globalRank?: number;
 }
 
 // POST /api/friends/request
@@ -569,6 +570,13 @@ export interface FriendRequestCreateResponse {
 export interface FriendRequestResponse {
   id: string;
   requester: UserResponse;
+  createdAt: string;
+}
+
+// GET /api/friends/requests/sent — sent pending requests
+export interface SentFriendRequestResponse {
+  id: string;
+  receiver: UserResponse;
   createdAt: string;
 }
 

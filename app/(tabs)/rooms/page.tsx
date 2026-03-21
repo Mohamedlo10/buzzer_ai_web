@@ -181,7 +181,7 @@ export default function RoomsPage() {
   return (
     <SafeScreen className="bg-[#292349]">
       {/* Header */}
-      <div className="px-4 pt-20 pb-4">
+      <div className="px-4 pt-4 pb-4">
         <p className="text-white font-bold text-2xl">Mes Salles</p>
         <p className="text-white/60 text-sm">Rejoignez ou créez une salle de jeu</p>
       </div>

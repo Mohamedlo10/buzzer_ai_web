@@ -1,17 +1,20 @@
 import { create } from 'zustand';
-import type { FriendRequestResponse, FriendResponse } from '~/types/api';
+import type { FriendRequestResponse, SentFriendRequestResponse, FriendResponse } from '~/types/api';
 import * as friendsApi from '~/lib/api/friends';
 
 interface FriendState {
   friends: FriendResponse[];
   pendingRequests: FriendRequestResponse[];
+  sentRequests: SentFriendRequestResponse[];
   isLoading: boolean;
 
   fetchFriends: () => Promise<void>;
   fetchPendingRequests: () => Promise<void>;
+  fetchSentRequests: () => Promise<void>;
   sendRequest: (targetUserId: string) => Promise<void>;
   acceptRequest: (requestId: string) => Promise<void>;
   declineRequest: (requestId: string) => Promise<void>;
+  cancelRequest: (requestId: string) => Promise<void>;
   removeFriend: (friendId: string) => Promise<void>;
 
   // WebSocket updates
@@ -23,6 +26,7 @@ interface FriendState {
 export const useFriendStore = create<FriendState>((set, get) => ({
   friends: [],
   pendingRequests: [],
+  sentRequests: [],
   isLoading: false,
 
   fetchFriends: async () => {
@@ -38,6 +42,11 @@ export const useFriendStore = create<FriendState>((set, get) => ({
   fetchPendingRequests: async () => {
     const requests = await friendsApi.getPendingRequests();
     set({ pendingRequests: requests });
+  },
+
+  fetchSentRequests: async () => {
+    const requests = await friendsApi.getSentRequests();
+    set({ sentRequests: requests });
   },
 
   sendRequest: async (targetUserId) => {
@@ -57,6 +66,13 @@ export const useFriendStore = create<FriendState>((set, get) => ({
     await friendsApi.declineFriendRequest(requestId);
     set((state) => ({
       pendingRequests: state.pendingRequests.filter((r) => r.id !== requestId),
+    }));
+  },
+
+  cancelRequest: async (requestId) => {
+    await friendsApi.cancelFriendRequest(requestId);
+    set((state) => ({
+      sentRequests: state.sentRequests.filter((r) => r.id !== requestId),
     }));
   },
 

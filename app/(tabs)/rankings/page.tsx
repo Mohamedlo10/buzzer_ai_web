@@ -352,7 +352,7 @@ export default function RankingsPage() {
   return (
     <SafeScreen className="bg-[#292349]">
       {/* Header */}
-      <div className="px-4 pt-20 pb-4">
+      <div className="px-4 pt-4 pb-4">
         <p className="text-white font-bold text-2xl">Classement</p>
         <p className="text-white/60 text-sm">
           {totalElements > 0 ? `${totalElements} joueurs classés` : 'Classement global'}

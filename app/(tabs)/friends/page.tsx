@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { Search, UserPlus, Users, X } from 'lucide-react';
 
 import { SafeScreen } from '~/components/layout/SafeScreen';
@@ -20,32 +20,49 @@ export default function FriendsPage() {
   const [searchResults, setSearchResults] = useState<UserResponse[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [sentRequests, setSentRequests] = useState<Set<string>>(new Set());
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const {
     friends,
     pendingRequests,
+    sentRequests: storeSentRequests,
     isLoading,
     fetchFriends,
     fetchPendingRequests,
+    fetchSentRequests,
     acceptRequest,
     declineRequest,
-    removeFriend,
+    cancelRequest,
     sendRequest,
   } = useFriendStore();
 
   const loadData = useCallback(async () => {
-    await Promise.all([fetchFriends(), fetchPendingRequests()]);
-  }, [fetchFriends, fetchPendingRequests]);
+    await Promise.all([fetchFriends(), fetchPendingRequests(), fetchSentRequests()]);
+  }, [fetchFriends, fetchPendingRequests, fetchSentRequests]);
 
   useEffect(() => {
     loadData();
   }, [loadData]);
 
-  const handleSearch = async () => {
-    if (!searchQuery.trim()) return;
+  // Debounced search — fires 1s after last keystroke
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setSearchResults([]);
+      return;
+    }
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      performSearch(searchQuery);
+    }, 1000);
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [searchQuery]);
+
+  const performSearch = async (query: string) => {
     setIsSearching(true);
     try {
-      const results = await usersApi.searchUsers(searchQuery);
+      const results = await usersApi.searchUsers(query);
       setSearchResults(results.content);
     } catch (err) {
       console.error('Search failed:', err);
@@ -79,15 +96,15 @@ export default function FriendsPage() {
     }
   };
 
-  const handleRemove = (friendId: string, friendName: string) => {
-    if (window.confirm(`Voulez-vous vraiment supprimer ${friendName} de votre liste d'amis ?`)) {
-      removeFriend(friendId).catch(() => {
-        alert("Impossible de supprimer l'ami");
-      });
+  const handleCancel = async (requestId: string) => {
+    try {
+      await cancelRequest(requestId);
+    } catch {
+      alert("Impossible d'annuler la demande");
     }
   };
 
-  const incomingRequests = pendingRequests;
+  const totalRequests = pendingRequests.length + storeSentRequests.length;
 
   const renderFriendsList = () => (
     <>
@@ -107,12 +124,7 @@ export default function FriendsPage() {
         </Card>
       ) : (
         friends.map((friend) => (
-          <FriendCard
-            key={friend.id}
-            friend={friend}
-            onInvite={() => {/* TODO: Invite to session */}}
-            onRemove={() => handleRemove(friend.id, friend.username)}
-          />
+          <FriendCard key={friend.id} friend={friend} />
         ))
       )}
     </>
@@ -120,21 +132,40 @@ export default function FriendsPage() {
 
   const renderRequestsList = () => (
     <>
-      {incomingRequests.length > 0 ? (
-        <div>
+      {pendingRequests.length > 0 && (
+        <div className="mb-4">
           <p className="text-white/60 text-sm font-medium mb-3 uppercase tracking-wide">
-            Demandes reçues ({incomingRequests.length})
+            Demandes reçues ({pendingRequests.length})
           </p>
-          {incomingRequests.map((request) => (
+          {pendingRequests.map((request) => (
             <FriendRequestCard
               key={request.id}
+              type="received"
               request={request}
               onAccept={() => handleAccept(request.id)}
               onDecline={() => handleDecline(request.id)}
             />
           ))}
         </div>
-      ) : (
+      )}
+
+      {storeSentRequests.length > 0 && (
+        <div>
+          <p className="text-white/60 text-sm font-medium mb-3 uppercase tracking-wide">
+            Demandes envoyées ({storeSentRequests.length})
+          </p>
+          {storeSentRequests.map((request) => (
+            <FriendRequestCard
+              key={request.id}
+              type="sent"
+              request={request}
+              onCancel={() => handleCancel(request.id)}
+            />
+          ))}
+        </div>
+      )}
+
+      {pendingRequests.length === 0 && storeSentRequests.length === 0 && (
         <Card className="flex flex-col items-center py-12">
           <UserPlus size={48} color="#FFFFFF40" className="mb-4" />
           <p className="text-white/60 text-center">Aucune demande en attente</p>
@@ -153,9 +184,11 @@ export default function FriendsPage() {
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Rechercher un utilisateur..."
             className="flex-1 bg-transparent text-white py-3 focus:outline-none placeholder-white/40"
-            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
           />
-          {searchQuery.length > 0 && (
+          {isSearching && (
+            <div className="w-4 h-4 border-2 border-[#00D397] border-t-transparent rounded-full animate-spin mr-2" />
+          )}
+          {searchQuery.length > 0 && !isSearching && (
             <button
               onClick={() => setSearchQuery('')}
               className="ml-2 hover:opacity-70 transition-opacity cursor-pointer"
@@ -164,23 +197,6 @@ export default function FriendsPage() {
             </button>
           )}
         </div>
-        <button
-          onClick={handleSearch}
-          disabled={isSearching || !searchQuery.trim()}
-          className={`mt-3 py-3 rounded-xl w-full flex items-center justify-center transition-opacity cursor-pointer ${
-            isSearching || !searchQuery.trim()
-              ? 'bg-[#3E3666] cursor-not-allowed'
-              : 'bg-[#00D397] hover:opacity-90'
-          }`}
-        >
-          {isSearching ? (
-            <Spinner text="Recherche..." />
-          ) : (
-            <span className={`font-bold ${searchQuery.trim() ? 'text-[#292349]' : 'text-white/40'}`}>
-              Rechercher
-            </span>
-          )}
-        </button>
       </Card>
 
       {searchResults.length > 0 && (
@@ -193,7 +209,7 @@ export default function FriendsPage() {
             const hasPendingRequest = pendingRequests.some(
               (r) => r.requester.id === user.id,
             );
-            const isSent = sentRequests.has(user.id);
+            const isSent = sentRequests.has(user.id) || storeSentRequests.some((r) => r.receiver.id === user.id);
 
             return (
               <Card key={user.id} className="mb-3">
@@ -204,7 +220,7 @@ export default function FriendsPage() {
                   <div className="flex-1">
                     <p className="text-white font-semibold">{user.username}</p>
                     <p className="text-white/50 text-sm">
-                      {isFriend ? 'Déjà ami' : hasPendingRequest ? 'Demande en cours' : ''}
+                      {isFriend ? 'Déjà ami' : hasPendingRequest ? 'Demande reçue' : isSent ? 'Demande envoyée' : ''}
                     </p>
                   </div>
                   {isFriend ? (
@@ -243,17 +259,9 @@ export default function FriendsPage() {
   return (
     <SafeScreen className="bg-[#292349]">
       {/* Header */}
-      <div className="px-4 pt-20 pb-4">
+      <div className="px-4 pt-4 pb-4">
         <div className="flex flex-row items-center justify-between mb-4">
           <p className="text-white font-bold text-2xl">Amis</p>
-          {activeTab !== 'friends' && (
-            <button
-              onClick={() => setActiveTab('friends')}
-              className="w-10 h-10 rounded-full bg-[#342D5B] flex items-center justify-center hover:opacity-80 transition-opacity cursor-pointer"
-            >
-              <span className="text-white text-sm">←</span>
-            </button>
-          )}
         </div>
 
         {/* Tabs */}
@@ -273,7 +281,7 @@ export default function FriendsPage() {
               >
                 {tab === 'friends' && 'Amis'}
                 {tab === 'requests' &&
-                  `Demandes${pendingRequests.length > 0 ? ` (${pendingRequests.length})` : ''}`}
+                  `Demandes${totalRequests > 0 ? ` (${totalRequests})` : ''}`}
                 {tab === 'search' && 'Recherche'}
               </span>
             </button>

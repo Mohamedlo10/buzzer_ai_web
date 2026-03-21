@@ -1,18 +1,16 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { User, Trash2, UserPlus } from 'lucide-react';
+import { User, ChevronRight } from 'lucide-react';
 
 import { Badge } from '~/components/ui/Badge';
 import type { FriendResponse } from '~/types/api';
 
 interface FriendCardProps {
   friend: FriendResponse;
-  onRemove?: () => void;
-  onInvite?: () => void;
 }
 
-export function FriendCard({ friend, onRemove, onInvite }: FriendCardProps) {
+export function FriendCard({ friend }: FriendCardProps) {
   const router = useRouter();
 
   const timeSinceLastSeen = friend.lastSeenAt
@@ -41,43 +39,24 @@ export function FriendCard({ friend, onRemove, onInvite }: FriendCardProps) {
         {/* Info */}
         <div className="flex-1 ml-3">
           <p className="text-white font-semibold text-lg">{friend.username}</p>
-          <div className="flex flex-row items-center">
+          <div className="flex flex-row items-center gap-2">
             {friend.isOnline ? (
-              <Badge variant="success" className="mr-2">En ligne</Badge>
+              <Badge variant="success">En ligne</Badge>
             ) : timeSinceLastSeen ? (
               <span className="text-white/40 text-sm">Vu {timeSinceLastSeen}</span>
             ) : (
               <span className="text-white/40 text-sm">Hors ligne</span>
             )}
+            {friend.globalRank != null && (
+              <span className="text-[#00D397] text-xs font-semibold">
+                #{friend.globalRank}
+              </span>
+            )}
           </div>
         </div>
 
-        {/* Actions */}
-        <div className="flex flex-row">
-          {onInvite && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onInvite();
-              }}
-              className="w-10 h-10 rounded-full bg-[#00D39720] flex items-center justify-center mr-2 hover:bg-[#00D39730] transition-colors cursor-pointer"
-            >
-              <UserPlus size={18} color="#00D397" />
-            </button>
-          )}
-
-          {onRemove && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onRemove();
-              }}
-              className="w-10 h-10 rounded-full bg-[#D5442F20] flex items-center justify-center hover:bg-[#D5442F30] transition-colors cursor-pointer"
-            >
-              <Trash2 size={18} color="#D5442F" />
-            </button>
-          )}
-        </div>
+        {/* Arrow */}
+        <ChevronRight size={20} color="#FFFFFF60" />
       </div>
     </button>
   );
