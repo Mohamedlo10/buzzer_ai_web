@@ -1,8 +1,9 @@
 'use client';
 
-import { User, Check, X, Clock } from 'lucide-react';
+import { Check, X, Clock } from 'lucide-react';
 
 import { Card } from '~/components/ui/Card';
+import { Avatar } from '~/components/ui/Avatar';
 import type { FriendRequestResponse, SentFriendRequestResponse } from '~/types/api';
 
 interface ReceivedRequestCardProps {
@@ -26,8 +27,8 @@ export function FriendRequestCard(props: FriendRequestCardProps) {
     return (
       <Card className="mb-3">
         <div className="flex flex-row items-center">
-          <div className="w-12 h-12 rounded-full bg-[#3E3666] flex items-center justify-center mr-3 shrink-0">
-            <User size={24} color="#FFFFFF" />
+          <div className="mr-3 shrink-0">
+            <Avatar avatarUrl={request.receiver.avatarUrl} username={request.receiver.username} size={48} />
           </div>
           <div className="flex-1">
             <p className="text-white font-semibold">{request.receiver.username}</p>
@@ -51,8 +52,8 @@ export function FriendRequestCard(props: FriendRequestCardProps) {
   return (
     <Card className="mb-3">
       <div className="flex flex-row items-center">
-        <div className="w-12 h-12 rounded-full bg-[#3E3666] flex items-center justify-center mr-3 shrink-0">
-          <User size={24} color="#FFFFFF" />
+        <div className="mr-3 shrink-0">
+          <Avatar avatarUrl={request.requester.avatarUrl} username={request.requester.username} size={48} />
         </div>
         <div className="flex-1">
           <p className="text-white font-semibold">{request.requester.username}</p>

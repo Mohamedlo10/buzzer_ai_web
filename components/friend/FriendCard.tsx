@@ -1,9 +1,10 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { User, ChevronRight } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 
 import { Badge } from '~/components/ui/Badge';
+import { Avatar } from '~/components/ui/Avatar';
 import type { FriendResponse } from '~/types/api';
 
 interface FriendCardProps {
@@ -25,9 +26,7 @@ export function FriendCard({ friend }: FriendCardProps) {
       <div className="flex flex-row items-center">
         {/* Avatar */}
         <div className="relative shrink-0">
-          <div className="w-12 h-12 rounded-full bg-[#3E3666] flex items-center justify-center">
-            <User size={24} color="#FFFFFF" />
-          </div>
+          <Avatar avatarUrl={friend.avatarUrl} username={friend.username} size={48} />
           {/* Online status dot */}
           <span
             className={`absolute bottom-0 right-0 w-4 h-4 rounded-full border-2 border-[#342D5B] ${

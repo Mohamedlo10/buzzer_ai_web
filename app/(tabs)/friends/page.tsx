@@ -6,6 +6,7 @@ import { Search, UserPlus, Users, X } from 'lucide-react';
 import { SafeScreen } from '~/components/layout/SafeScreen';
 import { Card } from '~/components/ui/Card';
 import { Spinner } from '~/components/loading/Spinner';
+import { Avatar } from '~/components/ui/Avatar';
 import { FriendCard } from '~/components/friend/FriendCard';
 import { FriendRequestCard } from '~/components/friend/FriendRequestCard';
 import { useFriendStore } from '~/stores/useFriendStore';
@@ -214,8 +215,8 @@ export default function FriendsPage() {
             return (
               <Card key={user.id} className="mb-3">
                 <div className="flex flex-row items-center">
-                  <div className="w-12 h-12 rounded-full bg-[#3E3666] flex items-center justify-center mr-3 shrink-0">
-                    <Users size={24} color="#FFFFFF" />
+                  <div className="mr-3 shrink-0">
+                    <Avatar avatarUrl={user.avatarUrl} username={user.username} size={48} />
                   </div>
                   <div className="flex-1">
                     <p className="text-white font-semibold">{user.username}</p>
