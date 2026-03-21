@@ -39,8 +39,7 @@ export function calculateDebts(
         
         if (calculatedDebt > 0) {
           debts.push({
-            toUserId: winnerId,
-            toUsername: winnerName,
+            owedTo: winnerName,
             category,
             amount: calculatedDebt,
           });
@@ -57,8 +56,8 @@ export function calculateDebts(
  */
 export function calculateNetDebt(
   debts: DebtEntry[],
-  playerId: string,
-  playerName: string,
+  _playerId: string,
+  _playerName: string,
 ): {
   owedToOthers: number;
   owedByOthers: number;
@@ -68,19 +67,16 @@ export function calculateNetDebt(
     owedToYou: DebtEntry[];
   };
 } {
-  const youOwe = debts.filter((d) => d.toUserId !== playerId); // You owe others
-  const owedToYou = debts.filter((d) => d.toUserId === playerId); // Others owe you
-
-  const owedToOthers = youOwe.reduce((sum, d) => sum + d.amount, 0);
-  const owedByOthers = owedToYou.reduce((sum, d) => sum + d.amount, 0);
+  // Debts are now server-computed and represent what the player owes to others
+  const owedToOthers = debts.reduce((sum, d) => sum + d.amount, 0);
 
   return {
     owedToOthers,
-    owedByOthers,
-    net: owedByOthers - owedToOthers,
+    owedByOthers: 0,
+    net: -owedToOthers,
     details: {
-      youOwe: youOwe.map(d => ({ ...d, toUsername: playerName })),
-      owedToYou,
+      youOwe: debts,
+      owedToYou: [],
     },
   };
 }
