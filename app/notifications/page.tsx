@@ -207,7 +207,7 @@ export default function NotificationsPage() {
                           Invité par <span className="text-white/70">{inv.senderUsername}</span>
                         </p>
                       </div>
-                      {inv.isAlreadyMember ? (
+                      {inv.alreadyMember ? (
                         <div className="px-3 py-2 rounded-lg bg-[#00D39720]">
                           <span className="text-[#00D397] text-sm font-medium">Déjà membre</span>
                         </div>

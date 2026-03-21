@@ -298,7 +298,7 @@ export interface NotificationRoomInvitation {
   senderAvatarUrl: string | null;
   createdAt: string;
   /** true si l'utilisateur est déjà membre de cette salle */
-  isAlreadyMember?: boolean;
+  alreadyMember?: boolean;
 }
 
 export interface NotificationResponse {
