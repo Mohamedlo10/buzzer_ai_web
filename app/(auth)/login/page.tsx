@@ -73,8 +73,8 @@ export default function LoginPage() {
             {/* Gradient Ring */}
             <div
               style={{
-                width: 140,
-                height: 140,
+                width: 120,
+                height: 120,
                 borderRadius: 70,
                 padding: 4,
                 background: 'linear-gradient(135deg, #FFD700, #D5442F, #00D397)',
@@ -128,7 +128,7 @@ export default function LoginPage() {
               letterSpacing: 1,
             }}
           >
-            Quiz By Mouha_Dev
+            Quiz Buzzer - AI
           </h1>
 
           {/* Subtitle Badge */}
