@@ -122,7 +122,7 @@ export default function LoginPage() {
 
           {/* Title */}
           <h1
-            className="text-white text-4xl font-bold mb-1"
+            className="text-white text-3xl font-bold mb-1"
             style={{
               textShadow: '0 0 15px #D5442F',
               letterSpacing: 1,
