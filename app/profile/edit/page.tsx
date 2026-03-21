@@ -14,11 +14,32 @@ import { Spinner } from '~/components/loading/Spinner';
 // ──────────────────────────────────────────────
 
 const AVATAR_STYLES = [
-  { id: 'adventurer', label: 'Aventurier' },
-  { id: 'avataaars', label: 'Cartoon' },
-  { id: 'bottts', label: 'Robot' },
-  { id: 'fun-emoji', label: 'Emoji' },
-  { id: 'pixel-art', label: 'Pixel' },
+  // Personnages illustrés
+  { id: 'adventurer',          label: 'Aventurier',   emoji: '🧝' },
+  { id: 'adventurer-neutral',  label: 'Aventurier 2', emoji: '🧑' },
+  { id: 'avataaars',           label: 'Cartoon',      emoji: '😎' },
+  { id: 'avataaars-neutral',   label: 'Cartoon 2',    emoji: '🙂' },
+  { id: 'big-ears',            label: 'Grandes oreilles', emoji: '👂' },
+  { id: 'big-smile',           label: 'Grand sourire', emoji: '😁' },
+  { id: 'lorelei',             label: 'Lorelei',      emoji: '👩‍🎨' },
+  { id: 'lorelei-neutral',      label: 'Lorelei 2',    emoji: '👩‍🎨' },
+  { id: 'micah',               label: 'Micah',        emoji: '🧑‍💼' },
+  { id: 'open-peeps',          label: 'Open Peeps',   emoji: '🙋' },
+  { id: 'personas',            label: 'Personas',     emoji: '🧑‍🦱' },
+  { id: 'notionists',          label: 'Notionists',   emoji: '📝' },
+  { id: 'dylan',               label: 'Dylan',        emoji: '🎨' },
+  // Stylisés / dessinés
+  { id: 'croodles',            label: 'Doodle',       emoji: '✏️' },
+  { id: 'fun-emoji',           label: 'Emoji',        emoji: '😜' },
+  { id: 'pixel-art',           label: 'Pixel',        emoji: '👾' },
+  // Robots / tech
+  { id: 'bottts',              label: 'Robot',        emoji: '🤖' },
+  { id: 'bottts-neutral',      label: 'Robot 2',      emoji: '⚙️' },
+  // Abstrait / minimaliste
+  { id: 'thumbs',              label: 'Pouces',       emoji: '👍' },
+  { id: 'shapes',              label: 'Formes',       emoji: '🔷' },
+  { id: 'rings',               label: 'Cercles',      emoji: '⭕' },
+  { id: 'identicon',           label: 'Identicon',    emoji: '🔲' },
 ];
 
 const AVATAR_SEEDS = [
@@ -26,7 +47,8 @@ const AVATAR_SEEDS = [
   'Aria', 'Leo', 'Nova', 'Sam', 'Kira',
   'Rio', 'Mia', 'Ace', 'Ivy', 'Axel',
   'Zoe', 'Rex', 'Nora', 'Jay', 'Jade',
-  'Kai', 'Lena', 'Dex', 'Lyra',
+  'Kai', 'Lena', 'Dex', 'Lyra', 'Ash',
+  'Ember', 'Storm', 'Blaze', 'Sage', 'Onyx',
 ];
 
 function getAvatarUrl(style: string, seed: string) {
@@ -129,23 +151,39 @@ export default function EditProfilePage() {
           </div>
 
           {/* Style selector */}
-          <div className="px-4 mb-6">
-            <p className="text-white/60 text-xs font-semibold uppercase tracking-wider mb-3">Style</p>
-            <div className="flex flex-row gap-2 flex-wrap">
-              {AVATAR_STYLES.map((style) => (
-                <button
-                  key={style.id}
-                  onClick={() => setSelectedStyle(style.id)}
-                  className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
-                    selectedStyle === style.id
-                      ? 'text-white border border-[#6366F1]'
-                      : 'text-white/60 bg-[#342D5B] border border-[#3E3666] hover:border-[#6366F1]/50'
-                  }`}
-                  style={selectedStyle === style.id ? { background: 'linear-gradient(to right, #6366F140, #8B5CF640)' } : {}}
-                >
-                  {style.label}
-                </button>
-              ))}
+          <div className="mb-6">
+            <p className="text-white/60 text-xs font-semibold uppercase tracking-wider mb-3 px-4">Style</p>
+            <div className="flex flex-row gap-3 overflow-x-auto px-4 pb-2 scrollbar-none">
+              {AVATAR_STYLES.map((style) => {
+                const isActive = selectedStyle === style.id;
+                return (
+                  <button
+                    key={style.id}
+                    onClick={() => setSelectedStyle(style.id)}
+                    className="flex flex-col items-center flex-shrink-0 transition-all"
+                  >
+                    <div
+                      className={`w-16 h-16 rounded-2xl overflow-hidden border-2 transition-all mb-1.5 ${
+                        isActive ? 'border-[#6366F1] shadow-md shadow-indigo-500/40' : 'border-[#3E3666]'
+                      }`}
+                      style={isActive ? { background: '#6366F115' } : { background: '#342D5B' }}
+                    >
+                      <img
+                        src={getAvatarUrl(style.id, selectedSeed)}
+                        alt={style.label}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <span
+                      className={`text-[10px] font-semibold text-center leading-tight max-w-[64px] ${
+                        isActive ? 'text-[#6366F1]' : 'text-white/50'
+                      }`}
+                    >
+                      {style.label}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
