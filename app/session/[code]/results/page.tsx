@@ -599,6 +599,7 @@ export default function ResultsPage() {
   const currentUserRanking = rankings.find(
     (r) => (r.player.userId ?? r.player.id) === user?.id,
   );
+  const currentUserTotalDebts = currentUserRanking?.debts?.reduce((sum, d) => sum + d.amount, 0) || 0;
   const totalCorrections = (entry: SessionRankingEntry) =>
     entry.corrections?.reduce((sum, c) => sum + c.amount, 0) || 0;
 
@@ -801,7 +802,7 @@ export default function ResultsPage() {
               <div className="flex flex-row gap-4">
                 <div className="flex-1 flex flex-col items-center p-3 bg-[#3E3666] rounded-2xl">
                   <span className="text-[#00D397] font-bold text-2xl">
-                    {currentUserRanking.score}
+                    {currentUserRanking.score + currentUserTotalDebts}
                   </span>
                   <span className="text-white/50 text-xs mt-1">Score Base</span>
                 </div>
@@ -810,6 +811,12 @@ export default function ResultsPage() {
                     {currentUserRanking.corrections?.length || 0}
                   </span>
                   <span className="text-white/50 text-xs mt-1">Corrections</span>
+                </div>
+                <div className="flex-1 flex flex-col items-center p-3 bg-[#3E3666] rounded-2xl">
+                  <span className="text-[#F59E0B] font-bold text-2xl">
+                    - {currentUserTotalDebts || 0}
+                  </span>
+                  <span className="text-white/50 text-xs mt-1">Dettes</span>
                 </div>
                 <div className="flex-1 flex flex-col items-center p-3 bg-[#00D39720] rounded-2xl">
                   <span className="text-[#00D397] font-bold text-2xl">
