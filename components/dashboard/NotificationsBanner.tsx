@@ -17,7 +17,7 @@ export function NotificationsBanner({ pendingInvitations, pendingFriendRequests 
 
   return (
     <button
-      onClick={() => router.push('/friends')}
+      onClick={() => router.push('/notifications')}
       className="w-full text-left active:opacity-90 hover:opacity-90 transition-opacity cursor-pointer"
     >
       <Card className="border-[#FFD70030] bg-[#342D5B]">
