@@ -435,7 +435,7 @@ export default function DashboardPage() {
             <QuickActionButton
               icon={Plus}
               label="Créer"
-              sublabel="Créer une nouvelle salle"
+              sublabel="Créer une salle"
               onClick={() => router.push('/room/create')}
               bgColor="bg-[#00D397]"
             />
