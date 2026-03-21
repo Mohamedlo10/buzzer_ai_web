@@ -360,7 +360,13 @@ export default function RankingsPage() {
       </div>
 
       <div className="flex-1 overflow-y-auto px-4">
-        {/* Search by Username */}
+       
+
+        {/* Podium — only on first page without search */}
+        {!searchUsername && (
+          <Podium rankings={rankings} currentPage={currentPage} />
+        )}
+         {/* Search by Username */}
         <div className="mb-4">
           <div className="flex flex-row items-center bg-[#342D5B] rounded-xl border border-[#3E3666] px-4">
             <Search size={20} color="#FFFFFF60" />
@@ -385,11 +391,6 @@ export default function RankingsPage() {
             )}
           </div>
         </div>
-
-        {/* Podium — only on first page without search */}
-        {!searchUsername && (
-          <Podium rankings={rankings} currentPage={currentPage} />
-        )}
 
         {/* Stats Summary */}
         {!searchUsername && totalElements > 0 && (

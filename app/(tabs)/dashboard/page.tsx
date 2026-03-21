@@ -308,17 +308,6 @@ function JoinModal({
             <X size={18} color="#FFFFFF80" />
           </button>
         </div>
-          {/* QR Scanner Button */}
-        <div className="px-5 pb-5">
-          <button
-            onClick={() => setShowScanner(true)}
-            disabled={isJoining}
-            className="w-full py-3.5 rounded-2xl flex items-center justify-center gap-2 bg-[#292349] border border-[#3E3666] hover:bg-[#3E3666] transition-colors cursor-pointer"
-          >
-            <QrCode size={18} color="#00D397" />
-            <span className="text-white/80 font-medium">Scanner un QR code</span>
-          </button>
-        </div>
 
         {/* Info text */}
         <div className="px-5 mb-4">
@@ -373,6 +362,18 @@ function JoinModal({
             ) : (
               <span className="font-bold text-lg text-white">Rejoindre</span>
             )}
+          </button>
+        </div>
+
+          {/* QR Scanner Button */}
+        <div className="px-5 pb-5">
+          <button
+            onClick={() => setShowScanner(true)}
+            disabled={isJoining}
+            className="w-full py-3.5 rounded-2xl flex items-center justify-center gap-2 bg-[#292349] border border-[#3E3666] hover:bg-[#3E3666] transition-colors cursor-pointer"
+          >
+            <QrCode size={18} color="#00D397" />
+            <span className="text-white/80 font-medium">Scanner un QR code</span>
           </button>
         </div>
 

@@ -18,13 +18,13 @@ function CategoryItem({ category, index }: { category: CategoryPodium; index: nu
   const medal = MEDAL_CONFIG[index] || MEDAL_CONFIG[2];
 
   return (
-    <div className={`flex-1 ${medal.bgColor} border ${medal.borderColor} rounded-2xl p-3 flex flex-col items-center`}>
+    <div className={`flex-1 ${medal.bgColor} border ${medal.borderColor} rounded-2xl sm:px-3 px-1 sm:py-3 py-2 flex flex-col items-center`}>
       {/* Medal */}
       <span className="text-2xl mb-2">{medal.emoji}</span>
 
       {/* Category name */}
       <p className="text-white font-bold text-sm text-center truncate w-full">
-        {category.category}
+        {category.category.length > 9 ? category.category.slice(0, 9) + '...' : category.category}
       </p>
 
       {/* Score */}
