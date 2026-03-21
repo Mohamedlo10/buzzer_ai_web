@@ -16,7 +16,7 @@ import * as qrcodeApi from '~/lib/api/qrcode';
 import * as roomsApi from '~/lib/api/rooms';
 import * as friendsApi from '~/lib/api/friends';
 import * as sessionsApi from '~/lib/api/sessions';
-import type { RoomDetailResponse, RoomSessionResponse, SessionStatus } from '~/types/api';
+import type { FriendResponse, RoomDetailResponse, RoomSessionResponse, SessionStatus } from '~/types/api';
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; icon: React.ComponentType<{ size: number; color: string }> }> = {
   LOBBY:      { label: 'Lobby',        color: '#00D397', bg: '#00D39720', icon: Users },
@@ -347,6 +347,171 @@ function HistorySessionItem({
   );
 }
 
+// ── Invite Friends Modal ─────────────────────────────────────────────────────
+
+function InviteFriendsModal({
+  roomId,
+  memberUserIds,
+  onClose,
+}: {
+  roomId: string;
+  memberUserIds: string[];
+  onClose: () => void;
+}) {
+  const [friends, setFriends] = useState<FriendResponse[]>([]);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSending, setIsSending] = useState(false);
+  const [sent, setSent] = useState(false);
+
+  useEffect(() => {
+    friendsApi.getFriends().then((list) => {
+      setFriends(list.filter((f) => !memberUserIds.includes(f.id)));
+    }).catch(() => {}).finally(() => setIsLoading(false));
+  }, []);
+
+  const toggle = (id: string) =>
+    setSelected((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+
+  const handleSend = async () => {
+    if (selected.size === 0) return;
+    setIsSending(true);
+    try {
+      await roomsApi.inviteToRoom(roomId, Array.from(selected));
+      setSent(true);
+      setTimeout(onClose, 1200);
+    } catch {
+      window.alert("Impossible d'envoyer les invitations");
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/60 flex items-end justify-center z-50">
+      <div className="absolute inset-0" onClick={onClose} />
+      <div className="relative bg-[#292349] rounded-t-3xl w-full max-w-2xl max-h-[80vh] flex flex-col">
+        {/* Header */}
+        <div className="flex items-center justify-between pt-6 pb-4 px-4 border-b border-[#3E3666] shrink-0">
+          <div>
+            <p className="text-white font-bold text-xl">Inviter des amis</p>
+            <p className="text-white/50 text-xs mt-0.5">
+              {selected.size > 0 ? `${selected.size} sélectionné${selected.size > 1 ? 's' : ''}` : 'Sélectionne des amis'}
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="w-10 h-10 rounded-full bg-[#342D5B] flex items-center justify-center hover:bg-[#3E3666] transition-colors cursor-pointer"
+          >
+            <X size={20} color="#FFFFFF" />
+          </button>
+        </div>
+
+        {/* List */}
+        <div className="flex-1 overflow-y-auto py-3">
+          {isLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="w-8 h-8 border-2 border-[#00D397] border-t-transparent rounded-full animate-spin" />
+            </div>
+          ) : friends.length === 0 ? (
+            <div className="flex flex-col items-center py-12 px-6">
+              <UserPlus size={40} color="#FFFFFF30" />
+              <p className="text-white/50 text-center mt-3">
+                Aucun ami disponible à inviter
+              </p>
+              <p className="text-white/30 text-sm text-center mt-1">
+                Tous vos amis sont déjà membres de cette salle
+              </p>
+            </div>
+          ) : (
+            friends.map((friend) => {
+              const isSelected = selected.has(friend.id);
+              return (
+                <button
+                  key={friend.id}
+                  onClick={() => toggle(friend.id)}
+                  className="flex items-center px-4 py-3 w-full hover:bg-white/5 transition-colors cursor-pointer"
+                >
+                  {/* Avatar */}
+                  <div className="relative shrink-0 mr-3">
+                    <div className="w-12 h-12 rounded-full bg-[#3E3666] flex items-center justify-center">
+                      <span className="text-white font-bold text-lg">
+                        {friend.username.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                    <span
+                      className={`absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full border-2 border-[#292349] ${
+                        friend.isOnline ? 'bg-[#00D397]' : 'bg-[#6B7280]'
+                      }`}
+                    />
+                  </div>
+
+                  {/* Info */}
+                  <div className="flex-1 text-left">
+                    <p className="text-white font-semibold">{friend.username}</p>
+                    <p className="text-white/40 text-xs">
+                      {friend.isOnline ? 'En ligne' : 'Hors ligne'}
+                      {friend.globalRank != null && ` · #${friend.globalRank}`}
+                    </p>
+                  </div>
+
+                  {/* Checkbox */}
+                  <div
+                    className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
+                      isSelected
+                        ? 'bg-[#00D397] border-[#00D397]'
+                        : 'border-[#3E3666] bg-transparent'
+                    }`}
+                  >
+                    {isSelected && (
+                      <svg width="12" height="9" viewBox="0 0 12 9" fill="none">
+                        <path d="M1 4L4.5 7.5L11 1" stroke="#292349" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    )}
+                  </div>
+                </button>
+              );
+            })
+          )}
+        </div>
+
+        {/* Send button */}
+        {friends.length > 0 && (
+          <div className="px-4 py-4 border-t border-[#3E3666] shrink-0">
+            <button
+              onClick={handleSend}
+              disabled={selected.size === 0 || isSending || sent}
+              className={`w-full py-4 rounded-2xl flex items-center justify-center transition-colors font-bold text-base ${
+                sent
+                  ? 'bg-[#00D39740] cursor-default'
+                  : selected.size === 0 || isSending
+                  ? 'bg-[#3E3666] cursor-not-allowed'
+                  : 'bg-[#00D397] hover:opacity-90 cursor-pointer'
+              }`}
+            >
+              {sent ? (
+                <span className="text-[#00D397]">Invitations envoyées ✓</span>
+              ) : isSending ? (
+                <span className="text-white/60">Envoi en cours...</span>
+              ) : (
+                <span className={selected.size > 0 ? 'text-[#292349]' : 'text-white/40'}>
+                  {selected.size > 0
+                    ? `Inviter ${selected.size} ami${selected.size > 1 ? 's' : ''}`
+                    : 'Sélectionne des amis'}
+                </span>
+              )}
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ── Main Screen ───────────────────────────────────────────────────────────────
 
 export default function RoomDetailPage() {
@@ -357,6 +522,7 @@ export default function RoomDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showConfigModal, setShowConfigModal] = useState(false);
+  const [showInviteModal, setShowInviteModal] = useState(false);
   const [qrImage, setQrImage] = useState<string | null>(null);
   const [qrLoading, setQrLoading] = useState(false);
 
@@ -667,6 +833,13 @@ export default function RoomDetailPage() {
                 <Users size={20} color="#FFFFFF" />
                 <p className="text-white font-bold text-lg ml-2">Membres</p>
                 <p className="text-white/40 text-sm ml-2">({members.length})</p>
+                <button
+                  onClick={() => setShowInviteModal(true)}
+                  className="ml-auto flex items-center gap-1.5 bg-[#00D39720] px-3 py-1.5 rounded-xl hover:bg-[#00D39730] transition-colors cursor-pointer"
+                >
+                  <UserPlus size={15} color="#00D397" />
+                  <span className="text-[#00D397] text-xs font-semibold">Inviter</span>
+                </button>
               </div>
             </div>
             {members.map((member) => (
@@ -778,6 +951,15 @@ export default function RoomDetailPage() {
 
         <div className="h-8" />
       </div>
+
+      {/* Invite Friends Modal */}
+      {showInviteModal && (
+        <InviteFriendsModal
+          roomId={roomId}
+          memberUserIds={members.map((m) => m.userId)}
+          onClose={() => setShowInviteModal(false)}
+        />
+      )}
 
       {/* Session Config Modal */}
       {showConfigModal && (
