@@ -222,5 +222,8 @@ export function useNotifications() {
   return useQuery({
     queryKey: queryKeys.notifications,
     queryFn: notificationsApi.getNotifications,
+    staleTime: 0,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
   });
 }

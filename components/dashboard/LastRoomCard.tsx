@@ -54,7 +54,7 @@ export function LastRoomCard({ room }: LastRoomCardProps) {
         <div className="flex flex-row items-center gap-4">
           <div className="flex flex-row items-center">
             <Users size={14} color="#FFFFFF" />
-            <span className="text-white/60 text-sm ml-1.5">{room.memberCount} membres</span>
+            <span className="text-white/60 text-sm ml-1.5">{room.memberCount}</span>
           </div>
           <div className="flex flex-row items-center">
             <span className="text-white/40 text-xs">Propriétaire: {room.ownerName}</span>

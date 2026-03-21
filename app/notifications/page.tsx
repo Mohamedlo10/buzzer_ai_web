@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Bell, UserPlus, Gamepad2, FolderOpen, Check, X, ChevronLeft, ArrowRight } from 'lucide-react';
 
@@ -10,7 +11,6 @@ import { useNotifications } from '~/lib/query/hooks';
 import * as friendsApi from '~/lib/api/friends';
 import * as invitationsApi from '~/lib/api/invitations';
 import * as roomsApi from '~/lib/api/rooms';
-import { appStorage } from '~/lib/utils/storage';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '~/lib/query/keys';
 
@@ -18,6 +18,11 @@ export default function NotificationsPage() {
   const router = useRouter();
   const qc = useQueryClient();
   const { data, isLoading, refetch } = useNotifications();
+
+  // Force fresh data à chaque ouverture de la page
+  useEffect(() => {
+    refetch();
+  }, []);
 
   const invalidate = () => {
     qc.invalidateQueries({ queryKey: queryKeys.notifications });
