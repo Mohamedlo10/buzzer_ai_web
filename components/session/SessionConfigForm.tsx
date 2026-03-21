@@ -542,14 +542,14 @@ export function SessionConfigForm({ onSuccess, roomId }: SessionConfigFormProps)
 
       {/* Options Section */}
       <ConfigSection icon={Crown} iconColor="#00D397" title="Options de jeu">
-        <OptionToggle
+        {/* <OptionToggle
           icon={Lock}
           iconBg="#3E3666"
           title="Session privée"
           subtitle="Requiert le code pour rejoindre"
           value={config.isPrivate}
           onValueChange={(value) => setConfig((c) => ({ ...c, isPrivate: value }))}
-        />
+        /> */}
         <OptionToggle
           icon={Users}
           iconBg="#4A90D920"

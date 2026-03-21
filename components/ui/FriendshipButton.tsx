@@ -53,9 +53,9 @@ export function FriendshipButton({
   return (
     <button
       onClick={onAddFriend}
-      className={`${buttonSize} rounded-full bg-[#00D39720] flex items-center justify-center hover:bg-[#00D39730] transition-colors cursor-pointer`}
+      className={`${buttonSize} rounded-full bg-[#00D397] flex items-center justify-center hover:bg-[#00D39730] transition-colors cursor-pointer`}
     >
-      <UserPlus size={iconSize} color="#00D397" />
+      <UserPlus size={iconSize} color="#00412e" />
     </button>
   );
 }

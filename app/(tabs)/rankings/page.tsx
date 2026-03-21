@@ -149,9 +149,9 @@ function RankingRow({
     return (
       <button
         onClick={() => onAddFriend?.(entry.userId, entry.username || 'Inconnu')}
-        className="w-10 h-10 rounded-full bg-[#00D39720] flex items-center justify-center hover:bg-[#00D39730] transition-colors cursor-pointer"
+        className="w-10 h-10 rounded-full bg-[#00D397] flex items-center justify-center hover:bg-[#00D39730] transition-colors cursor-pointer"
       >
-        <UserPlus size={18} color="#00D397" />
+        <UserPlus size={18} color="#00412e" />
       </button>
     );
   };
