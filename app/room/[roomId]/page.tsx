@@ -352,10 +352,12 @@ function HistorySessionItem({
 function InviteFriendsModal({
   roomId,
   memberUserIds,
+  pendingInvitationUserIds,
   onClose,
 }: {
   roomId: string;
   memberUserIds: string[];
+  pendingInvitationUserIds: string[];
   onClose: () => void;
 }) {
   const [friends, setFriends] = useState<FriendResponse[]>([]);
@@ -366,16 +368,21 @@ function InviteFriendsModal({
 
   useEffect(() => {
     friendsApi.getFriends().then((list) => {
+      // Exclure les membres déjà dans la salle
       setFriends(list.filter((f) => !memberUserIds.includes(f.id)));
     }).catch(() => {}).finally(() => setIsLoading(false));
   }, []);
 
-  const toggle = (id: string) =>
+  const isAlreadyInvited = (id: string) => pendingInvitationUserIds.includes(id);
+
+  const toggle = (id: string) => {
+    if (isAlreadyInvited(id)) return;
     setSelected((prev) => {
       const next = new Set(prev);
       next.has(id) ? next.delete(id) : next.add(id);
       return next;
     });
+  };
 
   const handleSend = async () => {
     if (selected.size === 0) return;
@@ -430,11 +437,15 @@ function InviteFriendsModal({
           ) : (
             friends.map((friend) => {
               const isSelected = selected.has(friend.id);
+              const alreadyInvited = isAlreadyInvited(friend.id);
               return (
                 <button
                   key={friend.id}
                   onClick={() => toggle(friend.id)}
-                  className="flex items-center px-4 py-3 w-full hover:bg-white/5 transition-colors cursor-pointer"
+                  disabled={alreadyInvited}
+                  className={`flex items-center px-4 py-3 w-full transition-colors ${
+                    alreadyInvited ? 'opacity-50 cursor-not-allowed' : 'hover:bg-white/5 cursor-pointer'
+                  }`}
                 >
                   {/* Avatar */}
                   <div className="relative shrink-0 mr-3">
@@ -454,25 +465,33 @@ function InviteFriendsModal({
                   <div className="flex-1 text-left">
                     <p className="text-white font-semibold">{friend.username}</p>
                     <p className="text-white/40 text-xs">
-                      {friend.isOnline ? 'En ligne' : 'Hors ligne'}
-                      {friend.globalRank != null && ` · #${friend.globalRank}`}
+                      {alreadyInvited
+                        ? 'Invitation déjà envoyée'
+                        : `${friend.isOnline ? 'En ligne' : 'Hors ligne'}${friend.globalRank != null ? ` · #${friend.globalRank}` : ''}`
+                      }
                     </p>
                   </div>
 
-                  {/* Checkbox */}
-                  <div
-                    className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
-                      isSelected
-                        ? 'bg-[#00D397] border-[#00D397]'
-                        : 'border-[#3E3666] bg-transparent'
-                    }`}
-                  >
-                    {isSelected && (
-                      <svg width="12" height="9" viewBox="0 0 12 9" fill="none">
-                        <path d="M1 4L4.5 7.5L11 1" stroke="#292349" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    )}
-                  </div>
+                  {/* Checkbox ou badge */}
+                  {alreadyInvited ? (
+                    <div className="px-2 py-1 rounded-lg bg-[#3E3666]">
+                      <span className="text-white/40 text-xs">En attente</span>
+                    </div>
+                  ) : (
+                    <div
+                      className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
+                        isSelected
+                          ? 'bg-[#00D397] border-[#00D397]'
+                          : 'border-[#3E3666] bg-transparent'
+                      }`}
+                    >
+                      {isSelected && (
+                        <svg width="12" height="9" viewBox="0 0 12 9" fill="none">
+                          <path d="M1 4L4.5 7.5L11 1" stroke="#292349" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      )}
+                    </div>
+                  )}
                 </button>
               );
             })
@@ -957,6 +976,7 @@ export default function RoomDetailPage() {
         <InviteFriendsModal
           roomId={roomId}
           memberUserIds={members.map((m) => m.userId)}
+          pendingInvitationUserIds={roomData?.pendingInvitationUserIds ?? []}
           onClose={() => setShowInviteModal(false)}
         />
       )}

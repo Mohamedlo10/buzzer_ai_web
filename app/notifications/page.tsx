@@ -202,13 +202,19 @@ export default function NotificationsPage() {
                           Invité par <span className="text-white/70">{inv.senderUsername}</span>
                         </p>
                       </div>
-                      <button
-                        onClick={() => handleJoinRoom(inv.roomCode)}
-                        className="flex items-center gap-1 px-3 py-2 rounded-lg bg-[#00D397] hover:opacity-90 transition-opacity cursor-pointer"
-                      >
-                        <span className="text-[#292349] font-semibold text-sm">Rejoindre</span>
-                        <ArrowRight size={14} color="#292349" />
-                      </button>
+                      {inv.isAlreadyMember ? (
+                        <div className="px-3 py-2 rounded-lg bg-[#00D39720]">
+                          <span className="text-[#00D397] text-sm font-medium">Déjà membre</span>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => handleJoinRoom(inv.roomCode)}
+                          className="flex items-center gap-1 px-3 py-2 rounded-lg bg-[#00D397] hover:opacity-90 transition-opacity cursor-pointer"
+                        >
+                          <span className="text-[#292349] font-semibold text-sm">Rejoindre</span>
+                          <ArrowRight size={14} color="#292349" />
+                        </button>
+                      )}
                     </div>
                   </Card>
                 ))}

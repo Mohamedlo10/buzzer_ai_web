@@ -297,6 +297,8 @@ export interface NotificationRoomInvitation {
   senderUsername: string;
   senderAvatarUrl: string | null;
   createdAt: string;
+  /** true si l'utilisateur est déjà membre de cette salle */
+  isAlreadyMember?: boolean;
 }
 
 export interface NotificationResponse {
@@ -542,6 +544,8 @@ export interface RoomDetailResponse {
   members: RoomMemberResponse[];
   sessions: RoomSessionResponse[];
   rankings: RoomRankingEntry[];
+  /** IDs des utilisateurs ayant déjà une invitation en attente pour cette salle */
+  pendingInvitationUserIds?: string[];
 }
 
 export interface RoomInfo {
