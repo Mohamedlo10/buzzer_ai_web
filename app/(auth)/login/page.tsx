@@ -270,22 +270,7 @@ export default function LoginPage() {
               </div>
             )}
           </button>
-
-          {/* Forgot Password */}
-          <button type="button" className="mt-4 sm:flex w-full hidden justify-center">
- <span className="text-white/60 text-base">Pas encore de compte ? </span>
-          <button
-            type="button"
-            onClick={() => router.push('register')}
-            className="flex flex-row items-center ml-1"
-          >
-            <span className="text-[#00D397] text-base font-bold mr-1">Créer un compte</span>
-            <Sparkles size={16} color="#FFD700" />
-          </button>          </button>
-        </div>
-
-        {/* Footer */}
-        <div className="sm:hidden flex flex-row justify-center mt-8 mb-8 items-center">
+          <div  className="mt-4 flex w-full sm:flex-row flex-col items-center justify-center">
           <span className="text-white/60 text-base">Pas encore de compte ? </span>
           <button
             type="button"
@@ -294,8 +279,13 @@ export default function LoginPage() {
           >
             <span className="text-[#00D397] text-base font-bold mr-1">Créer un compte</span>
             <Sparkles size={16} color="#FFD700" />
-          </button>
+          </button>          
+          </div>
+          
         </div>
+
+        {/* Footer */}
+    
       </div>
     </div>
   );

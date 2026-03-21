@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 
 import { SafeScreen } from '~/components/layout/SafeScreen';
+import { Avatar } from '~/components/ui/Avatar';
 import { FriendshipButton } from '~/components/ui/FriendshipButton';
 import { useAuthStore } from '~/stores/useAuthStore';
 import { useBuzzStore } from '~/stores/useBuzzStore';
@@ -29,7 +30,7 @@ import * as friendsApi from '~/lib/api/friends';
 import { appStorage } from '~/lib/utils/storage';
 import type { SessionRankingEntry, CategoryRankingResponse } from '~/types/api';
 
-// Podium Component
+// ── Individual Podium ────────────────────────────────────────────────────────
 function Podium({ rankings }: { rankings: SessionRankingEntry[] }) {
   if (rankings.length < 3) return null;
 
@@ -39,7 +40,7 @@ function Podium({ rankings }: { rankings: SessionRankingEntry[] }) {
     <div className="flex flex-col items-center pt-4 pb-8 px-4">
       <div className="flex flex-row items-center gap-2 mb-6">
         <Sparkles size={20} color="#FFD700" />
-        <span className="text-white/80 text-sm font-semibold tracking-wider uppercase">Podium</span>
+        <span className="text-white/80 text-sm font-semibold tracking-wider uppercase">Podium Joueurs</span>
         <Sparkles size={20} color="#FFD700" />
       </div>
 
@@ -52,13 +53,14 @@ function Podium({ rankings }: { rankings: SessionRankingEntry[] }) {
           >
             <Medal size={28} color="#C0C0C0" />
           </div>
-          <div className="w-16 h-16 rounded-full bg-[#3E3666] border-2 border-[#C0C0C0] flex items-center justify-center -mt-8">
-            <span className="text-white font-bold text-xl">
-              {second.player.name.charAt(0).toUpperCase()}
-            </span>
+          <div className="-mt-8">
+            <Avatar avatarUrl={second.player.avatarUrl} username={second.player.name} size={64} borderColor="#C0C0C0" />
           </div>
           <div className="mt-2 flex flex-col items-center">
-            <span className="text-white font-semibold text-center">{second.player.name}</span>
+            <span className="text-white font-semibold text-center text-sm">{second.player.name}</span>
+            {second.teamName && (
+              <span className="text-white/40 text-xs">{second.teamName}</span>
+            )}
             <div className="flex flex-row items-center mt-1">
               <span className="text-[#C0C0C0] font-bold text-lg">{second.finalScore}</span>
               <span className="text-white/50 text-xs ml-1">pts</span>
@@ -78,13 +80,14 @@ function Podium({ rankings }: { rankings: SessionRankingEntry[] }) {
           >
             <Trophy size={32} color="#FFD700" />
           </div>
-          <div className="w-20 h-20 rounded-full bg-[#FFD70030] border-4 border-[#FFD700] flex items-center justify-center -mt-10">
-            <span className="text-[#FFD700] font-bold text-3xl">
-              {first.player.name.charAt(0).toUpperCase()}
-            </span>
+          <div className="-mt-10">
+            <Avatar avatarUrl={first.player.avatarUrl} username={first.player.name} size={80} borderColor="#FFD700" />
           </div>
           <div className="mt-2 flex flex-col items-center">
             <span className="text-white font-bold text-lg text-center">{first.player.name}</span>
+            {first.teamName && (
+              <span className="text-white/40 text-xs">{first.teamName}</span>
+            )}
             <div className="flex flex-row items-center mt-1">
               <span className="text-[#FFD700] font-bold text-xl">{first.finalScore}</span>
               <span className="text-white/50 text-xs ml-1">pts</span>
@@ -103,13 +106,14 @@ function Podium({ rankings }: { rankings: SessionRankingEntry[] }) {
           >
             <Medal size={24} color="#CD7F32" />
           </div>
-          <div className="w-16 h-16 rounded-full bg-[#3E3666] border-2 border-[#CD7F32] flex items-center justify-center -mt-8">
-            <span className="text-white font-bold text-xl">
-              {third.player.name.charAt(0).toUpperCase()}
-            </span>
+          <div className="-mt-8">
+            <Avatar avatarUrl={third.player.avatarUrl} username={third.player.name} size={64} borderColor="#CD7F32" />
           </div>
           <div className="mt-2 flex flex-col items-center">
-            <span className="text-white font-semibold text-center">{third.player.name}</span>
+            <span className="text-white font-semibold text-center text-sm">{third.player.name}</span>
+            {third.teamName && (
+              <span className="text-white/40 text-xs">{third.teamName}</span>
+            )}
             <div className="flex flex-row items-center mt-1">
               <span className="text-[#CD7F32] font-bold text-lg">{third.finalScore}</span>
               <span className="text-white/50 text-xs ml-1">pts</span>
@@ -119,6 +123,200 @@ function Podium({ rankings }: { rankings: SessionRankingEntry[] }) {
             <span className="text-[#CD7F32] text-xs font-bold">3ème</span>
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Team Podium ──────────────────────────────────────────────────────────────
+interface TeamResult {
+  teamId: string;
+  teamName: string;
+  teamColor: string;
+  teamScore: number;
+  members: SessionRankingEntry[];
+}
+
+function TeamPodium({ teams }: { teams: TeamResult[] }) {
+  if (teams.length < 2) return null;
+
+  const podiumTeams = teams.slice(0, 3);
+  const [first, second, third] = podiumTeams;
+
+  const PodiumTeamCard = ({
+    team,
+    height,
+    medal,
+    label,
+    labelColor,
+    borderColor,
+    bg,
+    mt = '',
+  }: {
+    team: TeamResult;
+    height: string;
+    medal: React.ReactNode;
+    label: string;
+    labelColor: string;
+    borderColor: string;
+    bg: string;
+    mt?: string;
+  }) => (
+    <div className={`flex flex-col items-center mx-1 ${mt}`}>
+      <div
+        className={`w-24 ${height} rounded-t-2xl flex flex-col items-center justify-end p-2`}
+        style={{ background: bg }}
+      >
+        {medal}
+      </div>
+      {/* Team color circle */}
+      <div
+        className="w-16 h-16 rounded-full border-4 flex items-center justify-center -mt-8"
+        style={{ backgroundColor: `${team.teamColor}30`, borderColor }}
+      >
+        <div className="w-8 h-8 rounded-full" style={{ backgroundColor: team.teamColor }} />
+      </div>
+      <div className="mt-2 flex flex-col items-center px-1">
+        <span className="text-white font-bold text-center text-sm leading-tight">{team.teamName}</span>
+        <div className="flex flex-row items-center mt-1">
+          <span className="font-bold text-lg" style={{ color: labelColor }}>{team.teamScore}</span>
+          <span className="text-white/50 text-xs ml-1">pts</span>
+        </div>
+        <span className="text-white/40 text-xs mt-0.5">{team.members.length} joueur{team.members.length > 1 ? 's' : ''}</span>
+      </div>
+      <div className="mt-2 px-3 py-1 rounded-full" style={{ backgroundColor: `${labelColor}20` }}>
+        <span className="text-xs font-bold" style={{ color: labelColor }}>{label}</span>
+      </div>
+      {/* Member avatars row */}
+      <div className="flex flex-row mt-2 gap-0.5 justify-center">
+        {team.members.slice(0, 4).map((m) => (
+          <Avatar key={m.player.id} avatarUrl={m.player.avatarUrl} username={m.player.name} size={20} />
+        ))}
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="flex flex-col items-center pt-4 pb-6 px-4">
+      <div className="flex flex-row items-center gap-2 mb-6">
+        <Users size={18} color="#4A90D9" />
+        <span className="text-white/80 text-sm font-semibold tracking-wider uppercase">Podium Équipes</span>
+        <Users size={18} color="#4A90D9" />
+      </div>
+
+      <div className="flex flex-row items-end justify-center w-full">
+        {second && (
+          <PodiumTeamCard
+            team={second}
+            height="h-28"
+            medal={<Medal size={28} color="#C0C0C0" />}
+            label="2ème"
+            labelColor="#C0C0C0"
+            borderColor="#C0C0C0"
+            bg="linear-gradient(135deg, #C0C0C040, #C0C0C020)"
+          />
+        )}
+        <PodiumTeamCard
+          team={first}
+          height="h-36"
+          medal={<Trophy size={32} color="#FFD700" />}
+          label="GAGNANT"
+          labelColor="#FFD700"
+          borderColor="#FFD700"
+          bg="linear-gradient(135deg, #FFD70050, #FFD70020)"
+          mt="-mt-8"
+        />
+        {third && (
+          <PodiumTeamCard
+            team={third}
+            height="h-20"
+            medal={<Medal size={24} color="#CD7F32" />}
+            label="3ème"
+            labelColor="#CD7F32"
+            borderColor="#CD7F32"
+            bg="linear-gradient(135deg, #CD7F3240, #CD7F3220)"
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Team Full Leaderboard ────────────────────────────────────────────────────
+function TeamLeaderboard({
+  teams,
+  currentUserId,
+}: {
+  teams: TeamResult[];
+  currentUserId: string;
+}) {
+  return (
+    <div className="px-4 mb-4">
+      <div className="bg-[#342D5B] rounded-3xl border border-[#4A90D940] overflow-hidden">
+        <div className="px-5 py-4 border-b border-[#4A90D930]">
+          <div className="flex flex-row items-center gap-2">
+            <Users size={20} color="#4A90D9" />
+            <p className="text-white font-bold text-lg">Classement par Équipe</p>
+          </div>
+        </div>
+
+        {teams.map((team, index) => {
+          const isMyTeam = team.members.some(
+            (m) => (m.player.userId ?? m.player.id) === currentUserId,
+          );
+          const rankColors = ['#FFD700', '#C0C0C0', '#CD7F32'];
+          const rankColor = rankColors[index] ?? '#FFFFFF60';
+          return (
+            <div key={team.teamId} className="border-b border-[#3E3666] last:border-b-0">
+              {/* Team header row */}
+              <div
+                className="px-5 py-3 flex flex-row items-center"
+                style={{ background: isMyTeam ? '#4A90D915' : undefined }}
+              >
+                <div className="w-8 flex items-center mr-2">
+                  {index === 0 && <Crown size={18} color="#FFD700" />}
+                  {index === 1 && <Medal size={18} color="#C0C0C0" />}
+                  {index === 2 && <Medal size={18} color="#CD7F32" />}
+                  {index > 2 && <span className="text-white/40 font-bold">{index + 1}.</span>}
+                </div>
+                <div
+                  className="w-4 h-4 rounded-full mr-3"
+                  style={{ backgroundColor: team.teamColor }}
+                />
+                <p className={`flex-1 font-bold text-base ${isMyTeam ? 'text-[#4A90D9]' : 'text-white'}`}>
+                  {team.teamName}
+                  {isMyTeam && <span className="text-xs font-normal ml-1 opacity-60"> (votre équipe)</span>}
+                </p>
+                <span className="font-bold text-lg" style={{ color: rankColor }}>
+                  {team.teamScore} pts
+                </span>
+              </div>
+
+              {/* Members */}
+              {team.members.map((entry) => {
+                const isCurrent = (entry.player.userId ?? entry.player.id) === currentUserId;
+                return (
+                  <div
+                    key={entry.player.id}
+                    className="flex flex-row items-center px-5 py-2 border-t border-[#3E3666]/50 ml-8"
+                  >
+                    <Avatar
+                      avatarUrl={entry.player.avatarUrl}
+                      username={entry.player.name}
+                      size={32}
+                      borderColor={isCurrent ? '#00D397' : undefined}
+                    />
+                    <p className={`flex-1 ml-2 text-sm ${isCurrent ? 'text-[#00D397]' : 'text-white/70'}`}>
+                      {entry.player.name}
+                      {isCurrent && ' (Vous)'}
+                    </p>
+                    <span className="text-white/60 text-sm font-medium">{entry.finalScore} pts</span>
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
@@ -211,13 +409,7 @@ function CategoryRankingsCard({
 }
 
 // Debt Card Component
-function DebtCard({
-  debts,
-  currentUserId,
-}: {
-  debts: SessionRankingEntry['debts'];
-  currentUserId: string;
-}) {
+function DebtCard({ debts }: { debts: SessionRankingEntry['debts'] }) {
   if (!debts || debts.length === 0) {
     return (
       <div className="px-4 mb-4">
@@ -234,9 +426,6 @@ function DebtCard({
     );
   }
 
-  const youOwe = debts.filter(d => d.toUserId !== currentUserId);
-  const owedToYou = debts.filter(d => d.toUserId === currentUserId);
-
   return (
     <div className="px-4 mb-4">
       <div className="bg-[#342D5B] rounded-3xl border border-[#3E3666] overflow-hidden">
@@ -246,52 +435,26 @@ function DebtCard({
             <p className="text-white font-bold text-lg">Dettes</p>
           </div>
         </div>
-
-        {owedToYou.length > 0 && (
-          <div className="px-5 py-4 border-b border-[#3E3666]">
-            <p className="text-[#00D397] font-semibold mb-3">On te doit</p>
-            {owedToYou.map((debt) => (
-              <div
-                key={`owed-${debt.toUserId}-${debt.category}`}
-                className="flex flex-row justify-between items-center py-2"
-              >
-                <div className="flex flex-row items-center gap-2">
-                  <div className="w-6 h-6 rounded-full bg-[#00D39720] flex items-center justify-center">
-                    <Users size={12} color="#00D397" />
-                  </div>
-                  <span className="text-white">{debt.toUsername}</span>
+        <div className="px-5 py-4">
+          <p className="text-red-400 font-semibold mb-3">Tu dois</p>
+          {debts.map((debt, i) => (
+            <div
+              key={`${debt.owedTo}-${debt.category}-${i}`}
+              className="flex flex-row justify-between items-center py-2 border-b border-[#3E3666] last:border-b-0"
+            >
+              <div className="flex flex-row items-center gap-2">
+                <div className="w-6 h-6 rounded-full bg-red-500/20 flex items-center justify-center">
+                  <Users size={12} color="#EF4444" />
                 </div>
-                <div className="flex flex-col items-end">
-                  <span className="text-[#00D397] font-semibold">{debt.amount} pts</span>
-                  <span className="text-white/40 text-xs">{debt.category}</span>
-                </div>
+                <span className="text-white">{debt.owedTo}</span>
               </div>
-            ))}
-          </div>
-        )}
-
-        {youOwe.length > 0 && (
-          <div className="px-5 py-4">
-            <p className="text-red-400 font-semibold mb-3">Tu dois</p>
-            {youOwe.map((debt) => (
-              <div
-                key={`owe-${debt.toUserId}-${debt.category}`}
-                className="flex flex-row justify-between items-center py-2"
-              >
-                <div className="flex flex-row items-center gap-2">
-                  <div className="w-6 h-6 rounded-full bg-red-500/20 flex items-center justify-center">
-                    <Users size={12} color="#EF4444" />
-                  </div>
-                  <span className="text-white">{debt.toUsername}</span>
-                </div>
-                <div className="flex flex-col items-end">
-                  <span className="text-red-400 font-semibold">{debt.amount} pts</span>
-                  <span className="text-white/40 text-xs">{debt.category}</span>
-                </div>
+              <div className="flex flex-col items-end">
+                <span className="text-red-400 font-semibold">{debt.amount} pts</span>
+                <span className="text-white/40 text-xs">{debt.category}</span>
               </div>
-            ))}
-          </div>
-        )}
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -430,11 +593,40 @@ export default function ResultsPage() {
     );
   }
 
+  // Detect team mode from data (don't rely on store which may be cleared)
+  const isTeamMode = storeSession?.isTeamMode ?? rankings.some((r) => r.teamId != null);
+
   const currentUserRanking = rankings.find(
     (r) => (r.player.userId ?? r.player.id) === user?.id,
   );
   const totalCorrections = (entry: SessionRankingEntry) =>
     entry.corrections?.reduce((sum, c) => sum + c.amount, 0) || 0;
+
+  const TEAM_PALETTE = ['#3B82F6', '#EF4444', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899'];
+
+  // Build team results from rankings — skip players without a team (e.g. manager)
+  const teamResults: TeamResult[] = isTeamMode
+    ? Object.values(
+        rankings
+          .filter((e) => e.teamId != null)
+          .reduce<Record<string, TeamResult>>((acc, entry) => {
+            const tid = entry.teamId!;
+            if (!acc[tid]) {
+              acc[tid] = {
+                teamId: tid,
+                teamName: entry.teamName ?? 'Équipe',
+                teamColor: '#4A90D9', // assigned below by index
+                teamScore: entry.teamScore ?? 0,
+                members: [],
+              };
+            }
+            acc[tid].members.push(entry);
+            return acc;
+          }, {}),
+      )
+      .sort((a, b) => b.teamScore - a.teamScore)
+      .map((team, i) => ({ ...team, teamColor: TEAM_PALETTE[i % TEAM_PALETTE.length] }))
+    : [];
 
   return (
     <SafeScreen className="bg-[#292349]">
@@ -449,7 +641,15 @@ export default function ResultsPage() {
           </button>
           <div className="flex-1">
             <p className="text-white font-bold text-xl">Résultats</p>
-            <p className="text-white/50 text-xs">Partie #{code}</p>
+            <div className="flex items-center gap-2 mt-0.5">
+              <p className="text-white/50 text-xs">Partie #{code}</p>
+              {storeSession?.isTeamMode && (
+                <div className="flex items-center bg-[#4A90D920] px-2 py-0.5 rounded-full">
+                  <Users size={10} color="#4A90D9" />
+                  <span className="text-[#4A90D9] text-[10px] font-semibold ml-1">Mode Équipes</span>
+                </div>
+              )}
+            </div>
           </div>
           <button
             onClick={handleShare}
@@ -462,7 +662,17 @@ export default function ResultsPage() {
 
       {/* Scrollable Content */}
       <div className="overflow-y-auto pt-4">
-        {/* Podium */}
+        {/* Team Podium — prioritaire en mode équipe */}
+        {isTeamMode && teamResults.length >= 2 && (
+          <TeamPodium teams={teamResults} />
+        )}
+
+        {/* Team Leaderboard */}
+        {isTeamMode && teamResults.length > 0 && (
+          <TeamLeaderboard teams={teamResults} currentUserId={user?.id ?? ''} />
+        )}
+
+        {/* Individual Podium */}
         <Podium rankings={rankings} />
 
         {/* Stats Summary */}
@@ -521,12 +731,13 @@ export default function ResultsPage() {
                     </div>
 
                     {/* Avatar */}
-                    <div
-                      className={`w-10 h-10 rounded-full flex items-center justify-center mr-3 ${isTop3 ? 'bg-[#FFD70020]' : 'bg-[#3E3666]'}`}
-                    >
-                      <span className={`font-bold ${isTop3 ? 'text-[#FFD700]' : 'text-white'}`}>
-                        {entry.player.name.charAt(0).toUpperCase()}
-                      </span>
+                    <div className="mr-3">
+                      <Avatar
+                        avatarUrl={entry.player.avatarUrl}
+                        username={entry.player.name}
+                        size={40}
+                        borderColor={isCurrentUser ? '#00D397' : isTop3 ? '#FFD700' : undefined}
+                      />
                     </div>
 
                     {/* Name & Details */}
@@ -575,7 +786,7 @@ export default function ResultsPage() {
 
         {/* Your Performance / Debts */}
         {currentUserRanking && (
-          <DebtCard debts={currentUserRanking.debts} currentUserId={user?.id || ''} />
+          <DebtCard debts={currentUserRanking.debts} />
         )}
 
         {/* Your Stats Card */}

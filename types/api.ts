@@ -312,11 +312,15 @@ export interface SessionRankingEntry {
   rank: number;
   categoryPerformance: Record<string, number>;
   debts: DebtEntry[];
+  // Team mode fields (optional — only present when session.isTeamMode)
+  teamId?: string | null;
+  teamName?: string | null;
+  teamColor?: string | null;
+  teamScore?: number | null;
 }
 
 export interface DebtEntry {
-  toUserId: string;
-  toUsername: string;
+  owedTo: string;   // username of the creditor
   category: string;
   amount: number;
 }

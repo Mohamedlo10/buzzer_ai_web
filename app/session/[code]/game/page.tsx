@@ -121,6 +121,7 @@ export default function GamePage() {
   const {
     session,
     players,
+    teams,
     currentQuestion,
     questionIndex,
     buzzQueue,
@@ -136,9 +137,26 @@ export default function GamePage() {
   } = useBuzzStore();
 
   const isManager = session?.managerId === user?.id;
+  const isTeamMode = session?.isTeamMode ?? false;
   const currentPlayer = players.find((p) => p.userId === user?.id);
   const isSpectator = currentPlayer?.isSpectator ?? false;
   const hasBuzzes = buzzQueue.length > 0;
+
+  // Team leaderboard computed from players (since GameStateResponse doesn't include teams)
+  const teamLeaderboard = isTeamMode
+    ? [...new Map(
+        players
+          .filter((p) => p.teamId)
+          .map((p) => {
+            const team = teams.find((t) => t.id === p.teamId);
+            return [p.teamId!, { teamId: p.teamId!, teamName: team?.name ?? 'Équipe', teamColor: team?.color ?? null }];
+          })
+      ).values()].map(({ teamId, teamName, teamColor }) => {
+        const members = players.filter((p) => p.teamId === teamId);
+        const totalScore = members.reduce((sum, p) => sum + p.score, 0);
+        return { teamId, teamName, teamColor, members, totalScore };
+      }).sort((a, b) => b.totalScore - a.totalScore)
+    : [];
 
   const sessionIdRef = useRef(session?.id);
   sessionIdRef.current = session?.id;
@@ -499,6 +517,13 @@ export default function GamePage() {
             <div className="flex flex-row items-center bg-[#FFD70020] px-3 py-1.5 rounded-full">
               <Eye size={12} color="#FFD700" />
               <span className="text-[#FFD700] text-xs font-semibold ml-1">Spectateur</span>
+            </div>
+          )}
+
+          {isTeamMode && (
+            <div className="flex flex-row items-center bg-[#4A90D920] px-3 py-1.5 rounded-full ml-2">
+              <Users size={12} color="#4A90D9" />
+              <span className="text-[#4A90D9] text-xs font-semibold ml-1">Équipes</span>
             </div>
           )}
         </div>
@@ -909,104 +934,147 @@ export default function GamePage() {
 
         {/* Leaderboard */}
         <div className="px-4 pt-3 pb-12">
-          <div className="bg-[#342D5B] rounded-2xl border border-[#3E3666] overflow-hidden">
-            {/* Header */}
-            <div className="px-4 py-3 border-b border-[#3E3666] bg-[#FFD70008]">
-              <div className="flex flex-row items-center justify-between">
-                <div className="flex flex-row items-center">
-                  <Trophy size={16} color="#FFD700" />
-                  <p className="text-white font-bold text-base ml-2">Classement</p>
+          {isTeamMode ? (
+            /* ── Team Leaderboard ── */
+            <div className="bg-[#342D5B] rounded-2xl border border-[#4A90D940] overflow-hidden">
+              <div className="px-4 py-3 border-b border-[#4A90D930] bg-[#4A90D908]">
+                <div className="flex flex-row items-center justify-between">
+                  <div className="flex flex-row items-center">
+                    <Users size={16} color="#4A90D9" />
+                    <p className="text-white font-bold text-base ml-2">Classement Équipes</p>
+                  </div>
+                  <span className="text-white/40 text-xs">{teamLeaderboard.length} équipes</span>
                 </div>
-                <span className="text-white/40 text-xs">{players.length} joueurs</span>
               </div>
-            </div>
 
-            {/* Top 3 */}
-            <div className="flex flex-row px-2 py-2 gap-2 border-b border-[#3E3666]">
-              {[...players]
-                .sort((a, b) => b.score - a.score)
-                .slice(0, 3)
-                .map((player, index) => (
-                  <div
-                    key={player.id}
-                    className={`flex-1 rounded-xl p-2.5 ${
-                      index === 0 ? 'bg-[#FFD70020] border border-[#FFD70040]' :
-                      index === 1 ? 'bg-[#C0C0C020] border border-[#C0C0C040]' :
-                      index === 2 ? 'bg-[#CD7F3220] border border-[#CD7F3240]' :
-                      'bg-[#3E3666]'
-                    }`}
-                  >
-                    <div className="flex flex-row items-center gap-1.5 mb-1.5">
+              {teamLeaderboard.map((team, index) => {
+                const isMyTeam = team.members.some((m) => m.userId === user?.id);
+                const teamColor = team.teamColor || '#4A90D9';
+                return (
+                  <div key={team.teamId} className="border-b border-[#3E3666] last:border-b-0">
+                    {/* Team Row */}
+                    <div
+                      className="px-4 py-3 flex flex-row items-center"
+                      style={{ background: isMyTeam ? `${teamColor}10` : undefined }}
+                    >
+                      <div
+                        className="w-8 h-8 rounded-full flex items-center justify-center mr-3 font-bold text-sm"
+                        style={{ backgroundColor: `${teamColor}30`, color: teamColor }}
+                      >
+                        {index + 1}
+                      </div>
+                      <div
+                        className="w-3 h-3 rounded-full mr-2"
+                        style={{ backgroundColor: teamColor }}
+                      />
+                      <p className={`flex-1 font-bold text-base ${isMyTeam ? 'text-[#4A90D9]' : 'text-white'}`}>
+                        {team.teamName}
+                        {isMyTeam && <span className="text-xs font-normal ml-1 opacity-70"> (votre équipe)</span>}
+                      </p>
+                      <span className="font-bold text-base" style={{ color: index === 0 ? '#FFD700' : '#FFFFFF' }}>
+                        {team.totalScore} pts
+                      </span>
+                    </div>
+
+                    {/* Members */}
+                    {team.members
+                      .sort((a, b) => b.score - a.score)
+                      .map((member) => (
+                        <div
+                          key={member.id}
+                          className="flex flex-row items-center px-4 py-2 border-t border-[#3E3666]/50 ml-4"
+                        >
+                          <Avatar
+                            avatarUrl={member.avatarUrl}
+                            username={member.name}
+                            size={26}
+                            borderColor={member.userId === user?.id ? '#00D397' : undefined}
+                          />
+                          <p className={`flex-1 ml-2 text-sm ${member.userId === user?.id ? 'text-[#00D397]' : 'text-white/70'}`}>
+                            {member.name}
+                            {member.userId === user?.id && ' (Vous)'}
+                          </p>
+                          <span className="text-white/60 text-sm font-medium">{member.score} pts</span>
+                        </div>
+                      ))}
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            /* ── Individual Leaderboard ── */
+            <div className="bg-[#342D5B] rounded-2xl border border-[#3E3666] overflow-hidden">
+              <div className="px-4 py-3 border-b border-[#3E3666] bg-[#FFD70008]">
+                <div className="flex flex-row items-center justify-between">
+                  <div className="flex flex-row items-center">
+                    <Trophy size={16} color="#FFD700" />
+                    <p className="text-white font-bold text-base ml-2">Classement</p>
+                  </div>
+                  <span className="text-white/40 text-xs">{players.length} joueurs</span>
+                </div>
+              </div>
+
+              {/* Top 3 */}
+              <div className="flex flex-row px-2 py-2 gap-2 border-b border-[#3E3666]">
+                {[...players]
+                  .sort((a, b) => b.score - a.score)
+                  .slice(0, 3)
+                  .map((player, index) => (
+                    <div
+                      key={player.id}
+                      className={`flex-1 rounded-xl p-2.5 ${
+                        index === 0 ? 'bg-[#FFD70020] border border-[#FFD70040]' :
+                        index === 1 ? 'bg-[#C0C0C020] border border-[#C0C0C040]' :
+                        'bg-[#CD7F3220] border border-[#CD7F3240]'
+                      }`}
+                    >
+                      <div className="flex flex-row items-center gap-1.5 mb-1.5">
+                        <Avatar
+                          avatarUrl={player.avatarUrl}
+                          username={player.name}
+                          size={28}
+                          borderColor={index === 0 ? '#FFD700' : index === 1 ? '#C0C0C0' : '#CD7F32'}
+                        />
+                        <span className={`font-bold text-xs ${
+                          index === 0 ? 'text-[#FFD700]' :
+                          index === 1 ? 'text-[#C0C0C0]' :
+                          'text-[#CD7F32]'
+                        }`}>#{index + 1}</span>
+                      </div>
+                      <p className="text-white font-semibold text-xs truncate">{player.name}</p>
+                      <p className="text-white/70 text-xs font-medium">{player.score} pts</p>
+                    </div>
+                  ))}
+              </div>
+
+              {/* Other players */}
+              <div>
+                {[...players]
+                  .sort((a, b) => b.score - a.score)
+                  .slice(3)
+                  .map((player, index) => (
+                    <div
+                      key={player.id}
+                      className="flex flex-row items-center px-4 py-2 border-b border-[#3E3666] last:border-b-0"
+                    >
+                      <span className="text-white/40 text-xs w-6">{index + 4}</span>
                       <Avatar
                         avatarUrl={player.avatarUrl}
                         username={player.name}
-                        size={28}
-                        borderColor={
-                          index === 0 ? '#FFD700' :
-                          index === 1 ? '#C0C0C0' :
-                          '#CD7F32'
-                        }
+                        size={32}
+                        borderColor={player.userId === user?.id ? '#00D397' : undefined}
                       />
-                      <span className={`font-bold text-xs ${
-                        index === 0 ? 'text-[#FFD700]' :
-                        index === 1 ? 'text-[#C0C0C0]' :
-                        index === 2 ? 'text-[#CD7F32]' :
-                        'text-white/60'
-                      }`}>#{index + 1}</span>
-                    </div>
-                    <p className="text-white font-semibold text-xs truncate">
-                      {player.name}
-                    </p>
-                    <p className="text-white/70 text-xs font-medium">{player.score} pts</p>
-                    {player.selectedCategories?.length > 0 && (
-                      <div className="flex flex-row flex-wrap gap-0.5 mt-1">
-                        {player.selectedCategories.map((cat) => (
-                          <div key={cat} className="px-1.5 py-0.5 rounded-full bg-[#292349]">
-                            <span className="text-white/50 text-[9px] truncate">{cat}</span>
-                          </div>
-                        ))}
+                      <div className="flex-1 ml-2">
+                        <p className={`font-medium text-sm ${player.userId === user?.id ? 'text-[#00D397]' : 'text-white/80'}`}>
+                          {player.name}
+                        </p>
                       </div>
-                    )}
-                  </div>
-                ))}
-            </div>
-
-            {/* Other players */}
-            <div>
-              {[...players]
-                .sort((a, b) => b.score - a.score)
-                .slice(3)
-                .map((player, index) => (
-                  <div
-                    key={player.id}
-                    className="flex flex-row items-center px-4 py-2 border-b border-[#3E3666] last:border-b-0"
-                  >
-                    <span className="text-white/40 text-xs w-6">{index + 4}</span>
-                    <Avatar
-                      avatarUrl={player.avatarUrl}
-                      username={player.name}
-                      size={32}
-                      borderColor={player.userId === user?.id ? '#00D397' : undefined}
-                    />
-                    <div className="flex-1 ml-2">
-                      <p className={`font-medium text-sm ${player.userId === user?.id ? 'text-[#00D397]' : 'text-white/80'}`}>
-                        {player.name}
-                      </p>
-                      {player.selectedCategories?.length > 0 && (
-                        <div className="flex flex-row flex-wrap gap-1 mt-0.5">
-                          {player.selectedCategories.map((cat) => (
-                            <div key={cat} className="px-2 py-0.5 rounded-full bg-[#3E3666]">
-                              <span className="text-white/50 text-[10px]">{cat}</span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
+                      <span className="text-white font-semibold text-sm">{player.score} pts</span>
                     </div>
-                    <span className="text-white font-semibold text-sm">{player.score}pts</span>
-                  </div>
-                ))}
+                  ))}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
       <ConfirmModal

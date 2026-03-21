@@ -319,10 +319,7 @@ export default function RegisterPage() {
               </div>
             )}
           </button>
-        </div>
-
-        {/* Footer */}
-        <div className="flex flex-row justify-center mt-6 mb-6 items-center">
+          <div className="flex flex-row justify-center mt-6 items-center">
           <span className="text-white/60 text-base">Déjà un compte ? </span>
           <button
             type="button"
@@ -333,6 +330,9 @@ export default function RegisterPage() {
             <Sparkles size={16} color="#FFD700" />
           </button>
         </div>
+        </div>
+
+        
       </div>
     </div>
   );
