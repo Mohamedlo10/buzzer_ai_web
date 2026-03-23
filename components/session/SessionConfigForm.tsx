@@ -355,7 +355,7 @@ export function SessionConfigForm({ onSuccess, roomId }: SessionConfigFormProps)
   };
 
   return (
-    <div className="flex-1 overflow-y-auto">
+    <div className="flex-1 ">
       {/* Header Info */}
       <div className="mx-4 mt-5 mb-5">
         <div className="bg-[#342D5B] rounded-3xl p-6 border border-[#3E3666]">

@@ -592,6 +592,11 @@ export default function RoomDetailPage() {
     if (roomData?.room?.id) loadQR(roomData.room.id);
   }, [roomData?.room?.id, loadQR]);
 
+  useEffect(() => {
+    document.body.style.overflow = showConfigModal ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [showConfigModal]);
+
   const handleRefresh = async () => {
     setIsRefreshing(true);
     await loadRoom();
@@ -983,12 +988,12 @@ export default function RoomDetailPage() {
 
       {/* Session Config Modal */}
       {showConfigModal && (
-        <div className="fixed inset-0 bg-black/60 flex items-end justify-center z-50">
+        <div className="fixed inset-0 bg-black/60 flex items-end justify-center z-50" style={{ touchAction: 'none' }}>
           <div
             className="absolute inset-0"
             onClick={() => setShowConfigModal(false)}
           />
-          <div className="relative bg-[#292349] rounded-t-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+          <div className="relative bg-[#292349] rounded-t-3xl w-full max-w-2xl h-full overflow-y-auto">
             <div className="flex items-center justify-between pt-6 pb-4 px-4 border-b border-[#3E3666]">
               <div>
                 <p className="text-white font-bold text-xl">Nouvelle Session</p>
