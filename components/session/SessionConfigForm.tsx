@@ -434,23 +434,24 @@ export function SessionConfigForm({ onSuccess, roomId }: SessionConfigFormProps)
               <Target size={16} color="#FFFFFF80" />
               <span className="text-white/80 text-sm font-medium">Montant des dettes</span>
             </div>
-            <div className="bg-[#00D39720] px-3 py-1.5 rounded-xl">
+            {/* <div className="bg-[#00D39720] px-3 py-1.5 rounded-xl">
               <span className="text-[#00D397] font-bold text-lg">{config.debtAmount} pts</span>
-            </div>
+            </div> */}
+          <QuickSelect
+            options={[0,5, 10, 20]}
+            value={config.debtAmount}
+            onSelect={(val) => setConfig((c) => ({ ...c, debtAmount: val }))}
+          />
           </div>
           <Slider
             label=""
             value={config.debtAmount}
             onValueChange={(value) => setConfig((c) => ({ ...c, debtAmount: value }))}
-            min={1}
+            min={0}
             max={20}
             suffix=""
           />
-          <QuickSelect
-            options={[5, 10, 15, 20]}
-            value={config.debtAmount}
-            onSelect={(val) => setConfig((c) => ({ ...c, debtAmount: val }))}
-          />
+
         </div>
 
         {/* Questions per category — AI mode only */}
@@ -461,9 +462,14 @@ export function SessionConfigForm({ onSuccess, roomId }: SessionConfigFormProps)
                 <Zap size={16} color="#FFFFFF80" />
                 <span className="text-white/80 text-sm font-medium">Questions par catégorie</span>
               </div>
-              <div className="bg-[#4A90D920] px-3 py-1.5 rounded-xl">
+              {/* <div className="bg-[#4A90D920] px-3 py-1.5 rounded-xl">
                 <span className="text-[#4A90D9] font-bold text-lg">{config.questionsPerCategory}</span>
-              </div>
+              </div> */}
+            <QuickSelect
+              options={[5, 10, 15]}
+              value={config.questionsPerCategory}
+              onSelect={(val) => setConfig((c) => ({ ...c, questionsPerCategory: val }))}
+            />
             </div>
             <Slider
               label=""
@@ -473,11 +479,35 @@ export function SessionConfigForm({ onSuccess, roomId }: SessionConfigFormProps)
               max={15}
               suffix=""
             />
+          </div>
+        )}
+
+        {/* Max Categories — AI mode only */}
+        {questionMode === 'AI' && (
+          <div>
+            <div className="flex flex-row items-center justify-between mb-3">
+              <div className="flex flex-row items-center gap-2">
+                <Gamepad2 size={16} color="#FFFFFF80" />
+                <span className="text-white/80 text-sm font-medium">Catégories max/joueur</span>
+              </div>
+              {/* <div className="bg-[#C084FC20] px-3 py-1.5 rounded-xl">
+                <span className="text-[#C084FC] font-bold text-lg">{config.maxCategoriesPerPlayer}</span>
+              </div> */}
             <QuickSelect
-              options={[5, 10, 15]}
-              value={config.questionsPerCategory}
-              onSelect={(val) => setConfig((c) => ({ ...c, questionsPerCategory: val }))}
+              options={[1, 2, 3, 5]}
+              value={config.maxCategoriesPerPlayer}
+              onSelect={(val) => setConfig((c) => ({ ...c, maxCategoriesPerPlayer: val }))}
             />
+            </div>
+            <Slider
+              label=""
+              value={config.maxCategoriesPerPlayer}
+              onValueChange={(value) => setConfig((c) => ({ ...c, maxCategoriesPerPlayer: value }))}
+              min={1}
+              max={10}
+              suffix=""
+            />
+
           </div>
         )}
 
@@ -502,33 +532,6 @@ export function SessionConfigForm({ onSuccess, roomId }: SessionConfigFormProps)
           />
         </div>
 
-        {/* Max Categories — AI mode only */}
-        {questionMode === 'AI' && (
-          <div>
-            <div className="flex flex-row items-center justify-between mb-3">
-              <div className="flex flex-row items-center gap-2">
-                <Gamepad2 size={16} color="#FFFFFF80" />
-                <span className="text-white/80 text-sm font-medium">Catégories max/joueur</span>
-              </div>
-              <div className="bg-[#C084FC20] px-3 py-1.5 rounded-xl">
-                <span className="text-[#C084FC] font-bold text-lg">{config.maxCategoriesPerPlayer}</span>
-              </div>
-            </div>
-            <Slider
-              label=""
-              value={config.maxCategoriesPerPlayer}
-              onValueChange={(value) => setConfig((c) => ({ ...c, maxCategoriesPerPlayer: value }))}
-              min={1}
-              max={10}
-              suffix=""
-            />
-            <QuickSelect
-              options={[1, 2, 3, 5]}
-              value={config.maxCategoriesPerPlayer}
-              onSelect={(val) => setConfig((c) => ({ ...c, maxCategoriesPerPlayer: val }))}
-            />
-          </div>
-        )}
       </ConfigSection>
 
       {/* Question Limit Indicator — AI mode only */}

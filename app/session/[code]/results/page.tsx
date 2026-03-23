@@ -558,6 +558,9 @@ export default function ResultsPage() {
       router.replace('/');
     }
   };
+    const handleDashboard = () => {
+      router.replace('/');
+  };
 
   if (isLoading) {
     return (
@@ -839,19 +842,19 @@ export default function ResultsPage() {
             <div className="flex flex-row items-center">
               <RefreshCw size={20} color="#292349" />
               <span className="text-[#292349] font-bold text-lg ml-2">
-                {paramRoomId ? 'Nouvelle partie' : 'Retour au dashboard'}
+                {resolvedRoomId ? 'Nouvelle partie' : 'Retour au dashboard'}
               </span>
             </div>
           </button>
 
           <button
-            onClick={handleHome}
+            onClick={handleDashboard}
             className="w-full py-4 rounded-2xl bg-[#3E3666] flex items-center justify-center hover:bg-[#4E4676] transition-colors"
           >
             <div className="flex flex-row items-center">
               <Home size={20} color="#FFFFFF" />
               <span className="text-white font-bold text-lg ml-2">
-                {paramRoomId ? 'Retour à la salle' : 'Accueil'}
+                {'Accueil'}
               </span>
               <ChevronRight size={18} color="#FFFFFF" className="ml-1" />
             </div>
