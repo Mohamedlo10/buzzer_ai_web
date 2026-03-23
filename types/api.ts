@@ -36,10 +36,15 @@ export type UserRole = 'USER' | 'ADMIN' | 'SUPER_ADMIN';
 export interface UserResponse {
   id: string;
   username: string;
-  email: string;
+  email: string | null;
   avatarUrl: string | null;
+  avatarStyle: string | null;
+  avatarSeed: string | null;
   role: UserRole;
+  isOnline: boolean;
+  lastSeenAt: string | null;
   createdAt: string;
+  updatedAt: string;
 }
 
 export interface UpdateProfileRequest {
