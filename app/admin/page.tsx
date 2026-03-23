@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Users, Gamepad2, Brain, DollarSign, Crown, ChevronRight } from 'lucide-react';
+import { Users, Gamepad2, Brain, DollarSign, Crown, ChevronRight, Cpu } from 'lucide-react';
 
 import { Card } from '~/components/ui/Card';
 import { Spinner } from '~/components/loading/Spinner';
@@ -61,19 +61,13 @@ export default function AdminDashboardPage() {
     );
   }
 
-  const aiCostPercentage = (stats.aiCost.consumed / stats.aiCost.budget) * 100;
+  const totalTokens = stats.aiInputTokensThisMonth + stats.aiOutputTokensThisMonth;
 
   return (
     <div className="min-h-screen bg-[#292349]">
       {/* Header */}
       <div className="bg-[#292349] pt-6 pb-4 px-4 border-b border-[#3E3666]">
         <div className="flex items-center">
-          <button
-            onClick={() => router.back()}
-            className="w-10 h-10 rounded-full bg-[#342D5B] flex items-center justify-center mr-3 hover:bg-[#3E3666] transition-colors"
-          >
-            <ArrowLeft size={20} color="#FFFFFF" />
-          </button>
           <div className="flex-1">
             <p className="text-white font-bold text-xl">Admin Dashboard</p>
             <div className="flex items-center mt-0.5 gap-1">
@@ -113,16 +107,16 @@ export default function AdminDashboardPage() {
             </div>
             <div className="w-[calc(50%-6px)]">
               <StatCard
-                title="Questions générées"
-                value={stats.questionsGenerated}
+                title="Total sessions"
+                value={stats.totalSessions}
                 icon={Brain}
                 color="#9B59B6"
               />
             </div>
             <div className="w-[calc(50%-6px)]">
               <StatCard
-                title="Coût AI"
-                value={`${stats.aiCost.consumed}${stats.aiCost.currency}`}
+                title="Coût AI (mois)"
+                value={`$${stats.aiCostThisMonth.toFixed(3)}`}
                 icon={DollarSign}
                 color="#D5442F"
               />
@@ -130,55 +124,46 @@ export default function AdminDashboardPage() {
           </div>
         </div>
 
-        {/* AI Budget Progress */}
+        {/* AI Tokens */}
         <div className="px-4 pt-4">
           <Card>
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-white font-semibold">Budget AI</p>
-              <span
-                className={`font-bold ${
-                  aiCostPercentage > 90
-                    ? 'text-[#D5442F]'
-                    : aiCostPercentage > 70
-                    ? 'text-[#FFD700]'
-                    : 'text-[#00D397]'
-                }`}
-              >
-                {aiCostPercentage.toFixed(1)}%
-              </span>
+            <div className="flex items-center gap-2 mb-4">
+              <Cpu size={16} color="#9B59B6" />
+              <p className="text-white font-semibold">Tokens AI ce mois</p>
             </div>
-            <div className="h-3 bg-[#3E3666] rounded-full overflow-hidden">
-              <div
-                className={`h-full rounded-full ${
-                  aiCostPercentage > 90
-                    ? 'bg-[#D5442F]'
-                    : aiCostPercentage > 70
-                    ? 'bg-[#FFD700]'
-                    : 'bg-[#00D397]'
-                }`}
-                style={{ width: `${Math.min(aiCostPercentage, 100)}%` }}
-              />
+            <div className="flex justify-between mb-2">
+              <span className="text-white/60 text-sm">Input tokens</span>
+              <span className="text-white font-medium">{stats.aiInputTokensThisMonth.toLocaleString()}</span>
             </div>
-            <p className="text-white/50 text-sm mt-2">
-              {stats.aiCost.consumed}{stats.aiCost.currency} / {stats.aiCost.budget}{stats.aiCost.currency}
-            </p>
-          </Card>
-        </div>
-
-        {/* Top Categories */}
-        <div className="px-4 pt-4">
-          <Card>
-            <p className="text-white font-semibold mb-4">Top Catégories</p>
-            {stats.topCategories.map((cat, index) => (
-              <div
-                key={cat.name}
-                className="flex items-center py-2 border-b border-[#3E3666] last:border-b-0"
-              >
-                <span className="text-white/60 w-6">{index + 1}.</span>
-                <span className="text-white flex-1">{cat.name}</span>
-                <span className="text-[#00D397] font-medium">{cat.count}</span>
+            <div className="flex justify-between mb-3">
+              <span className="text-white/60 text-sm">Output tokens</span>
+              <span className="text-white font-medium">{stats.aiOutputTokensThisMonth.toLocaleString()}</span>
+            </div>
+            <div className="h-2 bg-[#3E3666] rounded-full overflow-hidden flex">
+              {totalTokens > 0 && (
+                <>
+                  <div
+                    className="h-full bg-[#4A90D9]"
+                    style={{ width: `${(stats.aiInputTokensThisMonth / totalTokens) * 100}%` }}
+                  />
+                  <div
+                    className="h-full bg-[#9B59B6]"
+                    style={{ width: `${(stats.aiOutputTokensThisMonth / totalTokens) * 100}%` }}
+                  />
+                </>
+              )}
+            </div>
+            <div className="flex gap-4 mt-2">
+              <div className="flex items-center gap-1">
+                <div className="w-2 h-2 rounded-full bg-[#4A90D9]" />
+                <span className="text-white/40 text-xs">Input</span>
               </div>
-            ))}
+              <div className="flex items-center gap-1">
+                <div className="w-2 h-2 rounded-full bg-[#9B59B6]" />
+                <span className="text-white/40 text-xs">Output</span>
+              </div>
+              <span className="text-white/40 text-xs ml-auto">Total: {totalTokens.toLocaleString()}</span>
+            </div>
           </Card>
         </div>
 

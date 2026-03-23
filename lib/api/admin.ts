@@ -1,8 +1,8 @@
 import { apiClient } from './client';
 import type {
   AdminStatsResponse,
+  AdminSessionResponse,
   Page,
-  SessionResponse,
   UserResponse,
 } from '~/types/api';
 
@@ -38,8 +38,8 @@ export async function getAllSessions(params: {
   to?: string;
   page?: number;
   size?: number;
-}): Promise<Page<SessionResponse>> {
-  const res = await apiClient.get<Page<SessionResponse>>('/api/admin/sessions', {
+}): Promise<Page<AdminSessionResponse>> {
+  const res = await apiClient.get<Page<AdminSessionResponse>>('/api/admin/sessions', {
     params,
   });
   return res.data;

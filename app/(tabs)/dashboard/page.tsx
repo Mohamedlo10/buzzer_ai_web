@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Plus,
@@ -26,6 +26,7 @@ import {
 import * as roomsApi from '~/lib/api/rooms';
 import * as sessionsApi from '~/lib/api/sessions';
 import { appStorage } from '~/lib/utils/storage';
+import { useAuthStore } from '~/stores/useAuthStore';
 
 // ──────────────────────────────────────────────
 // Quick Action Buttons
@@ -392,6 +393,13 @@ export default function DashboardPage() {
   const router = useRouter();
   const { data, isLoading, isError, refetch } = useDashboardV2();
   const [showJoinModal, setShowJoinModal] = useState(false);
+  const user = useAuthStore((s) => s.user);
+
+  useEffect(() => {
+    if (user?.role === 'SUPER_ADMIN') {
+      router.replace('/admin');
+    }
+  }, [user, router]);
 
   if (isLoading) {
     return (

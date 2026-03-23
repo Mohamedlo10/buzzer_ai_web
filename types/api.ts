@@ -687,12 +687,45 @@ export interface CategoryRanking {
 
 export interface AdminStatsResponse {
   totalUsers: number;
+  totalSessions: number;
   activeSessions: number;
-  questionsGenerated: number;
-  aiCost: {
-    consumed: number;
-    budget: number;
-    currency: string;
-  };
-  topCategories: Array<{ name: string; count: number }>;
+  totalQuestions: number;
+  aiCostThisMonth: number;
+  aiInputTokensThisMonth: number;
+  aiOutputTokensThisMonth: number;
+}
+
+export type AdminSessionStatus = 'LOBBY' | 'GENERATING' | 'PLAYING' | 'PAUSED' | 'RESULTS' | 'CANCELLED';
+
+export interface AdminSessionUser {
+  id: string;
+  username: string;
+  avatarUrl: string | null;
+  role: UserRole;
+}
+
+export interface AdminSessionRoom {
+  id: string;
+  name: string;
+  code: string;
+}
+
+export interface AdminSessionResponse {
+  id: string;
+  code: string;
+  status: AdminSessionStatus;
+  manager: AdminSessionUser | null;
+  room: AdminSessionRoom | null;
+  questionMode: QuestionMode;
+  isPrivate: boolean;
+  isTeamMode: boolean;
+  debtAmount: number;
+  questionsPerCategory: number;
+  currentQuestionIndex: number;
+  totalQuestions: number;
+  maxPlayers: number;
+  maxCategoriesPerPlayer: number;
+  createdAt: string;
+  startedAt: string | null;
+  endedAt: string | null;
 }

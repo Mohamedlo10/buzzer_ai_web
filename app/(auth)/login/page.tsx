@@ -44,7 +44,9 @@ export default function LoginPage() {
 
     try {
       await login(u.trim(), p);
-      window.location.replace('/dashboard');
+      const user = useAuthStore.getState().user;
+      const redirect = user?.role === 'SUPER_ADMIN' ? '/admin' : '/dashboard';
+      window.location.replace(redirect);
     } catch (err: any) {
       const message =
         err?.response?.data?.message ?? 'Échec de la connexion. Veuillez réessayer.';

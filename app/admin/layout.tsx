@@ -9,7 +9,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const router = useRouter();
 
   useEffect(() => {
-    if (user && user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN') {
+    if (user && user.role !== 'SUPER_ADMIN') {
       router.replace('/dashboard');
     }
   }, [user, router]);
