@@ -2,16 +2,18 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Users, Gamepad2, Brain, DollarSign, Crown, ChevronRight, Cpu } from 'lucide-react';
+import { Users, Gamepad2, Brain, DollarSign, Crown, ChevronRight, Cpu, LogOut } from 'lucide-react';
 
 import { Card } from '~/components/ui/Card';
 import { Spinner } from '~/components/loading/Spinner';
 import { StatCard } from '~/components/admin/StatCard';
 import * as adminApi from '~/lib/api/admin';
 import type { AdminStatsResponse } from '~/types/api';
+import { useAuthStore } from '~/stores/useAuthStore';
 
 export default function AdminDashboardPage() {
   const router = useRouter();
+  const logout = useAuthStore((s) => s.logout);
   const [stats, setStats] = useState<AdminStatsResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -75,13 +77,21 @@ export default function AdminDashboardPage() {
               <span className="text-[#FFD700] text-xs">Super Admin</span>
             </div>
           </div>
-          <button
-            onClick={handleRefresh}
-            disabled={isRefreshing}
-            className="text-[#00D397] text-sm font-medium hover:opacity-80 disabled:opacity-40 transition-opacity"
-          >
-            {isRefreshing ? 'Actualisation...' : 'Actualiser'}
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              className="text-[#00D397] text-sm font-medium hover:opacity-80 disabled:opacity-40 transition-opacity"
+            >
+              {isRefreshing ? 'Actualisation...' : 'Actualiser'}
+            </button>
+            <button
+              onClick={async () => { await logout(); router.replace('/login'); }}
+              className="w-9 h-9 rounded-full bg-[#D5442F20] flex items-center justify-center hover:bg-[#D5442F40] transition-colors"
+            >
+              <LogOut size={16} color="#D5442F" />
+            </button>
+          </div>
         </div>
       </div>
 
