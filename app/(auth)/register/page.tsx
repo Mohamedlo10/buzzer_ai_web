@@ -323,7 +323,7 @@ export default function RegisterPage() {
           <span className="text-white/60 text-base">Déjà un compte ? </span>
           <button
             type="button"
-            onClick={() => router.back()}
+            onClick={() => router.push('/login')}
             className="flex flex-row items-center ml-1"
           >
             <span className="text-[#00D397] text-base font-bold mr-1">Se connecter</span>
