@@ -5,6 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import {
   Crown,
   Eye,
+  EyeOff,
   Users,
   Hand,
   Trophy,
@@ -116,6 +117,7 @@ export default function GamePage() {
   const categoryOverlayTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const prevCategoryRef = useRef<string | null>(null);
   const [manualQuestions, setManualQuestions] = useState<ManualQuestion[]>([]);
+  const [showAnswer, setShowAnswer] = useState(true);
 
   const user = useAuthStore((state) => state.user);
   const {
@@ -692,16 +694,31 @@ export default function GamePage() {
                 borderColor="border-[#3E3666]"
               />
 
-              <ExpandableCard
-                key={`a-${currentQuestion.id}`}
-                icon={<Target size={14} color="#00D397" />}
-                label="RÉPONSE"
-                content={currentQuestion.answer || manualQuestions[questionIndex]?.answer || '...'}
-                subContent={currentQuestion.explanation || manualQuestions[questionIndex]?.explanation || undefined}
-                bgColor="bg-[#00D39710]"
-                borderColor="border-[#00D39740]"
-                isBold
-              />
+              <div className="flex-1 flex flex-col">
+                <button
+                  onClick={() => setShowAnswer((v) => !v)}
+                  className="flex flex-row items-center gap-1 self-end mb-1 px-2 py-0.5 rounded-full bg-[#3E3666] hover:opacity-80 transition-opacity"
+                >
+                  {showAnswer ? <EyeOff size={11} color="#FFFFFF80" /> : <Eye size={11} color="#FFFFFF80" />}
+                  <span className="text-white/50 text-xs">{showAnswer ? 'Masquer' : 'Afficher'}</span>
+                </button>
+                {showAnswer ? (
+                  <ExpandableCard
+                    key={`a-${currentQuestion.id}`}
+                    icon={<Target size={14} color="#00D397" />}
+                    label="RÉPONSE"
+                    content={currentQuestion.answer || manualQuestions[questionIndex]?.answer || '...'}
+                    subContent={currentQuestion.explanation || manualQuestions[questionIndex]?.explanation || undefined}
+                    bgColor="bg-[#00D39710]"
+                    borderColor="border-[#00D39740]"
+                    isBold
+                  />
+                ) : (
+                  <div className="flex-1 bg-[#3E366640] rounded-2xl border border-dashed border-[#3E3666] flex items-center justify-center min-h-[80px]">
+                    <EyeOff size={20} color="#FFFFFF30" />
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}

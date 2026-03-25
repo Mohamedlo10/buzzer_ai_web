@@ -52,7 +52,7 @@ export function DashboardHeader({
 
         {/* Profile */}
         <button
-          onClick={onProfilePress}
+          onClick={onProfilePress ?? (() => router.push('/profile'))}
           className="w-10 h-10 rounded-full bg-[#342D5B] border border-[#3E3666] flex items-center justify-center overflow-hidden hover:border-[#00D397] transition-colors"
         >
           {user?.avatarUrl ? (
