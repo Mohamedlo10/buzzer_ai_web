@@ -117,7 +117,7 @@ export default function GamePage() {
   const categoryOverlayTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const prevCategoryRef = useRef<string | null>(null);
   const [manualQuestions, setManualQuestions] = useState<ManualQuestion[]>([]);
-  const [showAnswer, setShowAnswer] = useState(false);
+  const [showAnswer, setShowAnswer] = useState(true);
 
   const user = useAuthStore((state) => state.user);
   const {
