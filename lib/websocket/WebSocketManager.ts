@@ -231,6 +231,16 @@ function mapTopicMessageToWSEvent(
       } as WSEvent;
     }
 
+    // ─── Buzz countdown ───────────────────
+    case 'buzz-countdown':
+      return {
+        type: 'buzz_countdown',
+        sessionId,
+        playerId: payload.playerId,
+        playerName: payload.playerName,
+        durationSeconds: payload.durationSeconds ?? 10,
+      } as any;
+
     // ─── Buzzer reset ─────────────────────
     case 'buzzer-reset':
       return { type: 'buzzer_reset', sessionId } as WSEvent;
@@ -314,6 +324,7 @@ export class WebSocketManager {
     'team-scores',
     'question',
     'buzz',
+    'buzz-countdown',
     'score',
     'buzzer-reset',
     'game-over',

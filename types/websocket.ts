@@ -82,6 +82,13 @@ export interface BuzzerResetEvent extends BaseWSMessage {
   type: 'buzzer_reset';
 }
 
+export interface BuzzCountdownEvent extends BaseWSMessage {
+  type: 'buzz_countdown';
+  playerId: string;
+  playerName: string;
+  durationSeconds: number;
+}
+
 export interface AnswerValidatedEvent extends BaseWSMessage {
   type: 'answer_validated';
   playerId: string;
@@ -252,6 +259,7 @@ export type WSEvent =
   | QuestionStartEvent
   | BuzzerPressedEvent
   | BuzzerResetEvent
+  | BuzzCountdownEvent
   | AnswerValidatedEvent
   | AnswerSkippedEvent
   | ScoreUpdatedEvent

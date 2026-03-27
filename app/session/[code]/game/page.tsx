@@ -119,6 +119,10 @@ export default function GamePage() {
   const [manualQuestions, setManualQuestions] = useState<ManualQuestion[]>([]);
   const [showAnswer, setShowAnswer] = useState(true);
 
+  // Buzz countdown state
+  const [countdown, setCountdown] = useState<{ playerId: string; seconds: number } | null>(null);
+  const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
   const user = useAuthStore((state) => state.user);
   const {
     session,
@@ -165,11 +169,36 @@ export default function GamePage() {
   const codeRef = useRef(code);
   codeRef.current = code;
 
+  // Countdown helpers
+  const startCountdown = useCallback((playerId: string, durationSeconds: number) => {
+    if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
+    setCountdown({ playerId, seconds: durationSeconds });
+    countdownIntervalRef.current = setInterval(() => {
+      setCountdown((prev) => {
+        if (!prev || prev.seconds <= 1) {
+          clearInterval(countdownIntervalRef.current!);
+          countdownIntervalRef.current = null;
+          return prev ? { ...prev, seconds: 0 } : null;
+        }
+        return { ...prev, seconds: prev.seconds - 1 };
+      });
+    }, 1000);
+  }, []);
+
+  const stopCountdown = useCallback(() => {
+    if (countdownIntervalRef.current) {
+      clearInterval(countdownIntervalRef.current);
+      countdownIntervalRef.current = null;
+    }
+    setCountdown(null);
+  }, []);
+
   // Cleanup timers
   useEffect(() => {
     return () => {
       if (buzzOverlayTimeoutRef.current) clearTimeout(buzzOverlayTimeoutRef.current);
       if (categoryOverlayTimeoutRef.current) clearTimeout(categoryOverlayTimeoutRef.current);
+      if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
     };
   }, []);
 
@@ -237,6 +266,9 @@ export default function GamePage() {
   const { isConnected } = useGameSocket(session?.id || null, {
     onEvent: (event) => {
       switch (event.type) {
+        case 'buzz_countdown':
+          startCountdown(event.playerId, event.durationSeconds);
+          break;
         case 'buzzer_pressed':
           if (isManager && buzzQueue.length === 0) {
             setShowBuzzOverlay(true);
@@ -245,6 +277,7 @@ export default function GamePage() {
           }
           break;
         case 'buzzer_reset':
+          stopCountdown();
           buzzLockRef.current = false;
           setShowBuzzOverlay(false);
           if (buzzOverlayTimeoutRef.current) {
@@ -253,13 +286,21 @@ export default function GamePage() {
           }
           break;
         case 'answer_validated':
+          if (event.isCorrect) stopCountdown();
           break;
         case 'game_over':
           router.replace(`/session/${code}/results`);
           break;
       }
     },
-    onReconnect: syncGameState,
+    onReconnect: async () => {
+      await syncGameState();
+      // Infer countdown from buzzQueue on reconnect (backend won't re-send buzz-countdown)
+      const queue = useBuzzStore.getState().buzzQueue;
+      if (queue.length > 0) {
+        startCountdown(queue[0].playerId, 10);
+      }
+    },
   });
 
   // Load session from storage
@@ -345,10 +386,11 @@ export default function GamePage() {
     }
   }, [session?.status, code]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Reset buzz lock when question changes
+  // Reset buzz lock and countdown when question changes
   useEffect(() => {
     buzzLockRef.current = false;
-  }, [currentQuestion?.id]);
+    stopCountdown();
+  }, [currentQuestion?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleBuzz = useCallback(async () => {
     if (!session?.id || buzzLockRef.current || isSpectator) return;
@@ -819,6 +861,27 @@ export default function GamePage() {
                       <p className="text-white/40 text-xs">reaction</p>
                     </div>
                   </div>
+
+                  {/* Buzz countdown */}
+                  {countdown && countdown.playerId === buzzQueue[0].playerId && (
+                    <div className="mt-3 flex flex-row items-center gap-3">
+                      <div className="flex-1 h-1.5 rounded-full bg-[#3E3666] overflow-hidden">
+                        <div
+                          className="h-full rounded-full transition-all duration-1000 ease-linear"
+                          style={{
+                            width: `${(countdown.seconds / 10) * 100}%`,
+                            backgroundColor: countdown.seconds <= 3 ? '#D5442F' : countdown.seconds <= 6 ? '#FFD700' : '#00D397',
+                          }}
+                        />
+                      </div>
+                      <span
+                        className="text-sm font-bold tabular-nums w-6 text-right"
+                        style={{ color: countdown.seconds <= 3 ? '#D5442F' : countdown.seconds <= 6 ? '#FFD700' : '#00D397' }}
+                      >
+                        {countdown.seconds}
+                      </span>
+                    </div>
+                  )}
 
                   {/* Quick Validation — Manager only */}
                   {isManager && (
