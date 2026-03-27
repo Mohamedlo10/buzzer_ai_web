@@ -139,6 +139,7 @@ export interface CreateSessionRequest {
   roomId?: string;
   questionMode?: QuestionMode;
   teams?: TeamRequest[];
+  buzzCountdownSeconds?: number;
 }
 
 export interface ManualQuestion {
@@ -184,6 +185,7 @@ export interface SessionResponse {
   isTeamMode: boolean;
   questionMode: QuestionMode;
   maxCategoriesPerPlayer: number;
+  buzzCountdownSeconds: number;
   createdAt: string;
   startedAt: string | null;
   endedAt: string | null;

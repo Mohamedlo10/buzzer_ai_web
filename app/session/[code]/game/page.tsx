@@ -296,9 +296,10 @@ export default function GamePage() {
     onReconnect: async () => {
       await syncGameState();
       // Infer countdown from buzzQueue on reconnect (backend won't re-send buzz-countdown)
-      const queue = useBuzzStore.getState().buzzQueue;
-      if (queue.length > 0) {
-        startCountdown(queue[0].playerId, 10);
+      const state = useBuzzStore.getState();
+      if (state.buzzQueue.length > 0) {
+        const duration = state.session?.buzzCountdownSeconds ?? 10;
+        startCountdown(state.buzzQueue[0].playerId, duration);
       }
     },
   });

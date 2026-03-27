@@ -19,6 +19,7 @@ import {
   Palette,
   Info,
   TrendingUp,
+  Timer,
 } from 'lucide-react';
 
 import { Slider } from '~/components/ui/Slider';
@@ -305,6 +306,7 @@ export function SessionConfigForm({ onSuccess, roomId }: SessionConfigFormProps)
     isPrivate: false,
     isTeamMode: false,
     maxCategoriesPerPlayer: 3,
+    buzzCountdownSeconds: 10,
     roomId,
     questionMode: 'AI',
   });
@@ -532,6 +534,34 @@ export function SessionConfigForm({ onSuccess, roomId }: SessionConfigFormProps)
           />
         </div>
 
+        {/* Buzz Countdown */}
+        <div>
+          <div className="flex flex-row items-center justify-between mb-3">
+            <div className="flex flex-row items-center gap-2">
+              <Timer size={16} color="#FFFFFF80" />
+              <span className="text-white/80 text-sm font-medium">Temps de réponse</span>
+            </div>
+            <div className="bg-[#C084FC20] px-3 py-1.5 rounded-xl">
+              <span className="text-[#C084FC] font-bold text-lg">{config.buzzCountdownSeconds}s</span>
+            </div>
+          </div>
+          <QuickSelect
+            options={[5, 10, 15, 30]}
+            value={config.buzzCountdownSeconds ?? 10}
+            onSelect={(val) => setConfig((c) => ({ ...c, buzzCountdownSeconds: val }))}
+          />
+          <div className="mt-3">
+            <Slider
+              label=""
+              value={config.buzzCountdownSeconds ?? 10}
+              onValueChange={(value) => setConfig((c) => ({ ...c, buzzCountdownSeconds: value }))}
+              min={5}
+              max={60}
+              suffix=""
+            />
+          </div>
+        </div>
+
       </ConfigSection>
 
       {/* Question Limit Indicator — AI mode only */}
@@ -588,6 +618,10 @@ export function SessionConfigForm({ onSuccess, roomId }: SessionConfigFormProps)
             <div className="bg-[#342D5B] px-3 py-2 rounded-xl flex flex-row items-center gap-2">
               <Users size={14} color="#FFD700" />
               <span className="text-white text-sm">Max {config.maxPlayers}</span>
+            </div>
+            <div className="bg-[#342D5B] px-3 py-2 rounded-xl flex flex-row items-center gap-2">
+              <Timer size={14} color="#C084FC" />
+              <span className="text-white text-sm">{config.buzzCountdownSeconds ?? 10}s réponse</span>
             </div>
             <div
               className={`px-3 py-2 rounded-xl flex flex-row items-center gap-2 ${
