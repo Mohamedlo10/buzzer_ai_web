@@ -477,7 +477,7 @@ export function SessionConfigForm({ onSuccess, roomId }: SessionConfigFormProps)
               label=""
               value={config.questionsPerCategory}
               onValueChange={(value) => setConfig((c) => ({ ...c, questionsPerCategory: value }))}
-              min={3}
+              min={2}
               max={15}
               suffix=""
             />
