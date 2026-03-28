@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   Trophy,
   Medal,
@@ -14,6 +15,7 @@ import {
   Clock,
   UserX,
   ChevronDown,
+  ChevronRight,
 } from 'lucide-react';
 
 import { SafeScreen } from '~/components/layout/SafeScreen';
@@ -104,6 +106,7 @@ function RankingRow({
   isCurrentUser: boolean;
   onAddFriend?: (userId: string, username: string) => void;
 }) {
+  const router = useRouter();
   const rank = entry.rank ?? 0;
 
   const getRankIcon = (r: number) => {
@@ -156,9 +159,10 @@ function RankingRow({
   };
 
   return (
-    <div
-      className={`flex flex-row items-center py-3 border-b border-[#3E3666] ${
-        isCurrentUser ? 'bg-[#00D39710] -mx-4 px-4' : ''
+    <button
+      onClick={() => router.push(`/profile/${entry.userId}`)}
+      className={`w-full flex flex-row items-center py-3 border-b border-[#3E3666] text-left hover:bg-[#3E366630] active:bg-[#3E366650] transition-colors cursor-pointer ${
+        isCurrentUser ? 'bg-[#00D39710] -mx-4 px-4 w-[calc(100%+32px)]' : ''
       }`}
     >
       <div className="w-8 flex items-center justify-center">{getRankIcon(rank)}</div>
@@ -191,13 +195,19 @@ function RankingRow({
         </div>
       </div>
 
-      <div className="flex flex-col items-end mr-3">
+      <div className="flex flex-col items-end mr-2">
         <span className="text-white font-bold">{entry.totalScore}</span>
         <span className="text-white/40 text-xs">pts</span>
       </div>
 
-      {getFriendshipButton()}
-    </div>
+      <div onClick={(e) => e.stopPropagation()}>
+        {getFriendshipButton()}
+      </div>
+
+      {!getFriendshipButton() && (
+        <ChevronRight size={16} color="#FFFFFF30" />
+      )}
+    </button>
   );
 }
 
