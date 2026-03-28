@@ -5,8 +5,7 @@ import { useRouter } from 'next/navigation';
 import {
   Plus,
   Search,
-  ChevronLeft,
-  ChevronRight,
+  ChevronDown,
   FolderOpen,
   Users,
   Crown,
@@ -24,7 +23,7 @@ import { useAuthStore } from '~/stores/useAuthStore';
 import * as roomsApi from '~/lib/api/rooms';
 import type { RoomSummaryResponse } from '~/types/api';
 
-const ITEMS_PER_PAGE = 5;
+const ITEMS_PER_PAGE = 8;
 
 function RoomCard({ room }: { room: RoomSummaryResponse }) {
   const router = useRouter();
@@ -96,7 +95,7 @@ export default function RoomsPage() {
   const [filteredRooms, setFilteredRooms] = useState<RoomSummaryResponse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchCode, setSearchCode] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
+  const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
   const [joinError, setJoinError] = useState<string | null>(null);
 
   const loadRooms = useCallback(async () => {
@@ -104,7 +103,7 @@ export default function RoomsPage() {
       const data = await roomsApi.getUserRooms();
       setRooms(data);
       setFilteredRooms(data);
-      setCurrentPage(1);
+      setVisibleCount(ITEMS_PER_PAGE);
     } catch (err) {
       console.error('Failed to load rooms:', err);
     } finally {
@@ -118,7 +117,7 @@ export default function RoomsPage() {
 
   const handleSearch = (code: string) => {
     setSearchCode(code);
-    setCurrentPage(1);
+    setVisibleCount(ITEMS_PER_PAGE);
     setJoinError(null);
 
     if (!code.trim()) {
@@ -159,16 +158,8 @@ export default function RoomsPage() {
     router.push('/room/create');
   };
 
-  // Pagination
-  const totalPages = Math.ceil(filteredRooms.length / ITEMS_PER_PAGE);
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const paginatedRooms = filteredRooms.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-
-  const goToPage = (page: number) => {
-    if (page >= 1 && page <= totalPages) {
-      setCurrentPage(page);
-    }
-  };
+  const visibleRooms = filteredRooms.slice(0, visibleCount);
+  const hasMore = visibleCount < filteredRooms.length;
 
   if (isLoading) {
     return (
@@ -250,60 +241,20 @@ export default function RoomsPage() {
             </Card>
           ) : (
             <>
-              {paginatedRooms.map((room) => (
+              {visibleRooms.map((room) => (
                 <RoomCard key={room.id} room={room} />
               ))}
 
-              {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="flex flex-row items-center justify-center mt-4 mb-2">
-                  <button
-                    onClick={() => goToPage(currentPage - 1)}
-                    disabled={currentPage === 1}
-                    className={`w-10 h-10 rounded-xl flex items-center justify-center mr-2 transition-opacity cursor-pointer ${
-                      currentPage === 1
-                        ? 'bg-[#3E3666] cursor-not-allowed'
-                        : 'bg-[#00D397] hover:opacity-90'
-                    }`}
-                  >
-                    <ChevronLeft size={20} color={currentPage === 1 ? '#FFFFFF40' : '#292349'} />
-                  </button>
-
-                  <div className="flex flex-row items-center px-4">
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                      <button
-                        key={page}
-                        onClick={() => goToPage(page)}
-                        className={`w-8 h-8 rounded-lg flex items-center justify-center mx-0.5 transition-colors cursor-pointer ${
-                          currentPage === page ? 'bg-[#00D397]' : 'bg-[#3E3666] hover:opacity-80'
-                        }`}
-                      >
-                        <span
-                          className={
-                            currentPage === page ? 'text-[#292349] font-bold' : 'text-white/60'
-                          }
-                        >
-                          {page}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-
-                  <button
-                    onClick={() => goToPage(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                    className={`w-10 h-10 rounded-xl flex items-center justify-center ml-2 transition-opacity cursor-pointer ${
-                      currentPage === totalPages
-                        ? 'bg-[#3E3666] cursor-not-allowed'
-                        : 'bg-[#00D397] hover:opacity-90'
-                    }`}
-                  >
-                    <ChevronRight
-                      size={20}
-                      color={currentPage === totalPages ? '#FFFFFF40' : '#292349'}
-                    />
-                  </button>
-                </div>
+              {hasMore && (
+                <button
+                  onClick={() => setVisibleCount((c) => c + ITEMS_PER_PAGE)}
+                  className="w-full mb-3 py-3 rounded-xl bg-[#342D5B] border border-[#3E3666] hover:bg-[#3E3666] transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <ChevronDown size={18} color="#FFFFFF80" />
+                  <span className="text-white/70 text-sm font-medium">
+                    Charger plus ({filteredRooms.length - visibleCount} restantes)
+                  </span>
+                </button>
               )}
             </>
           )}
