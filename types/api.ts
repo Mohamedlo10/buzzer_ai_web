@@ -260,6 +260,8 @@ export interface BuzzQueueItem {
   playerId: string;
   playerName: string;
   timeDiffMs: number;
+  teamId?: string | null;
+  teamName?: string | null;
 }
 
 export interface GameStateResponse {

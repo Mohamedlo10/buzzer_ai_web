@@ -96,6 +96,8 @@ export function handleWSEvent(event: WSEvent, currentUserId?: string): void {
         playerId: string;
         playerName: string;
         timeDiffMs: number;
+        teamId?: string | null;
+        teamName?: string | null;
       }> | undefined;
 
       if (fullQueue) {
@@ -104,6 +106,8 @@ export function handleWSEvent(event: WSEvent, currentUserId?: string): void {
           playerId: b.playerId,
           playerName: b.playerName,
           timeDiffMs: b.timeDiffMs,
+          teamId: b.teamId ?? null,
+          teamName: b.teamName ?? null,
         }));
         useGameStore.getState().setBuzzQueue(mappedQueue);
         useBuzzStore.getState().setBuzzQueue(mappedQueue);
@@ -113,20 +117,33 @@ export function handleWSEvent(event: WSEvent, currentUserId?: string): void {
           playerId: event.userId,
           playerName: event.username,
           timeDiffMs: event.timestamp,
+          teamId: null,
+          teamName: null,
         };
         useGameStore.getState().addToBuzzQueue(buzzItem);
         useBuzzStore.getState().addToBuzzQueue(buzzItem);
       }
-      
-      // If current user buzzed, mark hasBuzzed in both stores
-      if (currentUserId && event.userId === currentUserId) {
-        const currentQueue = useGameStore.getState().buzzQueue;
-        const userPosition = currentQueue.findIndex(b => b.playerId === currentUserId) + 1;
-        useGameStore.getState().setHasBuzzed(true);
-        useBuzzStore.getState().setHasBuzzed(true);
-        
-        if (userPosition > 0) {
-          useGameStore.setState({ myQueuePosition: userPosition });
+
+      // Mark hasBuzzed — team-aware: also flag if a teammate is in the queue
+      if (currentUserId) {
+        const buzzState = useBuzzStore.getState();
+        const currentQueue = buzzState.buzzQueue;
+        const myPlayer = buzzState.players.find((p) => p.userId === currentUserId);
+
+        const myBuzz = currentQueue.some((b) => b.playerId === currentUserId);
+        const teamBuzz =
+          !myBuzz &&
+          buzzState.session?.isTeamMode === true &&
+          myPlayer?.teamId != null &&
+          currentQueue.some((b) => b.teamId === myPlayer.teamId);
+
+        if (myBuzz || teamBuzz) {
+          useGameStore.getState().setHasBuzzed(true);
+          useBuzzStore.getState().setHasBuzzed(true);
+          const userPosition = currentQueue.findIndex((b) => b.playerId === currentUserId) + 1;
+          if (userPosition > 0) {
+            useGameStore.setState({ myQueuePosition: userPosition });
+          }
         }
       }
       break;
@@ -271,6 +288,8 @@ export function handleWSEvent(event: WSEvent, currentUserId?: string): void {
         playerId: b.playerId,
         playerName: b.playerName,
         timeDiffMs: b.timeDiffMs,
+        teamId: b.teamId ?? null,
+        teamName: b.teamName ?? null,
       }));
       useBuzzStore.getState().setBuzzQueue(serverQueue);
       useGameStore.getState().setBuzzQueue(serverQueue);

@@ -7,6 +7,7 @@ interface BuzzerButtonProps {
   disabled?: boolean;
   hasBuzzed?: boolean;
   queuePosition?: number | null;
+  teamBuzzed?: boolean;
 }
 
 export function BuzzerButton({
@@ -14,6 +15,7 @@ export function BuzzerButton({
   disabled = false,
   hasBuzzed = false,
   queuePosition = null,
+  teamBuzzed = false,
 }: BuzzerButtonProps) {
   const handleClick = () => {
     if (disabled || hasBuzzed) return;
@@ -70,7 +72,9 @@ export function BuzzerButton({
             <span className="text-white/30 font-bold text-xl mt-2 tracking-wide">BUZZ</span>
           </div>
         </div>
-        <p className="text-white/40 mt-4 text-sm">Buzzer désactivé</p>
+        <p className="text-white/40 mt-4 text-sm">
+          {teamBuzzed ? 'Votre équipe a déjà buzzé' : 'Buzzer désactivé'}
+        </p>
       </div>
     );
   }

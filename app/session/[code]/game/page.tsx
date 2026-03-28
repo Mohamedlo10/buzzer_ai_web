@@ -254,8 +254,19 @@ export default function GamePage() {
 
       if (gameState.hasBuzzed) {
         useBuzzStore.getState().setHasBuzzed(true);
-      } else if (user?.id && gameState.buzzQueue?.some((b: BuzzQueueItem) => b.playerId === user.id)) {
-        useBuzzStore.getState().setHasBuzzed(true);
+      } else if (user?.id) {
+        const queue: BuzzQueueItem[] = gameState.buzzQueue ?? [];
+        const myDirectBuzz = queue.some((b) => b.playerId === user.id);
+        const storeState = useBuzzStore.getState();
+        const myPlayer = storeState.players.find((p) => p.userId === user.id);
+        const myTeamBuzz =
+          !myDirectBuzz &&
+          storeState.session?.isTeamMode === true &&
+          myPlayer?.teamId != null &&
+          queue.some((b) => b.teamId === myPlayer.teamId);
+        if (myDirectBuzz || myTeamBuzz) {
+          useBuzzStore.getState().setHasBuzzed(true);
+        }
       }
     } catch {
       // Silently fail
@@ -518,6 +529,13 @@ export default function GamePage() {
   const actualHasBuzzed = hasBuzzed || queuePosition >= 0;
   const firstBuzzer = buzzQueue[0];
 
+  // In team mode, hasBuzzed may be true because a teammate buzzed (not this player)
+  const teamBuzzed =
+    isTeamMode &&
+    actualHasBuzzed &&
+    queuePosition < 0 &&
+    !answeredWrongThisQuestion;
+
   return (
     <SafeScreen className="bg-[#292349]">
       {/* Header */}
@@ -677,10 +695,23 @@ export default function GamePage() {
                       {index + 1}
                     </span>
                   </div>
-                  <span className={`flex-1 font-medium ${item.playerId === user?.id ? 'text-[#FFD700]' : 'text-white'}`}>
-                    {item.playerName}
-                    {item.playerId === user?.id ? ' (Vous)' : ''}
-                  </span>
+                  <div className="flex-1 flex flex-row items-center gap-2 flex-wrap">
+                    <span className={`font-medium ${item.playerId === user?.id ? 'text-[#FFD700]' : 'text-white'}`}>
+                      {item.playerName}
+                      {item.playerId === user?.id ? ' (Vous)' : ''}
+                    </span>
+                    {isTeamMode && item.teamName && (() => {
+                      const teamColor = teams.find((t) => t.id === item.teamId)?.color ?? '#FFFFFF40';
+                      return (
+                        <span
+                          className="text-xs font-semibold px-2 py-0.5 rounded-full"
+                          style={{ backgroundColor: teamColor + '50', color: '#fff' }}
+                        >
+                          {item.teamName}
+                        </span>
+                      );
+                    })()}
+                  </div>
                   <span className="text-white/60 text-sm">
                     {item.timeDiffMs < 1000
                       ? `${item.timeDiffMs}ms`
@@ -808,6 +839,7 @@ export default function GamePage() {
               disabled={isSubmitting || isPaused || actualHasBuzzed || answeredWrongThisQuestion}
               hasBuzzed={actualHasBuzzed}
               queuePosition={queuePosition >= 0 ? queuePosition + 1 : null}
+              teamBuzzed={teamBuzzed}
             />
           </div>
         )}
@@ -846,9 +878,22 @@ export default function GamePage() {
                       <span className="font-bold text-[#292349] text-lg">1</span>
                     </div>
                     <div className="flex-1">
-                      <p className="text-white font-bold text-lg">
-                        {buzzQueue[0].playerName}
-                      </p>
+                      <div className="flex flex-row items-center gap-2 flex-wrap">
+                        <p className="text-white font-bold text-lg">
+                          {buzzQueue[0].playerName}
+                        </p>
+                        {isTeamMode && buzzQueue[0].teamName && (() => {
+                          const teamColor = teams.find((t) => t.id === buzzQueue[0].teamId)?.color ?? '#FFFFFF40';
+                          return (
+                            <span
+                              className="text-xs font-semibold px-2 py-0.5 rounded-full"
+                              style={{ backgroundColor: teamColor + '30', color: teamColor }}
+                            >
+                              {buzzQueue[0].teamName}
+                            </span>
+                          );
+                        })()}
+                      </div>
                       <p className="text-[#00D397] text-sm">
                         En train de répondre
                       </p>
@@ -931,11 +976,22 @@ export default function GamePage() {
                     <div className="w-8 h-8 rounded-full bg-[#3E3666] flex items-center justify-center mr-3">
                       <span className="font-bold text-white text-sm">{index + 2}</span>
                     </div>
-                    <div className="flex-1">
+                    <div className="flex-1 flex flex-row items-center gap-2 flex-wrap">
                       <span className={`font-medium ${item.playerId === user?.id ? 'text-[#00D397]' : 'text-white/80'}`}>
                         {item.playerName}
                         {item.playerId === user?.id && ' (Vous)'}
                       </span>
+                      {isTeamMode && item.teamName && (() => {
+                        const teamColor = teams.find((t) => t.id === item.teamId)?.color ?? '#FFFFFF40';
+                        return (
+                          <span
+                            className="text-xs font-semibold px-2 py-0.5 rounded-full"
+                            style={{ backgroundColor: teamColor + '30', color: teamColor }}
+                          >
+                            {item.teamName}
+                          </span>
+                        );
+                      })()}
                     </div>
                     <span className="text-white/50 text-sm">
                       {item.timeDiffMs < 1000
