@@ -746,7 +746,7 @@ export default function RoomDetailPage() {
           <div className="flex-1 min-w-0">
             <p className="text-white font-bold text-xl truncate">{room.name}</p>
             <p className="text-white/50 text-xs">
-              {members.length} membre{members.length !== 1 ? 's' : ''}
+              {members.length} / {room.maxPlayers} membre{members.length !== 1 ? 's' : ''}
             </p>
           </div>
           {isOwner && (
@@ -856,7 +856,7 @@ export default function RoomDetailPage() {
               <div className="flex items-center">
                 <Users size={20} color="#FFFFFF" />
                 <p className="text-white font-bold text-lg ml-2">Membres</p>
-                <p className="text-white/40 text-sm ml-2">({members.length})</p>
+                <p className="text-white/40 text-sm ml-2">({members.length} / {room.maxPlayers})</p>
                 <button
                   onClick={() => setShowInviteModal(true)}
                   className="ml-auto flex items-center gap-1.5 bg-[#00D39720] px-3 py-1.5 rounded-xl hover:bg-[#00D39730] transition-colors cursor-pointer"

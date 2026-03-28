@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { ArrowLeft, FolderOpen, AlertCircle } from 'lucide-react';
+import { ArrowLeft, FolderOpen, AlertCircle, Users } from 'lucide-react';
 
 import { Card } from '~/components/ui/Card';
 import { Spinner } from '~/components/loading/Spinner';
@@ -17,6 +17,7 @@ export default function EditRoomPage() {
   const [room, setRoom] = useState<RoomInfo | null>(null);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [maxPlayers, setMaxPlayers] = useState(250);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -28,6 +29,7 @@ export default function EditRoomPage() {
         setRoom(detail.room);
         setName(detail.room.name);
         setDescription(detail.room.description ?? '');
+        setMaxPlayers(detail.room.maxPlayers ?? 250);
       } catch {
         setError('Impossible de charger la salle');
       } finally {
@@ -55,6 +57,7 @@ export default function EditRoomPage() {
       await roomsApi.updateRoom(roomId, {
         name: trimmedName,
         description: description.trim() || undefined,
+        maxPlayers,
       });
       router.back();
     } catch (err: any) {
@@ -112,6 +115,26 @@ export default function EditRoomPage() {
               className="w-full bg-[#292349] rounded-xl px-4 py-3 text-white border border-[#3E3666] focus:border-[#00D397] focus:outline-none mb-4 placeholder-white/25"
               maxLength={50}
             />
+
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-white font-medium">Nombre maximum de joueurs</p>
+              <div className="flex items-center gap-2 bg-[#292349] rounded-xl border border-[#3E3666] px-3 py-1.5">
+                <Users size={14} color="#00D397" />
+                <span className="text-white font-bold text-sm w-8 text-center">{maxPlayers}</span>
+              </div>
+            </div>
+            <input
+              type="range"
+              min={2}
+              max={250}
+              value={maxPlayers}
+              onChange={(e) => setMaxPlayers(Number(e.target.value))}
+              className="w-full accent-[#00D397] mb-1"
+            />
+            <div className="flex justify-between text-white/30 text-xs mb-4">
+              <span>2</span>
+              <span>250</span>
+            </div>
 
             <p className="text-white font-medium mb-2">Description (optionnel)</p>
             <textarea

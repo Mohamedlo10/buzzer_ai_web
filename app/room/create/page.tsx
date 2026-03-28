@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, FolderOpen } from 'lucide-react';
+import { ArrowLeft, FolderOpen, Users } from 'lucide-react';
 
 import { Card } from '~/components/ui/Card';
 import { Spinner } from '~/components/loading/Spinner';
@@ -12,6 +12,7 @@ export default function CreateRoomPage() {
   const router = useRouter();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [maxPlayers, setMaxPlayers] = useState(250);
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -34,6 +35,7 @@ export default function CreateRoomPage() {
       const room = await roomsApi.createRoom({
         name: trimmedName,
         description: description.trim() || undefined,
+        maxPlayers,
       });
       router.replace(`/room/${room.id}`);
     } catch (err: any) {
@@ -84,6 +86,26 @@ export default function CreateRoomPage() {
               maxLength={50}
               autoFocus
             />
+
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-white font-medium">Nombre maximum de joueurs</p>
+              <div className="flex items-center gap-2 bg-[#292349] rounded-xl border border-[#3E3666] px-3 py-1.5">
+                <Users size={14} color="#00D397" />
+                <span className="text-white font-bold text-sm w-8 text-center">{maxPlayers}</span>
+              </div>
+            </div>
+            <input
+              type="range"
+              min={2}
+              max={250}
+              value={maxPlayers}
+              onChange={(e) => setMaxPlayers(Number(e.target.value))}
+              className="w-full accent-[#00D397] mb-1"
+            />
+            <div className="flex justify-between text-white/30 text-xs mb-4">
+              <span>2</span>
+              <span>250</span>
+            </div>
 
             <p className="text-white font-medium mb-2">Description (optionnel)</p>
             <textarea
