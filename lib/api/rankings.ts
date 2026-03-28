@@ -51,3 +51,8 @@ export async function getCategoryRankings(sessionId: string): Promise<CategoryRa
   });
   return res.data;
 }
+
+export async function recalculateGlobalRankings(): Promise<{ message: string }> {
+  const res = await apiClient.post<{ message: string }>('/api/rankings/global/recalculate');
+  return res.data;
+}

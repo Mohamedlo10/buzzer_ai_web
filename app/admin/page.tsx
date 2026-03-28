@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Users, Gamepad2, Brain, DollarSign, Crown, ChevronRight, Cpu, LogOut } from 'lucide-react';
+import { Users, Gamepad2, Brain, DollarSign, Crown, ChevronRight, Cpu, LogOut, Trophy, AlertTriangle, CheckCircle } from 'lucide-react';
 
 import { Card } from '~/components/ui/Card';
 import { Spinner } from '~/components/loading/Spinner';
 import { StatCard } from '~/components/admin/StatCard';
 import * as adminApi from '~/lib/api/admin';
+import * as rankingsApi from '~/lib/api/rankings';
 import type { AdminStatsResponse } from '~/types/api';
 import { useAuthStore } from '~/stores/useAuthStore';
 
@@ -17,6 +18,8 @@ export default function AdminDashboardPage() {
   const [stats, setStats] = useState<AdminStatsResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isRecalculating, setIsRecalculating] = useState(false);
+  const [recalculateResult, setRecalculateResult] = useState<{ ok: boolean; message: string } | null>(null);
 
   const loadStats = async () => {
     try {
@@ -26,6 +29,20 @@ export default function AdminDashboardPage() {
       console.error('Failed to load admin stats:', err);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleRecalculate = async () => {
+    setIsRecalculating(true);
+    setRecalculateResult(null);
+    try {
+      const res = await rankingsApi.recalculateGlobalRankings();
+      setRecalculateResult({ ok: true, message: res.message });
+    } catch (err: any) {
+      const message = err?.response?.data?.message || err?.message || 'Erreur lors du recalcul';
+      setRecalculateResult({ ok: false, message });
+    } finally {
+      setIsRecalculating(false);
     }
   };
 
@@ -212,6 +229,63 @@ export default function AdminDashboardPage() {
               <ChevronRight size={20} color="#FFFFFF" />
             </div>
           </button>
+
+          {/* Recalculate global rankings */}
+          <div className="bg-[#342D5B] rounded-xl border border-[#3E3666] p-4">
+            <div className="flex items-center mb-3">
+              <div className="w-10 h-10 rounded-lg bg-[#9B59B620] flex items-center justify-center mr-3 flex-shrink-0">
+                <Trophy size={20} color="#9B59B6" />
+              </div>
+              <div className="flex-1">
+                <p className="text-white font-semibold">Classement global</p>
+                <p className="text-white/50 text-sm">Recalcul depuis toutes les parties</p>
+              </div>
+            </div>
+
+            <div className="bg-[#FFD70010] rounded-lg p-3 border border-[#FFD70030] flex gap-2 mb-3">
+              <AlertTriangle size={14} color="#FFD700" className="flex-shrink-0 mt-0.5" />
+              <p className="text-[#FFD700] text-xs leading-relaxed">
+                Cette action remet à zéro et recalcule l'intégralité du classement global depuis toutes les parties terminées. Les parties jouées en tant que manager sont exclues. À n'utiliser qu'une seule fois après la mise à jour.
+              </p>
+            </div>
+
+            {recalculateResult && (
+              <div
+                className={`flex items-center gap-2 rounded-lg px-3 py-2 mb-3 ${
+                  recalculateResult.ok
+                    ? 'bg-[#00D39715] border border-[#00D39740]'
+                    : 'bg-[#D5442F15] border border-[#D5442F40]'
+                }`}
+              >
+                {recalculateResult.ok ? (
+                  <CheckCircle size={14} color="#00D397" />
+                ) : (
+                  <AlertTriangle size={14} color="#D5442F" />
+                )}
+                <span className={`text-xs font-medium ${recalculateResult.ok ? 'text-[#00D397]' : 'text-[#D5442F]'}`}>
+                  {recalculateResult.message}
+                </span>
+              </div>
+            )}
+
+            <button
+              onClick={handleRecalculate}
+              disabled={isRecalculating}
+              className="w-full py-3 rounded-xl flex items-center justify-center gap-2 transition-colors disabled:opacity-60 bg-[#9B59B630] border border-[#9B59B650] hover:bg-[#9B59B650]"
+            >
+              {isRecalculating ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-[#9B59B6] border-t-transparent rounded-full animate-spin" />
+                  <span className="text-[#9B59B6] font-semibold text-sm">Recalcul en cours...</span>
+                </>
+              ) : (
+                <>
+                  <Trophy size={16} color="#9B59B6" />
+                  <span className="text-[#9B59B6] font-semibold text-sm">Recalculer le classement global</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </div>
     </div>
