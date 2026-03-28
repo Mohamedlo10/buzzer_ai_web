@@ -8,13 +8,12 @@ import {
   Star,
   Users,
   Search,
-  ChevronLeft,
-  ChevronRight,
   X,
   UserPlus,
   UserCheck,
   Clock,
   UserX,
+  ChevronDown,
 } from 'lucide-react';
 
 import { SafeScreen } from '~/components/layout/SafeScreen';
@@ -24,9 +23,9 @@ import { Spinner } from '~/components/loading/Spinner';
 import { useAuthStore } from '~/stores/useAuthStore';
 import * as rankingsApi from '~/lib/api/rankings';
 import * as friendsApi from '~/lib/api/friends';
-import type { GlobalRanking, GlobalRankingPaginatedResponse } from '~/types/api';
+import type { GlobalRanking } from '~/types/api';
 
-const PAGE_SIZE = 6;
+const PAGE_SIZE = 8;
 
 // ──────────────────────────────────────────────
 // Podium (Top 3)
@@ -203,94 +202,33 @@ function RankingRow({
 }
 
 // ──────────────────────────────────────────────
-// Pagination Controls
-// ──────────────────────────────────────────────
-
-function PaginationControls({
-  currentPage,
-  totalPages,
-  onPageChange,
-}: {
-  currentPage: number;
-  totalPages: number;
-  onPageChange: (page: number) => void;
-}) {
-  if (totalPages <= 1) return null;
-
-  const maxVisible = 5;
-  let startPage = Math.max(0, currentPage - Math.floor(maxVisible / 2));
-  const endPage = Math.min(totalPages - 1, startPage + maxVisible - 1);
-  if (endPage - startPage + 1 < maxVisible) {
-    startPage = Math.max(0, endPage - maxVisible + 1);
-  }
-  const pages = Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
-
-  return (
-    <div className="flex flex-row items-center justify-center mt-4 mb-2">
-      <button
-        onClick={() => onPageChange(currentPage - 1)}
-        disabled={currentPage === 0}
-        className={`w-10 h-10 rounded-xl flex items-center justify-center mr-2 transition-opacity cursor-pointer ${
-          currentPage === 0 ? 'bg-[#3E3666] cursor-not-allowed' : 'bg-[#9B59B6] hover:opacity-90'
-        }`}
-      >
-        <ChevronLeft size={20} color={currentPage === 0 ? '#FFFFFF40' : '#FFFFFF'} />
-      </button>
-
-      <div className="flex flex-row items-center px-2">
-        {pages.map((page) => (
-          <button
-            key={page}
-            onClick={() => onPageChange(page)}
-            className={`w-8 h-8 rounded-lg flex items-center justify-center mx-0.5 transition-colors cursor-pointer ${
-              currentPage === page ? 'bg-[#9B59B6]' : 'bg-[#3E3666] hover:opacity-80'
-            }`}
-          >
-            <span className={currentPage === page ? 'text-white font-bold' : 'text-white/60'}>
-              {page + 1}
-            </span>
-          </button>
-        ))}
-      </div>
-
-      <button
-        onClick={() => onPageChange(currentPage + 1)}
-        disabled={currentPage >= totalPages - 1}
-        className={`w-10 h-10 rounded-xl flex items-center justify-center ml-2 transition-opacity cursor-pointer ${
-          currentPage >= totalPages - 1
-            ? 'bg-[#3E3666] cursor-not-allowed'
-            : 'bg-[#9B59B6] hover:opacity-90'
-        }`}
-      >
-        <ChevronRight size={20} color={currentPage >= totalPages - 1 ? '#FFFFFF40' : '#FFFFFF'} />
-      </button>
-    </div>
-  );
-}
-
-// ──────────────────────────────────────────────
 // Main Page
 // ──────────────────────────────────────────────
 
 export default function RankingsPage() {
-  const [pageData, setPageData] = useState<GlobalRankingPaginatedResponse | null>(null);
+  const [rankings, setRankings] = useState<GlobalRanking[]>([]);
+  const [totalElements, setTotalElements] = useState(0);
+  const [currentUserRank, setCurrentUserRank] = useState<number | null>(null);
+  const [hasMore, setHasMore] = useState(false);
+  const [nextPage, setNextPage] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [searchUsername, setSearchUsername] = useState('');
-  const [currentPage, setCurrentPage] = useState(0);
   const [searchTimer, setSearchTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
 
   const user = useAuthStore((state) => state.user);
 
-  const fetchRankings = async (page: number, username?: string) => {
+  const fetchRankings = async (page: number, username?: string, append = false) => {
     try {
       const params: rankingsApi.SearchRankingsParams = { page, size: PAGE_SIZE };
-      if (username && username.trim()) {
-        params.username = username.trim();
-      }
+      if (username && username.trim()) params.username = username.trim();
       const data = await rankingsApi.getGlobalRankings(params);
-      setPageData(data);
-      setCurrentPage(page);
+      setRankings((prev) => append ? [...prev, ...data.content] : data.content);
+      setTotalElements(data.totalElements ?? 0);
+      setCurrentUserRank(data.currentUserRank ?? null);
+      setHasMore(!data.last);
+      setNextPage(page + 1);
     } catch (err) {
       console.error('Failed to load rankings:', err);
     }
@@ -322,24 +260,23 @@ export default function RankingsPage() {
     setIsSearching(false);
   };
 
-  const handlePageChange = async (page: number) => {
-    setIsSearching(true);
-    await fetchRankings(page, searchUsername);
-    setIsSearching(false);
+  const handleLoadMore = async () => {
+    setIsLoadingMore(true);
+    await fetchRankings(nextPage, searchUsername, true);
+    setIsLoadingMore(false);
   };
 
   const handleAddFriend = async (targetUserId: string, _username: string) => {
     try {
       await friendsApi.sendFriendRequest(targetUserId);
-      await fetchRankings(currentPage, searchUsername);
-    } catch (err: any) {
+      // Refresh the whole list to update friendship statuses
+      await fetchRankings(0, searchUsername);
+      setNextPage(1);
+      setHasMore(rankings.length >= PAGE_SIZE);
+    } catch {
       // silently handle 409 (already friends)
     }
   };
-
-  const rankings = pageData?.content ?? [];
-  const totalPages = pageData?.totalPages ?? 0;
-  const totalElements = pageData?.totalElements ?? 0;
 
   if (isLoading) {
     return (
@@ -360,13 +297,12 @@ export default function RankingsPage() {
       </div>
 
       <div className="flex-1 overflow-y-auto px-4">
-       
-
-        {/* Podium — only on first page without search */}
-        {!searchUsername && (
-          <Podium rankings={rankings} currentPage={currentPage} />
+        {/* Podium — only on initial load without search */}
+        {!searchUsername && rankings.length >= 3 && (
+          <Podium rankings={rankings} currentPage={0} />
         )}
-         {/* Search by Username */}
+
+        {/* Search */}
         <div className="mb-4">
           <div className="flex flex-row items-center bg-[#342D5B] rounded-xl border border-[#3E3666] px-4">
             <Search size={20} color="#FFFFFF60" />
@@ -404,7 +340,7 @@ export default function RankingsPage() {
               <div className="flex flex-col items-center">
                 <Trophy size={20} color="#9B59B6" />
                 <span className="text-white font-bold text-lg mt-1">
-                  {pageData?.currentUserRank ?? 'N/A'}
+                  {currentUserRank ?? 'N/A'}
                 </span>
                 <span className="text-white/50 text-xs">Votre rang</span>
               </div>
@@ -429,11 +365,22 @@ export default function RankingsPage() {
                 />
               ))}
 
-              <PaginationControls
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={handlePageChange}
-              />
+              {hasMore && (
+                <button
+                  onClick={handleLoadMore}
+                  disabled={isLoadingMore}
+                  className="w-full mt-4 py-3 rounded-xl bg-[#3E3666] hover:bg-[#4E4676] transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
+                >
+                  {isLoadingMore ? (
+                    <div className="w-4 h-4 border-2 border-white/60 border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <ChevronDown size={18} color="#FFFFFF80" />
+                  )}
+                  <span className="text-white/70 text-sm font-medium">
+                    {isLoadingMore ? 'Chargement...' : 'Charger plus'}
+                  </span>
+                </button>
+              )}
             </>
           ) : (
             <p className="text-white/50 text-center py-8">
