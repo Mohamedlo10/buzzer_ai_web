@@ -17,7 +17,7 @@ const AUTH_ONLY_ROUTES = ['/login', '/register', '/onboarding'];
 
 // ─── MAINTENANCE ──────────────────────────────────────────────────────────────
 // Pour activer : remplacer false par true  |  Pour désactiver : remettre false
-const MAINTENANCE_MODE = true;
+const MAINTENANCE_MODE = false;
 // ──────────────────────────────────────────────────────────────────────────────
 
 export function middleware(request: NextRequest) {
