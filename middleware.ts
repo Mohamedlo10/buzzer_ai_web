@@ -15,8 +15,18 @@ const PROTECTED_PREFIXES = [
 // Routes accessibles uniquement si NON authentifié
 const AUTH_ONLY_ROUTES = ['/login', '/register', '/onboarding'];
 
+// ─── MAINTENANCE ──────────────────────────────────────────────────────────────
+// Pour activer : remplacer false par true  |  Pour désactiver : remettre false
+const MAINTENANCE_MODE = true;
+// ──────────────────────────────────────────────────────────────────────────────
+
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  if (MAINTENANCE_MODE && pathname !== '/maintenance') {
+    return NextResponse.redirect(new URL('/maintenance', request.url));
+  }
+
   const hasSession = request.cookies.get('has_session')?.value === '1';
 
   const isProtected = PROTECTED_PREFIXES.some((p) => pathname.startsWith(p));
