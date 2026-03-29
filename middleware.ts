@@ -27,6 +27,10 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/maintenance', request.url));
   }
 
+  if (!MAINTENANCE_MODE && pathname === '/maintenance') {
+    return NextResponse.redirect(new URL('/login', request.url));
+  }
+
   const hasSession = request.cookies.get('has_session')?.value === '1';
 
   const isProtected = PROTECTED_PREFIXES.some((p) => pathname.startsWith(p));
