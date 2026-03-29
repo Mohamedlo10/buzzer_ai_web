@@ -9,7 +9,7 @@ export default function MaintenancePage() {
 
       <h1 className="text-white font-bold text-3xl mb-3">Maintenance en cours</h1>
       <p className="text-white/60 text-base max-w-sm leading-relaxed">
-        Buzzer Master est temporairement indisponible pour des opérations de maintenance.
+        Quiz By Mouha Dev est temporairement indisponible pour des opérations de maintenance.
         Nous serons de retour très bientôt !
       </p>
 
