@@ -5,7 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import {
   Crown, Users, Trophy, Play, Settings, Trash2, X,
   Gamepad2, Eye, Copy, UserPlus, LogOut, Clock, Sparkles,
-  ChevronRight, BarChart3, Zap, Target, Star, Hash,
+  ChevronRight, BarChart3, Zap, Target, Star,
   Swords, Medal, History, Plus, QrCode, Home, LayoutGrid,
 } from 'lucide-react';
 
@@ -16,7 +16,7 @@ import * as qrcodeApi from '~/lib/api/qrcode';
 import * as roomsApi from '~/lib/api/rooms';
 import * as friendsApi from '~/lib/api/friends';
 import * as sessionsApi from '~/lib/api/sessions';
-import type { FriendResponse, RoomDetailResponse, RoomSessionResponse, SessionStatus } from '~/types/api';
+import type { FriendResponse, RoomDetailResponse, RoomInfo, RoomSessionResponse, SessionStatus } from '~/types/api';
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; icon: React.ComponentType<{ size: number; color: string }> }> = {
   LOBBY:      { label: 'Lobby',        color: '#00D397', bg: '#00D39720', icon: Users },
@@ -26,72 +26,210 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; 
   RESULTS:    { label: 'Terminée',     color: '#C0C0C0', bg: '#C0C0C020', icon: Trophy },
 };
 
-// ── Room Code Card (with inline QR) ─────────────────────────────────────────
+// ── Room Hero Card ────────────────────────────────────────────────────────────
 
-function RoomCodeCard({
-  code,
+function RoomHeroCard({
+  room,
+  members,
+  isOwner,
   qrImage,
   qrLoading,
   onCopy,
   onShare,
+  onDashboard,
+  onRooms,
 }: {
-  code: string;
+  room: RoomInfo;
+  members: RoomDetailResponse['members'];
+  isOwner: boolean;
   qrImage: string | null;
   qrLoading: boolean;
   onCopy: () => void;
   onShare: () => void;
+  onDashboard: () => void;
+  onRooms: () => void;
 }) {
+  const [showQr, setShowQr] = useState(false);
+  const visibleMembers = members.slice(0, 5);
+  const extraCount = members.length - visibleMembers.length;
+
   return (
-    <div className="px-4 pt-4">
-      <div className="bg-[#342D5B] rounded-3xl border border-[#3E3666] p-6 flex flex-col items-center">
-        {/* QR Code */}
-        <div className="mb-5">
-          {qrLoading ? (
-            <div className="w-52 h-52 rounded-2xl bg-[#292349] flex flex-col items-center justify-center">
-              <div className="w-8 h-8 border-2 border-[#00D397] border-t-transparent rounded-full animate-spin" />
-              <p className="text-white/40 text-xs mt-3">Chargement...</p>
+    <div
+      className="relative overflow-hidden"
+      style={{ background: 'linear-gradient(180deg, #080614 0%, #110D2A 45%, #1C1640 100%)' }}
+    >
+      {/* Ceiling spotlight */}
+      <div
+        className="absolute top-0 left-0 right-0 h-64 pointer-events-none"
+        style={{
+          background: 'radial-gradient(ellipse 70% 120% at 50% -10%, #00D39716 0%, transparent 70%)',
+        }}
+      />
+      {/* Left wall shadow */}
+      <div
+        className="absolute inset-y-0 left-0 w-24 pointer-events-none"
+        style={{ background: 'linear-gradient(to right, #00000060, transparent)' }}
+      />
+      {/* Right wall shadow */}
+      <div
+        className="absolute inset-y-0 right-0 w-24 pointer-events-none"
+        style={{ background: 'linear-gradient(to left, #00000060, transparent)' }}
+      />
+      {/* Floor darkening */}
+      <div
+        className="absolute bottom-0 left-0 right-0 h-20 pointer-events-none"
+        style={{ background: 'linear-gradient(to top, #00000055, transparent)' }}
+      />
+
+      {/* Nav bar */}
+      <div className="relative z-10 px-4 pt-6 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={onDashboard}
+            className="flex items-center gap-1.5 bg-white/10 px-3 py-1.5 rounded-full hover:bg-white/15 transition-colors"
+          >
+            <Home size={13} color="#FFFFFF80" />
+            <span className="text-white/60 text-xs font-medium">Dashboard</span>
+          </button>
+          <button
+            onClick={onRooms}
+            className="flex items-center gap-1.5 bg-white/10 px-3 py-1.5 rounded-full hover:bg-white/15 transition-colors"
+          >
+            <LayoutGrid size={13} color="#FFFFFF80" />
+            <span className="text-white/60 text-xs font-medium">Mes salles</span>
+          </button>
+        </div>
+        {isOwner && (
+          <div className="flex items-center bg-[#FFD70022] border border-[#FFD70030] px-3 py-1.5 rounded-full">
+            <Crown size={13} color="#FFD700" />
+            <span className="text-[#FFD700] text-xs font-semibold ml-1.5">Chef</span>
+          </div>
+        )}
+      </div>
+
+      {/* Room stage */}
+      <div className="relative z-10 flex flex-col items-center px-6 pt-8 pb-4">
+        {/* Room icon */}
+        <div
+          className="w-20 h-20 rounded-3xl flex items-center justify-center mb-4 border border-[#00D39722]"
+          style={{ background: 'linear-gradient(135deg, #00D39714 0%, #9B59B610 100%)' }}
+        >
+          <Sparkles size={36} color="#00D397" />
+        </div>
+
+        {/* Room name — the "sign" */}
+        <h1
+          className="text-white font-bold text-2xl text-center tracking-wide"
+          style={{ textShadow: '0 0 40px rgba(0,211,151,0.18)' }}
+        >
+          {room.name}
+        </h1>
+
+        {room.description && (
+          <p className="text-white/40 text-sm text-center max-w-xs leading-relaxed mt-2">
+            {room.description}
+          </p>
+        )}
+
+        {/* Member avatars — "people in the room" */}
+        <div className="mt-6 mb-2 flex flex-col items-center">
+          <div className="flex -space-x-2.5">
+            {visibleMembers.map((m) => (
+              <div
+                key={m.id}
+                className="w-10 h-10 rounded-full border-2 flex items-center justify-center"
+                style={{
+                  borderColor: '#0A0818',
+                  background: 'linear-gradient(135deg, #3E3666, #2B2060)',
+                }}
+              >
+                {m.avatarUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={m.avatarUrl} className="w-full h-full rounded-full object-cover" alt={m.username} />
+                ) : (
+                  <span className="text-white text-sm font-bold">
+                    {m.username.charAt(0).toUpperCase()}
+                  </span>
+                )}
+              </div>
+            ))}
+            {extraCount > 0 && (
+              <div
+                className="w-10 h-10 rounded-full border-2 bg-[#3E3666] flex items-center justify-center"
+                style={{ borderColor: '#0A0818' }}
+              >
+                <span className="text-white/60 text-xs font-bold">+{extraCount}</span>
+              </div>
+            )}
+          </div>
+          <p className="text-white/35 text-xs mt-2.5">
+            {members.length} / {room.maxPlayers} membre{members.length !== 1 ? 's' : ''} dans la salle
+          </p>
+        </div>
+      </div>
+
+      {/* Access plate — room code */}
+      <div className="relative z-10 mx-4 mb-6">
+        <div
+          className="rounded-2xl border border-white/10 overflow-hidden"
+          style={{ background: 'rgba(0,0,0,0.45)' }}
+        >
+          <div className="px-5 py-4 flex items-center justify-between">
+            <div>
+              <p className="text-white/30 text-[10px] uppercase tracking-widest mb-1.5">
+                Code d'accès
+              </p>
+              <p className="text-white font-bold text-3xl tracking-[6px] select-all">
+                {room.code}
+              </p>
             </div>
-          ) : qrImage ? (
-            <div className="bg-white p-3 rounded-2xl shadow-lg">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={qrImage} alt="QR Code" className="w-52 h-52 object-contain" />
-            </div>
-          ) : (
-            <div className="w-52 h-52 rounded-2xl bg-[#292349] flex flex-col items-center justify-center border border-dashed border-[#3E3666]">
-              <QrCode size={40} color="#FFFFFF20" />
-              <p className="text-white/30 text-xs mt-2">Indisponible</p>
+            <button
+              onClick={() => setShowQr((v) => !v)}
+              className={`w-11 h-11 rounded-xl flex items-center justify-center transition-colors ${
+                showQr ? 'bg-[#00D39730]' : 'bg-white/10 hover:bg-white/15'
+              }`}
+            >
+              <QrCode size={20} color={showQr ? '#00D397' : '#FFFFFF55'} />
+            </button>
+          </div>
+
+          {showQr && (
+            <div className="pb-5 flex justify-center border-t border-white/10 pt-4">
+              {qrLoading ? (
+                <div className="w-40 h-40 flex items-center justify-center">
+                  <div className="w-8 h-8 border-2 border-[#00D397] border-t-transparent rounded-full animate-spin" />
+                </div>
+              ) : qrImage ? (
+                <div className="bg-white p-3 rounded-2xl shadow-2xl">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={qrImage} alt="QR Code" className="w-40 h-40 object-contain" />
+                </div>
+              ) : (
+                <div className="w-40 h-40 flex flex-col items-center justify-center border border-dashed border-white/20 rounded-2xl">
+                  <QrCode size={36} color="#FFFFFF20" />
+                  <p className="text-white/25 text-xs mt-2">Indisponible</p>
+                </div>
+              )}
             </div>
           )}
-        </div>
 
-        {/* Code below QR */}
-        <div className="flex items-center gap-2 mb-1">
-          <Hash size={14} color="#00D397" />
-          <span className="text-white/50 text-xs font-medium uppercase tracking-wider">
-            Code de la salle
-          </span>
-        </div>
-        <p className="text-white text-4xl font-bold text-center tracking-[6px] mb-1 select-all">
-          {code}
-        </p>
-        <p className="text-white/30 text-xs mb-5">Scannez ou partagez le code</p>
-
-        {/* Actions */}
-        <div className="flex gap-3 w-full">
-          <button
-            onClick={onCopy}
-            className="flex-1 flex items-center justify-center bg-[#00D39720] px-4 py-3 rounded-2xl hover:bg-[#00D39730] transition-colors"
-          >
-            <Copy size={17} color="#00D397" />
-            <span className="text-[#00D397] font-semibold ml-2">Copier</span>
-          </button>
-          <button
-            onClick={onShare}
-            className="flex-1 flex items-center justify-center bg-[#3E3666] px-4 py-3 rounded-2xl hover:bg-[#4E4676] transition-colors"
-          >
-            <UserPlus size={17} color="#FFFFFF" />
-            <span className="text-white font-semibold ml-2">Partager</span>
-          </button>
+          <div className="flex border-t border-white/10">
+            <button
+              onClick={onCopy}
+              className="flex-1 flex items-center justify-center gap-2 py-4 hover:bg-white/5 transition-colors"
+            >
+              <Copy size={15} color="#00D397" />
+              <span className="text-[#00D397] text-sm font-semibold">Copier</span>
+            </button>
+            <div className="w-px bg-white/10" />
+            <button
+              onClick={onShare}
+              className="flex-1 flex items-center justify-center gap-2 py-4 hover:bg-white/5 transition-colors"
+            >
+              <UserPlus size={15} color="#FFFFFF70" />
+              <span className="text-white/60 text-sm font-semibold">Partager</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -539,7 +677,6 @@ export default function RoomDetailPage() {
 
   const [roomData, setRoomData] = useState<RoomDetailResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
   const [showConfigModal, setShowConfigModal] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [qrImage, setQrImage] = useState<string | null>(null);
@@ -603,11 +740,6 @@ export default function RoomDetailPage() {
     return () => { document.body.style.overflow = ''; };
   }, [showConfigModal]);
 
-  const handleRefresh = async () => {
-    setIsRefreshing(true);
-    await loadRoom();
-    setIsRefreshing(false);
-  };
 
   const navigateToSession = (session: RoomSessionResponse) => {
     const { code, status, id: sessionId } = session;
@@ -730,60 +862,19 @@ export default function RoomDetailPage() {
 
   return (
     <div className="min-h-screen bg-[#292349]">
-      {/* Header */}
-      <div className="bg-[#292349] pt-6 pb-4 px-4 border-b border-[#3E3666]">
-        <div className="flex items-center gap-2 mb-3">
-          <button
-            onClick={() => router.push('/dashboard')}
-            className="flex items-center gap-1.5 bg-[#342D5B] px-3 py-2 rounded-full hover:bg-[#3E3666] transition-colors"
-          >
-            <Home size={15} color="#FFFFFF99" />
-            <span className="text-white/60 text-xs font-medium">Dashboard</span>
-          </button>
-          <button
-            onClick={() => router.push('/rooms')}
-            className="flex items-center gap-1.5 bg-[#342D5B] px-3 py-2 rounded-full hover:bg-[#3E3666] transition-colors"
-          >
-            <LayoutGrid size={15} color="#FFFFFF99" />
-            <span className="text-white/60 text-xs font-medium">Mes salles</span>
-          </button>
-        </div>
-        <div className="flex items-center">
-          <div className="flex-1 min-w-0">
-            <p className="text-white font-bold text-xl truncate">{room.name}</p>
-            <p className="text-white/50 text-xs">
-              {members.length} / {room.maxPlayers} membre{members.length !== 1 ? 's' : ''}
-            </p>
-          </div>
-          {isOwner && (
-            <div className="flex items-center bg-[#FFD70020] px-3 py-1.5 rounded-full">
-              <Crown size={14} color="#FFD700" />
-              <span className="text-[#FFD700] text-xs font-semibold ml-1.5">Chef</span>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Refresh button */}
-      <div className="flex justify-end px-4 pt-3">
-        <button
-          onClick={handleRefresh}
-          disabled={isRefreshing}
-          className="text-[#00D397] text-sm font-medium hover:opacity-80 disabled:opacity-40 transition-opacity"
-        >
-          {isRefreshing ? 'Actualisation...' : 'Actualiser'}
-        </button>
-      </div>
+      <RoomHeroCard
+        room={room}
+        members={members}
+        isOwner={isOwner}
+        qrImage={qrImage}
+        qrLoading={qrLoading}
+        onCopy={handleCopyCode}
+        onShare={handleShare}
+        onDashboard={() => router.push('/dashboard')}
+        onRooms={() => router.push('/rooms')}
+      />
 
       <div className="overflow-y-auto">
-        {/* Room Code + QR */}
-        <RoomCodeCard
-          code={room.code}
-          qrImage={qrImage}
-          qrLoading={qrLoading}
-          onCopy={handleCopyCode}
-          onShare={handleShare}
-        />
 
         {/* Active Sessions */}
         {activeSessions.length > 0 && (
