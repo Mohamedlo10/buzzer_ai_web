@@ -588,6 +588,12 @@ export default function RoomDetailPage() {
     loadRoom();
   }, [loadRoom]);
 
+  // Refresh silencieux toutes les 3s
+  useEffect(() => {
+    const interval = setInterval(loadRoom, 3000);
+    return () => clearInterval(interval);
+  }, [loadRoom]);
+
   useEffect(() => {
     if (roomData?.room?.id) loadQR(roomData.room.id);
   }, [roomData?.room?.id, loadQR]);

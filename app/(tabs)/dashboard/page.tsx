@@ -474,6 +474,21 @@ export default function DashboardPage() {
             />
           </div>
         )}
+        {/* ── Recent Rooms ── */}
+        {data.recentRooms && data.recentRooms.length > 0 && (
+          <div className="mb-5">
+            <div className="px-4">
+              <SectionHeader title="Salles récentes" emoji="🏠" />
+            </div>
+            <div className="flex flex-row gap-3 overflow-x-auto px-4 pb-2 scrollbar-none">
+              {data.recentRooms.map((room) => (
+                <div key={room.id} className="min-w-[75vw]">
+                  <LastRoomCard room={room} />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* ── Recent Sessions ── */}
         <div className="mb-5">
@@ -503,22 +518,7 @@ export default function DashboardPage() {
           )}
         </div>
 
-        {/* ── Recent Rooms ── */}
-        {data.recentRooms && data.recentRooms.length > 0 && (
-          <div className="mb-5">
-            <div className="px-4">
-              <SectionHeader title="Salles récentes" emoji="🏠" />
-            </div>
-            <div className="flex flex-row gap-3 overflow-x-auto px-4 pb-2 scrollbar-none">
-              {data.recentRooms.map((room) => (
-                <div key={room.id} className="min-w-[75vw]">
-                  <LastRoomCard room={room} />
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
+       
         {/* ── Category Podium ── */}
         <div className="px-4 mb-5">
           <CategoryPodiumCard categories={data.topCategories} />
