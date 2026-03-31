@@ -27,7 +27,7 @@ import * as rankingsApi from '~/lib/api/rankings';
 import * as friendsApi from '~/lib/api/friends';
 import type { GlobalRanking } from '~/types/api';
 
-const PAGE_SIZE = 30;
+const PAGE_SIZE = 25;
 
 // ──────────────────────────────────────────────
 // Podium (Top 3)
