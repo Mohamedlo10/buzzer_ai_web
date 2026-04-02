@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { Zap } from 'lucide-react';
 
 interface BuzzerButtonProps {
@@ -17,8 +18,23 @@ export function BuzzerButton({
   queuePosition = null,
   teamBuzzed = false,
 }: BuzzerButtonProps) {
+  const isActive = !disabled && !hasBuzzed && queuePosition === null;
+
+  useEffect(() => {
+    if (!isActive) return;
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.code !== 'Space' && e.code !== 'Enter') return;
+      const tag = (e.target as HTMLElement).tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+      e.preventDefault();
+      onBuzz();
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [isActive, onBuzz]);
+
   const handleClick = () => {
-    if (disabled || hasBuzzed) return;
+    if (!isActive) return;
     onBuzz();
   };
 
@@ -84,7 +100,7 @@ export function BuzzerButton({
     <div className="flex flex-col items-center py-6">
       <button
         onClick={handleClick}
-        disabled={disabled || hasBuzzed}
+        disabled={!isActive}
         className="relative focus:outline-none active:scale-90 transition-transform duration-150 group"
         style={{ width: 200, height: 200 }}
       >
@@ -117,7 +133,7 @@ export function BuzzerButton({
         </div>
       </button>
 
-      <p className="text-white/60 mt-4 text-sm">Appuyez pour buzzer</p>
+      <p className="text-white/60 mt-4 text-sm">Cliquer ou appuyer sur Espace / Entrée</p>
     </div>
   );
 }
