@@ -42,6 +42,7 @@ export function DebugAuth() {
       console.log('🧪 [Debug] Testing session creation...');
       const result = await createSession({
         debtAmount: 5,
+        pointsPerCorrectAnswer: 5,
         questionsPerCategory: 5,
         maxPlayers: 20,
         isPrivate: false,

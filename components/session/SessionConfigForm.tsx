@@ -3,26 +3,17 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-  Trophy,
-  Gamepad2,
-  Lock,
   Users,
   Zap,
   Target,
-  Crown,
   AlertCircle,
-  Sparkles,
   PenLine,
   Bot,
   Plus,
   X,
   Palette,
-  Info,
-  TrendingUp,
   Timer,
 } from 'lucide-react';
-
-import { Slider } from '~/components/ui/Slider';
 import { useBuzzStore } from '~/stores/useBuzzStore';
 import type { CreateSessionRequest, QuestionMode, TeamRequest } from '~/types/api';
 
@@ -41,117 +32,44 @@ interface SessionConfigFormProps {
   roomId?: string;
 }
 
-// Config Section Component
-function ConfigSection({
-  icon: Icon,
-  iconColor,
-  title,
-  children,
-}: {
-  icon: React.ElementType;
-  iconColor: string;
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="mx-4 mb-4">
-      <div className="bg-[#342D5B] rounded-3xl border border-[#3E3666] overflow-hidden">
-        <div className="px-5 py-4 border-b border-[#3E3666]">
-          <div className="flex flex-row items-center">
-            <div
-              className="w-10 h-10 rounded-xl flex items-center justify-center mr-3"
-              style={{ backgroundColor: iconColor + '20' }}
-            >
-              <Icon size={20} color={iconColor} />
-            </div>
-            <p className="text-white font-bold text-lg">{title}</p>
-          </div>
-        </div>
-        <div className="p-5">{children}</div>
-      </div>
-    </div>
-  );
-}
-
-// Option Toggle Component
-function OptionToggle({
-  icon: Icon,
-  iconBg,
-  title,
-  subtitle,
+// Stepper Field (- value +)
+function StepperField({
+  label,
   value,
-  onValueChange,
+  suffix = '',
+  min,
+  max,
+  step = 1,
+  onChange,
 }: {
-  icon: React.ElementType;
-  iconBg: string;
-  title: string;
-  subtitle: string;
-  value: boolean;
-  onValueChange: (value: boolean) => void;
-}) {
-  return (
-    <div className="flex flex-row items-center justify-between py-3 border-b border-[#3E3666] last:border-b-0">
-      <div className="flex flex-row items-center flex-1 mr-4">
-        <div
-          className="w-10 h-10 rounded-xl flex items-center justify-center mr-3 flex-shrink-0"
-          style={{ backgroundColor: iconBg }}
-        >
-          <Icon size={18} color="#FFFFFF" />
-        </div>
-        <div className="flex-1">
-          <p className="text-white font-medium text-base">{title}</p>
-          <p className="text-white/50 text-xs mt-0.5">{subtitle}</p>
-        </div>
-      </div>
-      <button
-        role="switch"
-        aria-checked={value}
-        onClick={() => onValueChange(!value)}
-        className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus:outline-none ${
-          value ? 'bg-[#00D397]' : 'bg-[#3E3666]'
-        }`}
-      >
-        <span
-          className={`inline-block h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${
-            value ? 'translate-x-6' : 'translate-x-1'
-          }`}
-        />
-      </button>
-    </div>
-  );
-}
-
-// Quick Select Button
-function QuickSelect({
-  options,
-  value,
-  onSelect,
-}: {
-  options: number[];
+  label: string;
   value: number;
-  onSelect: (val: number) => void;
+  suffix?: string;
+  min: number;
+  max: number;
+  step?: number;
+  onChange: (val: number) => void;
 }) {
   return (
-    <div className="flex flex-row gap-2 mt-3 flex-wrap">
-      {options.map((opt) => (
+    <div className="bg-[#342D5B] rounded-2xl border border-[#3E3666] p-4 flex flex-col">
+      <p className="text-white/40 text-[10px] font-bold tracking-widest uppercase mb-3">{label}</p>
+      <div className="flex items-center justify-between gap-2">
         <button
-          key={opt}
-          onClick={() => onSelect(opt)}
-          className={`px-4 py-2 rounded-xl transition-colors ${
-            value === opt
-              ? 'bg-[#00D397]'
-              : 'bg-[#3E3666] hover:bg-[#4E4676]'
-          }`}
+          onClick={() => onChange(Math.max(min, value - step))}
+          className="w-9 h-9 rounded-full bg-[#3E3666] flex items-center justify-center text-white text-lg font-bold hover:bg-[#4E4676] active:scale-95 transition-all shrink-0"
         >
-          <span
-            className={`font-semibold text-sm ${
-              value === opt ? 'text-[#292349]' : 'text-white/70'
-            }`}
-          >
-            {opt}
-          </span>
+          −
         </button>
-      ))}
+        <span className="text-[#00D397] font-bold text-2xl flex-1 text-center">
+          {value}{suffix}
+        </span>
+        <button
+          onClick={() => onChange(Math.min(max, value + step))}
+          className="w-9 h-9 rounded-full bg-[#3E3666] flex items-center justify-center text-white text-lg font-bold hover:bg-[#4E4676] active:scale-95 transition-all shrink-0"
+        >
+          +
+        </button>
+      </div>
     </div>
   );
 }
@@ -241,59 +159,6 @@ function TeamEditor({
   );
 }
 
-const Q_LIMIT = 60;
-
-function QuestionLimitIndicator({
-  categories,
-  questionsPerCat,
-  maxPlayers,
-}: {
-  categories: number;
-  questionsPerCat: number;
-  maxPlayers: number;
-}) {
-  const total = categories * questionsPerCat * maxPlayers;
-  const pct = Math.min((total / Q_LIMIT) * 100, 100);
-  const isOver = total > Q_LIMIT;
-  const isClose = total > Q_LIMIT * 0.7 && !isOver;
-
-  const color = isOver ? '#D5442F' : isClose ? '#F39C12' : '#00D397';
-  const bgColor = isOver ? '#D5442F15' : isClose ? '#F39C1215' : '#00D39715';
-  const borderColor = isOver ? '#D5442F40' : isClose ? '#F39C1240' : '#3E3666';
-
-  return (
-    <div className="mx-4 mb-4">
-      <div
-        className="rounded-3xl border overflow-hidden transition-colors"
-        style={{ backgroundColor: '#342D5B', borderColor }}
-      >
-        {/* Header */}
-        <div className="px-5 py-4 border-b border-[#3E3666] flex items-center gap-3">
-          <div
-            className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-            style={{ backgroundColor: bgColor }}
-          >
-            <TrendingUp size={20} color={color} />
-          </div>
-          <div className="flex-1">
-            <p className="text-white font-bold text-base">Limite de questions</p>
-            <p className="text-white/50 text-xs">Maximum 60 questions générées</p>
-          </div>
-          {/* Badge total */}
-          <div
-            className="px-3 py-1.5 rounded-xl flex-shrink-0"
-            style={{ backgroundColor: bgColor }}
-          >
-            <span className="font-bold text-lg" style={{ color }}>
-              <span className="text-sm font-normal text-white/40"> {Q_LIMIT}</span>
-            </span>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  );
-}
 
 export function SessionConfigForm({ onSuccess, roomId }: SessionConfigFormProps) {
   const router = useRouter();
@@ -358,378 +223,174 @@ export function SessionConfigForm({ onSuccess, roomId }: SessionConfigFormProps)
   };
 
   return (
-    <div className="flex-1 ">
-      {/* Header Info */}
-      <div className="mx-4 mt-5 mb-5">
-        <div className="bg-[#342D5B] rounded-3xl p-6 border border-[#3E3666]">
-          <div className="flex flex-row items-center">
-            <div className="w-12 h-12 rounded-2xl bg-[#00D39720] flex items-center justify-center mr-4 flex-shrink-0">
-              <Sparkles size={24} color="#00D397" />
-            </div>
-            <div className="flex-1">
-              <p className="text-white font-bold text-xl">Nouvelle Session</p>
-              <p className="text-white/50 text-sm">Configurez les règles de votre partie</p>
-            </div>
-          </div>
-        </div>
-      </div>
+    <div className="flex flex-col h-full">
+      {/* Scrollable area */}
+      <div className="flex-1 overflow-y-auto px-4 pt-5 pb-4 flex flex-col gap-4">
 
-      {/* Question Mode Toggle */}
-      <div className="mx-4 mb-4">
-        <div className="bg-[#342D5B] rounded-3xl border border-[#3E3666] overflow-hidden">
-          <div className="px-5 py-4 border-b border-[#3E3666]">
-            <div className="flex flex-row items-center">
-              <div className="w-10 h-10 rounded-xl bg-[#9B59B620] flex items-center justify-center mr-3">
-                <Sparkles size={20} color="#9B59B6" />
-              </div>
-              <p className="text-white font-bold text-lg">Mode de questions</p>
-            </div>
-          </div>
-          <div className="p-4 flex flex-row gap-3">
-            <button
-              onClick={() => handleModeChange('AI')}
-              className={`flex-1 p-4 flex flex-col items-center rounded-2xl border transition-colors ${
-                questionMode === 'AI'
-                  ? 'bg-[#00D39720] border-[#00D397]'
-                  : 'bg-[#3E3666] border-transparent hover:bg-[#4E4676]'
-              }`}
-            >
-              <Bot size={24} color={questionMode === 'AI' ? '#00D397' : '#FFFFFF60'} />
-              <span className={`font-bold text-sm mt-2 ${questionMode === 'AI' ? 'text-[#00D397]' : 'text-white/60'}`}>
-                IA
-              </span>
-              <span className="text-white/40 text-xs text-center mt-1">Générées automatiquement</span>
-            </button>
-            <button
-              onClick={() => handleModeChange('MANUAL')}
-              className={`flex-1 p-4 flex flex-col items-center rounded-2xl border transition-colors ${
-                questionMode === 'MANUAL'
-                  ? 'bg-[#FFD70020] border-[#FFD700]'
-                  : 'bg-[#3E3666] border-transparent hover:bg-[#4E4676]'
-              }`}
-            >
-              <PenLine size={24} color={questionMode === 'MANUAL' ? '#FFD700' : '#FFFFFF60'} />
-              <span className={`font-bold text-sm mt-2 ${questionMode === 'MANUAL' ? 'text-[#FFD700]' : 'text-white/60'}`}>
-                Manuel
-              </span>
-              <span className="text-white/40 text-xs text-center mt-1">Vous saisissez les questions</span>
-            </button>
-          </div>
-          {questionMode === 'MANUAL' && (
-            <div className="px-5 pb-4">
-              <div className="bg-[#FFD70010] rounded-xl p-3 border border-[#FFD70030] flex flex-row items-center gap-2">
-                <PenLine size={14} color="#FFD700" />
-                <span className="text-[#FFD700] text-xs flex-1">
-                  Vous pourrez saisir vos questions dans le lobby avant de démarrer.
-                </span>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Configuration Section */}
-      <ConfigSection icon={Trophy} iconColor="#FFD700" title="Configuration">
-        {/* Debt Amount */}
-        <div className="mb-3">
-          <div className="flex flex-row items-center justify-between mb-3">
-            <div className="flex flex-row items-center gap-2">
-              <Target size={16} color="#FFFFFF80" />
-              <span className="text-white/80 text-sm font-medium">Montant des dettes</span>
-            </div>
-            {/* <div className="bg-[#00D39720] px-3 py-1.5 rounded-xl">
-              <span className="text-[#00D397] font-bold text-lg">{config.debtAmount} pts</span>
-            </div> */}
-          <QuickSelect
-            options={[0,5, 10, 20]}
-            value={config.debtAmount}
-            onSelect={(val) => setConfig((c) => ({ ...c, debtAmount: val }))}
-          />
-          </div>
-          <Slider
-            label=""
-            value={config.debtAmount}
-            onValueChange={(value) => setConfig((c) => ({ ...c, debtAmount: value }))}
-            min={0}
-            max={20}
-            suffix=""
-          />
-
+        {/* Mode selector */}
+        <div className="flex gap-3">
+          <button
+            onClick={() => handleModeChange('AI')}
+            className={`flex-1 flex flex-col items-center gap-2 py-5 rounded-2xl border-2 transition-all ${
+              questionMode === 'AI'
+                ? 'border-[#00D397] bg-[#00D39715]'
+                : 'border-[#3E3666] bg-[#342D5B]'
+            }`}
+          >
+            <Bot size={28} color={questionMode === 'AI' ? '#00D397' : '#FFFFFF40'} />
+            <span className={`font-bold text-sm ${questionMode === 'AI' ? 'text-[#00D397]' : 'text-white/40'}`}>IA</span>
+          </button>
+          <button
+            onClick={() => handleModeChange('MANUAL')}
+            className={`flex-1 flex flex-col items-center gap-2 py-5 rounded-2xl border-2 transition-all ${
+              questionMode === 'MANUAL'
+                ? 'border-[#FFD700] bg-[#FFD70015]'
+                : 'border-[#3E3666] bg-[#342D5B]'
+            }`}
+          >
+            <PenLine size={28} color={questionMode === 'MANUAL' ? '#FFD700' : '#FFFFFF40'} />
+            <span className={`font-bold text-sm ${questionMode === 'MANUAL' ? 'text-[#FFD700]' : 'text-white/40'}`}>Manuel</span>
+          </button>
         </div>
 
-        {/* Points per correct answer */}
-        <div className="mb-3">
-          <div className="flex flex-row items-center justify-between mb-3">
-            <div className="flex flex-row items-center gap-2">
-              <TrendingUp size={16} color="#FFFFFF80" />
-              <span className="text-white/80 text-sm font-medium">Points par bonne réponse</span>
-            </div>
-            <QuickSelect
-              options={[5, 10, 15, 20]}
-              value={config.pointsPerCorrectAnswer}
-              onSelect={(val) => setConfig((c) => ({ ...c, pointsPerCorrectAnswer: val }))}
-            />
-          </div>
-          <Slider
-            label=""
-            value={config.pointsPerCorrectAnswer}
-            onValueChange={(value) => setConfig((c) => ({ ...c, pointsPerCorrectAnswer: value }))}
-            min={1}
-            max={50}
-            suffix=""
-          />
-        </div>
-
-        {/* Questions per category — AI mode only */}
-        {questionMode === 'AI' && (
-          <div className="mb-3">
-            <div className="flex flex-row items-center justify-between mb-3">
-              <div className="flex flex-row items-center gap-2">
-                <Zap size={16} color="#FFFFFF80" />
-                <span className="text-white/80 text-sm font-medium">Questions par catégorie</span>
-              </div>
-              {/* <div className="bg-[#4A90D920] px-3 py-1.5 rounded-xl">
-                <span className="text-[#4A90D9] font-bold text-lg">{config.questionsPerCategory}</span>
-              </div> */}
-            <QuickSelect
-              options={[5, 10, 15]}
-              value={config.questionsPerCategory}
-              onSelect={(val) => setConfig((c) => ({ ...c, questionsPerCategory: val }))}
-            />
-            </div>
-            <Slider
-              label=""
-              value={config.questionsPerCategory}
-              onValueChange={(value) => setConfig((c) => ({ ...c, questionsPerCategory: value }))}
-              min={2}
-              max={15}
-              suffix=""
-            />
-          </div>
-        )}
-
-        {/* Max Categories — AI mode only */}
-        {questionMode === 'AI' && (
-          <div>
-            <div className="flex flex-row items-center justify-between mb-3">
-              <div className="flex flex-row items-center gap-2">
-                <Gamepad2 size={16} color="#FFFFFF80" />
-                <span className="text-white/80 text-sm font-medium">Catégories max/joueur</span>
-              </div>
-              {/* <div className="bg-[#C084FC20] px-3 py-1.5 rounded-xl">
-                <span className="text-[#C084FC] font-bold text-lg">{config.maxCategoriesPerPlayer}</span>
-              </div> */}
-            <QuickSelect
-              options={[1, 2, 3, 5]}
-              value={config.maxCategoriesPerPlayer}
-              onSelect={(val) => setConfig((c) => ({ ...c, maxCategoriesPerPlayer: val }))}
-            />
-            </div>
-            <Slider
-              label=""
-              value={config.maxCategoriesPerPlayer}
-              onValueChange={(value) => setConfig((c) => ({ ...c, maxCategoriesPerPlayer: value }))}
-              min={1}
-              max={10}
-              suffix=""
-            />
-
-          </div>
-        )}
-
-        {/* Max Players */}
-        <div className="mb-3">
-          <div className="flex flex-row items-center justify-between mb-3">
-            <div className="flex flex-row items-center gap-2">
-              <Users size={16} color="#FFFFFF80" />
-              <span className="text-white/80 text-sm font-medium">Joueurs maximum</span>
-            </div>
-            <div className="bg-[#FFD70020] px-3 py-1.5 rounded-xl">
-              <span className="text-[#FFD700] font-bold text-lg">{config.maxPlayers}</span>
-            </div>
-          </div>
-          <Slider
-            label=""
-            value={config.maxPlayers}
-            onValueChange={(value) => setConfig((c) => ({ ...c, maxPlayers: value }))}
-            min={2}
-            max={50}
-            suffix=""
-          />
-        </div>
-
-        {/* Buzz Countdown */}
+        {/* Params grid */}
         <div>
-          <div className="flex flex-row items-center justify-between mb-3">
-            <div className="flex flex-row items-center gap-2">
-              <Timer size={16} color="#FFFFFF80" />
-              <span className="text-white/80 text-sm font-medium">Temps de réponse</span>
-            </div>
-            <div className="bg-[#C084FC20] px-3 py-1.5 rounded-xl">
-              <span className="text-[#C084FC] font-bold text-lg">{config.buzzCountdownSeconds}s</span>
-            </div>
-          </div>
-          <QuickSelect
-            options={[5, 10, 15, 30]}
-            value={config.buzzCountdownSeconds ?? 10}
-            onSelect={(val) => setConfig((c) => ({ ...c, buzzCountdownSeconds: val }))}
-          />
-          <div className="mt-3">
-            <Slider
-              label=""
+          <p className="text-white/40 text-[10px] font-bold tracking-widest uppercase mb-3">Paramètres du jeu</p>
+          <div className="grid grid-cols-2 gap-3">
+            {questionMode === 'AI' && (
+              <StepperField
+                label="Questions/cat."
+                value={config.questionsPerCategory}
+                min={2} max={15}
+                onChange={(v) => setConfig((c) => ({ ...c, questionsPerCategory: v }))}
+              />
+            )}
+            {questionMode === 'AI' && (
+              <StepperField
+                label="Catégories max"
+                value={config.maxCategoriesPerPlayer}
+                min={1} max={10}
+                onChange={(v) => setConfig((c) => ({ ...c, maxCategoriesPerPlayer: v }))}
+              />
+            )}
+            <StepperField
+              label="Temps réponse"
               value={config.buzzCountdownSeconds ?? 10}
-              onValueChange={(value) => setConfig((c) => ({ ...c, buzzCountdownSeconds: value }))}
-              min={5}
-              max={60}
-              suffix=""
+              suffix="s"
+              min={5} max={60} step={5}
+              onChange={(v) => setConfig((c) => ({ ...c, buzzCountdownSeconds: v }))}
+            />
+            <StepperField
+              label="Dettes (pts)"
+              value={config.debtAmount}
+              min={0} max={50} step={5}
+              onChange={(v) => setConfig((c) => ({ ...c, debtAmount: v }))}
+            />
+            <StepperField
+              label="Points / réponse"
+              value={config.pointsPerCorrectAnswer}
+              min={1} max={50} step={5}
+              onChange={(v) => setConfig((c) => ({ ...c, pointsPerCorrectAnswer: v }))}
+            />
+            <StepperField
+              label="Nombre joueurs"
+              value={config.maxPlayers}
+              min={2} max={50}
+              onChange={(v) => setConfig((c) => ({ ...c, maxPlayers: v }))}
             />
           </div>
         </div>
 
-      </ConfigSection>
+        {/* Mode équipe */}
+        <div className="bg-[#342D5B] rounded-2xl border border-[#3E3666] px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Users size={16} color="#4A90D9" />
+            <span className="text-white font-medium text-sm">Mode équipe</span>
+          </div>
+          <button
+            role="switch"
+            aria-checked={config.isTeamMode}
+            onClick={() => setConfig((c) => ({ ...c, isTeamMode: !c.isTeamMode }))}
+            className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${
+              config.isTeamMode ? 'bg-[#00D397]' : 'bg-[#3E3666]'
+            }`}
+          >
+            <span className={`inline-block h-5 w-5 rounded-full bg-white shadow transition-transform ${config.isTeamMode ? 'translate-x-6' : 'translate-x-1'}`} />
+          </button>
+        </div>
 
-      {/* Question Limit Indicator — AI mode only */}
-      {questionMode === 'AI' && (
-        <QuestionLimitIndicator
-          categories={config.maxCategoriesPerPlayer}
-          questionsPerCat={config.questionsPerCategory}
-          maxPlayers={config.maxPlayers}
-        />
-      )}
+        {/* Team Editor */}
+        {config.isTeamMode && (
+          <div className="bg-[#342D5B] rounded-2xl border border-[#3E3666] p-4">
+            <p className="text-white/40 text-[10px] font-bold tracking-widest uppercase mb-3">Équipes</p>
+            <TeamEditor teams={teams} onChange={setTeams} />
+          </div>
+        )}
 
-      {/* Options Section */}
-      <ConfigSection icon={Crown} iconColor="#00D397" title="Options de jeu">
-        {/* <OptionToggle
-          icon={Lock}
-          iconBg="#3E3666"
-          title="Session privée"
-          subtitle="Requiert le code pour rejoindre"
-          value={config.isPrivate}
-          onValueChange={(value) => setConfig((c) => ({ ...c, isPrivate: value }))}
-        /> */}
-        <OptionToggle
-          icon={Users}
-          iconBg="#4A90D920"
-          title="Mode équipe"
-          subtitle="Scores cumulés par équipe"
-          value={config.isTeamMode}
-          onValueChange={(value) => setConfig((c) => ({ ...c, isTeamMode: value }))}
-        />
-      </ConfigSection>
-
-      {/* Team Editor — visible when isTeamMode is on */}
-      {config.isTeamMode && (
-        <ConfigSection icon={Users} iconColor="#4A90D9" title="Équipes">
-          <TeamEditor teams={teams} onChange={setTeams} />
-        </ConfigSection>
-      )}
-
-      {/* Summary Card */}
-      <div className="mx-4 mb-4">
-        <div className="bg-[#292349] rounded-2xl border border-[#3E3666] p-4">
-          <p className="text-white/50 text-xs font-medium uppercase tracking-wider mb-3">Résumé</p>
-          <div className="flex flex-row flex-wrap gap-2">
-            <div className="bg-[#342D5B] px-3 py-2 rounded-xl flex flex-row items-center gap-2">
-              <TrendingUp size={14} color="#00D397" />
-              <span className="text-white text-sm">{config.pointsPerCorrectAnswer} pts/bonne rép.</span>
-            </div>
-            <div className="bg-[#342D5B] px-3 py-2 rounded-xl flex flex-row items-center gap-2">
-              <Target size={14} color="#EF4444" />
-              <span className="text-white text-sm">{config.debtAmount} pts dette</span>
-            </div>
-            {questionMode === 'AI' && (
-              <div className="bg-[#342D5B] px-3 py-2 rounded-xl flex flex-row items-center gap-2">
-                <Zap size={14} color="#4A90D9" />
-                <span className="text-white text-sm">{config.questionsPerCategory} Q/cat</span>
+        {/* Summary pill */}
+        <div className="bg-[#342D5B] rounded-2xl border border-[#3E3666] px-4 py-3">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="flex gap-1.5">
+              <div className="w-5 h-5 rounded-full bg-[#00D39730] flex items-center justify-center">
+                <Bot size={10} color="#00D397" />
               </div>
-            )}
-            <div className="bg-[#342D5B] px-3 py-2 rounded-xl flex flex-row items-center gap-2">
-              <Users size={14} color="#FFD700" />
-              <span className="text-white text-sm">Max {config.maxPlayers}</span>
-            </div>
-            <div className="bg-[#342D5B] px-3 py-2 rounded-xl flex flex-row items-center gap-2">
-              <Timer size={14} color="#C084FC" />
-              <span className="text-white text-sm">{config.buzzCountdownSeconds ?? 10}s réponse</span>
-            </div>
-            <div
-              className={`px-3 py-2 rounded-xl flex flex-row items-center gap-2 ${
-                questionMode === 'MANUAL' ? 'bg-[#FFD70020]' : 'bg-[#00D39720]'
-              }`}
-            >
-              {questionMode === 'MANUAL' ? (
-                <PenLine size={14} color="#FFD700" />
-              ) : (
-                <Bot size={14} color="#00D397" />
-              )}
-              <span
-                className={`text-sm ${
-                  questionMode === 'MANUAL' ? 'text-[#FFD700]' : 'text-[#00D397]'
-                }`}
-              >
-                {questionMode === 'MANUAL' ? 'Manuel' : 'IA'}
-              </span>
-            </div>
-            {config.isPrivate && (
-              <div className="bg-[#00D39720] px-3 py-2 rounded-xl flex flex-row items-center gap-2">
-                <Lock size={14} color="#00D397" />
-                <span className="text-[#00D397] text-sm">Privée</span>
+              <div className="w-5 h-5 rounded-full bg-[#4A90D930] flex items-center justify-center">
+                <Users size={10} color="#4A90D9" />
               </div>
-            )}
-            {config.isTeamMode && (
-              <div className="bg-[#4A90D920] px-3 py-2 rounded-xl flex flex-row items-center gap-2">
-                <Users size={14} color="#4A90D9" />
-                <span className="text-[#4A90D9] text-sm">Équipe</span>
+              <div className="w-5 h-5 rounded-full bg-[#FFD70030] flex items-center justify-center">
+                <Target size={10} color="#FFD700" />
               </div>
-            )}
+            </div>
+            <p className="text-white/60 text-xs flex-1">
+              Quiz {questionMode === 'AI' ? 'IA' : 'Manuel'} • {config.maxPlayers} Joueurs
+              {questionMode === 'AI' ? ` • ${config.questionsPerCategory} questions/cat` : ''}
+            </p>
+            <p className="text-[#00D397] text-xs font-bold">Session prête à démarrer</p>
           </div>
         </div>
+
+        {/* Error */}
+        {error && (
+          <div className="bg-red-500/10 rounded-2xl p-4 border border-red-500/30 flex items-center gap-3">
+            <AlertCircle size={18} color="#EF4444" />
+            <span className="text-red-400 text-sm font-medium">{error}</span>
+          </div>
+        )}
       </div>
 
-      {/* Error */}
-      {error && (
-        <div className="mx-4 mb-4">
-          <div className="bg-red-500/10 rounded-2xl p-4 border border-red-500/30 flex flex-row items-center gap-3">
-            <AlertCircle size={20} color="#EF4444" />
-            <span className="text-red-400 flex-1 font-medium">{error}</span>
+      {/* Bottom action bar */}
+      <div className="flex gap-3 px-4 py-4 border-t border-[#3E3666] bg-[#292349] shrink-0">
+        <button
+          onClick={() => {/* handled by parent modal close */}}
+          className="flex flex-col items-center gap-1 px-5"
+        >
+          <div className="w-10 h-10 rounded-full bg-[#3E3666] flex items-center justify-center">
+            <X size={20} color="#FFFFFF80" />
           </div>
-        </div>
-      )}
-
-      {/* Create Button */}
-      <div className="mx-4 mb-10">
+          <span className="text-white/40 text-[10px] font-bold tracking-wider uppercase">Annuler</span>
+        </button>
         <button
           onClick={handleCreate}
           disabled={isCreating}
-          className={`w-full rounded-2xl py-4 px-6 flex flex-row items-center justify-center gap-2 transition-all ${
-            isCreating
-              ? 'bg-[#3E3666] cursor-not-allowed'
-              : 'hover:opacity-90 active:opacity-80'
-          }`}
-          style={
-            isCreating
-              ? undefined
-              : {
-                  background: 'linear-gradient(to bottom, #00D397, #00B383)',
-                  boxShadow: '0 4px 12px rgba(0,211,151,0.3)',
-                }
+          className="flex-1 rounded-full py-4 flex items-center justify-center gap-2 transition-all active:scale-95"
+          style={isCreating
+            ? { background: '#3E3666' }
+            : { background: 'linear-gradient(135deg, #00D397, #00B383)', boxShadow: '0 4px 20px rgba(0,211,151,0.35)' }
           }
         >
           {isCreating ? (
             <>
               <div className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-              <span className="text-white font-bold text-lg">Création...</span>
+              <span className="text-white font-bold text-base">Création...</span>
             </>
           ) : (
             <>
-              <Sparkles size={22} color="#292349" />
-              <span className="text-[#292349] font-bold text-lg">Créer la session</span>
+              <Plus size={20} color="#292349" strokeWidth={3} />
+              <span className="text-[#292349] font-bold text-base tracking-wider uppercase">Créer la session</span>
             </>
           )}
         </button>
       </div>
-
-      {/* Bottom spacing */}
-      <div className="h-8" />
     </div>
   );
 }
