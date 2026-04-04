@@ -364,7 +364,8 @@ export interface SessionRankingEntry {
   finalScore: number;
   rank: number;
   categoryPerformance: Record<string, number>;
-  debts: DebtEntry[];
+  debts: DebtEntry[];           // debts this player owes to others
+  debtsReceived: DebtReceivedEntry[]; // debts others owe to this player
   // Team mode fields (optional — only present when session.isTeamMode)
   teamId?: string | null;
   teamName?: string | null;
@@ -374,6 +375,12 @@ export interface SessionRankingEntry {
 
 export interface DebtEntry {
   owedTo: string;   // username of the creditor
+  category: string;
+  amount: number;
+}
+
+export interface DebtReceivedEntry {
+  owedBy: string;   // username of the debtor
   category: string;
   amount: number;
 }

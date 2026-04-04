@@ -104,8 +104,13 @@ export interface AnswerSkippedEvent extends BaseWSMessage {
 
 export interface ScoreUpdatedEvent extends BaseWSMessage {
   type: 'score_updated';
-  scores: Record<string, number>;
-  reason: 'validation' | 'correction';
+  scores?: Record<string, number>;
+  reason?: 'validation' | 'correction';
+  // Score topic format
+  playerId?: string;
+  newScore?: number;
+  event?: 'CORRECT' | 'WRONG' | 'RUBRIQUE_BEATEN';
+  debtAmount?: number;
 }
 
 export interface GamePausedEvent extends BaseWSMessage {

@@ -191,16 +191,26 @@ export function handleWSEvent(event: WSEvent, currentUserId?: string): void {
       useBuzzStore.getState().fullBuzzerReset();
       break;
 
-    case 'score_updated':
-      // Handle both formats:
-      // - Typed: { scores: Record<string, number> }
-      // - Backend actual: { playerId, newScore }
-      if (event.scores) {
-        useBuzzStore.getState().updateScores(event.scores);
-      } else if ((event as any).playerId && (event as any).newScore !== undefined) {
-        useBuzzStore.getState().updateScores({ [(event as any).playerId]: (event as any).newScore });
+    case 'score_updated': {
+      const scoreEvent = event as any;
+      // Update score regardless of sub-event type
+      if (scoreEvent.scores) {
+        useBuzzStore.getState().updateScores(scoreEvent.scores);
+      } else if (scoreEvent.playerId && scoreEvent.newScore !== undefined) {
+        useBuzzStore.getState().updateScores({ [scoreEvent.playerId]: scoreEvent.newScore });
+      }
+      // RUBRIQUE_BEATEN: store notification so the game page can display it
+      if (scoreEvent.event === 'RUBRIQUE_BEATEN' && scoreEvent.playerId && scoreEvent.debtAmount) {
+        useBuzzStore.setState({
+          rubriqueBeatenNotif: {
+            playerId: scoreEvent.playerId,
+            debtAmount: scoreEvent.debtAmount,
+            at: Date.now(),
+          },
+        });
       }
       break;
+    }
 
     case 'game_paused':
       useGameStore.getState().setPaused(true);
