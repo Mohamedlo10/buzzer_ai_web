@@ -5,7 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import {
   Crown, Users, Trophy, Play, Settings, Trash2, X,
   Gamepad2, Eye, Copy, UserPlus, LogOut, Clock, Sparkles,
-  ChevronRight, BarChart3, Zap, Target, Star, Hash,
+  ChevronRight, Zap, Target, Hash,
   Swords, Medal, History, Plus, QrCode, Home, LayoutGrid,
 } from 'lucide-react';
 
@@ -202,148 +202,177 @@ function ActiveSessionCard({
   );
 }
 
-// ── Member Item ──────────────────────────────────────────────────────────────
+// ── Members + Rankings merged ─────────────────────────────────────────────────
 
-function MemberItem({
-  member,
-  isCurrentUser,
+function MembersWithStats({
+  members,
+  rankings,
+  currentUserId,
   onAddFriend,
 }: {
-  member: RoomDetailResponse['members'][0];
-  isCurrentUser: boolean;
-  onAddFriend: () => void;
+  members: RoomDetailResponse['members'];
+  rankings: RoomDetailResponse['rankings'];
+  currentUserId: string;
+  onAddFriend: (userId: string, username: string) => void;
 }) {
+  // Merge: for each member find their ranking stats, sort by ratio pts/partie desc
+  const merged = members
+    .map((m) => {
+      const rank = rankings.find((r) => r.userId === m.userId);
+      const ratio = rank && rank.gamesPlayed > 0
+        ? rank.totalScore / rank.gamesPlayed
+        : 0;
+      return { member: m, rank, ratio };
+    })
+    .sort((a, b) => b.ratio - a.ratio);
+
+  const rankColors = ['#FFD700', '#C0C0C0', '#CD7F32'];
+
   return (
-    <div className="flex items-center py-3 px-4 border-b border-[#3E3666] last:border-b-0">
-      <div className="relative mr-3">
-        <div className="w-12 h-12 rounded-full bg-[#3E3666] flex items-center justify-center">
-          {member.avatarUrl ? (
-            <img src={member.avatarUrl} className="w-12 h-12 rounded-full object-cover" alt={member.username} />
-          ) : (
-            <span className="text-white font-bold text-lg">
-              {member.username.charAt(0).toUpperCase()}
-            </span>
-          )}
+    <div className="bg-[#342D5B] rounded-3xl border border-[#3E3666] overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-[#3E3666]">
+        <p className="text-white/40 text-[10px] font-bold tracking-widest uppercase">Membres</p>
+        <div className="bg-[#00D39720] px-3 py-1 rounded-full">
+          <span className="text-[#00D397] text-xs font-bold">{members.length} Joueur{members.length !== 1 ? 's' : ''}</span>
         </div>
-        {member.isOnline && (
-          <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-[#00D397] border-2 border-[#342D5B]" />
-        )}
       </div>
 
-      <div className="flex-1">
-        <div className="flex items-center">
-          <span className={`font-semibold text-base ${isCurrentUser ? 'text-[#00D397]' : 'text-white'}`}>
-            {member.username}
-          </span>
-          {member.isOwner && (
-            <div className="flex items-center ml-2 px-2 py-0.5 rounded-full bg-[#FFD70020]">
-              <Crown size={12} color="#FFD700" />
-              <span className="text-[#FFD700] text-xs font-medium ml-1">Chef</span>
+      {merged.map(({ member, rank, ratio }, index) => {
+        const isCurrentUser = member.userId === currentUserId;
+        const color = rankColors[index] ?? '#FFFFFF60';
+        const hasPlayed = (rank?.gamesPlayed ?? 0) > 0;
+
+        return (
+          <div
+            key={member.id}
+            className={`flex items-center py-3 px-4 border-b border-[#3E3666] last:border-b-0 ${isCurrentUser ? 'bg-[#00D39708]' : ''}`}
+          >
+            {/* Rank badge */}
+            <div className="w-8 flex items-center justify-center mr-2 shrink-0">
+              {index === 0 && hasPlayed && <Crown size={16} color="#FFD700" />}
+              {index === 1 && hasPlayed && <Medal size={16} color="#C0C0C0" />}
+              {index === 2 && hasPlayed && <Medal size={16} color="#CD7F32" />}
+              {(!hasPlayed || index > 2) && (
+                <span className="text-white/30 text-xs font-bold">{index + 1}</span>
+              )}
             </div>
+
+            {/* Avatar */}
+            <div className="relative mr-3 shrink-0">
+              <div className="w-11 h-11 rounded-full bg-[#3E3666] flex items-center justify-center overflow-hidden">
+                {member.avatarUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={member.avatarUrl} className="w-11 h-11 rounded-full object-cover" alt={member.username} />
+                ) : (
+                  <span className="text-white font-bold">{member.username.charAt(0).toUpperCase()}</span>
+                )}
+              </div>
+              <div className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-[#342D5B] ${member.isOnline ? 'bg-[#00D397]' : 'bg-[#6B7280]'}`} />
+            </div>
+
+            {/* Name */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className={`font-semibold text-sm ${isCurrentUser ? 'text-[#00D397]' : 'text-white'}`}>
+                  {member.username}
+                </span>
+                {member.isOwner && (
+                  <div className="flex items-center px-1.5 py-0.5 rounded-full bg-[#FFD70020]">
+                    <Crown size={10} color="#FFD700" />
+                    <span className="text-[#FFD700] text-[10px] font-medium ml-0.5">Chef</span>
+                  </div>
+                )}
+              </div>
+              <span className="text-white/30 text-xs">
+                {member.isOnline ? 'En ligne' : 'Hors ligne'}
+                {hasPlayed ? ` • ${rank!.gamesPlayed} partie${rank!.gamesPlayed > 1 ? 's' : ''}` : ''}
+              </span>
+            </div>
+
+            {/* Stats */}
+            {hasPlayed && (
+              <div className="text-right mr-3 shrink-0">
+                <p className="font-bold text-sm" style={{ color }}>{Math.round(ratio)} <span className="text-white/30 text-[10px] font-normal">moy</span></p>
+                <p className="text-white/30 text-[10px]">{rank!.gamesWon} 🏆</p>
+              </div>
+            )}
+
+            <FriendshipButton
+              status={member.friendshipStatus}
+              isCurrentUser={isCurrentUser}
+              onAddFriend={() => onAddFriend(member.userId, member.username)}
+              size="sm"
+            />
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ── History Modal ─────────────────────────────────────────────────────────────
+
+function HistoryModal({
+  sessions,
+  onNavigate,
+  onClose,
+}: {
+  sessions: RoomSessionResponse[];
+  onNavigate: (session: RoomSessionResponse) => void;
+  onClose: () => void;
+}) {
+  const formatDate = (iso: string) => {
+    const d = new Date(iso);
+    const today = new Date();
+    const diff = Math.floor((today.getTime() - d.getTime()) / 86400000);
+    if (diff === 0) return `Aujourd'hui • ${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`;
+    if (diff === 1) return `Hier • ${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`;
+    return `${d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })} • ${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`;
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/60 flex items-end justify-center z-50">
+      <div className="absolute inset-0" onClick={onClose} />
+      <div className="relative bg-[#292349] pb-20 rounded-t-3xl w-full max-w-2xl max-h-[80vh] flex flex-col">
+        <div className="flex items-center justify-between pt-6 pb-4 px-4 border-b border-[#3E3666] shrink-0">
+          <div>
+            <p className="text-white font-bold text-xl">Historique des parties</p>
+            <p className="text-white/50 text-xs mt-0.5">{sessions.length} partie{sessions.length !== 1 ? 's' : ''} jouée{sessions.length !== 1 ? 's' : ''}</p>
+          </div>
+          <button onClick={onClose} className="w-10 h-10 rounded-full bg-[#342D5B] flex items-center justify-center">
+            <X size={20} color="#FFFFFF" />
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto">
+          {sessions.length === 0 ? (
+            <div className="flex flex-col items-center py-16">
+              <History size={40} color="#FFFFFF20" />
+              <p className="text-white/40 text-center mt-3">Aucune partie terminée</p>
+            </div>
+          ) : (
+            sessions.map((session) => (
+              <button
+                key={session.id}
+                onClick={() => { onNavigate(session); onClose(); }}
+                className="flex items-center px-4 py-4 border-b border-[#3E3666] last:border-b-0 hover:bg-white/5 w-full text-left transition-colors"
+              >
+                <div className="w-10 h-10 rounded-xl bg-[#C0C0C020] flex items-center justify-center mr-3 shrink-0">
+                  <Trophy size={18} color="#C0C0C0" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-white font-semibold">Partie #{session.code}</p>
+                  <p className="text-white/40 text-xs mt-0.5">
+                    {formatDate(session.createdAt)} • {session.playerCount} joueurs
+                  </p>
+                </div>
+                <ChevronRight size={18} color="#FFFFFF30" />
+              </button>
+            ))
           )}
         </div>
-        <span className="text-white/40 text-xs">
-          {member.isOnline ? 'En ligne' : 'Hors ligne'}
-        </span>
       </div>
-
-      <FriendshipButton
-        status={member.friendshipStatus}
-        isCurrentUser={isCurrentUser}
-        onAddFriend={onAddFriend}
-        size="md"
-      />
     </div>
-  );
-}
-
-// ── Ranking Item ─────────────────────────────────────────────────────────────
-
-function RankingItem({
-  entry,
-  index,
-  isCurrentUser,
-  onAddFriend,
-}: {
-  entry: RoomDetailResponse['rankings'][0];
-  index: number;
-  isCurrentUser: boolean;
-  onAddFriend: () => void;
-}) {
-  const isTop3 = index < 3;
-
-  return (
-    <div className="flex items-center py-3 px-4 border-b border-[#3E3666] last:border-b-0">
-      <div className="w-10 flex items-center justify-center">
-        {index === 0 && <Crown size={20} color="#FFD700" />}
-        {index === 1 && <Medal size={20} color="#C0C0C0" />}
-        {index === 2 && <Medal size={20} color="#CD7F32" />}
-        {index > 2 && (
-          <span className="text-white/40 font-bold text-lg">{index + 1}.</span>
-        )}
-      </div>
-
-      <div
-        className={`w-10 h-10 rounded-full flex items-center justify-center mr-3 ${
-          isTop3 ? 'bg-[#FFD70020]' : 'bg-[#3E3666]'
-        }`}
-      >
-        <span className={`font-bold ${isTop3 ? 'text-[#FFD700]' : 'text-white'}`}>
-          {entry.username.charAt(0).toUpperCase()}
-        </span>
-      </div>
-
-      <div className="flex-1">
-        <span className={`font-medium text-base ${isCurrentUser ? 'text-[#00D397]' : 'text-white'}`}>
-          {entry.username}
-          {isCurrentUser && <span className="text-[#00D397] text-xs"> (Vous)</span>}
-        </span>
-      </div>
-
-      <div className="items-end text-right mr-3">
-        <p className={`font-bold text-base ${isTop3 ? 'text-[#FFD700]' : 'text-white'}`}>
-          {entry.totalScore} pts
-        </p>
-        <p className="text-white/40 text-xs">
-          {entry.gamesPlayed} parties • {entry.gamesWon} 🏆
-        </p>
-      </div>
-
-      <FriendshipButton
-        status={entry.friendshipStatus}
-        isCurrentUser={isCurrentUser}
-        onAddFriend={onAddFriend}
-        size="sm"
-      />
-    </div>
-  );
-}
-
-// ── History Session Item ──────────────────────────────────────────────────────
-
-function HistorySessionItem({
-  session,
-  onPress,
-}: {
-  session: RoomSessionResponse;
-  onPress: () => void;
-}) {
-  return (
-    <button
-      onClick={onPress}
-      className="flex items-center py-3 px-4 border-b border-[#3E3666] last:border-b-0 hover:bg-white/5 w-full text-left transition-colors"
-    >
-      <div className="w-10 h-10 rounded-xl bg-[#C0C0C020] flex items-center justify-center mr-3">
-        <History size={20} color="#C0C0C0" />
-      </div>
-      <div className="flex-1">
-        <p className="text-white font-medium text-base">{session.code}</p>
-        <p className="text-white/40 text-xs">
-          {session.managerName} • {session.playerCount} joueurs
-        </p>
-      </div>
-      <ChevronRight size={20} color="#FFFFFF40" />
-    </button>
   );
 }
 
@@ -542,6 +571,7 @@ export default function RoomDetailPage() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showConfigModal, setShowConfigModal] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [qrImage, setQrImage] = useState<string | null>(null);
   const [qrLoading, setQrLoading] = useState(false);
 
@@ -555,7 +585,7 @@ export default function RoomDetailPage() {
   const activeSessions = sessions.filter(
     (s) => s.status === 'LOBBY' || s.status === 'GENERATING' || s.status === 'PLAYING' || s.status === 'PAUSED'
   );
-  const pastSessions = sessions.filter((s) => s.status === 'RESULTS');
+  const pastSessions = sessions.filter((s) => s.status === 'RESULTS' || s.status === 'CANCELLED');
   const hasActiveSession = activeSessions.length > 0;
 
   const loadRoom = useCallback(async () => {
@@ -729,59 +759,62 @@ export default function RoomDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#292349]">
-      {/* Header */}
-      <div className="bg-[#292349] pt-6 pb-4 px-4 border-b border-[#3E3666]">
-        <div className="flex items-center gap-3">
+    <div className="min-h-screen bg-[#292349] flex flex-col">
+      {/* ── Header ── */}
+      <div className="flex items-center px-4 pt-6 pb-4 gap-3 shrink-0">
+        <button
+          onClick={() => router.back()}
+          className="w-10 h-10 rounded-full bg-[#342D5B] flex items-center justify-center shrink-0"
+        >
+          <ChevronRight size={20} color="#00D397" className="rotate-180" />
+        </button>
+        <p className="text-white font-bold text-xl flex-1">Room #{room.code}</p>
+        {isOwner && (
           <button
-            onClick={() => router.back()}
-            className="w-9 h-9 rounded-full bg-[#342D5B] flex items-center justify-center shrink-0"
+            onClick={() => router.push(`/room/${roomId}/edit`)}
+            className="w-10 h-10 rounded-full bg-[#342D5B] flex items-center justify-center"
           >
-            <ChevronRight size={18} color="#FFFFFF" className="rotate-180" />
+            <Settings size={20} color="#FFFFFF80" />
           </button>
-          <div className="flex-1 min-w-0">
-            <p className="text-white font-bold text-xl truncate">{room.name}</p>
-            <p className="text-white/50 text-xs">
-              {members.length} / {room.maxPlayers} membre{members.length !== 1 ? 's' : ''}
-            </p>
-          </div>
-          {isOwner && (
-            <div className="flex items-center bg-[#FFD70020] px-3 py-1.5 rounded-full">
-              <Crown size={14} color="#FFD700" />
-              <span className="text-[#FFD700] text-xs font-semibold ml-1.5">Chef</span>
+        )}
+      </div>
+
+      {/* ── Scrollable content ── */}
+      <div className={`flex-1 overflow-y-auto pb-[140px] px-4 flex flex-col gap-4${showConfigModal ? ' overflow-hidden' : ''}`}>
+
+        {/* QR + Code */}
+        <div className="bg-[#342D5B] rounded-3xl border border-[#3E3666] p-5 flex flex-col items-center">
+          {qrLoading ? (
+            <div className="w-36 h-36 rounded-2xl bg-[#292349] flex items-center justify-center mb-4">
+              <div className="w-6 h-6 border-2 border-[#00D397] border-t-transparent rounded-full animate-spin" />
+            </div>
+          ) : qrImage ? (
+            <div className="bg-white p-2.5 rounded-2xl shadow-lg mb-4">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={qrImage} alt="QR Code" className="w-36 h-36 object-contain" />
+            </div>
+          ) : (
+            <div className="w-36 h-36 rounded-2xl bg-[#292349] flex flex-col items-center justify-center border border-dashed border-[#3E3666] mb-4">
+              <QrCode size={32} color="#FFFFFF20" />
             </div>
           )}
+          <p className="text-white/40 text-[10px] font-bold tracking-widest uppercase mb-1">Code de la salle</p>
+          <p className="text-[#00D397] text-3xl font-bold tracking-[6px] select-all">{room.code}</p>
         </div>
-      </div>
 
-      {/* Refresh button */}
-      <div className="flex justify-end px-4 pt-3">
+        {/* Invite button */}
         <button
-          onClick={handleRefresh}
-          disabled={isRefreshing}
-          className="text-[#00D397] text-sm font-medium hover:opacity-80 disabled:opacity-40 transition-opacity"
+          onClick={() => setShowInviteModal(true)}
+          className="w-full py-4 rounded-2xl flex items-center justify-center bg-[#00D397] hover:opacity-90 transition-opacity"
         >
-          {isRefreshing ? 'Actualisation...' : 'Actualiser'}
+          <UserPlus size={20} color="#292349" />
+          <span className="text-[#292349] font-bold text-base ml-2">Inviter des amis</span>
         </button>
-      </div>
-
-      <div className={`overflow-y-auto${showConfigModal ? ' overflow-hidden' : ''}`}>
-        {/* Room Code + QR */}
-        <RoomCodeCard
-          code={room.code}
-          qrImage={qrImage}
-          qrLoading={qrLoading}
-          onCopy={handleCopyCode}
-          onShare={handleShare}
-        />
 
         {/* Active Sessions */}
         {activeSessions.length > 0 && (
-          <div className="px-4 pt-6">
-            <div className="flex items-center mb-3 px-1">
-              <Zap size={18} color="#00D397" />
-              <p className="text-white font-bold text-lg ml-2">Sessions actives</p>
-            </div>
+          <div>
+            <p className="text-white/40 text-[10px] font-bold tracking-widest uppercase mb-2">Session active</p>
             {activeSessions.map((session) => (
               <ActiveSessionCard
                 key={session.id}
@@ -794,183 +827,77 @@ export default function RoomDetailPage() {
           </div>
         )}
 
-        {/* Create Session (owner only) */}
-        {isOwner && (
-          <div className="px-4 pt-6">
+        {/* Members + Rankings fusionnés */}
+        <MembersWithStats
+          members={members}
+          rankings={rankings}
+          currentUserId={user?.id ?? ''}
+          onAddFriend={handleSendFriendRequest}
+        />
+
+        {/* Danger zone */}
+        <div className="bg-[#342D5B] rounded-3xl border border-[#3E3666] overflow-hidden">
+          {!isOwner ? (
             <button
-              onClick={handleCreateSession}
-              disabled={hasActiveSession}
-              className={`w-full py-4 rounded-2xl flex items-center justify-center transition-colors ${
-                hasActiveSession
-                  ? 'bg-[#3E3666] cursor-not-allowed'
-                  : 'bg-gradient-to-r from-[#00D397] to-[#00B383] hover:opacity-90'
-              }`}
+              onClick={handleLeaveRoom}
+              className="flex items-center px-5 py-4 hover:bg-white/5 w-full text-left transition-colors"
             >
-              {hasActiveSession ? (
-                <>
-                  <Clock size={22} color="#FFFFFF60" />
-                  <span className="text-white/60 font-bold text-lg ml-2">Session déjà active</span>
-                </>
-              ) : (
-                <>
-                  <Plus size={24} color="#292349" strokeWidth={3} />
-                  <span className="text-[#292349] font-bold text-lg ml-2">Nouvelle session</span>
-                </>
-              )}
+              <LogOut size={18} color="#EF4444" className="mr-3" />
+              <span className="text-red-400 font-medium">Quitter la salle</span>
             </button>
-          </div>
-        )}
-
-        {/* Empty state */}
-        {sessions.length === 0 && !isOwner && (
-          <div className="px-4 pt-6">
-            <div className="bg-[#342D5B] rounded-3xl border border-[#3E3666] p-8 flex flex-col items-center">
-              <div className="w-16 h-16 rounded-full bg-[#3E3666] flex items-center justify-center mb-4">
-                <Eye size={32} color="#FFFFFF40" />
-              </div>
-              <p className="text-white/60 text-center font-medium">Aucune session en cours</p>
-              <p className="text-white/40 text-sm text-center mt-2">
-                Le chef de la salle peut démarrer une partie
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Description */}
-        {room.description && (
-          <div className="px-4 pt-6">
-            <div className="bg-[#342D5B] rounded-3xl border border-[#3E3666] p-5">
-              <p className="text-white/80 text-sm leading-relaxed">{room.description}</p>
-            </div>
-          </div>
-        )}
-
-        {/* Members */}
-        <div className="px-4 pt-6">
-          <div className="bg-[#342D5B] rounded-3xl border border-[#3E3666] overflow-hidden">
-            <div className="px-5 py-4 border-b border-[#3E3666]">
-              <div className="flex items-center">
-                <Users size={20} color="#FFFFFF" />
-                <p className="text-white font-bold text-lg ml-2">Membres</p>
-                <p className="text-white/40 text-sm ml-2">({members.length} / {room.maxPlayers})</p>
-                <button
-                  onClick={() => setShowInviteModal(true)}
-                  className="ml-auto flex items-center gap-1.5 bg-[#00D39720] px-3 py-1.5 rounded-xl hover:bg-[#00D39730] transition-colors cursor-pointer"
-                >
-                  <UserPlus size={15} color="#00D397" />
-                  <span className="text-[#00D397] text-xs font-semibold">Inviter</span>
-                </button>
-              </div>
-            </div>
-            {members.map((member) => (
-              <MemberItem
-                key={member.id}
-                member={member}
-                isCurrentUser={member.userId === user?.id}
-                onAddFriend={() => handleSendFriendRequest(member.userId, member.username)}
-              />
-            ))}
-          </div>
+          ) : (
+            <button
+              onClick={handleDeleteRoom}
+              className="flex items-center px-5 py-4 hover:bg-white/5 w-full text-left transition-colors"
+            >
+              <Trash2 size={18} color="#EF4444" className="mr-3" />
+              <span className="text-red-400 font-medium">Supprimer la salle</span>
+            </button>
+          )}
         </div>
-
-        {/* Rankings */}
-        <div className="px-4 pt-6">
-          <div className="bg-[#342D5B] rounded-3xl border border-[#3E3666] overflow-hidden">
-            <div className="px-5 py-4 border-b border-[#3E3666]">
-              <div className="flex items-center">
-                <BarChart3 size={20} color="#FFD700" />
-                <p className="text-white font-bold text-lg ml-2">Classement</p>
-              </div>
-            </div>
-            {rankings.length === 0 ? (
-              <div className="px-5 py-8 flex flex-col items-center">
-                <Trophy size={32} color="#FFFFFF30" />
-                <p className="text-white/50 text-center mt-3">
-                  Aucune partie jouée dans cette salle
-                </p>
-              </div>
-            ) : (
-              rankings.map((entry, index) => (
-                <RankingItem
-                  key={entry.userId}
-                  entry={entry}
-                  index={index}
-                  isCurrentUser={entry.userId === user?.id}
-                  onAddFriend={() => handleSendFriendRequest(entry.userId, entry.username)}
-                />
-              ))
-            )}
-          </div>
-        </div>
-
-        {/* Past Sessions */}
-        {pastSessions.length > 0 && (
-          <div className="px-4 pt-6">
-            <div className="bg-[#342D5B] rounded-3xl border border-[#3E3666] overflow-hidden">
-              <div className="px-5 py-4 border-b border-[#3E3666]">
-                <div className="flex items-center">
-                  <History size={20} color="#C0C0C0" />
-                  <p className="text-white font-bold text-lg ml-2">Historique</p>
-                </div>
-              </div>
-              {pastSessions.map((session) => (
-                <HistorySessionItem
-                  key={session.id}
-                  session={session}
-                  onPress={() => navigateToSession(session)}
-                />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Actions */}
-        <div className="px-4 pt-6 pb-10">
-          <div className="bg-[#342D5B] rounded-3xl border border-[#3E3666] overflow-hidden">
-            <div className="px-5 py-4 border-b border-[#3E3666]">
-              <p className="text-white font-bold">Actions</p>
-            </div>
-            {isOwner && (
-              <>
-                <button
-                  onClick={() => router.push(`/room/${roomId}/edit`)}
-                  className="flex items-center px-5 py-4 border-b border-[#3E3666] hover:bg-white/5 w-full text-left transition-colors"
-                >
-                  <div className="w-10 h-10 rounded-xl bg-[#3E3666] flex items-center justify-center mr-3">
-                    <Settings size={20} color="#FFFFFF" />
-                  </div>
-                  <span className="text-white flex-1 font-medium">Modifier la salle</span>
-                  <ChevronRight size={20} color="#FFFFFF40" />
-                </button>
-                <button
-                  onClick={handleDeleteRoom}
-                  className="flex items-center px-5 py-4 hover:bg-white/5 w-full text-left transition-colors"
-                >
-                  <div className="w-10 h-10 rounded-xl bg-red-500/20 flex items-center justify-center mr-3">
-                    <Trash2 size={20} color="#EF4444" />
-                  </div>
-                  <span className="text-red-400 flex-1 font-medium">Supprimer la salle</span>
-                  <ChevronRight size={20} color="#EF4444" />
-                </button>
-              </>
-            )}
-            {!isOwner && (
-              <button
-                onClick={handleLeaveRoom}
-                className="flex items-center px-5 py-4 hover:bg-white/5 w-full text-left transition-colors"
-              >
-                <div className="w-10 h-10 rounded-xl bg-red-500/20 flex items-center justify-center mr-3">
-                  <LogOut size={20} color="#EF4444" />
-                </div>
-                <span className="text-red-400 flex-1 font-medium">Quitter la salle</span>
-                <ChevronRight size={20} color="#EF4444" />
-              </button>
-            )}
-          </div>
-        </div>
-
-        <div className="h-8" />
       </div>
+
+      {/* ── Bottom action bar (above tab nav) ── */}
+      <div className="fixed bottom-[70px] left-0 right-0 bg-[#292349] border-t border-[#3E3666] px-4 py-3 flex items-center justify-between gap-3 z-40">
+        {/* Invite */}
+        <button
+          onClick={() => setShowInviteModal(true)}
+          className="flex flex-col items-center gap-1 flex-1"
+        >
+          <UserPlus size={22} color="#FFFFFF80" />
+          <span className="text-white/50 text-[10px] font-medium uppercase tracking-wider">Invite</span>
+        </button>
+
+        {/* Start Game — center pill */}
+        <button
+          onClick={hasActiveSession ? () => navigateToSession(activeSessions[0]) : handleCreateSession}
+          className="flex items-center gap-2 px-8 py-3.5 rounded-full"
+          style={{ background: 'linear-gradient(135deg, #00D397, #00B383)' }}
+        >
+          <Play size={18} color="#292349" fill="#292349" />
+          <span className="text-[#292349] font-bold text-sm tracking-wider uppercase">
+            {hasActiveSession ? 'Rejoindre' : 'Start Game'}
+          </span>
+        </button>
+
+        {/* Historique */}
+        <button
+          onClick={() => setShowHistoryModal(true)}
+          className="flex flex-col items-center gap-1 flex-1"
+        >
+          <History size={22} color="#FFFFFF80" />
+          <span className="text-white/50 text-[10px] font-medium uppercase tracking-wider">Historique</span>
+        </button>
+      </div>
+
+      {/* History Modal */}
+      {showHistoryModal && (
+        <HistoryModal
+          sessions={pastSessions}
+          onNavigate={navigateToSession}
+          onClose={() => setShowHistoryModal(false)}
+        />
+      )}
 
       {/* Invite Friends Modal */}
       {showInviteModal && (

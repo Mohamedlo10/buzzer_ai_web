@@ -131,6 +131,7 @@ export interface TeamResponse {
 
 export interface CreateSessionRequest {
   debtAmount: number;
+  pointsPerCorrectAnswer: number;
   questionsPerCategory: number;
   maxPlayers: number;
   isPrivate: boolean;

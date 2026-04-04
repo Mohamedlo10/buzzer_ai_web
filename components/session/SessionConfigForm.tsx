@@ -301,6 +301,7 @@ export function SessionConfigForm({ onSuccess, roomId }: SessionConfigFormProps)
   const [teams, setTeams] = useState<TeamRequest[]>(DEFAULT_TEAMS);
   const [config, setConfig] = useState<CreateSessionRequest>({
     debtAmount: 5,
+    pointsPerCorrectAnswer: 5,
     questionsPerCategory: 5,
     maxPlayers: 20,
     isPrivate: false,
@@ -456,6 +457,29 @@ export function SessionConfigForm({ onSuccess, roomId }: SessionConfigFormProps)
 
         </div>
 
+        {/* Points per correct answer */}
+        <div className="mb-3">
+          <div className="flex flex-row items-center justify-between mb-3">
+            <div className="flex flex-row items-center gap-2">
+              <TrendingUp size={16} color="#FFFFFF80" />
+              <span className="text-white/80 text-sm font-medium">Points par bonne réponse</span>
+            </div>
+            <QuickSelect
+              options={[5, 10, 15, 20]}
+              value={config.pointsPerCorrectAnswer}
+              onSelect={(val) => setConfig((c) => ({ ...c, pointsPerCorrectAnswer: val }))}
+            />
+          </div>
+          <Slider
+            label=""
+            value={config.pointsPerCorrectAnswer}
+            onValueChange={(value) => setConfig((c) => ({ ...c, pointsPerCorrectAnswer: value }))}
+            min={1}
+            max={50}
+            suffix=""
+          />
+        </div>
+
         {/* Questions per category — AI mode only */}
         {questionMode === 'AI' && (
           <div className="mb-3">
@@ -606,7 +630,11 @@ export function SessionConfigForm({ onSuccess, roomId }: SessionConfigFormProps)
           <p className="text-white/50 text-xs font-medium uppercase tracking-wider mb-3">Résumé</p>
           <div className="flex flex-row flex-wrap gap-2">
             <div className="bg-[#342D5B] px-3 py-2 rounded-xl flex flex-row items-center gap-2">
-              <Target size={14} color="#00D397" />
+              <TrendingUp size={14} color="#00D397" />
+              <span className="text-white text-sm">{config.pointsPerCorrectAnswer} pts/bonne rép.</span>
+            </div>
+            <div className="bg-[#342D5B] px-3 py-2 rounded-xl flex flex-row items-center gap-2">
+              <Target size={14} color="#EF4444" />
               <span className="text-white text-sm">{config.debtAmount} pts dette</span>
             </div>
             {questionMode === 'AI' && (
