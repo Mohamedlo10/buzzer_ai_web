@@ -297,7 +297,7 @@ export default function ResultsPage() {
             ].map(({ label, value, color }) => (
               <div key={label} className="flex flex-col items-center">
                 <p className="text-white/40 text-[10px] font-bold tracking-wider mb-1">{label}</p>
-                <p className="font-bold text-base" style={{ color }}>{value}</p>
+                <p className="font-bold text-sm" style={{ color }}>{value}</p>
               </div>
             ))}
           </div>
