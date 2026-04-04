@@ -14,8 +14,8 @@ import {
   UserCheck,
   Clock,
   UserX,
-  ChevronDown,
   ChevronRight,
+  ChevronLeft,
 } from 'lucide-react';
 
 import { SafeScreen } from '~/components/layout/SafeScreen';
@@ -212,33 +212,102 @@ function RankingRow({
 }
 
 // ──────────────────────────────────────────────
+// Pagination Controls
+// ──────────────────────────────────────────────
+
+function Pagination({
+  currentPage,
+  totalPages,
+  onPageChange,
+}: {
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+}) {
+  if (totalPages <= 1) return null;
+
+  const getPages = () => {
+    const pages: (number | '...')[] = [];
+    if (totalPages <= 7) {
+      for (let i = 0; i < totalPages; i++) pages.push(i);
+    } else {
+      pages.push(0);
+      if (currentPage > 2) pages.push('...');
+      for (let i = Math.max(1, currentPage - 1); i <= Math.min(totalPages - 2, currentPage + 1); i++) {
+        pages.push(i);
+      }
+      if (currentPage < totalPages - 3) pages.push('...');
+      pages.push(totalPages - 1);
+    }
+    return pages;
+  };
+
+  return (
+    <div className="flex flex-row items-center justify-center gap-1 mt-4 pb-2">
+      <button
+        onClick={() => onPageChange(currentPage - 1)}
+        disabled={currentPage === 0}
+        className="w-9 h-9 rounded-lg bg-[#3E3666] flex items-center justify-center disabled:opacity-30 hover:bg-[#4E4676] transition-colors cursor-pointer disabled:cursor-default"
+      >
+        <ChevronLeft size={16} color="#FFFFFF" />
+      </button>
+
+      {getPages().map((p, i) =>
+        p === '...' ? (
+          <span key={`ellipsis-${i}`} className="text-white/40 text-sm px-1">…</span>
+        ) : (
+          <button
+            key={p}
+            onClick={() => onPageChange(p as number)}
+            className={`w-9 h-9 rounded-lg text-sm font-semibold transition-colors cursor-pointer ${
+              p === currentPage
+                ? 'bg-[#9B59B6] text-white'
+                : 'bg-[#3E3666] text-white/60 hover:bg-[#4E4676]'
+            }`}
+          >
+            {(p as number) + 1}
+          </button>
+        )
+      )}
+
+      <button
+        onClick={() => onPageChange(currentPage + 1)}
+        disabled={currentPage === totalPages - 1}
+        className="w-9 h-9 rounded-lg bg-[#3E3666] flex items-center justify-center disabled:opacity-30 hover:bg-[#4E4676] transition-colors cursor-pointer disabled:cursor-default"
+      >
+        <ChevronRight size={16} color="#FFFFFF" />
+      </button>
+    </div>
+  );
+}
+
+// ──────────────────────────────────────────────
 // Main Page
 // ──────────────────────────────────────────────
 
 export default function RankingsPage() {
   const [rankings, setRankings] = useState<GlobalRanking[]>([]);
   const [totalElements, setTotalElements] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
   const [currentUserRank, setCurrentUserRank] = useState<number | null>(null);
-  const [hasMore, setHasMore] = useState(false);
-  const [nextPage, setNextPage] = useState(0);
+  const [currentPage, setCurrentPage] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [searchUsername, setSearchUsername] = useState('');
   const [searchTimer, setSearchTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
 
   const user = useAuthStore((state) => state.user);
 
-  const fetchRankings = async (page: number, username?: string, append = false) => {
+  const fetchRankings = async (page: number, username?: string) => {
     try {
       const params: rankingsApi.SearchRankingsParams = { page, size: PAGE_SIZE };
       if (username && username.trim()) params.username = username.trim();
       const data = await rankingsApi.getGlobalRankings(params);
-      setRankings((prev) => append ? [...prev, ...data.content] : data.content);
+      setRankings(data.content);
       setTotalElements(data.totalElements ?? 0);
+      setTotalPages(data.totalPages ?? 0);
       setCurrentUserRank(data.currentUserRank ?? null);
-      setHasMore(!data.last);
-      setNextPage(page + 1);
+      setCurrentPage(page);
     } catch (err) {
       console.error('Failed to load rankings:', err);
     }
@@ -270,19 +339,17 @@ export default function RankingsPage() {
     setIsSearching(false);
   };
 
-  const handleLoadMore = async () => {
-    setIsLoadingMore(true);
-    await fetchRankings(nextPage, searchUsername, true);
-    setIsLoadingMore(false);
+  const handlePageChange = async (page: number) => {
+    setIsLoading(true);
+    await fetchRankings(page, searchUsername);
+    setIsLoading(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleAddFriend = async (targetUserId: string, _username: string) => {
     try {
       await friendsApi.sendFriendRequest(targetUserId);
-      // Refresh the whole list to update friendship statuses
-      await fetchRankings(0, searchUsername);
-      setNextPage(1);
-      setHasMore(rankings.length >= PAGE_SIZE);
+      await fetchRankings(currentPage, searchUsername);
     } catch {
       // silently handle 409 (already friends)
     }
@@ -307,8 +374,8 @@ export default function RankingsPage() {
       </div>
 
       <div className="flex-1 overflow-y-auto px-4">
-        {/* Podium — only on initial load without search */}
-        {!searchUsername && rankings.length >= 3 && (
+        {/* Podium — only on first page without search */}
+        {!searchUsername && currentPage === 0 && rankings.length >= 3 && (
           <Podium rankings={rankings} currentPage={0} />
         )}
 
@@ -360,9 +427,16 @@ export default function RankingsPage() {
 
         {/* Ranking List */}
         <Card>
-          <p className="text-white font-bold text-lg mb-4">
-            {searchUsername ? `Résultats pour "${searchUsername}"` : 'Classement complet'}
-          </p>
+          <div className="flex flex-row items-center justify-between mb-4">
+            <p className="text-white font-bold text-lg">
+              {searchUsername ? `Résultats pour "${searchUsername}"` : 'Classement complet'}
+            </p>
+            {totalPages > 1 && (
+              <span className="text-white/40 text-xs">
+                Page {currentPage + 1}/{totalPages}
+              </span>
+            )}
+          </div>
 
           {rankings.length > 0 ? (
             <>
@@ -375,22 +449,11 @@ export default function RankingsPage() {
                 />
               ))}
 
-              {hasMore && (
-                <button
-                  onClick={handleLoadMore}
-                  disabled={isLoadingMore}
-                  className="w-full mt-4 py-3 rounded-xl bg-[#3E3666] hover:bg-[#4E4676] transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
-                >
-                  {isLoadingMore ? (
-                    <div className="w-4 h-4 border-2 border-white/60 border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <ChevronDown size={18} color="#FFFFFF80" />
-                  )}
-                  <span className="text-white/70 text-sm font-medium">
-                    {isLoadingMore ? 'Chargement...' : 'Charger plus'}
-                  </span>
-                </button>
-              )}
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+              />
             </>
           ) : (
             <p className="text-white/50 text-center py-8">
