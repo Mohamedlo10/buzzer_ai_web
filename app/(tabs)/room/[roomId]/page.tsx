@@ -399,7 +399,7 @@ function InviteFriendsModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 flex items-end justify-center z-50">
+    <div className="fixed inset-0 bg-black/60 bottom-12 flex items-end justify-center z-50">
       <div className="absolute inset-0" onClick={onClose} />
       <div className="relative bg-[#292349] rounded-t-3xl w-full max-w-2xl max-h-[80vh] flex flex-col">
         {/* Header */}
