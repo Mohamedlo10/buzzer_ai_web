@@ -732,7 +732,13 @@ export default function RoomDetailPage() {
     <div className="min-h-screen bg-[#292349]">
       {/* Header */}
       <div className="bg-[#292349] pt-6 pb-4 px-4 border-b border-[#3E3666]">
-        <div className="flex items-center">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => router.back()}
+            className="w-9 h-9 rounded-full bg-[#342D5B] flex items-center justify-center shrink-0"
+          >
+            <ChevronRight size={18} color="#FFFFFF" className="rotate-180" />
+          </button>
           <div className="flex-1 min-w-0">
             <p className="text-white font-bold text-xl truncate">{room.name}</p>
             <p className="text-white/50 text-xs">
