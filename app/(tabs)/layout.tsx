@@ -11,7 +11,7 @@ const tabs = [
   { href: '/dashboard', icon: Home, label: 'Accueil' },
   { href: '/friends', icon: Users, label: 'Amis' },
   { href: '/rankings', icon: Trophy, label: 'Classement' },
-  { href: '/rooms', icon: Gamepad2, label: 'Jouer' },
+  { href: '/rooms', icon: Gamepad2, label: 'Partie' },
   { href: '/profile', icon: User, label: 'Profil' },
 ];
 
@@ -23,15 +23,19 @@ export default function TabsLayout({
   const pathname = usePathname();
   const pendingRequests = useFriendStore((state) => state.pendingRequests);
   const isDashboard = pathname === '/dashboard' || pathname.startsWith('/dashboard/');
+  const isRoom = pathname.startsWith('/room/');
 
   return (
     <AuthGuard>
       <div className="flex flex-col min-h-screen">
-        {!isDashboard && <DashboardHeader notificationCount={pendingRequests.length} />}
+        {!isDashboard && !isRoom && <DashboardHeader notificationCount={pendingRequests.length} />}
         <main className="flex-1 pb-[70px]">{children}</main>
         <nav className="fixed bottom-0 left-0 right-0 h-[70px] bg-dark-card border-t border-border-color flex items-center justify-around px-2 z-50 safe-bottom">
           {tabs.map(({ href, icon: Icon, label }) => {
-            const isActive = pathname === href || pathname.startsWith(href + '/');
+            const isActive =
+              pathname === href ||
+              pathname.startsWith(href + '/') ||
+              (href === '/rooms' && pathname.startsWith('/room'));
             return (
               <Link
                 key={href}

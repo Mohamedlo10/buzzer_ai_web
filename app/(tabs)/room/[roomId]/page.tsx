@@ -732,22 +732,6 @@ export default function RoomDetailPage() {
     <div className="min-h-screen bg-[#292349]">
       {/* Header */}
       <div className="bg-[#292349] pt-6 pb-4 px-4 border-b border-[#3E3666]">
-        <div className="flex items-center gap-2 mb-3">
-          <button
-            onClick={() => router.push('/dashboard')}
-            className="flex items-center gap-1.5 bg-[#342D5B] px-3 py-2 rounded-full hover:bg-[#3E3666] transition-colors"
-          >
-            <Home size={15} color="#FFFFFF99" />
-            <span className="text-white/60 text-xs font-medium">Dashboard</span>
-          </button>
-          <button
-            onClick={() => router.push('/rooms')}
-            className="flex items-center gap-1.5 bg-[#342D5B] px-3 py-2 rounded-full hover:bg-[#3E3666] transition-colors"
-          >
-            <LayoutGrid size={15} color="#FFFFFF99" />
-            <span className="text-white/60 text-xs font-medium">Mes salles</span>
-          </button>
-        </div>
         <div className="flex items-center">
           <div className="flex-1 min-w-0">
             <p className="text-white font-bold text-xl truncate">{room.name}</p>
