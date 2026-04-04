@@ -14,28 +14,27 @@ import { Spinner } from '~/components/loading/Spinner';
 // ──────────────────────────────────────────────
 
 const AVATAR_STYLES = [
-  { id: 'adventurer',         label: 'Aventurier',        emoji: '🧝' },
-  { id: 'adventurer-neutral', label: 'Aventurier 2',      emoji: '🧑' },
-  { id: 'avataaars',          label: 'Cartoon',           emoji: '😎' },
-  { id: 'avataaars-neutral',  label: 'Cartoon 2',         emoji: '🙂' },
-  { id: 'big-ears',           label: 'Grandes oreilles',  emoji: '👂' },
-  { id: 'big-smile',          label: 'Grand sourire',     emoji: '😁' },
-  { id: 'lorelei',            label: 'Lorelei',           emoji: '👩‍🎨' },
-  { id: 'lorelei-neutral',    label: 'Lorelei 2',         emoji: '👩‍🎨' },
-  { id: 'micah',              label: 'Micah',             emoji: '🧑‍💼' },
-  { id: 'open-peeps',         label: 'Open Peeps',        emoji: '🙋' },
-  { id: 'personas',           label: 'Personas',          emoji: '🧑‍🦱' },
-  { id: 'notionists',         label: 'Notionists',        emoji: '📝' },
-  { id: 'dylan',              label: 'Dylan',             emoji: '🎨' },
-  { id: 'croodles',           label: 'Doodle',            emoji: '✏️' },
-  { id: 'fun-emoji',          label: 'Emoji',             emoji: '😜' },
-  { id: 'pixel-art',          label: 'Pixel',             emoji: '👾' },
-  { id: 'bottts',             label: 'Robot',             emoji: '🤖' },
-  { id: 'bottts-neutral',     label: 'Robot 2',           emoji: '⚙️' },
-  { id: 'thumbs',             label: 'Pouces',            emoji: '👍' },
-  { id: 'shapes',             label: 'Formes',            emoji: '🔷' },
-  { id: 'rings',              label: 'Cercles',           emoji: '⭕' },
-  { id: 'identicon',          label: 'Identicon',         emoji: '🔲' },
+  { id: 'adventurer',         label: 'Aventurier',       emoji: '🧝' },
+  { id: 'adventurer-neutral', label: 'Aventurier 2',     emoji: '🧑' },
+  { id: 'avataaars',          label: 'Cartoon',          emoji: '😎' },
+  { id: 'avataaars-neutral',  label: 'Cartoon 2',        emoji: '🙂' },
+  { id: 'big-ears',           label: 'Grandes oreilles', emoji: '👂' },
+  { id: 'big-smile',          label: 'Grand sourire',    emoji: '😁' },
+  { id: 'lorelei',            label: 'Lorelei',          emoji: '👩‍🎨' },
+  { id: 'lorelei-neutral',    label: 'Lorelei 2',        emoji: '👩‍🎨' },
+  { id: 'micah',              label: 'Micah',            emoji: '🧑‍💼' },
+  { id: 'open-peeps',         label: 'Open Peeps',       emoji: '🙋' },
+  { id: 'personas',           label: 'Personas',         emoji: '🧑‍🦱' },
+  { id: 'notionists',         label: 'Notionists',       emoji: '📝' },
+  { id: 'dylan',              label: 'Dylan',            emoji: '🎨' },
+  { id: 'fun-emoji',          label: 'Emoji',            emoji: '😜' },
+  { id: 'pixel-art',          label: 'Pixel',            emoji: '👾' },
+  { id: 'bottts',             label: 'Robot',            emoji: '🤖' },
+  { id: 'bottts-neutral',     label: 'Robot 2',          emoji: '⚙️' },
+  { id: 'thumbs',             label: 'Pouces',           emoji: '👍' },
+  { id: 'shapes',             label: 'Formes',           emoji: '🔷' },
+  { id: 'rings',              label: 'Cercles',          emoji: '⭕' },
+  { id: 'identicon',          label: 'Identicon',        emoji: '🔲' },
 ];
 
 const AVATAR_SEEDS = [
@@ -47,7 +46,7 @@ const AVATAR_SEEDS = [
   'Ember', 'Storm', 'Blaze', 'Sage', 'Onyx',
 ];
 
-function getAvatarUrl(style: string, seed: string) {
+function getAvatarUrl(style: string, seed: string): string {
   return `https://api.dicebear.com/9.x/${style}/svg?seed=${seed}`;
 }
 
@@ -61,7 +60,6 @@ export default function EditProfilePage() {
   const user = useAuthStore((s) => s.user);
   const setUser = useAuthStore((s) => s.setUser);
 
-  // Read initial style/seed from URL params (passed by profile page)
   const paramStyle = searchParams.get('style') || '';
   const paramSeed  = searchParams.get('seed')  || '';
 
@@ -70,7 +68,6 @@ export default function EditProfilePage() {
     : 'adventurer';
   const initialSeed = paramSeed || 'Felix';
 
-  // If the user's current seed isn't in the predefined list, prepend it
   const seeds = AVATAR_SEEDS.includes(initialSeed)
     ? AVATAR_SEEDS
     : [initialSeed, ...AVATAR_SEEDS];
