@@ -263,6 +263,33 @@ export function SessionConfigForm({ onSuccess, roomId }: SessionConfigFormProps)
               </div>
             </div>
           )}
+        
+          {/* Mode équipe */}
+        <div className="bg-[#342D5B] rounded-2xl border border-[#3E3666] px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Users size={16} color="#4A90D9" />
+            <span className="text-white font-medium text-sm">Mode équipe</span>
+          </div>
+          <button
+            role="switch"
+            aria-checked={config.isTeamMode}
+            onClick={() => setConfig((c) => ({ ...c, isTeamMode: !c.isTeamMode }))}
+            className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${
+              config.isTeamMode ? 'bg-[#00D397]' : 'bg-[#3E3666]'
+            }`}
+          >
+            <span className={`inline-block h-5 w-5 rounded-full bg-white shadow transition-transform ${config.isTeamMode ? 'translate-x-6' : 'translate-x-1'}`} />
+          </button>
+        </div>
+
+        {/* Team Editor */}
+        {config.isTeamMode && (
+          <div className="bg-[#342D5B] rounded-2xl border border-[#3E3666] p-4">
+            <p className="text-white/40 text-[10px] font-bold tracking-widest uppercase mb-3">Équipes</p>
+            <TeamEditor teams={teams} onChange={setTeams} />
+          </div>
+        )}
+
 
         {/* Params grid */}
         <div>
@@ -312,32 +339,7 @@ export function SessionConfigForm({ onSuccess, roomId }: SessionConfigFormProps)
           </div>
         </div>
 
-        {/* Mode équipe */}
-        <div className="bg-[#342D5B] rounded-2xl border border-[#3E3666] px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Users size={16} color="#4A90D9" />
-            <span className="text-white font-medium text-sm">Mode équipe</span>
-          </div>
-          <button
-            role="switch"
-            aria-checked={config.isTeamMode}
-            onClick={() => setConfig((c) => ({ ...c, isTeamMode: !c.isTeamMode }))}
-            className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${
-              config.isTeamMode ? 'bg-[#00D397]' : 'bg-[#3E3666]'
-            }`}
-          >
-            <span className={`inline-block h-5 w-5 rounded-full bg-white shadow transition-transform ${config.isTeamMode ? 'translate-x-6' : 'translate-x-1'}`} />
-          </button>
-        </div>
-
-        {/* Team Editor */}
-        {config.isTeamMode && (
-          <div className="bg-[#342D5B] rounded-2xl border border-[#3E3666] p-4">
-            <p className="text-white/40 text-[10px] font-bold tracking-widest uppercase mb-3">Équipes</p>
-            <TeamEditor teams={teams} onChange={setTeams} />
-          </div>
-        )}
-
+      
         {/* Summary pill */}
         <div className="bg-[#342D5B] rounded-2xl border border-[#3E3666] px-4 py-3">
           <div className="flex items-center gap-3 mb-2">
