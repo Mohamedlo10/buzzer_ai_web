@@ -775,7 +775,7 @@ export default function RoomDetailPage() {
         </button>
       </div>
 
-      <div className="overflow-y-auto">
+      <div className={`overflow-y-auto${showConfigModal ? ' overflow-hidden' : ''}`}>
         {/* Room Code + QR */}
         <RoomCodeCard
           code={room.code}
@@ -999,7 +999,7 @@ export default function RoomDetailPage() {
             className="absolute inset-0"
             onClick={() => setShowConfigModal(false)}
           />
-          <div className="relative bg-[#292349] rounded-t-3xl w-full max-w-2xl h-full overflow-y-auto">
+          <div className="relative bg-[#292349] rounded-t-3xl w-full max-w-2xl h-full overflow-y-auto overscroll-y-contain" onTouchMove={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between pt-6 pb-4 px-4 border-b border-[#3E3666]">
               <div>
                 <p className="text-white font-bold text-xl">Nouvelle Session</p>

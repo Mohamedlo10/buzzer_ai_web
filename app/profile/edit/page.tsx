@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft, Check, Save } from 'lucide-react';
 import { useAuthStore } from '~/stores/useAuthStore';
 import { useMutation } from '@tanstack/react-query';
@@ -14,32 +14,28 @@ import { Spinner } from '~/components/loading/Spinner';
 // ──────────────────────────────────────────────
 
 const AVATAR_STYLES = [
-  // Personnages illustrés
-  { id: 'adventurer',          label: 'Aventurier',   emoji: '🧝' },
-  { id: 'adventurer-neutral',  label: 'Aventurier 2', emoji: '🧑' },
-  { id: 'avataaars',           label: 'Cartoon',      emoji: '😎' },
-  { id: 'avataaars-neutral',   label: 'Cartoon 2',    emoji: '🙂' },
-  { id: 'big-ears',            label: 'Grandes oreilles', emoji: '👂' },
-  { id: 'big-smile',           label: 'Grand sourire', emoji: '😁' },
-  { id: 'lorelei',             label: 'Lorelei',      emoji: '👩‍🎨' },
-  { id: 'lorelei-neutral',      label: 'Lorelei 2',    emoji: '👩‍🎨' },
-  { id: 'micah',               label: 'Micah',        emoji: '🧑‍💼' },
-  { id: 'open-peeps',          label: 'Open Peeps',   emoji: '🙋' },
-  { id: 'personas',            label: 'Personas',     emoji: '🧑‍🦱' },
-  { id: 'notionists',          label: 'Notionists',   emoji: '📝' },
-  { id: 'dylan',               label: 'Dylan',        emoji: '🎨' },
-  // Stylisés / dessinés
-  { id: 'croodles',            label: 'Doodle',       emoji: '✏️' },
-  { id: 'fun-emoji',           label: 'Emoji',        emoji: '😜' },
-  { id: 'pixel-art',           label: 'Pixel',        emoji: '👾' },
-  // Robots / tech
-  { id: 'bottts',              label: 'Robot',        emoji: '🤖' },
-  { id: 'bottts-neutral',      label: 'Robot 2',      emoji: '⚙️' },
-  // Abstrait / minimaliste
-  { id: 'thumbs',              label: 'Pouces',       emoji: '👍' },
-  { id: 'shapes',              label: 'Formes',       emoji: '🔷' },
-  { id: 'rings',               label: 'Cercles',      emoji: '⭕' },
-  { id: 'identicon',           label: 'Identicon',    emoji: '🔲' },
+  { id: 'adventurer',         label: 'Aventurier',        emoji: '🧝' },
+  { id: 'adventurer-neutral', label: 'Aventurier 2',      emoji: '🧑' },
+  { id: 'avataaars',          label: 'Cartoon',           emoji: '😎' },
+  { id: 'avataaars-neutral',  label: 'Cartoon 2',         emoji: '🙂' },
+  { id: 'big-ears',           label: 'Grandes oreilles',  emoji: '👂' },
+  { id: 'big-smile',          label: 'Grand sourire',     emoji: '😁' },
+  { id: 'lorelei',            label: 'Lorelei',           emoji: '👩‍🎨' },
+  { id: 'lorelei-neutral',    label: 'Lorelei 2',         emoji: '👩‍🎨' },
+  { id: 'micah',              label: 'Micah',             emoji: '🧑‍💼' },
+  { id: 'open-peeps',         label: 'Open Peeps',        emoji: '🙋' },
+  { id: 'personas',           label: 'Personas',          emoji: '🧑‍🦱' },
+  { id: 'notionists',         label: 'Notionists',        emoji: '📝' },
+  { id: 'dylan',              label: 'Dylan',             emoji: '🎨' },
+  { id: 'croodles',           label: 'Doodle',            emoji: '✏️' },
+  { id: 'fun-emoji',          label: 'Emoji',             emoji: '😜' },
+  { id: 'pixel-art',          label: 'Pixel',             emoji: '👾' },
+  { id: 'bottts',             label: 'Robot',             emoji: '🤖' },
+  { id: 'bottts-neutral',     label: 'Robot 2',           emoji: '⚙️' },
+  { id: 'thumbs',             label: 'Pouces',            emoji: '👍' },
+  { id: 'shapes',             label: 'Formes',            emoji: '🔷' },
+  { id: 'rings',              label: 'Cercles',           emoji: '⭕' },
+  { id: 'identicon',          label: 'Identicon',         emoji: '🔲' },
 ];
 
 const AVATAR_SEEDS = [
@@ -61,39 +57,42 @@ function getAvatarUrl(style: string, seed: string) {
 
 export default function EditProfilePage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const user = useAuthStore((s) => s.user);
   const setUser = useAuthStore((s) => s.setUser);
 
+  // Read initial style/seed from URL params (passed by profile page)
+  const paramStyle = searchParams.get('style') || '';
+  const paramSeed  = searchParams.get('seed')  || '';
+
+  const initialStyle = AVATAR_STYLES.some((s) => s.id === paramStyle)
+    ? paramStyle
+    : 'adventurer';
+  const initialSeed = paramSeed || 'Felix';
+
+  // If the user's current seed isn't in the predefined list, prepend it
+  const seeds = AVATAR_SEEDS.includes(initialSeed)
+    ? AVATAR_SEEDS
+    : [initialSeed, ...AVATAR_SEEDS];
+
+  const [selectedStyle, setSelectedStyle] = useState(initialStyle);
+  const [selectedSeed,  setSelectedSeed]  = useState(initialSeed);
   const [username, setUsername] = useState(user?.username || '');
-  const [email, setEmail] = useState(user?.email || '');
-
-  // Parse current avatar style/seed from avatarUrl if it comes from DiceBear
-  const parseCurrentAvatar = () => {
-    if (!user?.avatarUrl) return { style: 'adventurer', seed: 'Felix' };
-    const match = user.avatarUrl.match(/dicebear\.com\/[\d.]+\/([^/]+)\/svg\?seed=(.+)/);
-    if (match) return { style: match[1], seed: match[2] };
-    return { style: 'adventurer', seed: 'Felix' };
-  };
-
-  const initial = parseCurrentAvatar();
-  const [selectedStyle, setSelectedStyle] = useState(initial.style);
-  const [selectedSeed, setSelectedSeed] = useState(initial.seed);
+  const [email,    setEmail]    = useState(user?.email || '');
 
   const previewUrl = getAvatarUrl(selectedStyle, selectedSeed);
   const hasChanges =
     username.trim() !== (user?.username || '') ||
-    email.trim() !== (user?.email || '') ||
-    selectedStyle !== initial.style ||
-    selectedSeed !== initial.seed;
+    email.trim()    !== (user?.email    || '') ||
+    selectedStyle   !== initialStyle ||
+    selectedSeed    !== initialSeed;
 
   const updateProfileMutation = useMutation({
     mutationFn: async () => {
-      // Update profile info (username + email)
       const updated = await usersApi.updateProfile({
         username: username.trim(),
         email: email.trim() || undefined,
       });
-      // Update avatar if user exists
       if (user?.id) {
         const withAvatar = await usersApi.updateAvatar(user.id, selectedStyle, selectedSeed);
         return withAvatar;
@@ -141,11 +140,7 @@ export default function EditProfilePage() {
           {/* Avatar preview */}
           <div className="flex flex-col items-center py-8">
             <div className="w-28 h-28 rounded-full overflow-hidden border-4 border-[#6366F1] shadow-lg shadow-indigo-500/30 mb-2">
-              <img
-                src={previewUrl}
-                alt="Avatar preview"
-                className="w-full h-full object-cover"
-              />
+              <img src={previewUrl} alt="Avatar preview" className="w-full h-full object-cover" />
             </div>
             <p className="text-white/50 text-xs mt-1">{selectedStyle} · {selectedSeed}</p>
           </div>
@@ -191,14 +186,16 @@ export default function EditProfilePage() {
           <div className="px-4 mb-8">
             <p className="text-white/60 text-xs font-semibold uppercase tracking-wider mb-3">Choisir un avatar</p>
             <div className="grid grid-cols-6 gap-3">
-              {AVATAR_SEEDS.map((seed) => {
+              {seeds.map((seed) => {
                 const isSelected = selectedSeed === seed;
                 return (
                   <button
                     key={seed}
                     onClick={() => setSelectedSeed(seed)}
                     className={`relative rounded-2xl overflow-hidden border-2 transition-all ${
-                      isSelected ? 'border-[#6366F1] shadow-md shadow-indigo-500/40' : 'border-[#3E3666] hover:border-[#6366F1]/50'
+                      isSelected
+                        ? 'border-[#6366F1] shadow-md shadow-indigo-500/40'
+                        : 'border-[#3E3666] hover:border-[#6366F1]/50'
                     }`}
                     style={{ aspectRatio: '1' }}
                   >
@@ -224,7 +221,6 @@ export default function EditProfilePage() {
           <div className="px-4 mb-10">
             <p className="text-white/60 text-xs font-semibold uppercase tracking-wider mb-3">Informations</p>
             <div className="bg-[#342D5B] rounded-2xl border border-[#3E3666] overflow-hidden">
-              {/* Username */}
               <div className="px-4 pt-4 pb-3 border-b border-[#3E3666]">
                 <p className="text-white/50 text-xs mb-1.5">Nom d&apos;utilisateur</p>
                 <input
@@ -235,7 +231,6 @@ export default function EditProfilePage() {
                   autoCapitalize="none"
                 />
               </div>
-              {/* Email */}
               <div className="px-4 pt-3 pb-4">
                 <p className="text-white/50 text-xs mb-1.5">Email</p>
                 <input
@@ -250,7 +245,6 @@ export default function EditProfilePage() {
             </div>
           </div>
 
-          {/* Error */}
           {updateProfileMutation.isError && (
             <div className="mx-4 mb-6 px-4 py-3 bg-red-500/10 border border-red-500/30 rounded-xl">
               <p className="text-red-400 text-sm text-center">

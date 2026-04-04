@@ -208,7 +208,12 @@ export default function ProfilePage() {
             </div>
             {/* Edit button on avatar */}
             <button
-              onClick={() => router.push('/profile/edit')}
+              onClick={() => (() => {
+                const match = user?.avatarUrl?.match(/dicebear\.com\/[\d.x]+\/([^/]+)\/svg\?seed=([^&]+)/);
+                const style = match?.[1] ?? user?.avatarStyle ?? 'adventurer';
+                const seed  = match?.[2] ?? user?.avatarSeed  ?? 'Felix';
+                router.push(`/profile/edit?style=${encodeURIComponent(style)}&seed=${encodeURIComponent(seed)}`);
+              })()}
               className="absolute bottom-1 right-1 w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-md hover:opacity-90 transition-opacity cursor-pointer"
             >
               <Edit3 size={18} color="#3B82F6" />
@@ -341,7 +346,12 @@ export default function ProfilePage() {
 
           {/* Edit Profile Button */}
           <button
-            onClick={() => router.push('/profile/edit')}
+            onClick={() => (() => {
+                const match = user?.avatarUrl?.match(/dicebear\.com\/[\d.x]+\/([^/]+)\/svg\?seed=([^&]+)/);
+                const style = match?.[1] ?? user?.avatarStyle ?? 'adventurer';
+                const seed  = match?.[2] ?? user?.avatarSeed  ?? 'Felix';
+                router.push(`/profile/edit?style=${encodeURIComponent(style)}&seed=${encodeURIComponent(seed)}`);
+              })()}
             className="w-full bg-[#342D5B] rounded-2xl p-4 border border-[#3E3666] flex flex-row items-center justify-between mb-3 hover:opacity-80 active:opacity-70 transition-opacity cursor-pointer"
           >
             <div className="flex flex-row items-center gap-3">
