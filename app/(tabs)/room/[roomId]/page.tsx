@@ -768,7 +768,7 @@ export default function RoomDetailPage() {
         >
           <ChevronRight size={20} color="#00D397" className="rotate-180" />
         </button>
-        <p className="text-white font-bold text-xl flex-1">Room #{room.code}</p>
+        <p className="text-white font-bold text-xl flex-1">Room #{room.name}</p>
         {isOwner && (
           <button
             onClick={() => router.push(`/room/${roomId}/edit`)}
