@@ -251,7 +251,18 @@ export function SessionConfigForm({ onSuccess, roomId }: SessionConfigFormProps)
             <PenLine size={28} color={questionMode === 'MANUAL' ? '#FFD700' : '#FFFFFF40'} />
             <span className={`font-bold text-sm ${questionMode === 'MANUAL' ? 'text-[#FFD700]' : 'text-white/40'}`}>Manuel</span>
           </button>
+          
         </div>
+        {questionMode === 'MANUAL' && (
+            <div className="px-2">
+              <div className="bg-[#FFD70010] rounded-xl p-3 border border-[#FFD70030] flex flex-row items-center gap-2">
+                <PenLine size={14} color="#FFD700" />
+                <span className="text-[#FFD700] text-xs flex-1">
+                  Vous pourrez saisir vos questions dans le lobby avant de démarrer.
+                </span>
+              </div>
+            </div>
+          )}
 
         {/* Params grid */}
         <div>
