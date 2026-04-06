@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Users, Gamepad2, Brain, DollarSign, Crown, ChevronRight, Cpu, LogOut, Trophy, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Users, Gamepad2, Brain, DollarSign, Crown, ChevronRight, Cpu, LogOut, Trophy, AlertTriangle, CheckCircle, FolderOpen, BookOpen } from 'lucide-react';
 
 import { Card } from '~/components/ui/Card';
 import { Spinner } from '~/components/loading/Spinner';
@@ -225,6 +225,38 @@ export default function AdminDashboardPage() {
               <div className="flex-1">
                 <p className="text-white font-semibold">Gestion sessions</p>
                 <p className="text-white/50 text-sm">Forcer l'arrêt des sessions</p>
+              </div>
+              <ChevronRight size={20} color="#FFFFFF" />
+            </div>
+          </button>
+
+          <button
+            onClick={() => router.push('/admin/rooms')}
+            className="w-full bg-[#342D5B] rounded-xl p-4 border border-[#3E3666] mb-3 hover:opacity-80 transition-opacity text-left"
+          >
+            <div className="flex items-center">
+              <div className="w-10 h-10 rounded-lg bg-[#4A90D920] flex items-center justify-center mr-3">
+                <FolderOpen size={20} color="#4A90D9" />
+              </div>
+              <div className="flex-1">
+                <p className="text-white font-semibold">Gestion salles</p>
+                <p className="text-white/50 text-sm">Membres et sessions par salle</p>
+              </div>
+              <ChevronRight size={20} color="#FFFFFF" />
+            </div>
+          </button>
+
+          <button
+            onClick={() => router.push('/admin/questions')}
+            className="w-full bg-[#342D5B] rounded-xl p-4 border border-[#3E3666] mb-3 hover:opacity-80 transition-opacity text-left"
+          >
+            <div className="flex items-center">
+              <div className="w-10 h-10 rounded-lg bg-[#E67E2220] flex items-center justify-center mr-3">
+                <BookOpen size={20} color="#E67E22" />
+              </div>
+              <div className="flex-1">
+                <p className="text-white font-semibold">Historique questions</p>
+                <p className="text-white/50 text-sm">Questions par catégorie et vainqueurs</p>
               </div>
               <ChevronRight size={20} color="#FFFFFF" />
             </div>

@@ -714,35 +714,144 @@ export interface AdminStatsResponse {
 
 export type AdminSessionStatus = 'LOBBY' | 'GENERATING' | 'PLAYING' | 'PAUSED' | 'RESULTS' | 'CANCELLED';
 
-export interface AdminSessionUser {
-  id: string;
-  username: string;
-  avatarUrl: string | null;
-  role: UserRole;
-}
-
-export interface AdminSessionRoom {
-  id: string;
-  name: string;
-  code: string;
-}
-
-export interface AdminSessionResponse {
+export interface AdminSessionSummaryResponse {
   id: string;
   code: string;
   status: AdminSessionStatus;
-  manager: AdminSessionUser | null;
-  room: AdminSessionRoom | null;
-  questionMode: QuestionMode;
-  isPrivate: boolean;
+  managerId: string;
+  managerUsername: string;
+  roomId: string | null;
+  roomName: string | null;
+  roomCode: string | null;
+  playerCount: number;
+  totalQuestions: number;
+  maxPlayers: number;
   isTeamMode: boolean;
+  isPrivate: boolean;
+  questionMode: QuestionMode;
+  createdAt: string;
+  startedAt: string | null;
+  endedAt: string | null;
+}
+
+export interface AdminSessionPlayer {
+  id: string;
+  userId: string;
+  username: string;
+  avatarUrl: string;
+  name: string;
+  score: number;
+  isManager: boolean;
+  isSpectator: boolean;
+  categoryScores: Record<string, number>;
+  joinedAt: string;
+}
+
+export interface AdminSessionQuestion {
+  id: string;
+  category: string;
+  text: string;
+  answer: string;
+  explanation: string | null;
+  difficulty: 'EASY' | 'MEDIUM' | 'HARD';
+  orderIndex: number;
+  isSkipped: boolean;
+  winnerName: string | null;
+  createdAt: string;
+}
+
+export interface AdminSessionDetailResponse {
+  id: string;
+  code: string;
+  status: AdminSessionStatus;
+  managerId: string;
+  managerUsername: string;
+  roomId: string | null;
+  roomName: string | null;
+  roomCode: string | null;
+  maxPlayers: number;
+  isTeamMode: boolean;
+  isPrivate: boolean;
+  questionMode: QuestionMode;
   debtAmount: number;
   questionsPerCategory: number;
   currentQuestionIndex: number;
   totalQuestions: number;
-  maxPlayers: number;
-  maxCategoriesPerPlayer: number;
+  pointsPerCorrectAnswer: number;
+  buzzCountdownSeconds: number;
   createdAt: string;
   startedAt: string | null;
   endedAt: string | null;
+  players: AdminSessionPlayer[];
+  questions: AdminSessionQuestion[];
+}
+
+export interface AdminRoomSummaryResponse {
+  id: string;
+  name: string;
+  code: string;
+  ownerId: string;
+  ownerUsername: string;
+  description: string | null;
+  isActive: boolean;
+  maxPlayers: number;
+  memberCount: number;
+  sessionCount: number;
+  createdAt: string;
+}
+
+export interface AdminRoomMember {
+  userId: string;
+  username: string;
+  avatarUrl: string;
+  isOwner: boolean;
+  joinedAt: string;
+}
+
+export interface AdminRoomSession {
+  id: string;
+  code: string;
+  status: AdminSessionStatus;
+  managerUsername: string;
+  playerCount: number;
+  totalQuestions: number;
+  createdAt: string;
+  startedAt: string | null;
+  endedAt: string | null;
+}
+
+export interface AdminRoomDetailResponse {
+  id: string;
+  name: string;
+  code: string;
+  ownerId: string;
+  ownerUsername: string;
+  description: string | null;
+  isActive: boolean;
+  maxPlayers: number;
+  createdAt: string;
+  updatedAt: string;
+  members: AdminRoomMember[];
+  sessions: AdminRoomSession[];
+}
+
+export interface AdminCategoryResponse {
+  category: string;
+  questionCount: number;
+  lastUsedAt: string;
+}
+
+export interface AdminQuestionResponse {
+  id: string;
+  category: string;
+  text: string;
+  answer: string;
+  explanation: string | null;
+  difficulty: 'EASY' | 'MEDIUM' | 'HARD';
+  orderIndex: number;
+  isSkipped: boolean;
+  sessionId: string;
+  sessionCode: string;
+  winnerName: string | null;
+  createdAt: string;
 }

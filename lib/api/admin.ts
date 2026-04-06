@@ -1,7 +1,12 @@
 import { apiClient } from './client';
 import type {
   AdminStatsResponse,
-  AdminSessionResponse,
+  AdminSessionSummaryResponse,
+  AdminSessionDetailResponse,
+  AdminRoomSummaryResponse,
+  AdminRoomDetailResponse,
+  AdminCategoryResponse,
+  AdminQuestionResponse,
   Page,
   UserResponse,
 } from '~/types/api';
@@ -38,8 +43,8 @@ export async function getAllSessions(params: {
   to?: string;
   page?: number;
   size?: number;
-}): Promise<Page<AdminSessionResponse>> {
-  const res = await apiClient.get<Page<AdminSessionResponse>>('/api/admin/sessions', {
+}): Promise<Page<AdminSessionSummaryResponse>> {
+  const res = await apiClient.get<Page<AdminSessionSummaryResponse>>('/api/admin/sessions', {
     params,
   });
   return res.data;
@@ -47,11 +52,50 @@ export async function getAllSessions(params: {
 
 export async function getAdminSessionDetail(
   sessionId: string,
-): Promise<Record<string, unknown>> {
-  const res = await apiClient.get(`/api/admin/sessions/${sessionId}`);
+): Promise<AdminSessionDetailResponse> {
+  const res = await apiClient.get<AdminSessionDetailResponse>(`/api/admin/sessions/${sessionId}`);
   return res.data;
 }
 
 export async function forceStopSession(sessionId: string): Promise<void> {
   await apiClient.post(`/api/admin/sessions/${sessionId}/force-stop`);
+}
+
+export async function getAdminRooms(params: {
+  search?: string;
+  page?: number;
+  size?: number;
+}): Promise<Page<AdminRoomSummaryResponse>> {
+  const res = await apiClient.get<Page<AdminRoomSummaryResponse>>('/api/admin/rooms', {
+    params,
+  });
+  return res.data;
+}
+
+export async function getAdminRoomDetail(roomId: string): Promise<AdminRoomDetailResponse> {
+  const res = await apiClient.get<AdminRoomDetailResponse>(`/api/admin/rooms/${roomId}`);
+  return res.data;
+}
+
+export async function getAdminQuestionCategories(params: {
+  search?: string;
+  page?: number;
+  size?: number;
+}): Promise<Page<AdminCategoryResponse>> {
+  const res = await apiClient.get<Page<AdminCategoryResponse>>('/api/admin/questions/categories', {
+    params,
+  });
+  return res.data;
+}
+
+export async function getAdminQuestions(params: {
+  category: string;
+  search?: string;
+  page?: number;
+  size?: number;
+}): Promise<Page<AdminQuestionResponse>> {
+  const res = await apiClient.get<Page<AdminQuestionResponse>>('/api/admin/questions', {
+    params,
+  });
+  return res.data;
 }

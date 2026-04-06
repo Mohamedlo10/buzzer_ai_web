@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Square, ChevronDown, Users, Zap, Swords, Clock, Trophy, Filter, XCircle } from 'lucide-react';
+import { ArrowLeft, Square, ChevronDown, Users, Zap, Swords, Clock, Trophy, Filter, XCircle, ChevronRight } from 'lucide-react';
 
 import { Card } from '~/components/ui/Card';
 import { Spinner } from '~/components/loading/Spinner';
 import * as adminApi from '~/lib/api/admin';
-import type { AdminSessionResponse, AdminSessionStatus } from '~/types/api';
+import type { AdminSessionSummaryResponse, AdminSessionStatus } from '~/types/api';
 
 const STATUS_OPTIONS: { value: string; label: string }[] = [
   { value: '',           label: 'Tous' },
@@ -20,12 +20,12 @@ const STATUS_OPTIONS: { value: string; label: string }[] = [
 ];
 
 const STATUS_CONFIG: Record<AdminSessionStatus, { label: string; color: string; icon: React.ComponentType<{ size: number; color: string }> }> = {
-  LOBBY:      { label: 'Lobby',        color: '#00D397', icon: Users },
+  LOBBY:      { label: 'Lobby',         color: '#00D397', icon: Users },
   GENERATING: { label: 'Génération...', color: '#FFD700', icon: Zap },
-  PLAYING:    { label: 'En cours',     color: '#4A90D9', icon: Swords },
-  PAUSED:     { label: 'Pause',        color: '#F39C12', icon: Clock },
-  RESULTS:    { label: 'Terminée',     color: '#C0C0C0', icon: Trophy },
-  CANCELLED:  { label: 'Annulée',      color: '#D5442F', icon: XCircle },
+  PLAYING:    { label: 'En cours',      color: '#4A90D9', icon: Swords },
+  PAUSED:     { label: 'Pause',         color: '#F39C12', icon: Clock },
+  RESULTS:    { label: 'Terminée',      color: '#C0C0C0', icon: Trophy },
+  CANCELLED:  { label: 'Annulée',       color: '#D5442F', icon: XCircle },
 };
 
 function formatDate(iso: string | null) {
@@ -38,7 +38,7 @@ function formatDate(iso: string | null) {
 
 export default function AdminSessionsPage() {
   const router = useRouter();
-  const [sessions, setSessions] = useState<AdminSessionResponse[]>([]);
+  const [sessions, setSessions] = useState<AdminSessionSummaryResponse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [statusFilter, setStatusFilter] = useState('');
@@ -95,7 +95,7 @@ export default function AdminSessionsPage() {
     }
   };
 
-  const handleForceStop = async (session: AdminSessionResponse) => {
+  const handleForceStop = async (session: AdminSessionSummaryResponse) => {
     const confirmed = window.confirm(`Forcer l'arrêt de la session ${session.code} ?`);
     if (!confirmed) return;
     setStoppingId(session.id);
@@ -188,70 +188,80 @@ export default function AdminSessionsPage() {
           sessions.map((session) => {
             const cfg = STATUS_CONFIG[session.status] ?? STATUS_CONFIG['RESULTS'];
             const StatusIcon = cfg.icon;
-            const canStop = session.status === 'PLAYING' || session.status === 'PAUSED' || session.status === 'LOBBY' || session.status === 'GENERATING';
+            const canStop = ['PLAYING', 'PAUSED', 'LOBBY', 'GENERATING'].includes(session.status);
             const isStopping = stoppingId === session.id;
 
             return (
               <Card key={session.id} className="mb-3">
                 {/* Top row */}
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <span className="text-white font-bold text-lg tracking-widest">{session.code}</span>
-                    {session.isTeamMode && (
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-[#4A90D920] text-[#4A90D9] font-medium">
-                        Équipes
-                      </span>
-                    )}
-                    {session.isPrivate && (
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-[#FFFFFF10] text-white/50 font-medium">
-                        Privée
-                      </span>
-                    )}
+                <button
+                  onClick={() => router.push(`/admin/sessions/${session.id}`)}
+                  className="w-full text-left"
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-white font-bold text-lg tracking-widest">{session.code}</span>
+                      {session.isTeamMode && (
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-[#4A90D920] text-[#4A90D9] font-medium">
+                          Équipes
+                        </span>
+                      )}
+                      {session.isPrivate && (
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-[#FFFFFF10] text-white/50 font-medium">
+                          Privée
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div
+                        className="flex items-center gap-1.5 px-2.5 py-1 rounded-full"
+                        style={{ backgroundColor: `${cfg.color}20` }}
+                      >
+                        <StatusIcon size={12} color={cfg.color} />
+                        <span className="text-xs font-semibold" style={{ color: cfg.color }}>
+                          {cfg.label}
+                        </span>
+                      </div>
+                      <ChevronRight size={16} color="#FFFFFF40" />
+                    </div>
                   </div>
-                  <div
-                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-full"
-                    style={{ backgroundColor: `${cfg.color}20` }}
-                  >
-                    <StatusIcon size={12} color={cfg.color} />
-                    <span className="text-xs font-semibold" style={{ color: cfg.color }}>
-                      {cfg.label}
-                    </span>
-                  </div>
-                </div>
 
-                {/* Details */}
-                <div className="flex flex-col gap-1 mb-3">
-                  <div className="flex justify-between">
-                    <span className="text-white/50 text-sm">Manager</span>
-                    <span className="text-white text-sm">{session.manager?.username ?? '—'}</span>
-                  </div>
-                  {session.room && (
+                  {/* Details */}
+                  <div className="flex flex-col gap-1 mb-3">
                     <div className="flex justify-between">
-                      <span className="text-white/50 text-sm">Salle</span>
-                      <span className="text-white text-sm">{session.room.name}</span>
+                      <span className="text-white/50 text-sm">Manager</span>
+                      <span className="text-white text-sm">{session.managerUsername}</span>
                     </div>
-                  )}
-                  <div className="flex justify-between">
-                    <span className="text-white/50 text-sm">Mode</span>
-                    <span className="text-white text-sm">{session.questionMode}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-white/50 text-sm">Questions</span>
-                    <span className="text-white text-sm">
-                      {session.currentQuestionIndex} / {session.totalQuestions}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-white/50 text-sm">Créée</span>
-                    <span className="text-white text-sm">{formatDate(session.createdAt)}</span>
-                  </div>
-                  {session.startedAt && (
+                    {session.roomName && (
+                      <div className="flex justify-between">
+                        <span className="text-white/50 text-sm">Salle</span>
+                        <span className="text-white text-sm">{session.roomName}</span>
+                      </div>
+                    )}
                     <div className="flex justify-between">
-                      <span className="text-white/50 text-sm">Démarrée</span>
-                      <span className="text-white text-sm">{formatDate(session.startedAt)}</span>
+                      <span className="text-white/50 text-sm">Mode</span>
+                      <span className="text-white text-sm">{session.questionMode}</span>
                     </div>
-                  )}
-                </div>
+                    <div className="flex justify-between">
+                      <span className="text-white/50 text-sm">Joueurs</span>
+                      <span className="text-white text-sm">{session.playerCount} / {session.maxPlayers}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-white/50 text-sm">Questions</span>
+                      <span className="text-white text-sm">{session.totalQuestions}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-white/50 text-sm">Créée</span>
+                      <span className="text-white text-sm">{formatDate(session.createdAt)}</span>
+                    </div>
+                    {session.startedAt && (
+                      <div className="flex justify-between">
+                        <span className="text-white/50 text-sm">Démarrée</span>
+                        <span className="text-white text-sm">{formatDate(session.startedAt)}</span>
+                      </div>
+                    )}
+                  </div>
+                </button>
 
                 {/* Force stop */}
                 {canStop && (
