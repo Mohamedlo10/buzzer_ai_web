@@ -223,9 +223,9 @@ export function SessionConfigForm({ onSuccess, roomId }: SessionConfigFormProps)
   };
 
   return (
-    <div className="flex flex-col h-[80vh]">
+    <div className="flex flex-col pb-24 sm:pb-12 h-[80vh] overflow-y-auto ">
       {/* Scrollable area */}
-      <div className="flex-1 overflow-y-auto px-4 pt-5 pb-4 flex flex-col gap-4">
+      <div className="flex-1 px-4 pt-5 pb-4 flex flex-col gap-4">
 
         {/* Mode selector */}
         <div className="flex gap-3">
