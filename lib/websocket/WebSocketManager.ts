@@ -309,12 +309,15 @@ export class WebSocketManager {
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
   private intentionallyClosed = false;
   private sessionId: string | null = null;
+  private roomId: string | null = null;
+  private connectionMode: 'global' | 'session' | 'room' = 'global';
   private userId: string | null = null;
   private wasConnectedBefore = false;
   private stompConnected = false;
   private subscriptionId = 0;
   private heartbeatTimer: ReturnType<typeof setInterval> | null = null;
   private negotiatedHeartbeatMs = 0; // 0 = disabled
+  private presenceHeartbeatTimer: ReturnType<typeof setInterval> | null = null;
 
   // ─── STOMP session topics ───────────────
   private static readonly SESSION_TOPICS = [
@@ -333,12 +336,53 @@ export class WebSocketManager {
     'sync',
   ] as const;
 
+  /**
+   * Open a heartbeat-only connection — no session/room subscription.
+   * Use this from the global layout so the user is marked online
+   * as soon as they enter the app.
+   */
+  async connectGlobal(userId?: string): Promise<void> {
+    if (this.connectionMode === 'global' && !this.intentionallyClosed && this.stompConnected) {
+      return; // already globally connected
+    }
+    // Let room/session connections take priority — don't downgrade them
+    if (
+      (this.connectionMode === 'session' || this.connectionMode === 'room') &&
+      !this.intentionallyClosed
+    ) {
+      return;
+    }
+
+    if (this.ws) {
+      const oldWs = this.ws;
+      this.ws = null;
+      oldWs.onopen = null;
+      oldWs.onmessage = null;
+      oldWs.onerror = null;
+      oldWs.onclose = null;
+      try { oldWs.close(); } catch { /* ignore */ }
+      this.clearHeartbeat();
+      this.clearPresenceHeartbeat();
+      this.clearReconnect();
+    }
+
+    this.connectionMode = 'global';
+    this.sessionId = null;
+    this.roomId = null;
+    this.userId = userId ?? null;
+    this.intentionallyClosed = false;
+    this.reconnectAttempt = 0;
+    this.stompConnected = false;
+    this.subscriptionId = 0;
+    await this.openConnection();
+  }
+
   /** Connect to the game WebSocket for a given session */
   async connect(sessionId: string, userId?: string): Promise<void> {
     // Idempotent: if already managing this session (not intentionally closed), skip.
     // This prevents creating a duplicate WebSocket when multiple components (e.g. lobby
     // and game during navigation transition) call connect() for the same session.
-    if (this.sessionId === sessionId && !this.intentionallyClosed) {
+    if (this.sessionId === sessionId && this.connectionMode === 'session' && !this.intentionallyClosed) {
       if (userId && this.userId !== userId) {
         this.userId = userId;
       }
@@ -356,10 +400,47 @@ export class WebSocketManager {
       oldWs.onclose = null;
       try { oldWs.close(); } catch { /* ignore */ }
       this.clearHeartbeat();
+      this.clearPresenceHeartbeat();
       this.clearReconnect();
     }
 
     this.sessionId = sessionId;
+    this.roomId = null;
+    this.connectionMode = 'session';
+    this.userId = userId ?? null;
+    this.intentionallyClosed = false;
+    this.reconnectAttempt = 0;
+    this.stompConnected = false;
+    this.subscriptionId = 0;
+    await this.openConnection();
+  }
+
+  /** Connect to the WebSocket for a room's presence channel */
+  async connectForRoom(roomId: string, userId?: string): Promise<void> {
+    if (this.roomId === roomId && this.connectionMode === 'room' && !this.intentionallyClosed && this.stompConnected) {
+      if (userId && this.userId !== userId) {
+        this.userId = userId;
+      }
+      return;
+    }
+    // Always upgrade from global → room mode
+
+    if (this.ws) {
+      const oldWs = this.ws;
+      this.ws = null;
+      oldWs.onopen = null;
+      oldWs.onmessage = null;
+      oldWs.onerror = null;
+      oldWs.onclose = null;
+      try { oldWs.close(); } catch { /* ignore */ }
+      this.clearHeartbeat();
+      this.clearPresenceHeartbeat();
+      this.clearReconnect();
+    }
+
+    this.roomId = roomId;
+    this.sessionId = null;
+    this.connectionMode = 'room';
     this.userId = userId ?? null;
     this.intentionallyClosed = false;
     this.reconnectAttempt = 0;
@@ -379,13 +460,22 @@ export class WebSocketManager {
       return;
     }
 
+    this._doDisconnect();
+  }
+
+  /** Force-disconnect regardless of active listeners (e.g. on logout) */
+  forceDisconnect(): void {
+    this._doDisconnect();
+  }
+
+  private _doDisconnect(): void {
     this.intentionallyClosed = true;
     this.stompConnected = false;
     this.clearReconnect();
     this.clearHeartbeat();
+    this.clearPresenceHeartbeat();
 
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-      // Send STOMP DISCONNECT
       try {
         this.ws.send(encodeStompFrame('DISCONNECT'));
       } catch {
@@ -399,6 +489,8 @@ export class WebSocketManager {
     }
 
     this.sessionId = null;
+    this.roomId = null;
+    this.connectionMode = 'global';
     this.userId = null;
     this.wasConnectedBefore = false;
   }
@@ -449,11 +541,16 @@ export class WebSocketManager {
 
   private async openConnection(): Promise<void> {
     const token = await tokenStorage.getAccessToken();
-    if (!token || !this.sessionId) {
-      console.warn('[STOMP] Cannot connect — missing token or sessionId', {
-        hasToken: !!token,
-        sessionId: this.sessionId,
-      });
+    if (!token) {
+      console.warn('[STOMP] Cannot connect — missing token');
+      return;
+    }
+    if (this.connectionMode === 'session' && !this.sessionId) {
+      console.warn('[STOMP] Cannot connect — missing sessionId');
+      return;
+    }
+    if (this.connectionMode === 'room' && !this.roomId) {
+      console.warn('[STOMP] Cannot connect — missing roomId');
       return;
     }
 
@@ -508,6 +605,7 @@ export class WebSocketManager {
       this.ws = null;
       this.stompConnected = false;
       this.clearHeartbeat();
+      this.clearPresenceHeartbeat();
 
       // Notify listeners of disconnection
       if (wasStompConnected) {
@@ -636,20 +734,28 @@ export class WebSocketManager {
     this.stompConnected = true;
     this.reconnectAttempt = 0;
 
-    // Subscribe to all session topics
-    this.subscribeToSessionTopics();
+    // Subscribe to the appropriate topics based on connection mode
+    if (this.connectionMode === 'room') {
+      this.subscribeToRoomTopics();
+    } else if (this.connectionMode === 'session') {
+      this.subscribeToSessionTopics();
+    }
+    // global mode: no topic subscription — heartbeat only
 
     // Subscribe to user-specific queues if userId available
     if (this.userId) {
       this.subscribeToUserQueues();
     }
 
-    // Start heartbeat only if negotiated
+    // Start STOMP protocol heartbeat only if negotiated
     if (this.negotiatedHeartbeatMs > 0) {
       this.startHeartbeat(this.negotiatedHeartbeatMs);
     } else {
       console.log('[STOMP] Heartbeat disabled (server negotiated 0,0)');
     }
+
+    // Always start the 60s presence heartbeat after STOMP is confirmed
+    this.startPresenceHeartbeat();
 
     // Notify listeners of connection
     const isReconnect = this.wasConnectedBefore;
@@ -676,6 +782,19 @@ export class WebSocketManager {
 
     if (process.env.NODE_ENV === 'development') {
       console.log('[STOMP] MESSAGE:', destination, payload);
+    }
+
+    // Handle room presence topic: /topic/room/{roomId}/presence
+    const presenceMatch = destination.match(/^\/topic\/room\/([^/]+)\/presence$/);
+    if (presenceMatch) {
+      this.emit({
+        type: 'room_member_presence',
+        roomId: presenceMatch[1],
+        userId: payload.userId,
+        username: payload.username,
+        isOnline: payload.isOnline,
+      } as any);
+      return;
     }
 
     // Map topic message to WSEvent(s)
@@ -767,6 +886,21 @@ export class WebSocketManager {
     }
   }
 
+  private subscribeToRoomTopics(): void {
+    if (!this.roomId) return;
+
+    this.subscriptionId++;
+    const destination = `/topic/room/${this.roomId}/presence`;
+    const frame = encodeStompFrame('SUBSCRIBE', {
+      id: `sub-${this.subscriptionId}`,
+      destination,
+    });
+    this.ws?.send(frame);
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[STOMP] Subscribed: ${destination} (sub-${this.subscriptionId})`);
+    }
+  }
+
   // ─── Heartbeat ─────────────────────────────
 
   private startHeartbeat(intervalMs: number): void {
@@ -784,6 +918,35 @@ export class WebSocketManager {
     if (this.heartbeatTimer) {
       clearInterval(this.heartbeatTimer);
       this.heartbeatTimer = null;
+    }
+  }
+
+  private startPresenceHeartbeat(): void {
+    this.clearPresenceHeartbeat();
+    console.log('[STOMP] Starting presence heartbeat every 60s');
+
+    // Send immediately so the server marks the user online right away
+    this.sendPresenceHeartbeat();
+
+    this.presenceHeartbeatTimer = setInterval(() => {
+      this.sendPresenceHeartbeat();
+    }, 60_000);
+  }
+
+  private sendPresenceHeartbeat(): void {
+    if (this.ws?.readyState === WebSocket.OPEN && this.stompConnected) {
+      const frame = encodeStompFrame('SEND', { destination: '/app/heartbeat' }, '');
+      this.ws.send(frame);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[STOMP] Presence heartbeat sent → /app/heartbeat');
+      }
+    }
+  }
+
+  private clearPresenceHeartbeat(): void {
+    if (this.presenceHeartbeatTimer) {
+      clearInterval(this.presenceHeartbeatTimer);
+      this.presenceHeartbeatTimer = null;
     }
   }
 

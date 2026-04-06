@@ -3,6 +3,7 @@ import type { UserResponse } from '~/types/api';
 import * as authApi from '~/lib/api/auth';
 import * as usersApi from '~/lib/api/users';
 import { tokenStorage, appStorage } from '~/lib/utils/storage';
+import { wsManager } from '~/lib/websocket/WebSocketManager';
 
 interface AuthState {
   user: UserResponse | null;
@@ -52,6 +53,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         await authApi.logout({ refreshToken }).catch(() => {});
       }
     } finally {
+      // Close WebSocket immediately after logout so the server marks the user offline
+      wsManager.forceDisconnect();
       await appStorage.clearAll();
       set({ user: null, isAuthenticated: false });
     }

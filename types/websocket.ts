@@ -205,6 +205,14 @@ export interface RoomStatsUpdatedEvent {
   roomId: string;
 }
 
+export interface RoomMemberPresenceEvent {
+  type: 'room_member_presence';
+  roomId: string;
+  userId: string;
+  username: string;
+  isOnline: boolean;
+}
+
 // ──────────────────────────────────────────────
 // Team Events
 // ──────────────────────────────────────────────
@@ -286,5 +294,6 @@ export type WSEvent =
   | RoomInviteReceivedEvent
   | RoomSessionStartedEvent
   | RoomStatsUpdatedEvent
+  | RoomMemberPresenceEvent
   // Sync
   | GameStateSyncEvent;

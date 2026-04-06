@@ -6,6 +6,7 @@ import { Home, Users, Trophy, Gamepad2, User } from 'lucide-react';
 import { AuthGuard } from '~/components/providers/AuthGuard';
 import { DashboardHeader } from '~/components/layout/DashboardHeader';
 import { useFriendStore } from '~/stores/useFriendStore';
+import { usePresence } from '~/lib/websocket';
 
 const tabs = [
   { href: '/dashboard', icon: Home, label: 'Accueil' },
@@ -22,6 +23,9 @@ export default function TabsLayout({
 }) {
   const pathname = usePathname();
   const pendingRequests = useFriendStore((state) => state.pendingRequests);
+
+  // Mark the user online as soon as they enter the app
+  usePresence();
   const isDashboard = pathname === '/dashboard' || pathname.startsWith('/dashboard/');
   const isRoom = pathname.startsWith('/room/');
 

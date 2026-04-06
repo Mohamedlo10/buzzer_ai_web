@@ -10,6 +10,7 @@ import { Avatar } from '~/components/ui/Avatar';
 import { FriendCard } from '~/components/friend/FriendCard';
 import { FriendRequestCard } from '~/components/friend/FriendRequestCard';
 import { useFriendStore } from '~/stores/useFriendStore';
+import { wsManager } from '~/lib/websocket';
 import * as usersApi from '~/lib/api/users';
 import type { UserResponse } from '~/types/api';
 
@@ -44,6 +45,17 @@ export default function FriendsPage() {
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+  // Re-fetch friends once WS is connected (after a short delay so the server
+  // has time to process the heartbeat and update isOnline in the DB)
+  useEffect(() => {
+    const unsubscribe = wsManager.subscribe((event: any) => {
+      if (event.type === '_connection_change' && event.connected) {
+        setTimeout(() => fetchFriends(), 500);
+      }
+    });
+    return unsubscribe;
+  }, [fetchFriends]);
 
   // Debounced search — fires 1s after last keystroke
   useEffect(() => {

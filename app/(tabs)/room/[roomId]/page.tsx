@@ -12,6 +12,7 @@ import {
 import { SessionConfigForm } from '~/components/session/SessionConfigForm';
 import { FriendshipButton } from '~/components/ui/FriendshipButton';
 import { useAuthStore } from '~/stores/useAuthStore';
+import { useRoomSocket } from '~/lib/websocket';
 import * as qrcodeApi from '~/lib/api/qrcode';
 import * as roomsApi from '~/lib/api/rooms';
 import * as friendsApi from '~/lib/api/friends';
@@ -574,11 +575,17 @@ export default function RoomDetailPage() {
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [qrImage, setQrImage] = useState<string | null>(null);
   const [qrLoading, setQrLoading] = useState(false);
+  // Real-time presence overrides: userId → isOnline
+  const [memberPresence, setMemberPresence] = useState<Record<string, boolean>>({});
 
   const user = useAuthStore((state) => state.user);
   const room = roomData?.room;
   const isOwner = room?.ownerId === user?.id;
-  const members = roomData?.members ?? [];
+
+  // Merge server-loaded members with real-time presence overrides
+  const members = (roomData?.members ?? []).map((m) =>
+    m.userId in memberPresence ? { ...m, isOnline: memberPresence[m.userId] } : m
+  );
   const sessions = roomData?.sessions ?? [];
   const rankings = roomData?.rankings ?? [];
 
@@ -618,11 +625,24 @@ export default function RoomDetailPage() {
     loadRoom();
   }, [loadRoom]);
 
-  // Refresh silencieux toutes les 3s
+  // Refresh silencieux toutes les 30s (presence is now handled via WebSocket)
   useEffect(() => {
-    const interval = setInterval(loadRoom, 3000);
+    const interval = setInterval(loadRoom, 30_000);
     return () => clearInterval(interval);
   }, [loadRoom]);
+
+  // WebSocket: real-time presence for this room
+  useRoomSocket(roomId ?? null, {
+    onPresence: (event) => {
+      setMemberPresence((prev) => ({ ...prev, [event.userId]: event.isOnline }));
+    },
+    onDisconnect: () => {
+      // Mark current user offline locally immediately on transport close
+      if (user?.id) {
+        setMemberPresence((prev) => ({ ...prev, [user.id]: false }));
+      }
+    },
+  });
 
   useEffect(() => {
     if (roomData?.room?.id) loadQR(roomData.room.id);

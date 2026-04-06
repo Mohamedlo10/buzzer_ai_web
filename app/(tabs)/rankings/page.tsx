@@ -158,9 +158,14 @@ function RankingRow({
     );
   };
 
+  const friendshipBtn = getFriendshipButton();
+
   return (
-    <button
+    <div
       onClick={() => router.push(`/profile/${entry.userId}`)}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => e.key === 'Enter' && router.push(`/profile/${entry.userId}`)}
       className={`w-full flex flex-row items-center py-3 border-b border-[#3E3666] text-left hover:bg-[#3E366630] active:bg-[#3E366650] transition-colors cursor-pointer ${
         isCurrentUser ? 'bg-[#00D39710] -mx-4 px-4 w-[calc(100%+32px)]' : ''
       }`}
@@ -201,13 +206,13 @@ function RankingRow({
       </div>
 
       <div onClick={(e) => e.stopPropagation()}>
-        {getFriendshipButton()}
+        {friendshipBtn}
       </div>
 
-      {!getFriendshipButton() && (
+      {!friendshipBtn && (
         <ChevronRight size={16} color="#FFFFFF30" />
       )}
-    </button>
+    </div>
   );
 }
 
