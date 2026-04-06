@@ -115,18 +115,21 @@ export default function RoomsPage() {
     loadRooms();
   }, [loadRooms]);
 
-  const handleSearch = (code: string) => {
-    setSearchCode(code);
+  const handleSearch = (query: string) => {
+    setSearchCode(query);
     setVisibleCount(ITEMS_PER_PAGE);
     setJoinError(null);
 
-    if (!code.trim()) {
+    if (!query.trim()) {
       setFilteredRooms(rooms);
       return;
     }
 
-    const filtered = rooms.filter((room) =>
-      room.code.toLowerCase().includes(code.toLowerCase()),
+    const lower = query.toLowerCase();
+    const filtered = rooms.filter(
+      (room) =>
+        room.code.toLowerCase().includes(lower) ||
+        room.name.toLowerCase().includes(lower),
     );
     setFilteredRooms(filtered);
   };
@@ -184,10 +187,9 @@ export default function RoomsPage() {
             <Search size={20} color="#FFFFFF60" className="shrink-0" />
             <input
               value={searchCode}
-              onChange={(e) => handleSearch(e.target.value.toUpperCase())}
-              placeholder="Rechercher par code..."
+              onChange={(e) => handleSearch(e.target.value)}
+              placeholder="Rechercher par nom ou code..."
               className="flex-1 py-3 px-3 bg-transparent text-white focus:outline-none placeholder-white/40"
-              autoCapitalize="characters"
               onKeyDown={(e) => e.key === 'Enter' && handleJoinByCode()}
             />
             {searchCode.length > 0 && (
@@ -229,7 +231,7 @@ export default function RoomsPage() {
               </p>
               <p className="text-white/50 text-center text-sm mb-4 px-6">
                 {searchCode
-                  ? 'Essayez un autre code ou créez une nouvelle salle'
+                  ? 'Essayez un autre nom ou code, ou créez une nouvelle salle'
                   : 'Créez une salle ou rejoignez-en une avec un code'}
               </p>
               <button
