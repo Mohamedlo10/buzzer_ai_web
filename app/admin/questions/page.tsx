@@ -60,7 +60,7 @@ export default function AdminQuestionsPage() {
   const loadQuestions = useCallback(async (category: string, pageNum = 0, append = false, searchVal = qSearch) => {
     setQLoading(true);
     try {
-      const params: Record<string, unknown> = { category, page: pageNum, size: 20 };
+      const params: { category: string; search?: string; page: number; size: number } = { category, page: pageNum, size: 20 };
       if (searchVal.trim()) params.search = searchVal.trim();
       const response = await adminApi.getAdminQuestions(params);
       if (append) {
