@@ -285,7 +285,7 @@ export default function ResultsPage() {
             </p>
           </div>
 
-          <div className="flex flex-row justify-between">
+          <div className="grid grid-cols-4 md:grid-cols-7 gap-4">
             {[
               { label: 'JOUEURS', value: rankings.length, color: '#FFFFFF' },
               { label: 'MAX', value: rankings[0]?.finalScore ?? 0, color: '#F59E0B' },
