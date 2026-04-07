@@ -30,6 +30,7 @@ const DEFAULT_TEAMS: TeamRequest[] = [
 interface SessionConfigFormProps {
   onSuccess?: (sessionId: string, code: string) => void;
   roomId?: string;
+  initialMaxPlayers?: number;
 }
 
 // Stepper Field (- value +)
@@ -160,7 +161,7 @@ function TeamEditor({
 }
 
 
-export function SessionConfigForm({ onSuccess, roomId }: SessionConfigFormProps) {
+export function SessionConfigForm({ onSuccess, roomId, initialMaxPlayers }: SessionConfigFormProps) {
   const router = useRouter();
   const [questionMode, setQuestionMode] = useState<QuestionMode>('AI');
   const [teams, setTeams] = useState<TeamRequest[]>(DEFAULT_TEAMS);
@@ -168,7 +169,7 @@ export function SessionConfigForm({ onSuccess, roomId }: SessionConfigFormProps)
     debtAmount: 5,
     pointsPerCorrectAnswer: 5,
     questionsPerCategory: 5,
-    maxPlayers: 20,
+    maxPlayers: initialMaxPlayers ?? 20,
     isPrivate: false,
     isTeamMode: false,
     maxCategoriesPerPlayer: 3,

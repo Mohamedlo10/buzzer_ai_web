@@ -105,12 +105,12 @@ function ActiveSessionCard({
   session,
   onPress,
   onDelete,
-  isOwner,
+  canDelete,
 }: {
   session: RoomSessionResponse;
   onPress: () => void;
   onDelete?: () => void;
-  isOwner?: boolean;
+  canDelete?: boolean;
 }) {
   const config = STATUS_CONFIG[session.status] || STATUS_CONFIG.LOBBY;
   const StatusIcon = config.icon;
@@ -187,7 +187,7 @@ function ActiveSessionCard({
           </div>
         </button>
 
-        {isOwner && onDelete && (
+        {canDelete && onDelete && (
           <button
             onClick={(e) => { e.stopPropagation(); onDelete(); }}
             className="mx-5 mb-4 py-3 rounded-2xl flex items-center justify-center w-[calc(100%-40px)] bg-red-500/20 border border-red-500/40 hover:bg-red-500/30 transition-colors"
@@ -841,7 +841,7 @@ export default function RoomDetailPage() {
                 session={session}
                 onPress={() => navigateToSession(session)}
                 onDelete={() => handleDeleteSession(session.id, session.code)}
-                isOwner={isOwner}
+                canDelete={isOwner || session.managerId === user?.id}
               />
             ))}
           </div>
@@ -949,7 +949,7 @@ export default function RoomDetailPage() {
                 <X size={20} color="#FFFFFF" />
               </button>
             </div>
-            <SessionConfigForm roomId={roomId} onSuccess={handleSessionCreated} />
+            <SessionConfigForm roomId={roomId} onSuccess={handleSessionCreated} initialMaxPlayers={members.length || undefined} />
           </div>
         </div>
       )}
