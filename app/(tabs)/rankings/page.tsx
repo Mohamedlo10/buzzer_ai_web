@@ -16,6 +16,7 @@ import {
   UserX,
   ChevronRight,
   ChevronLeft,
+  Info,
 } from 'lucide-react';
 
 import { SafeScreen } from '~/components/layout/SafeScreen';
@@ -30,6 +31,100 @@ import type { GlobalRanking } from '~/types/api';
 const PAGE_SIZE = 25;
 
 // ──────────────────────────────────────────────
+// Info Modal
+// ──────────────────────────────────────────────
+
+function RankingInfoModal({ onClose }: { onClose: () => void }) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="bg-[#1E1A40] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg max-h-[90vh] overflow-y-auto border border-[#3E3666]"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Modal header */}
+        <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-[#3E3666]">
+          <div className="flex items-center gap-2">
+            <Trophy size={20} color="#FFD700" />
+            <span className="text-white font-bold text-base">Comment fonctionne le classement ?</span>
+          </div>
+          <button
+            onClick={onClose}
+            className="w-8 h-8 rounded-full bg-[#3E3666] flex items-center justify-center hover:bg-[#4E4676] transition-colors cursor-pointer"
+          >
+            <X size={16} color="#FFFFFF" />
+          </button>
+        </div>
+
+        {/* Modal body */}
+        <div className="px-5 py-4 space-y-4">
+          <p className="text-white/70 text-sm leading-relaxed">
+            Le classement est basé sur un <span className="text-[#9B59B6] font-semibold">Indice de Performance [0–100]</span> indépendant
+            du nombre de points par bonne réponse, qui varie selon les sessions.
+          </p>
+
+          <p className="text-white/60 text-sm font-medium">Il se compose de 4 critères :</p>
+
+          <div className="space-y-3">
+            {/* Criterion 1 */}
+            <div className="bg-[#342D5B] rounded-xl p-4">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-lg">✅</span>
+                <span className="text-white font-semibold text-sm">40% — Contribution absolue</span>
+              </div>
+              <p className="text-white/50 text-xs ml-7">Bonnes réponses / questions jouées</p>
+              <p className="text-white/40 text-xs ml-7 mt-0.5">→ Récompense les joueurs qui répondent le plus</p>
+            </div>
+
+            {/* Criterion 2 */}
+            <div className="bg-[#342D5B] rounded-xl p-4">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-lg">🏅</span>
+                <span className="text-white font-semibold text-sm">30% — Taux de victoires</span>
+              </div>
+              <p className="text-white/50 text-xs ml-7">Parties gagnées / parties jouées</p>
+              <p className="text-white/40 text-xs ml-7 mt-0.5">→ Récompense les joueurs régulièrement premiers</p>
+            </div>
+
+            {/* Criterion 3 */}
+            <div className="bg-[#342D5B] rounded-xl p-4">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-lg">🎯</span>
+                <span className="text-white font-semibold text-sm">20% — Précision de buzz</span>
+              </div>
+              <p className="text-white/50 text-xs ml-7">Bonnes réponses / buzzers tentés</p>
+              <p className="text-white/40 text-xs ml-7 mt-0.5">→ Pénalise les buzzers au hasard</p>
+            </div>
+
+            {/* Criterion 4 */}
+            <div className="bg-[#342D5B] rounded-xl p-4">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-lg">📈</span>
+                <span className="text-white font-semibold text-sm">10% — Volume de jeu</span>
+              </div>
+              <p className="text-white/50 text-xs ml-7">Bonus progressif jusqu&apos;à 10 parties jouées</p>
+              <p className="text-white/40 text-xs ml-7 mt-0.5">→ Stabilise le classement (min. de parties requises)</p>
+            </div>
+          </div>
+
+          {/* Note */}
+          <div className="flex items-start gap-2 bg-[#ffffff08] rounded-xl p-3">
+            <Info size={14} color="#FFFFFF60" className="mt-0.5 shrink-0" />
+            <p className="text-white/50 text-xs leading-relaxed">
+              Le score brut (points) est toujours affiché pour information mais n&apos;influe plus sur le rang.
+            </p>
+          </div>
+        </div>
+
+        <div className="h-4" />
+      </div>
+    </div>
+  );
+}
+
+// ──────────────────────────────────────────────
 // Podium (Top 3)
 // ──────────────────────────────────────────────
 
@@ -39,6 +134,9 @@ function Podium({ rankings, currentPage }: { rankings: GlobalRanking[]; currentP
   const top3 = rankings.slice(0, 3);
   const hasValidUsers = top3.every((r) => r.username);
   if (!hasValidUsers) return null;
+
+  const perf = (r: GlobalRanking) =>
+    r.performanceIndex != null ? r.performanceIndex.toFixed(1) : (r.totalScore ?? 0);
 
   return (
     <div className="flex flex-row justify-center items-end mb-6 mt-4">
@@ -54,7 +152,7 @@ function Podium({ rankings, currentPage }: { rankings: GlobalRanking[]; currentP
         <span className="text-white text-xs mt-1 w-20 text-center truncate">
           {top3[1].username || 'Inconnu'}
         </span>
-        <span className="text-[#00D397] text-xs">{top3[1].totalScore} pts</span>
+        <span className="text-[#00D397] text-xs">{perf(top3[1])} score</span>
       </div>
 
       {/* 1st */}
@@ -72,7 +170,7 @@ function Podium({ rankings, currentPage }: { rankings: GlobalRanking[]; currentP
         <span className="text-white text-sm font-semibold mt-1 w-24 text-center truncate">
           {top3[0].username || 'Inconnu'}
         </span>
-        <span className="text-[#00D397] text-sm font-bold">{top3[0].totalScore || 0} pts</span>
+        <span className="text-[#00D397] text-sm font-bold">{perf(top3[0])} score</span>
       </div>
 
       {/* 3rd */}
@@ -87,7 +185,7 @@ function Podium({ rankings, currentPage }: { rankings: GlobalRanking[]; currentP
         <span className="text-white text-xs mt-1 w-20 text-center truncate">
           {top3[2].username || 'Inconnu'}
         </span>
-        <span className="text-[#00D397] text-xs">{top3[2].totalScore || 0} pts</span>
+        <span className="text-[#00D397] text-xs">{perf(top3[2])} score</span>
       </div>
     </div>
   );
@@ -160,19 +258,32 @@ function RankingRow({
 
   const friendshipBtn = getFriendshipButton();
 
+  const perfIndex = entry.performanceIndex;
+  const accuracy = entry.globalAccuracyRate != null
+    ? Math.round(entry.globalAccuracyRate * 100)
+    : null;
+  const winRatePct = entry.winRate != null ? Math.round(entry.winRate) : null;
+  const correctAnswers = entry.totalCorrectAnswers ?? null;
+  const questionsPlayed = entry.totalQuestionsPlayed ?? null;
+  const avgCorrect = entry.avgCorrectPerGame != null
+    ? entry.avgCorrectPerGame.toFixed(1)
+    : null;
+
   return (
     <div
       onClick={() => router.push(`/profile/${entry.userId}`)}
       role="button"
       tabIndex={0}
       onKeyDown={(e) => e.key === 'Enter' && router.push(`/profile/${entry.userId}`)}
-      className={`w-full flex flex-row items-center py-3 border-b border-[#3E3666] text-left hover:bg-[#3E366630] active:bg-[#3E366650] transition-colors cursor-pointer ${
+      className={`w-full flex flex-row items-start py-3 border-b border-[#3E3666] text-left hover:bg-[#3E366630] active:bg-[#3E366650] transition-colors cursor-pointer ${
         isCurrentUser ? 'bg-[#00D39710] -mx-4 px-4 w-[calc(100%+32px)]' : ''
       }`}
     >
-      <div className="w-8 flex items-center justify-center">{getRankIcon(rank)}</div>
+      {/* Rank icon */}
+      <div className="w-8 flex items-center justify-center mt-1 shrink-0">{getRankIcon(rank)}</div>
 
-      <div className="mx-2">
+      {/* Avatar */}
+      <div className="mx-2 mt-0.5 shrink-0">
         <Avatar
           avatarUrl={entry.avatarUrl}
           username={entry.username || '?'}
@@ -181,28 +292,51 @@ function RankingRow({
         />
       </div>
 
-      <div className="flex-1">
-        <span
-          className={`font-semibold ${isCurrentUser ? 'text-[#00D397]' : getRankColor(rank)}`}
-        >
+      {/* Main info */}
+      <div className="flex-1 min-w-0">
+        <span className={`font-semibold ${isCurrentUser ? 'text-[#00D397]' : getRankColor(rank)}`}>
           {entry.username || 'Inconnu'}
           {isCurrentUser && ' (Vous)'}
         </span>
-        <div className="flex flex-row items-center mt-0.5">
-          <Star size={12} color="#FFFFFF40" />
-          <span className="text-white/50 text-xs ml-1">{entry.totalGames} parties</span>
-          {entry.avgScore > 0 && (
-            <>
-              <span className="text-white/30 mx-2">•</span>
-              <span className="text-white/50 text-xs">{Math.round(entry.avgScore)} pts/moy</span>
-            </>
+
+        {/* Stats row 1: questions + accuracy */}
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-0.5">
+          {correctAnswers != null && questionsPlayed != null && (
+            <div className="flex items-center gap-1">
+              <Star size={11} color="#FFFFFF40" />
+              <span className="text-white/50 text-xs">{correctAnswers}/{questionsPlayed} questions</span>
+            </div>
+          )}
+          {/* {accuracy != null && (
+            <span className="text-white/50 text-xs">Précision {accuracy}%</span>
+          )} */}
+        </div>
+
+        {/* Stats row 2: games + win rate + avg */}
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-0.5">
+          <span className="text-white/40 text-xs">{entry.totalGames} parties</span>
+          {winRatePct != null && (
+            <span className="text-white/40 text-xs">{winRatePct}% Victoires</span>
+          )}
+          {avgCorrect != null && (
+            <span className="text-white/40 text-xs">Moy. {avgCorrect} rép./partie</span>
           )}
         </div>
       </div>
 
-      <div className="flex flex-col items-end mr-2">
-        <span className="text-white font-bold">{entry.totalScore}</span>
-        <span className="text-white/40 text-xs">pts</span>
+      {/* Performance index (primary score) */}
+      <div className="flex flex-col items-end mr-2 shrink-0">
+        {perfIndex != null ? (
+          <>
+            <span className="text-[#9B59B6] font-bold">{perfIndex.toFixed(1)}</span>
+            <span className="text-white/30 text-xs">indice</span>
+          </>
+        ) : (
+          <>
+            <span className="text-white/50 font-bold">{entry.totalScore}</span>
+            <span className="text-white/30 text-xs">pts</span>
+          </>
+        )}
       </div>
 
       <div onClick={(e) => e.stopPropagation()}>
@@ -210,7 +344,7 @@ function RankingRow({
       </div>
 
       {!friendshipBtn && (
-        <ChevronRight size={16} color="#FFFFFF30" />
+        <ChevronRight size={16} color="#FFFFFF30" className="mt-1 shrink-0" />
       )}
     </div>
   );
@@ -300,6 +434,7 @@ export default function RankingsPage() {
   const [isSearching, setIsSearching] = useState(false);
   const [searchUsername, setSearchUsername] = useState('');
   const [searchTimer, setSearchTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
+  const [showInfoModal, setShowInfoModal] = useState(false);
 
   const user = useAuthStore((state) => state.user);
 
@@ -370,12 +505,23 @@ export default function RankingsPage() {
 
   return (
     <SafeScreen className="bg-[#292349]">
+      {showInfoModal && <RankingInfoModal onClose={() => setShowInfoModal(false)} />}
+
       {/* Header */}
-      <div className="px-4 pt-4 pb-4">
-        <p className="text-white font-bold text-2xl">Classement</p>
-        <p className="text-white/60 text-sm">
-          {totalElements > 0 ? `${totalElements} joueurs classés` : 'Classement global'}
-        </p>
+      <div className="px-4 pt-4 pb-4 flex items-start justify-between">
+        <div>
+          <p className="text-white font-bold text-2xl">Classement</p>
+          <p className="text-white/60 text-sm">
+            {totalElements > 0 ? `${totalElements} joueurs classés` : 'Classement global'}
+          </p>
+        </div>
+        <button
+          onClick={() => setShowInfoModal(true)}
+          className="mt-1 w-9 h-9 rounded-full bg-[#3E3666] flex items-center justify-center hover:bg-[#4E4676] transition-colors cursor-pointer"
+          aria-label="Comment fonctionne le classement ?"
+        >
+          <Info size={18} color="#FFFFFF80" />
+        </button>
       </div>
 
       <div className="flex-1 overflow-y-auto px-4">

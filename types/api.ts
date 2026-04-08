@@ -337,6 +337,14 @@ export interface GlobalRanking {
   // New fields from API
   rank?: number;
   friendshipStatus?: 'SELF' | 'ACCEPTED' | 'PENDING' | 'DECLINED' | 'BLOCKED' | 'NONE';
+  // Performance fields
+  totalCorrectAnswers?: number;
+  totalWrongBuzzes?: number;
+  totalBuzzes?: number;
+  totalQuestionsPlayed?: number;
+  globalAccuracyRate?: number;
+  avgCorrectPerGame?: number;
+  performanceIndex?: number;
   // Legacy nested user structure (optional for backward compatibility)
   user?: {
     id: string;
