@@ -65,47 +65,88 @@ function RankingInfoModal({ onClose }: { onClose: () => void }) {
             du nombre de points par bonne réponse, qui varie selon les sessions.
           </p>
 
-          <p className="text-white/60 text-sm font-medium">Il se compose de 4 critères :</p>
-
-          <div className="space-y-3">
-            {/* Criterion 1 */}
-            <div className="bg-[#342D5B] rounded-xl p-4">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-lg">✅</span>
-                <span className="text-white font-semibold text-sm">40% — Contribution absolue</span>
-              </div>
-              <p className="text-white/50 text-xs ml-7">Bonnes réponses / questions jouées</p>
-              <p className="text-white/40 text-xs ml-7 mt-0.5">→ Récompense les joueurs qui répondent le plus</p>
+          {/* Score de compétence */}
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <div className="h-px flex-1 bg-[#3E3666]" />
+              <span className="text-white/50 text-xs font-medium uppercase tracking-wider">Score de compétence</span>
+              <div className="h-px flex-1 bg-[#3E3666]" />
             </div>
 
-            {/* Criterion 2 */}
-            <div className="bg-[#342D5B] rounded-xl p-4">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-lg">🏅</span>
-                <span className="text-white font-semibold text-sm">30% — Taux de victoires</span>
+            <div className="space-y-3">
+              <div className="bg-[#342D5B] rounded-xl p-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-lg">✅</span>
+                  <span className="text-white font-semibold text-sm">35% — Contribution absolue</span>
+                </div>
+                <p className="text-white/50 text-xs ml-7">Bonnes réponses / questions jouées</p>
+                <p className="text-white/40 text-xs ml-7 mt-0.5">→ Récompense les joueurs qui répondent le plus</p>
               </div>
-              <p className="text-white/50 text-xs ml-7">Parties gagnées / parties jouées</p>
-              <p className="text-white/40 text-xs ml-7 mt-0.5">→ Récompense les joueurs régulièrement premiers</p>
+
+              <div className="bg-[#342D5B] rounded-xl p-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-lg">🏆</span>
+                  <span className="text-white font-semibold text-sm">30% — Nombre de victoires</span>
+                </div>
+                <p className="text-white/50 text-xs ml-7">Total de parties remportées (plafonné à 10)</p>
+                <p className="text-white/40 text-xs ml-7 mt-0.5">→ Récompense les gagnants expérimentés</p>
+              </div>
+
+              <div className="bg-[#342D5B] rounded-xl p-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-lg">🏅</span>
+                  <span className="text-white font-semibold text-sm">20% — Taux de victoires</span>
+                </div>
+                <p className="text-white/50 text-xs ml-7">Parties gagnées / parties jouées</p>
+                <p className="text-white/40 text-xs ml-7 mt-0.5">→ Récompense la régularité</p>
+              </div>
+
+              <div className="bg-[#342D5B] rounded-xl p-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-lg">🎯</span>
+                  <span className="text-white font-semibold text-sm">15% — Précision de buzz</span>
+                </div>
+                <p className="text-white/50 text-xs ml-7">Bonnes réponses / buzzers tentés</p>
+                <p className="text-white/40 text-xs ml-7 mt-0.5">→ Pénalise les buzzers au hasard</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Coefficient de confiance */}
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <div className="h-px flex-1 bg-[#3E3666]" />
+              <span className="text-white/50 text-xs font-medium uppercase tracking-wider">Coefficient de confiance</span>
+              <div className="h-px flex-1 bg-[#3E3666]" />
             </div>
 
-            {/* Criterion 3 */}
-            <div className="bg-[#342D5B] rounded-xl p-4">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-lg">🎯</span>
-                <span className="text-white font-semibold text-sm">20% — Précision de buzz</span>
+            <div className="bg-[#342D5B] rounded-xl p-4 space-y-2">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-lg">📊</span>
+                <p className="text-white/70 text-xs leading-relaxed">
+                  Le score est multiplié par un coefficient qui augmente avec le nombre de parties jouées :
+                </p>
               </div>
-              <p className="text-white/50 text-xs ml-7">Bonnes réponses / buzzers tentés</p>
-              <p className="text-white/40 text-xs ml-7 mt-0.5">→ Pénalise les buzzers au hasard</p>
-            </div>
-
-            {/* Criterion 4 */}
-            <div className="bg-[#342D5B] rounded-xl p-4">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-lg">📈</span>
-                <span className="text-white font-semibold text-sm">10% — Volume de jeu</span>
+              <div className="grid grid-cols-2 gap-x-4 gap-y-1 ml-7">
+                {[
+                  ['1 partie', '×0.55'],
+                  ['3 parties', '×0.65'],
+                  ['5 parties', '×0.75'],
+                  ['7 parties', '×0.85'],
+                  ['10 parties', '×1.00'],
+                ].map(([label, coef]) => (
+                  <div key={label} className="flex items-center justify-between">
+                    <span className="text-white/50 text-xs">{label}</span>
+                    <span className={`text-xs font-semibold ${coef === '×1.00' ? 'text-[#00D397]' : 'text-white/70'}`}>{coef}</span>
+                  </div>
+                ))}
+                <div className="col-span-2 mt-1">
+                  <span className="text-[#00D397] text-xs">plein potentiel à 10 parties</span>
+                </div>
               </div>
-              <p className="text-white/50 text-xs ml-7">Bonus progressif jusqu&apos;à 10 parties jouées</p>
-              <p className="text-white/40 text-xs ml-7 mt-0.5">→ Stabilise le classement (min. de parties requises)</p>
+              <p className="text-white/40 text-xs ml-7 mt-1 leading-relaxed">
+                → Une seule partie parfaite ne suffit pas à dépasser un joueur régulier. Il faut au minimum 10 parties pour atteindre son plein potentiel.
+              </p>
             </div>
           </div>
 
@@ -294,10 +335,37 @@ function RankingRow({
 
       {/* Main info */}
       <div className="flex-1 min-w-0">
-        <span className={`font-semibold ${isCurrentUser ? 'text-[#00D397]' : getRankColor(rank)}`}>
-          {entry.username || 'Inconnu'}
-          {isCurrentUser && ' (Vous)'}
-        </span>
+        <div className="flex items-center justify-between gap-2">
+          <span className={`font-semibold ${isCurrentUser ? 'text-[#00D397]' : getRankColor(rank)}`}>
+            {entry.username || 'Inconnu'}
+            {isCurrentUser && ' (Vous)'}
+          </span>
+
+          {/* Performance index */}
+          <div className="flex flex-col items-end shrink-0">
+            {perfIndex != null ? (
+              <>
+                <span className="text-[#9B59B6] font-bold text-sm leading-none">{perfIndex.toFixed(1)}</span>
+                <span className="text-white/30 text-[10px]">indice</span>
+              </>
+            ) : (
+              <>
+                <span className="text-white/50 font-bold text-sm leading-none">{entry.totalScore}</span>
+                <span className="text-white/30 text-[10px]">pts</span>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Progress bar */}
+        {perfIndex != null && (
+          <div className="w-full h-1 bg-[#3E3666] rounded-full mt-1 mb-1 overflow-hidden">
+            <div
+              className="h-full bg-[#9B59B6] rounded-full"
+              style={{ width: `${Math.min(100, Math.max(0, perfIndex))}%` }}
+            />
+          </div>
+        )}
 
         {/* Stats row 1: questions + accuracy */}
         <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-0.5">
@@ -312,11 +380,14 @@ function RankingRow({
           )} */}
         </div>
 
-        {/* Stats row 2: games + win rate + avg */}
+        {/* Stats row 2: wins + games + win rate + avg */}
         <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-0.5">
+          {entry.totalWins != null && entry.totalWins > 0 && (
+            <span className="text-white/40 text-xs">🏆 {entry.totalWins} victoires</span>
+          )}
           <span className="text-white/40 text-xs">{entry.totalGames} parties</span>
           {winRatePct != null && (
-            <span className="text-white/40 text-xs">{winRatePct}% Victoires</span>
+            <span className="text-white/40 text-xs">Victoires {winRatePct}%</span>
           )}
           {avgCorrect != null && (
             <span className="text-white/40 text-xs">Moy. {avgCorrect} rép./partie</span>
@@ -324,27 +395,12 @@ function RankingRow({
         </div>
       </div>
 
-      {/* Performance index (primary score) */}
-      <div className="flex flex-col items-end mr-2 shrink-0">
-        {perfIndex != null ? (
-          <>
-            <span className="text-[#9B59B6] font-bold">{perfIndex.toFixed(1)}</span>
-            <span className="text-white/30 text-xs">indice</span>
-          </>
-        ) : (
-          <>
-            <span className="text-white/50 font-bold">{entry.totalScore}</span>
-            <span className="text-white/30 text-xs">pts</span>
-          </>
-        )}
-      </div>
-
-      <div onClick={(e) => e.stopPropagation()}>
+      <div className="ml-2 shrink-0" onClick={(e) => e.stopPropagation()}>
         {friendshipBtn}
       </div>
 
       {!friendshipBtn && (
-        <ChevronRight size={16} color="#FFFFFF30" className="mt-1 shrink-0" />
+        <ChevronRight size={16} color="#FFFFFF30" className="ml-1 mt-1 shrink-0" />
       )}
     </div>
   );
