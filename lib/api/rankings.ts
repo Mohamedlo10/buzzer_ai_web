@@ -30,6 +30,13 @@ export async function getMyGlobalRank(): Promise<{
   rank: number;
   totalScore: number;
   totalGames: number;
+  totalWins?: number;
+  winRate?: number;
+  totalCorrectAnswers?: number;
+  totalQuestionsPlayed?: number;
+  globalAccuracyRate?: number;
+  avgCorrectPerGame?: number;
+  performanceIndex?: number;
 }> {
   const res = await apiClient.get('/api/rankings/global/me');
   return res.data;

@@ -6,7 +6,6 @@ import {
   User,
   Trophy,
   Gamepad2,
-  TrendingUp,
   Award,
   Users,
   Clock,
@@ -14,6 +13,8 @@ import {
   UserPlus,
   UserCheck,
   UserX,
+  Target,
+  Star,
 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
@@ -118,9 +119,17 @@ export default function FriendProfilePage() {
   const friendshipConfig = FRIENDSHIP_CONFIG[friendshipStatus];
   const FriendshipIcon = friendshipConfig.icon;
 
-  const winRate = profile.totalGames > 0
-    ? Math.round((profile.totalWins / profile.totalGames) * 100)
-    : 0;
+  const winRate = profile.winRate != null
+    ? Math.round(profile.winRate)
+    : profile.totalGames > 0
+      ? Math.round((profile.totalWins / profile.totalGames) * 100)
+      : 0;
+  const perfIndex = profile.performanceIndex ?? null;
+  const accuracy = profile.globalAccuracyRate != null
+    ? Math.round(profile.globalAccuracyRate * 100)
+    : null;
+  const correctAnswers = profile.totalCorrectAnswers ?? null;
+  const questionsPlayed = profile.totalQuestionsPlayed ?? null;
 
   const isMutating = sendRequestMutation.isPending || removeFriendMutation.isPending;
 
@@ -214,17 +223,25 @@ export default function FriendProfilePage() {
         {/* Stats Cards */}
         <div className="px-4 mb-6">
           <div className="flex flex-wrap gap-3">
-            {/* Total Score */}
+            {/* Performance Index */}
             <div className="flex-1 min-w-[45%] bg-[#342D5B] rounded-2xl p-4 border border-[#3E3666]">
               <div className="flex items-center justify-between mb-2">
-                <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center">
-                  <TrendingUp size={20} color="#3B82F6" />
+                <div className="w-10 h-10 rounded-xl bg-[#9B59B620] flex items-center justify-center">
+                  <BarChart3 size={20} color="#9B59B6" />
                 </div>
-                <span className="text-blue-500 text-xl font-bold">
-                  {profile.totalScore.toLocaleString()}
+                <span className="text-[#9B59B6] text-xl font-bold">
+                  {perfIndex != null ? perfIndex.toFixed(1) : '-'}
                 </span>
               </div>
-              <p className="text-white/60 text-sm">Score Total</p>
+              <p className="text-white/60 text-sm">Indice de perf.</p>
+              {perfIndex != null && (
+                <div className="mt-2 h-1.5 bg-[#292349] rounded-full overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-[#9B59B6]"
+                    style={{ width: `${Math.min(100, Math.max(0, perfIndex))}%` }}
+                  />
+                </div>
+              )}
             </div>
 
             {/* Games Played */}
@@ -238,15 +255,16 @@ export default function FriendProfilePage() {
               <p className="text-white/60 text-sm">Parties jouées</p>
             </div>
 
-            {/* Win Rate */}
+            {/* Wins */}
             <div className="flex-1 min-w-[45%] bg-[#342D5B] rounded-2xl p-4 border border-[#3E3666]">
               <div className="flex items-center justify-between mb-2">
                 <div className="w-10 h-10 rounded-xl bg-yellow-500/20 flex items-center justify-center">
                   <Trophy size={20} color="#F59E0B" />
                 </div>
-                <span className="text-yellow-500 text-xl font-bold">{winRate}%</span>
+                <span className="text-yellow-500 text-xl font-bold">{profile.totalWins}</span>
               </div>
               <p className="text-white/60 text-sm">Victoires</p>
+              <p className="text-white/40 text-xs mt-0.5">{winRate}% taux</p>
             </div>
 
             {/* Best Score */}
@@ -264,32 +282,40 @@ export default function FriendProfilePage() {
           </div>
         </div>
 
-        {/* Average Score */}
+        {/* Accuracy / Questions card */}
         <div className="px-4 mb-6">
           <div className="bg-[#342D5B] rounded-2xl p-5 border border-[#3E3666]">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-xl bg-cyan-500/20 flex items-center justify-center">
-                  <BarChart3 size={24} color="#06B6D4" />
+                  <Target size={24} color="#06B6D4" />
                 </div>
                 <div>
-                  <p className="text-white text-xl font-bold">{profile.avgScore}</p>
-                  <p className="text-white/60 text-sm">Score moyen</p>
+                  <p className="text-white text-xl font-bold">
+                    {accuracy != null ? `${accuracy}%` : '-'}
+                  </p>
+                  <p className="text-white/60 text-sm">Précision de buzz</p>
                 </div>
               </div>
-              <div className="text-right">
-                <p className="text-cyan-500 text-sm font-semibold">{profile.totalWins}</p>
-                <p className="text-white/40 text-xs">victoires</p>
+              {correctAnswers != null && questionsPlayed != null && (
+                <div className="flex items-center gap-1 text-right">
+                  <Star size={14} color="#FFFFFF40" />
+                  <span className="text-white/50 text-sm">{correctAnswers}/{questionsPlayed}</span>
+                </div>
+              )}
+            </div>
+            {accuracy != null && (
+              <div className="h-2 bg-[#292349] rounded-full overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-cyan-500"
+                  style={{ width: `${accuracy}%` }}
+                />
               </div>
-            </div>
-
-            {/* Progress bar */}
-            <div className="mt-4 h-2 bg-[#292349] rounded-full overflow-hidden">
-              <div
-                className="h-full rounded-full bg-cyan-500"
-                style={{ width: `${Math.min((profile.avgScore / 100) * 100, 100)}%` }}
-              />
-            </div>
+            )}
+            {/* Score brut en secondaire */}
+            <p className="text-white/30 text-xs mt-3">
+              Score brut (informatif) : {profile.totalScore.toLocaleString()} pts
+            </p>
           </div>
         </div>
 

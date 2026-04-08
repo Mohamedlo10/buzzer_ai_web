@@ -15,10 +15,11 @@ import {
   Lock,
   Trophy,
   Gamepad2,
-  TrendingUp,
+  Target,
   Award,
   ChevronRight,
   BarChart3,
+  Star,
 } from 'lucide-react';
 import { useAuthStore } from '~/stores/useAuthStore';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -179,7 +180,14 @@ export default function ProfilePage() {
   const totalGames = myRank?.totalGames || 0;
   const totalScore = myRank?.totalScore || 0;
   const rank = myRank?.rank || 0;
-  const avgScore = totalGames > 0 ? Math.round(totalScore / totalGames) : 0;
+  const totalWins = myRank?.totalWins ?? null;
+  const perfIndex = myRank?.performanceIndex ?? null;
+  const accuracy = myRank?.globalAccuracyRate != null
+    ? Math.round(myRank.globalAccuracyRate * 100)
+    : null;
+  const correctAnswers = myRank?.totalCorrectAnswers ?? null;
+  const questionsPlayed = myRank?.totalQuestionsPlayed ?? null;
+  const winRatePct = myRank?.winRate != null ? Math.round(myRank.winRate) : null;
 
   return (
     <SafeScreen>
@@ -255,17 +263,29 @@ export default function ProfilePage() {
               <p className="text-white/60 text-sm">Rang Global</p>
             </div>
 
-            {/* Total Score */}
+            {/* Performance Index */}
             <div className="flex-1 min-w-[45%] bg-[#342D5B] rounded-2xl p-4 border border-[#3E3666]">
               <div className="flex flex-row items-center justify-between mb-2">
-                <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center">
-                  <TrendingUp size={20} color="#3B82F6" />
+                <div className="w-10 h-10 rounded-xl bg-[#9B59B620] flex items-center justify-center">
+                  <BarChart3 size={20} color="#9B59B6" />
                 </div>
-                <span className="text-blue-500 text-2xl font-bold">
-                  {totalScore.toLocaleString()}
-                </span>
+                {isRankLoading ? (
+                  <div className="w-5 h-5 border-2 border-[#9B59B6] border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <span className="text-[#9B59B6] text-2xl font-bold">
+                    {perfIndex != null ? perfIndex.toFixed(1) : '-'}
+                  </span>
+                )}
               </div>
-              <p className="text-white/60 text-sm">Score Total</p>
+              <p className="text-white/60 text-sm">Indice de perf.</p>
+              {perfIndex != null && (
+                <div className="mt-2 h-1.5 bg-[#292349] rounded-full overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-[#9B59B6]"
+                    style={{ width: `${Math.min(100, Math.max(0, perfIndex))}%` }}
+                  />
+                </div>
+              )}
             </div>
 
             {/* Games Played */}
@@ -278,34 +298,59 @@ export default function ProfilePage() {
               </div>
               <p className="text-white/60 text-sm">Parties</p>
             </div>
+
+            {/* Wins */}
+            <div className="flex-1 min-w-[45%] bg-[#342D5B] rounded-2xl p-4 border border-[#3E3666]">
+              <div className="flex flex-row items-center justify-between mb-2">
+                <div className="w-10 h-10 rounded-xl bg-yellow-500/20 flex items-center justify-center">
+                  <Award size={20} color="#F59E0B" />
+                </div>
+                <span className="text-yellow-500 text-2xl font-bold">
+                  {totalWins != null ? totalWins : '-'}
+                </span>
+              </div>
+              <p className="text-white/60 text-sm">Victoires</p>
+              {winRatePct != null && (
+                <p className="text-white/40 text-xs mt-0.5">{winRatePct}% taux</p>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Average Score */}
+        {/* Accuracy / Questions card */}
         <div className="px-4 mb-6">
           <div className="bg-[#342D5B] rounded-2xl p-5 border border-[#3E3666]">
-            <div className="flex flex-row items-center justify-between">
+            <div className="flex flex-row items-center justify-between mb-3">
               <div className="flex flex-row items-center gap-3">
                 <div className="w-12 h-12 rounded-xl bg-cyan-500/20 flex items-center justify-center">
-                  <Award size={24} color="#06B6D4" />
+                  <Target size={24} color="#06B6D4" />
                 </div>
                 <div>
-                  <p className="text-white text-xl font-bold">{avgScore}</p>
-                  <p className="text-white/60 text-sm">Score Moyen</p>
+                  <p className="text-white text-xl font-bold">
+                    {accuracy != null ? `${accuracy}%` : '-'}
+                  </p>
+                  <p className="text-white/60 text-sm">Précision de buzz</p>
                 </div>
               </div>
-              <BarChart3 size={28} color="#06B6D4" />
+              {correctAnswers != null && questionsPlayed != null && (
+                <div className="flex flex-row items-center gap-1 text-right">
+                  <Star size={14} color="#FFFFFF40" />
+                  <span className="text-white/50 text-sm">{correctAnswers}/{questionsPlayed}</span>
+                </div>
+              )}
             </div>
-            {/* Progress bar */}
-            <div className="mt-4 h-2 bg-[#292349] rounded-full overflow-hidden">
-              <div
-                className="h-full rounded-full"
-                style={{
-                  width: `${Math.min((avgScore / 100) * 100, 100)}%`,
-                  backgroundColor: '#06B6D4',
-                }}
-              />
-            </div>
+            {accuracy != null && (
+              <div className="h-2 bg-[#292349] rounded-full overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-cyan-500"
+                  style={{ width: `${accuracy}%` }}
+                />
+              </div>
+            )}
+            {/* Score brut en secondaire */}
+            <p className="text-white/30 text-xs mt-3">
+              Score brut (informatif) : {totalScore.toLocaleString()} pts
+            </p>
           </div>
         </div>
 

@@ -502,6 +502,14 @@ export interface UserStatsResponse {
   totalRooms: number;
   totalRoomWins: number;
   friendshipStatus?: FriendshipStatus;
+  // Performance fields
+  totalCorrectAnswers?: number;
+  totalWrongBuzzes?: number;
+  totalBuzzes?: number;
+  totalQuestionsPlayed?: number;
+  globalAccuracyRate?: number;
+  avgCorrectPerGame?: number;
+  performanceIndex?: number;
 }
 
 export interface CategoryStat {
