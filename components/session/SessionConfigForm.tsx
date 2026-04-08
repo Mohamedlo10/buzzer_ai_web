@@ -169,7 +169,7 @@ export function SessionConfigForm({ onSuccess, roomId, initialMaxPlayers }: Sess
     debtAmount: 5,
     pointsPerCorrectAnswer: 5,
     questionsPerCategory: 5,
-    maxPlayers: initialMaxPlayers ?? 20,
+    maxPlayers: 20,
     isPrivate: false,
     isTeamMode: false,
     maxCategoriesPerPlayer: 3,
