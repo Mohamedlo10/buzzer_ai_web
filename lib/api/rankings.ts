@@ -63,3 +63,8 @@ export async function recalculateGlobalRankings(): Promise<{ message: string }> 
   const res = await apiClient.post<{ message: string }>('/api/rankings/global/recalculate');
   return res.data;
 }
+
+export async function recalculateRoomRankings(): Promise<{ message: string }> {
+  const res = await apiClient.post<{ message: string }>('/api/rankings/rooms/recalculate');
+  return res.data;
+}

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Users, Gamepad2, Brain, DollarSign, Crown, ChevronRight, Cpu, LogOut, Trophy, AlertTriangle, CheckCircle, FolderOpen, BookOpen } from 'lucide-react';
+import { Users, Gamepad2, Brain, DollarSign, Crown, ChevronRight, Cpu, LogOut, Trophy, AlertTriangle, CheckCircle, FolderOpen, BookOpen, X, RefreshCw } from 'lucide-react';
 
 import { Card } from '~/components/ui/Card';
 import { Spinner } from '~/components/loading/Spinner';
@@ -18,8 +18,11 @@ export default function AdminDashboardPage() {
   const [stats, setStats] = useState<AdminStatsResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [isRecalculating, setIsRecalculating] = useState(false);
-  const [recalculateResult, setRecalculateResult] = useState<{ ok: boolean; message: string } | null>(null);
+  const [isRecalculatingGlobal, setIsRecalculatingGlobal] = useState(false);
+  const [isRecalculatingRooms, setIsRecalculatingRooms] = useState(false);
+  const [globalResult, setGlobalResult] = useState<{ ok: boolean; message: string } | null>(null);
+  const [roomsResult, setRoomsResult] = useState<{ ok: boolean; message: string } | null>(null);
+  const [confirmAction, setConfirmAction] = useState<'global' | 'rooms' | null>(null);
 
   const loadStats = async () => {
     try {
@@ -32,17 +35,35 @@ export default function AdminDashboardPage() {
     }
   };
 
-  const handleRecalculate = async () => {
-    setIsRecalculating(true);
-    setRecalculateResult(null);
-    try {
-      const res = await rankingsApi.recalculateGlobalRankings();
-      setRecalculateResult({ ok: true, message: res.message });
-    } catch (err: any) {
-      const message = err?.response?.data?.message || err?.message || 'Erreur lors du recalcul';
-      setRecalculateResult({ ok: false, message });
-    } finally {
-      setIsRecalculating(false);
+  const handleConfirmRecalculate = async () => {
+    const action = confirmAction;
+    setConfirmAction(null);
+    if (!action) return;
+
+    if (action === 'global') {
+      setIsRecalculatingGlobal(true);
+      setGlobalResult(null);
+      try {
+        const res = await rankingsApi.recalculateGlobalRankings();
+        setGlobalResult({ ok: true, message: res.message });
+      } catch (err: any) {
+        const message = err?.response?.data?.message || err?.message || 'Erreur lors du recalcul';
+        setGlobalResult({ ok: false, message });
+      } finally {
+        setIsRecalculatingGlobal(false);
+      }
+    } else {
+      setIsRecalculatingRooms(true);
+      setRoomsResult(null);
+      try {
+        const res = await rankingsApi.recalculateRoomRankings();
+        setRoomsResult({ ok: true, message: res.message });
+      } catch (err: any) {
+        const message = err?.response?.data?.message || err?.message || 'Erreur lors du recalcul';
+        setRoomsResult({ ok: false, message });
+      } finally {
+        setIsRecalculatingRooms(false);
+      }
     }
   };
 
@@ -262,64 +283,171 @@ export default function AdminDashboardPage() {
             </div>
           </button>
 
-          {/* Recalculate global rankings */}
-          <div className="bg-[#342D5B] rounded-xl border border-[#3E3666] p-4">
+          {/* Maintenance des classements */}
+          <p className="text-white font-bold text-lg mb-3 mt-2">Maintenance des classements</p>
+
+          <div className="bg-[#FFD70010] rounded-xl p-3 border border-[#FFD70030] flex gap-2 mb-4">
+            <AlertTriangle size={14} color="#FFD700" className="flex-shrink-0 mt-0.5" />
+            <p className="text-[#FFD700] text-xs leading-relaxed">
+              Ces opérations remettent à zéro et recalculent les classements depuis l'historique complet des parties. Les parties jouées en tant que manager sont exclues. Une confirmation sera demandée avant chaque action.
+            </p>
+          </div>
+
+          {/* Global rankings */}
+          <div className="bg-[#342D5B] rounded-xl border border-[#3E3666] p-4 mb-3">
             <div className="flex items-center mb-3">
               <div className="w-10 h-10 rounded-lg bg-[#9B59B620] flex items-center justify-center mr-3 flex-shrink-0">
                 <Trophy size={20} color="#9B59B6" />
               </div>
               <div className="flex-1">
                 <p className="text-white font-semibold">Classement global</p>
-                <p className="text-white/50 text-sm">Recalcul depuis toutes les parties</p>
+                <p className="text-white/50 text-sm">Recalcul toutes les statistiques joueurs</p>
               </div>
             </div>
 
-            <div className="bg-[#FFD70010] rounded-lg p-3 border border-[#FFD70030] flex gap-2 mb-3">
-              <AlertTriangle size={14} color="#FFD700" className="flex-shrink-0 mt-0.5" />
-              <p className="text-[#FFD700] text-xs leading-relaxed">
-                Cette action remet à zéro et recalcule l'intégralité du classement global depuis toutes les parties terminées. Les parties jouées en tant que manager sont exclues. À n'utiliser qu'une seule fois après la mise à jour.
-              </p>
-            </div>
-
-            {recalculateResult && (
+            {globalResult && (
               <div
                 className={`flex items-center gap-2 rounded-lg px-3 py-2 mb-3 ${
-                  recalculateResult.ok
+                  globalResult.ok
                     ? 'bg-[#00D39715] border border-[#00D39740]'
                     : 'bg-[#D5442F15] border border-[#D5442F40]'
                 }`}
               >
-                {recalculateResult.ok ? (
-                  <CheckCircle size={14} color="#00D397" />
-                ) : (
-                  <AlertTriangle size={14} color="#D5442F" />
-                )}
-                <span className={`text-xs font-medium ${recalculateResult.ok ? 'text-[#00D397]' : 'text-[#D5442F]'}`}>
-                  {recalculateResult.message}
+                {globalResult.ok
+                  ? <CheckCircle size={14} color="#00D397" />
+                  : <AlertTriangle size={14} color="#D5442F" />}
+                <span className={`text-xs font-medium ${globalResult.ok ? 'text-[#00D397]' : 'text-[#D5442F]'}`}>
+                  {globalResult.message}
                 </span>
               </div>
             )}
 
             <button
-              onClick={handleRecalculate}
-              disabled={isRecalculating}
+              onClick={() => setConfirmAction('global')}
+              disabled={isRecalculatingGlobal || isRecalculatingRooms}
               className="w-full py-3 rounded-xl flex items-center justify-center gap-2 transition-colors disabled:opacity-60 bg-[#9B59B630] border border-[#9B59B650] hover:bg-[#9B59B650]"
             >
-              {isRecalculating ? (
+              {isRecalculatingGlobal ? (
                 <>
                   <div className="w-4 h-4 border-2 border-[#9B59B6] border-t-transparent rounded-full animate-spin" />
                   <span className="text-[#9B59B6] font-semibold text-sm">Recalcul en cours...</span>
                 </>
               ) : (
                 <>
-                  <Trophy size={16} color="#9B59B6" />
+                  <RefreshCw size={16} color="#9B59B6" />
                   <span className="text-[#9B59B6] font-semibold text-sm">Recalculer le classement global</span>
+                </>
+              )}
+            </button>
+          </div>
+
+          {/* Room rankings */}
+          <div className="bg-[#342D5B] rounded-xl border border-[#3E3666] p-4">
+            <div className="flex items-center mb-3">
+              <div className="w-10 h-10 rounded-lg bg-[#4A90D920] flex items-center justify-center mr-3 flex-shrink-0">
+                <FolderOpen size={20} color="#4A90D9" />
+              </div>
+              <div className="flex-1">
+                <p className="text-white font-semibold">Classements rooms</p>
+                <p className="text-white/50 text-sm">Recalcul des classements par salon</p>
+              </div>
+            </div>
+
+            {roomsResult && (
+              <div
+                className={`flex items-center gap-2 rounded-lg px-3 py-2 mb-3 ${
+                  roomsResult.ok
+                    ? 'bg-[#00D39715] border border-[#00D39740]'
+                    : 'bg-[#D5442F15] border border-[#D5442F40]'
+                }`}
+              >
+                {roomsResult.ok
+                  ? <CheckCircle size={14} color="#00D397" />
+                  : <AlertTriangle size={14} color="#D5442F" />}
+                <span className={`text-xs font-medium ${roomsResult.ok ? 'text-[#00D397]' : 'text-[#D5442F]'}`}>
+                  {roomsResult.message}
+                </span>
+              </div>
+            )}
+
+            <button
+              onClick={() => setConfirmAction('rooms')}
+              disabled={isRecalculatingGlobal || isRecalculatingRooms}
+              className="w-full py-3 rounded-xl flex items-center justify-center gap-2 transition-colors disabled:opacity-60 bg-[#4A90D930] border border-[#4A90D950] hover:bg-[#4A90D950]"
+            >
+              {isRecalculatingRooms ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-[#4A90D9] border-t-transparent rounded-full animate-spin" />
+                  <span className="text-[#4A90D9] font-semibold text-sm">Recalcul en cours...</span>
+                </>
+              ) : (
+                <>
+                  <RefreshCw size={16} color="#4A90D9" />
+                  <span className="text-[#4A90D9] font-semibold text-sm">Recalculer les classements rooms</span>
                 </>
               )}
             </button>
           </div>
         </div>
       </div>
+
+      {/* ── Confirmation Modal ── */}
+      {confirmAction && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-6"
+          onClick={() => setConfirmAction(null)}
+        >
+          <div
+            className="bg-[#342D5B] rounded-2xl w-full max-w-sm border border-[#3E3666] overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal header */}
+            <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-[#3E3666]">
+              <div className="flex items-center gap-2">
+                <AlertTriangle size={18} color="#FFD700" />
+                <span className="text-white font-bold">Confirmer l'action</span>
+              </div>
+              <button
+                onClick={() => setConfirmAction(null)}
+                className="w-8 h-8 rounded-full bg-[#3E3666] flex items-center justify-center hover:bg-[#4E4676] transition-colors cursor-pointer"
+              >
+                <X size={16} color="#FFFFFF" />
+              </button>
+            </div>
+
+            {/* Modal body */}
+            <div className="px-5 py-4">
+              <p className="text-white/80 text-sm leading-relaxed mb-3">
+                {confirmAction === 'global'
+                  ? 'Cette opération va recalculer tous les classements globaux depuis zéro (delete + recalcul complet).'
+                  : 'Cette opération va recalculer tous les classements par salon depuis zéro (delete + recalcul complet).'}
+              </p>
+              <div className="bg-[#FFD70010] rounded-lg p-3 border border-[#FFD70030] flex gap-2">
+                <AlertTriangle size={13} color="#FFD700" className="flex-shrink-0 mt-0.5" />
+                <p className="text-[#FFD700] text-xs leading-relaxed">
+                  Opération destructive — les données existantes seront supprimées avant recalcul. Continuer ?
+                </p>
+              </div>
+            </div>
+
+            {/* Modal actions */}
+            <div className="px-5 pb-5 flex gap-3">
+              <button
+                onClick={() => setConfirmAction(null)}
+                className="flex-1 py-3 rounded-xl bg-[#3E3666] hover:bg-[#4E4676] transition-colors cursor-pointer"
+              >
+                <span className="text-white font-semibold text-sm">Annuler</span>
+              </button>
+              <button
+                onClick={handleConfirmRecalculate}
+                className="flex-1 py-3 rounded-xl bg-[#D5442F30] border border-[#D5442F60] hover:bg-[#D5442F50] transition-colors cursor-pointer"
+              >
+                <span className="text-[#D5442F] font-semibold text-sm">Confirmer</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
