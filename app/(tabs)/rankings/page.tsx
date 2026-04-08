@@ -41,7 +41,7 @@ function RankingInfoModal({ onClose }: { onClose: () => void }) {
       onClick={onClose}
     >
       <div
-        className="bg-[#1E1A40] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg max-h-[90vh] overflow-y-auto border border-[#3E3666]"
+        className="bg-[#1E1A40] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg max-h-[90vh] overflow-y-auto pb-12 border border-[#3E3666]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal header */}
