@@ -38,9 +38,6 @@ interface BuzzState {
   myQueuePosition: number | null;
   buzzerEnabled: boolean;
 
-  // Rubrique beaten notification
-  rubriqueBeatenNotif: { playerId: string; debtAmount: number; at: number } | null;
-
   // Game control
   isPaused: boolean;
   isGameOver: boolean;
@@ -105,7 +102,6 @@ const initialState: BuzzState = {
   answeredWrongThisQuestion: false,
   myQueuePosition: null,
   buzzerEnabled: false,
-  rubriqueBeatenNotif: null,
   isPaused: false,
   isGameOver: false,
   isCreating: false,

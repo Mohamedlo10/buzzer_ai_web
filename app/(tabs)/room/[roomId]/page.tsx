@@ -625,9 +625,9 @@ export default function RoomDetailPage() {
     loadRoom();
   }, [loadRoom]);
 
-  // Refresh silencieux toutes les 30s (presence is now handled via WebSocket)
+  // Refresh silencieux toutes les 10s (presence is now handled via WebSocket)
   useEffect(() => {
-    const interval = setInterval(loadRoom, 30_000);
+    const interval = setInterval(loadRoom, 10_000);
     return () => clearInterval(interval);
   }, [loadRoom]);
 

@@ -199,16 +199,6 @@ export function handleWSEvent(event: WSEvent, currentUserId?: string): void {
       } else if (scoreEvent.playerId && scoreEvent.newScore !== undefined) {
         useBuzzStore.getState().updateScores({ [scoreEvent.playerId]: scoreEvent.newScore });
       }
-      // RUBRIQUE_BEATEN: store notification so the game page can display it
-      if (scoreEvent.event === 'RUBRIQUE_BEATEN' && scoreEvent.playerId && scoreEvent.debtAmount) {
-        useBuzzStore.setState({
-          rubriqueBeatenNotif: {
-            playerId: scoreEvent.playerId,
-            debtAmount: scoreEvent.debtAmount,
-            at: Date.now(),
-          },
-        });
-      }
       break;
     }
 

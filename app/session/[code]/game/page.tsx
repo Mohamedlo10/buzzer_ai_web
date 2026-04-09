@@ -134,7 +134,6 @@ export default function GamePage() {
     isPaused,
     hasBuzzed,
     answeredWrongThisQuestion,
-    rubriqueBeatenNotif,
     setHasBuzzed,
     setBuzzQueue,
     fetchSession,
@@ -143,22 +142,6 @@ export default function GamePage() {
     resumeSession,
   } = useBuzzStore();
 
-  // Auto-dismiss rubrique beaten notification after 3s
-  const [showRubriqueNotif, setShowRubriqueNotif] = useState(false);
-  const [rubriqueNotifData, setRubriqueNotifData] = useState<{ playerName: string; debtAmount: number } | null>(null);
-  const rubriqueNotifTimerRef = useRef<NodeJS.Timeout | null>(null);
-
-  useEffect(() => {
-    if (!rubriqueBeatenNotif) return;
-    const beatenPlayer = players.find((p) => p.id === rubriqueBeatenNotif.playerId || p.userId === rubriqueBeatenNotif.playerId);
-    setRubriqueNotifData({ playerName: beatenPlayer?.name ?? 'Un joueur', debtAmount: rubriqueBeatenNotif.debtAmount });
-    setShowRubriqueNotif(true);
-    if (rubriqueNotifTimerRef.current) clearTimeout(rubriqueNotifTimerRef.current);
-    rubriqueNotifTimerRef.current = setTimeout(() => {
-      setShowRubriqueNotif(false);
-      useBuzzStore.setState({ rubriqueBeatenNotif: null });
-    }, 3500);
-  }, [rubriqueBeatenNotif]);
 
   const isManager = session?.managerId === user?.id;
   const isTeamMode = session?.isTeamMode ?? false;
@@ -630,20 +613,6 @@ export default function GamePage() {
         </div>
       </div>
 
-      {/* RUBRIQUE_BEATEN Toast */}
-      {showRubriqueNotif && rubriqueNotifData && (
-        <div className="fixed top-6 left-0 right-0 z-50 flex justify-center px-4 pointer-events-none">
-          <div className="flex items-center gap-3 bg-[#D5442F] px-5 py-3 rounded-2xl shadow-lg shadow-red-900/40"
-            style={{ animation: 'slideDown 0.3s ease' }}
-          >
-            <XCircle size={20} color="#FFFFFF" />
-            <div>
-              <p className="text-white font-bold text-sm">{rubriqueNotifData.playerName}</p>
-              <p className="text-white/80 text-xs">−{rubriqueNotifData.debtAmount} pts · Rubrique perdue</p>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* PAUSE Overlay */}
       {isPaused && (
