@@ -5,6 +5,11 @@ import '~/global.css';
 export const metadata: Metadata = {
   title: 'Quiz By Mouha_Dev',
   description: 'Le jeu de buzzer multijoueur intelligent',
+  icons: {
+    icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
+    apple: '/favicon.png',
+  },
 };
 
 export default function RootLayout({
