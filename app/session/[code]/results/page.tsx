@@ -51,6 +51,61 @@ function getCategoryIcon(name: string): string {
   return '📚';
 }
 
+// ── Team Rankings Card ────────────────────────────────────────────────────────
+interface TeamEntry {
+  id: string;
+  name: string;
+  color: string;
+  score: number;
+  players: SessionRankingEntry[];
+}
+
+function TeamRankingsCard({ teamRankings }: { teamRankings: TeamEntry[] }) {
+  const rankColors = ['#FFD700', '#C0C0C0', '#CD7F32'];
+
+  return (
+    <div className="bg-[#342D5B] rounded-2xl border border-[#3E3666] overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-[#3E3666]">
+        <div className="flex items-center gap-2">
+          <Trophy size={16} color="#F59E0B" />
+          <p className="text-white/60 font-bold text-xs tracking-widest uppercase">Classement par équipe</p>
+        </div>
+        <p className="text-white/30 text-xs font-semibold tracking-wider uppercase">Points équipe</p>
+      </div>
+
+      {teamRankings.map((team, index) => {
+        const scoreColor = index < 3 ? rankColors[index] : '#FFFFFF';
+        return (
+          <div
+            key={team.id}
+            className={`px-4 py-3 ${index < teamRankings.length - 1 ? 'border-b border-[#3E3666]' : ''}`}
+            style={{ borderLeft: `3px solid ${team.color}` }}
+          >
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                {index === 0 && <Crown size={14} color="#FFD700" />}
+                <span className="font-bold text-base" style={{ color: team.color }}>{team.name}</span>
+                <span className="text-white/30 text-xs">{team.players.length} joueur{team.players.length > 1 ? 's' : ''}</span>
+              </div>
+              <div className="flex items-baseline gap-1">
+                <span className="font-bold text-lg" style={{ color: scoreColor }}>{team.score}</span>
+                <span className="text-white/30 text-xs">pts</span>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-1">
+              {team.players.map((p) => (
+                <span key={p.player.id} className="text-xs bg-[#292349] rounded-full px-2 py-0.5 text-white/60">
+                  {p.player.name}
+                </span>
+              ))}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 // ── Category Rankings Card ────────────────────────────────────────────────────
 function CategoryRankingsCard({
   categoryRankings,
@@ -228,6 +283,30 @@ export default function ResultsPage() {
   // Net debt balance: positive = you receive, negative = you owe
   const netDebt = totalReceived - totalOwed;
 
+  // Build team rankings if session is in team mode
+  const isTeamMode = rankings.some((r) => r.teamId);
+  const teamRankings: TeamEntry[] = [];
+  if (isTeamMode) {
+    const teamMap = new Map<string, TeamEntry>();
+    rankings.forEach((entry) => {
+      if (!entry.teamId || !entry.teamName) return;
+      const existing = teamMap.get(entry.teamId);
+      if (existing) {
+        existing.players.push(entry);
+        existing.score = Math.max(existing.score, entry.teamScore ?? 0);
+      } else {
+        teamMap.set(entry.teamId, {
+          id: entry.teamId,
+          name: entry.teamName,
+          color: entry.teamColor ?? '#00D397',
+          score: entry.teamScore ?? 0,
+          players: [entry],
+        });
+      }
+    });
+    teamRankings.push(...Array.from(teamMap.values()).sort((a, b) => b.score - a.score));
+  }
+
   // Build unified debt list from all players' debts (deduplicated by debtor→creditor→category)
   const allDebts = rankings
     .filter((entry) => entry.debts && entry.debts.length > 0)
@@ -303,12 +382,19 @@ export default function ResultsPage() {
           </div>
         </div>
 
-        {/* ── Classement ── */}
+        {/* ── Classement par équipe ── */}
+        {isTeamMode && teamRankings.length > 0 && (
+          <TeamRankingsCard teamRankings={teamRankings} />
+        )}
+
+        {/* ── Classement individuel ── */}
         <div className="bg-[#342D5B] rounded-2xl border border-[#3E3666] overflow-hidden">
           <div className="flex items-center justify-between px-4 py-3 border-b border-[#3E3666]">
             <div className="flex items-center gap-2">
               <BarChart3 size={16} color="#00D397" />
-              <p className="text-white/60 font-bold text-xs tracking-widest uppercase">Classement</p>
+              <p className="text-white/60 font-bold text-xs tracking-widest uppercase">
+                {isTeamMode ? 'Classement individuel' : 'Classement'}
+              </p>
             </div>
             <p className="text-white/30 text-xs font-semibold tracking-wider uppercase">Total points</p>
           </div>
