@@ -44,7 +44,7 @@ const PREDEFINED_CATEGORIES = [
 
 const DIFFICULTIES: { value: Difficulty; label: string; color: string; bg: string }[] = [
   { value: 'FACILE', label: 'Facile', color: '#00D397', bg: '#00D39720' },
-  { value: 'INTERMEDIAIRE', label: 'Moyen', color: '#FFD700', bg: '#FFD70020' },
+  { value: 'INTERMEDIAIRE', label: 'Intermédiaire', color: '#FFD700', bg: '#FFD70020' },
   { value: 'EXPERT', label: 'Expert', color: '#D5442F', bg: '#D5442F20' },
 ];
 
@@ -587,6 +587,49 @@ export default function CategorySelectionPage() {
           </div>
 
           <div className="bg-[#342D5B] rounded-3xl border border-[#3E3666] p-5">
+            {/* Top row: difficulty buttons + add button on the right */}
+            <div className="flex items-center justify-end gap-1.5 mb-3">
+              {DIFFICULTIES.map((diff) => (
+                <button
+                  key={diff.value}
+                  onClick={() => setCustomDifficulty(diff.value)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors border ${
+                    customDifficulty === diff.value
+                      ? 'border-transparent'
+                      : 'bg-[#292349] border-[#3E3666] hover:border-[#5E5686]'
+                  }`}
+                  style={
+                    customDifficulty === diff.value
+                      ? { backgroundColor: diff.color, borderColor: diff.color }
+                      : undefined
+                  }
+                >
+                  <span
+                    className={`${
+                      customDifficulty === diff.value ? 'text-[#292349]' : 'text-white/60'
+                    }`}
+                  >
+                    {diff.label}
+                  </span>
+                </button>
+              ))}
+              <button
+                onClick={addCustomCategory}
+                disabled={!customCategory.trim() || !customDifficulty || !canAddMore}
+                className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ml-1 ${
+                  customCategory.trim() && customDifficulty && canAddMore
+                    ? 'bg-[#00D397] hover:bg-[#00B377]'
+                    : 'bg-[#3E3666] cursor-not-allowed'
+                }`}
+              >
+                <Plus
+                  size={16}
+                  color={customCategory.trim() && customDifficulty && canAddMore ? '#292349' : '#FFFFFF40'}
+                  strokeWidth={2.5}
+                />
+              </button>
+            </div>
+
             {/* Multi-line textarea */}
             <textarea
               value={customCategory}
@@ -598,7 +641,7 @@ export default function CategorySelectionPage() {
 
             {/* Autocomplete dropdown */}
             {showDropdown && customCategory.trim().length >= 2 && (
-              <div className="mt-2 mb-3 bg-[#292349] rounded-2xl border border-[#3E3666] overflow-hidden">
+              <div className="mt-2 bg-[#292349] rounded-2xl border border-[#3E3666] overflow-hidden">
                 {isSearching ? (
                   <div className="py-3 flex items-center justify-center">
                     <div className="w-5 h-5 border-2 border-[#00D397] border-t-transparent rounded-full animate-spin" />
@@ -630,53 +673,6 @@ export default function CategorySelectionPage() {
                   </>
                 )}
               </div>
-            )}
-
-            {/* Difficulty selector (below input) */}
-            <p className="text-white/60 text-sm mt-3 mb-2">Niveau de difficulté</p>
-            <div className="flex flex-row gap-2">
-              {DIFFICULTIES.map((diff) => (
-                <button
-                  key={diff.value}
-                  onClick={() => setCustomDifficulty(diff.value)}
-                  className={`flex-1 py-3 rounded-xl transition-colors border ${
-                    customDifficulty === diff.value
-                      ? 'border-transparent'
-                      : 'bg-[#292349] border-[#3E3666] hover:border-[#5E5686]'
-                  }`}
-                  style={
-                    customDifficulty === diff.value
-                      ? { backgroundColor: diff.color, borderColor: diff.color }
-                      : undefined
-                  }
-                >
-                  <span
-                    className={`text-sm font-semibold ${
-                      customDifficulty === diff.value ? 'text-[#292349]' : 'text-white/60'
-                    }`}
-                  >
-                    {diff.label}
-                  </span>
-                </button>
-              ))}
-            </div>
-
-            {/* Add button — only shown when both text and difficulty are set */}
-            {customCategory.trim() && customDifficulty && (
-              <button
-                onClick={addCustomCategory}
-                disabled={!canAddMore}
-                className={`w-full mt-4 py-3.5 rounded-2xl flex items-center justify-center gap-2 transition-colors ${
-                  canAddMore
-                    ? 'bg-[#00D397] hover:bg-[#00B377]'
-                    : 'bg-[#3E3666] cursor-not-allowed'
-                }`}
-              >
-                <Plus size={20} color={canAddMore ? '#292349' : '#FFFFFF40'} strokeWidth={2.5} />
-                <span className={`font-bold ${canAddMore ? 'text-[#292349]' : 'text-white/40'}`}>
-                  Ajouter la catégorie
-                </span>
-              </button>
             )}
           </div>
         </div>
