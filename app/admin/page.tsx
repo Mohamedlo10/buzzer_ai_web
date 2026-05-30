@@ -13,6 +13,7 @@ import {
   BookOpen,
   Activity,
   RefreshCw,
+  LogOut,
 } from 'lucide-react';
 import {
   AreaChart,
