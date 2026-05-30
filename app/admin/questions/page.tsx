@@ -268,7 +268,7 @@ export default function AdminQuestionsPage() {
                               <select
                                 value={editForm.difficulty ?? 'MEDIUM'}
                                 onChange={(e) =>
-                                  setEditForm((prev) => ({ ...prev, difficulty: e.target.value }))
+                                  setEditForm((prev) => ({ ...prev, difficulty: e.target.value as 'EASY' | 'MEDIUM' | 'HARD' }))
                                 }
                                 className="w-full bg-[#292349] text-white px-3 py-2 rounded-lg border border-[#3E3666] focus:border-[#9B59B6] focus:outline-none text-sm"
                               >

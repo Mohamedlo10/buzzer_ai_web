@@ -139,7 +139,7 @@ export interface SearchQuestionsParams {
 }
 
 export async function getAdminQuestionCategories(params: { search?: string; page?: number; size?: number } = {}) {
-  const res = await apiClient.get<{ content: AdminCategoryResponse[]; totalPages: number; number: number }>(
+  const res = await apiClient.get<{ content: AdminCategoryResponse[]; totalPages: number; totalElements: number; number: number }>(
     '/api/admin/questions/categories',
     { params }
   );
@@ -147,7 +147,7 @@ export async function getAdminQuestionCategories(params: { search?: string; page
 }
 
 export async function getAdminQuestions(params: SearchQuestionsParams = {}) {
-  const res = await apiClient.get<{ content: AdminQuestionResponse[]; totalPages: number; number: number }>(
+  const res = await apiClient.get<{ content: AdminQuestionResponse[]; totalPages: number; totalElements: number; number: number }>(
     '/api/admin/questions',
     { params }
   );
