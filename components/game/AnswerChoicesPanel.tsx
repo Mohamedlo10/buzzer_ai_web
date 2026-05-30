@@ -86,32 +86,34 @@ export function AnswerChoicesPanel({
         </span>
       </div>
 
-      {choices.map((choice, i) => {
-        const isSelected = selectedIndex === i;
-        const showCorrect = result === 'correct' && isSelected;
-        const showWrong = result === 'wrong' && isSelected;
+      <div className="grid grid-cols-2 gap-3">
+        {choices.map((choice, i) => {
+          const isSelected = selectedIndex === i;
+          const showCorrect = result === 'correct' && isSelected;
+          const showWrong = result === 'wrong' && isSelected;
 
-        let borderColor = 'border-[#3E3666]';
-        let bgColor = 'bg-[#342D5B]';
-        if (showCorrect) { borderColor = 'border-[#00D397]'; bgColor = 'bg-[#00D39720]'; }
-        if (showWrong) { borderColor = 'border-[#D5442F]'; bgColor = 'bg-[#D5442F20]'; }
+          let borderColor = 'border-[#3E3666]';
+          let bgColor = 'bg-[#342D5B]';
+          if (showCorrect) { borderColor = 'border-[#00D397]'; bgColor = 'bg-[#00D39720]'; }
+          if (showWrong) { borderColor = 'border-[#D5442F]'; bgColor = 'bg-[#D5442F20]'; }
 
-        return (
-          <button
-            key={i}
-            onClick={() => handleSelect(i, choice)}
-            disabled={hasSubmittedRef.current || isSubmitting || !!result}
-            className={`flex items-center gap-4 w-full ${bgColor} rounded-xl border ${borderColor} p-4 h-14 text-left active:scale-95 transition-all duration-150 disabled:opacity-60`}
-          >
-            <span className="w-8 h-8 rounded-lg bg-[#3E3666] flex items-center justify-center text-white font-bold text-sm shrink-0">
-              {CHOICE_LABELS[i]}
-            </span>
-            <span className="text-white text-base font-medium flex-1">{choice}</span>
-            {showCorrect && <CheckCircle size={20} className="text-[#00D397] shrink-0" />}
-            {showWrong && <XCircle size={20} className="text-[#D5442F] shrink-0" />}
-          </button>
-        );
-      })}
+          return (
+            <button
+              key={i}
+              onClick={() => handleSelect(i, choice)}
+              disabled={hasSubmittedRef.current || isSubmitting || !!result}
+              className={`flex items-center gap-4 w-full ${bgColor} rounded-xl border ${borderColor} p-4 h-14 text-left active:scale-95 transition-all duration-150 disabled:opacity-60`}
+            >
+              <span className="w-8 h-8 rounded-lg bg-[#3E3666] flex items-center justify-center text-white font-bold text-sm shrink-0">
+                {CHOICE_LABELS[i]}
+              </span>
+              <span className="text-white text-base font-medium flex-1">{choice}</span>
+              {showCorrect && <CheckCircle size={20} className="text-[#00D397] shrink-0" />}
+              {showWrong && <XCircle size={20} className="text-[#D5442F] shrink-0" />}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }
