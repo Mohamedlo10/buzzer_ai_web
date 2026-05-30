@@ -739,12 +739,12 @@ export default function GamePage() {
         {/* Category & Difficulty */}
         <div className="flex flex-row items-center mt-3">
           <div className="bg-[#00D39720] px-3 py-1.5 rounded-full border border-[#00D39740]">
-            <span className="text-[#00D397] text-sm font-medium">
+            <span className="text-[#00D397] sm:text-sm text-xs font-medium">
               {currentQuestion.category}
             </span>
           </div>
           <div className="bg-[#3E3666] px-3 py-1.5 rounded-full ml-2">
-            <span className="text-white/60 text-sm">
+            <span className="text-white/60 sm:text-sm text-xs">
               {currentQuestion.difficulty}
             </span>
           </div>
@@ -1221,22 +1221,23 @@ export default function GamePage() {
                         )}
                       </button>
                       <button
-                        onClick={() => setPendingWrong({ applyPenalty: true })}
+                        onClick={() => setPendingWrong({ applyPenalty: false })}
                         disabled={isValidating}
                         className="flex-1 py-3 rounded-xl bg-[#D5442F] flex items-center justify-center hover:bg-[#B53320] transition-colors disabled:opacity-60"
                       >
-                        <div className="flex flex-row items-center">
-                          <XCircle size={18} color="#FFFFFF" />
-                          <span className="text-white font-bold ml-1.5">Faux</span>
-                        </div>
-                      </button>
-                      <button
-                        onClick={() => setPendingWrong({ applyPenalty: false })}
-                        disabled={isValidating}
-                        className="px-3 py-3 rounded-xl bg-[#3E3666] flex items-center justify-center hover:bg-[#4E4676] transition-colors disabled:opacity-60"
-                      >
                         <span className="text-white/70 text-xs">Sans pénalité</span>
                       </button>
+                      <button
+                        onClick={() => setPendingWrong({ applyPenalty: true })}
+                        disabled={isValidating}
+                                              className="px-3 py-3 rounded-xl bg-[#3E3666] flex items-center justify-center hover:bg-[#4E4676] transition-colors disabled:opacity-60"
+                      >
+                        <div className="flex flex-row items-center">
+                          <XCircle size={18} color="#FFFFFF" />
+                          <span className="text-white font-bold ml-1.5">Faux avec - </span>
+                        </div>
+                      </button>
+
                     </div>
                   )}
                 </div>
