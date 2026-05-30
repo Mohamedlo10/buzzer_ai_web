@@ -180,6 +180,20 @@ export default function AdminSessionsPage() {
       render: (row) => `${row.playerCount} / ${row.maxPlayers}`,
     },
     {
+      key: 'sessionMode',
+      header: 'Mode',
+      width: '110px',
+      render: (row) => (
+        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-semibold ${
+          row.sessionMode === 'WITHOUT_MODERATOR'
+            ? 'bg-[#3B82F620] text-[#3B82F6]'
+            : 'bg-[#F59E0B20] text-[#F59E0B]'
+        }`}>
+          {row.sessionMode === 'WITHOUT_MODERATOR' ? 'Sans modérateur' : 'Avec modérateur'}
+        </span>
+      ),
+    },
+    {
       key: 'totalQuestions',
       header: 'Questions',
       width: '90px',
@@ -272,55 +286,57 @@ export default function AdminSessionsPage() {
       {/* Filters */}
       <div className="bg-[#342D5B] rounded-2xl border border-[#3E3666] p-4">
         <div className="flex flex-col lg:flex-row gap-3">
-          <div className="flex items-center gap-2 flex-1">
+          <div className="flex items-center gap-2 flex-1 min-w-0">
             <Search size={16} color="#FFFFFF60" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Rechercher par code, manager, salle..."
-              className="flex-1 bg-transparent text-white text-sm focus:outline-none placeholder-white/40"
+              className="flex-1 bg-transparent text-white text-sm focus:outline-none placeholder-white/40 min-w-0"
             />
           </div>
           <div className="h-px lg:h-auto lg:w-px bg-[#3E3666]" />
-          <div className="flex items-center gap-2">
-            <Filter size={16} color="#FFFFFF60" />
-            <select
-              value={statusFilter}
-              onChange={(e) => {
-                setStatusFilter(e.target.value);
-                setPage(0);
-              }}
-              className="bg-[#292349] text-white text-sm rounded-xl px-3 py-2 border border-[#3E3666] focus:outline-none focus:border-[#9B59B6]"
-            >
-              {STATUS_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="flex items-center gap-2">
-            <Calendar size={16} color="#FFFFFF60" />
-            <input
-              type="date"
-              value={fromDate}
-              onChange={(e) => {
-                setFromDate(e.target.value);
-                setPage(0);
-              }}
-              className="bg-[#292349] text-white text-sm rounded-xl px-3 py-2 border border-[#3E3666] focus:outline-none focus:border-[#9B59B6]"
-            />
-            <span className="text-white/40 text-sm">à</span>
-            <input
-              type="date"
-              value={toDate}
-              onChange={(e) => {
-                setToDate(e.target.value);
-                setPage(0);
-              }}
-              className="bg-[#292349] text-white text-sm rounded-xl px-3 py-2 border border-[#3E3666] focus:outline-none focus:border-[#9B59B6]"
-            />
+          <div className="flex flex-col sm:flex-row gap-2">
+            <div className="flex items-center gap-2">
+              <Filter size={16} color="#FFFFFF60" />
+              <select
+                value={statusFilter}
+                onChange={(e) => {
+                  setStatusFilter(e.target.value);
+                  setPage(0);
+                }}
+                className="bg-[#292349] text-white text-sm rounded-xl px-3 py-2 border border-[#3E3666] focus:outline-none focus:border-[#9B59B6] w-full sm:w-auto"
+              >
+                {STATUS_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="flex items-center gap-2">
+              <Calendar size={16} color="#FFFFFF60" />
+              <input
+                type="date"
+                value={fromDate}
+                onChange={(e) => {
+                  setFromDate(e.target.value);
+                  setPage(0);
+                }}
+                className="bg-[#292349] text-white text-sm rounded-xl px-3 py-2 border border-[#3E3666] focus:outline-none focus:border-[#9B59B6] flex-1"
+              />
+              <span className="text-white/40 text-sm hidden sm:inline">à</span>
+              <input
+                type="date"
+                value={toDate}
+                onChange={(e) => {
+                  setToDate(e.target.value);
+                  setPage(0);
+                }}
+                className="bg-[#292349] text-white text-sm rounded-xl px-3 py-2 border border-[#3E3666] focus:outline-none focus:border-[#9B59B6] flex-1"
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -390,6 +406,12 @@ function ActiveSessionCard({
             <span className="text-white">{session.roomName}</span>
           </div>
         )}
+        <div className="flex justify-between">
+          <span className="text-white/50">Mode</span>
+          <span className={`text-xs font-semibold ${session.sessionMode === 'WITHOUT_MODERATOR' ? 'text-[#3B82F6]' : 'text-[#F59E0B]'}`}>
+            {session.sessionMode === 'WITHOUT_MODERATOR' ? 'Sans modérateur' : 'Avec modérateur'}
+          </span>
+        </div>
         <div className="flex justify-between">
           <span className="text-white/50">Joueurs</span>
           <span className="text-white">

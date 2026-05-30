@@ -769,6 +769,7 @@ export interface AdminSessionSummaryResponse {
   isTeamMode: boolean;
   isPrivate: boolean;
   questionMode: QuestionMode;
+  sessionMode: SessionMode;
   createdAt: string;
   startedAt: string | null;
   endedAt: string | null;
@@ -989,6 +990,7 @@ export interface AdminActiveSessionResponse {
   playerCount: number;
   maxPlayers: number;
   connectedPlayers: number;
+  sessionMode: string;
   startedAt: string | null;
   createdAt: string;
   secondsElapsed: number;

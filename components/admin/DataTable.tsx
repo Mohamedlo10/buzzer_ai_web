@@ -108,7 +108,7 @@ export function DataTable<T>({
               {columns.map((col) => (
                 <th
                   key={col.key}
-                  className={`px-4 py-3 text-xs font-semibold text-white/60 uppercase tracking-wider ${
+                  className={`px-2 lg:px-4 py-2 lg:py-3 text-[10px] lg:text-xs font-semibold text-white/60 uppercase tracking-wider ${
                     col.sortable ? 'cursor-pointer hover:text-white select-none' : ''
                   }`}
                   style={{ width: col.width }}
@@ -165,7 +165,7 @@ export function DataTable<T>({
                       </td>
                     )}
                     {columns.map((col) => (
-                      <td key={col.key} className="px-4 py-3 text-sm text-white/80">
+                      <td key={col.key} className="px-2 lg:px-4 py-2 lg:py-3 text-xs lg:text-sm text-white/80">
                         {col.render ? col.render(row) : (row as any)[col.key]}
                       </td>
                     ))}

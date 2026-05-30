@@ -32,8 +32,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <div className="min-h-screen bg-[#292349] flex">
       <AdminSidebar />
       <div className="flex-1 flex flex-col min-w-0">
-        <AdminHeader />
-        <main className="flex-1 p-6 overflow-y-auto">
+        {/* Header desktop only — mobile header is inside AdminSidebar */}
+        <div className="hidden lg:block">
+          <AdminHeader />
+        </div>
+        {/* Mobile: padding top for header, padding bottom for bottom tab bar */}
+        <main className="flex-1 p-4 lg:p-6 overflow-y-auto pt-[72px] lg:pt-6 pb-20 lg:pb-6">
           {children}
         </main>
       </div>

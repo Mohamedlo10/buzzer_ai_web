@@ -92,7 +92,7 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
         <KpiCard
           title="Utilisateurs"
           value={stats?.totalUsers ?? '-'}
@@ -189,7 +189,7 @@ export default function AdminDashboardPage() {
           ))}
         </div>
 
-        <div className="h-72">
+        <div className="h-60 lg:h-72">
           {timelineLoading ? (
             <div className="h-full flex items-center justify-center text-white/50">Chargement...</div>
           ) : (
@@ -226,7 +226,7 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* Bottom row : Top stats + Active sessions */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
         {/* Top Players */}
         <div className="bg-[#342D5B] rounded-2xl border border-[#3E3666] p-5">
           <div className="flex items-center gap-2 mb-4">
