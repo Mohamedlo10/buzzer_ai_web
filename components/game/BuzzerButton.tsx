@@ -42,9 +42,8 @@ export function BuzzerButton({
   if (queuePosition !== null) {
     return (
       <div className="flex flex-col items-center py-6">
-        {/* Colorless disabled button */}
         <div
-          className="flex items-center justify-center rounded-full border-3 border-[#6A6A6A] opacity-50"
+          className="flex flex-col items-center justify-center rounded-full border-[3px] border-[#6A6A6A] opacity-60"
           style={{
             width: 192,
             height: 192,
@@ -52,12 +51,12 @@ export function BuzzerButton({
             boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
           }}
         >
-          <Zap size={48} color="#FFFFFF60" strokeWidth={2} />
-          <span className="text-white/50 font-bold text-xl mt-2 tracking-wide">
+          <Zap size={36} color="#FFFFFF60" strokeWidth={2} />
+          <span className="text-white/50 font-bold text-2xl mt-1 tracking-wide">
             #{queuePosition}
           </span>
         </div>
-        <p className="text-white/40 mt-4 text-sm">En file d'attente...</p>
+        <p className="text-white/40 mt-4 text-sm font-medium">En file d'attente</p>
       </div>
     );
   }

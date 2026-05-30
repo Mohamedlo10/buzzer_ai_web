@@ -286,6 +286,39 @@ function mapTopicMessageToWSEvent(
         buzzQueue: payload.buzzQueue ?? [],
       } as WSEvent;
 
+    case 'question-display-resume':
+      return {
+        type: 'question_display_resume',
+        sessionId,
+        wordIndex: payload.wordIndex ?? 0,
+      } as any;
+
+    case 'question-timer':
+      return {
+        type: 'question_timer',
+        sessionId,
+        remainingSeconds: payload.remainingSeconds ?? 0,
+        paused: payload.paused ?? false,
+      } as any;
+
+    case 'answer-reveal':
+      return {
+        type: 'answer_reveal',
+        sessionId,
+        correctAnswer: payload.correctAnswer ?? '',
+        winnerId: payload.winnerId ?? null,
+        winnerName: payload.winnerName ?? null,
+      } as any;
+
+    case 'game-choices':
+      return {
+        type: 'game_choices',
+        sessionId,
+        questionId: payload.questionId ?? '',
+        choices: payload.choices ?? [],
+        answerTimeSeconds: payload.answerTimeSeconds ?? 15,
+      } as any;
+
     default:
       if (process.env.NODE_ENV === 'development') console.log('[STOMP] Unknown topic type:', topicType, payload);
       return null;
@@ -334,6 +367,9 @@ export class WebSocketManager {
     'generating',
     'countdown',
     'sync',
+    'question-display-resume',
+    'question-timer',
+    'answer-reveal',
   ] as const;
 
   /**
@@ -871,6 +907,7 @@ export class WebSocketManager {
     const queues = [
       `/queue/user/${this.userId}/notifications`,
       `/queue/user/${this.userId}/invitations`,
+      `/queue/user/${this.userId}/game-choices`,
     ];
 
     for (const queue of queues) {

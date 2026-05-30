@@ -255,6 +255,35 @@ export interface GameStateSyncEvent extends BaseWSMessage {
 }
 
 // ──────────────────────────────────────────────
+// Sans Modérateur Events
+// ──────────────────────────────────────────────
+
+export interface QuestionDisplayResumeEvent extends BaseWSMessage {
+  type: 'question_display_resume';
+  wordIndex: number;
+}
+
+export interface QuestionTimerEvent extends BaseWSMessage {
+  type: 'question_timer';
+  remainingSeconds: number;
+  paused: boolean;
+}
+
+export interface AnswerRevealEvent extends BaseWSMessage {
+  type: 'answer_reveal';
+  correctAnswer: string;
+  winnerId: string | null;
+  winnerName: string | null;
+}
+
+export interface GameChoicesEvent extends BaseWSMessage {
+  type: 'game_choices';
+  questionId: string;
+  choices: string[];
+  answerTimeSeconds: number;
+}
+
+// ──────────────────────────────────────────────
 // Union Type
 // ──────────────────────────────────────────────
 
@@ -296,4 +325,9 @@ export type WSEvent =
   | RoomStatsUpdatedEvent
   | RoomMemberPresenceEvent
   // Sync
-  | GameStateSyncEvent;
+  | GameStateSyncEvent
+  // Sans Modérateur
+  | QuestionDisplayResumeEvent
+  | QuestionTimerEvent
+  | AnswerRevealEvent
+  | GameChoicesEvent;

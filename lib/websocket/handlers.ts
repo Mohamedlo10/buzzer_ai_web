@@ -128,9 +128,11 @@ export function handleWSEvent(event: WSEvent, currentUserId?: string): void {
       if (currentUserId) {
         const buzzState = useBuzzStore.getState();
         const currentQueue = buzzState.buzzQueue;
+        // playerId dans buzzQueue = Player entity ID → chercher via userId
         const myPlayer = buzzState.players.find((p) => p.userId === currentUserId);
+        const myPlayerId = myPlayer?.id;
 
-        const myBuzz = currentQueue.some((b) => b.playerId === currentUserId);
+        const myBuzz = !!myPlayerId && currentQueue.some((b) => b.playerId === myPlayerId);
         const teamBuzz =
           !myBuzz &&
           buzzState.session?.isTeamMode === true &&
@@ -140,7 +142,7 @@ export function handleWSEvent(event: WSEvent, currentUserId?: string): void {
         if (myBuzz || teamBuzz) {
           useGameStore.getState().setHasBuzzed(true);
           useBuzzStore.getState().setHasBuzzed(true);
-          const userPosition = currentQueue.findIndex((b) => b.playerId === currentUserId) + 1;
+          const userPosition = currentQueue.findIndex((b) => b.playerId === myPlayerId) + 1;
           if (userPosition > 0) {
             useGameStore.setState({ myQueuePosition: userPosition });
           }
@@ -177,8 +179,13 @@ export function handleWSEvent(event: WSEvent, currentUserId?: string): void {
         // Mark the wrong player as blocked for the rest of this question.
         // This survives buzzer_reset (fullBuzzerReset) which would otherwise
         // clear hasBuzzed and re-enable the button on their UI.
-        if (currentUserId && event.playerId === currentUserId) {
-          useBuzzStore.getState().setAnsweredWrongThisQuestion(true);
+        // Note: event.playerId is a Player entity ID in answer_validated (mode WITH_MODERATOR),
+        // so we look up the matching player in the store.
+        if (currentUserId && event.playerId) {
+          const myPlayer = useBuzzStore.getState().players.find((p) => p.userId === currentUserId);
+          if (myPlayer && event.playerId === myPlayer.id) {
+            useBuzzStore.getState().setAnsweredWrongThisQuestion(true);
+          }
         }
         // Re-enable the buzzer for OTHER players who haven't buzzed yet.
         useGameStore.getState().setBuzzerEnabled(true);
@@ -198,6 +205,11 @@ export function handleWSEvent(event: WSEvent, currentUserId?: string): void {
         useBuzzStore.getState().updateScores(scoreEvent.scores);
       } else if (scoreEvent.playerId && scoreEvent.newScore !== undefined) {
         useBuzzStore.getState().updateScores({ [scoreEvent.playerId]: scoreEvent.newScore });
+      }
+      // Mode sans modérateur : marquer le joueur comme ayant répondu faux
+      // (answer_validated n'est pas envoyé en mode WITHOUT_MODERATOR)
+      if (scoreEvent.event === 'WRONG' && currentUserId && scoreEvent.playerId === currentUserId) {
+        useBuzzStore.getState().setAnsweredWrongThisQuestion(true);
       }
       break;
     }
@@ -270,16 +282,81 @@ export function handleWSEvent(event: WSEvent, currentUserId?: string): void {
     case 'room_stats_updated':
       break;
 
+    // ─── Sans Modérateur ─────────────────────
+    case 'question_display_resume': {
+      // Reprendre depuis la position courante (displayWordIndex) — ne pas réinitialiser à 0
+      useBuzzStore.setState({ displayRunning: true });
+      break;
+    }
+
+    case 'question_timer': {
+      const currentTotal = (useBuzzStore.getState() as any).globalTimerTotal;
+      const newTotal = !currentTotal || event.remainingSeconds > currentTotal
+        ? event.remainingSeconds
+        : currentTotal;
+
+      useBuzzStore.setState({
+        globalTimerRemaining: event.remainingSeconds,
+        globalTimerPaused: event.paused,
+        globalTimerTotal: newTotal,
+      });
+
+      // Synchroniser la position du mot courant depuis le temps écoulé
+      // elapsedMs = (total - restant) * 1000 ; wordIndex = floor(elapsedMs / 350ms)
+      if (!event.paused && newTotal > 0) {
+        const elapsedMs = (newTotal - event.remainingSeconds) * 1000;
+        const question = useBuzzStore.getState().currentQuestion;
+        if (question?.text) {
+          const words = question.text.split(' ');
+          const syncedIndex = Math.min(Math.floor(elapsedMs / 350), words.length - 1);
+          const currentIndex = (useBuzzStore.getState() as any).displayWordIndex ?? 0;
+          if (syncedIndex > currentIndex) {
+            useBuzzStore.setState({
+              displayWordIndex: syncedIndex,
+              ...(syncedIndex >= words.length - 1
+                ? { questionFullyDisplayed: true, displayRunning: false }
+                : {}),
+            });
+          }
+        }
+      }
+      break;
+    }
+
+    case 'answer_reveal': {
+      useBuzzStore.setState({
+        answerReveal: {
+          correctAnswer: event.correctAnswer,
+          winnerId: event.winnerId,
+          winnerName: event.winnerName,
+        },
+      });
+      // Auto-clear après 4s (l'overlay se ferme après 3s côté UI)
+      setTimeout(() => {
+        useBuzzStore.setState({ answerReveal: null });
+      }, 4000);
+      break;
+    }
+
+    case 'game_choices': {
+      // Calculer le temps restant réel en tenant compte du délai réseau
+      const startedAtMs = (event as any).startedAtMs ?? Date.now();
+      const networkDelayMs = Date.now() - startedAtMs;
+      const actualRemaining = Math.max(3, event.answerTimeSeconds - Math.floor(networkDelayMs / 1000));
+      useBuzzStore.setState({
+        myAnswerChoices: event.choices,
+        myAnswerQuestionId: event.questionId,
+        answerTimeSeconds: actualRemaining,
+      });
+      break;
+    }
+
     // ─── Full state sync ──────────────────────
     case 'game_state_sync': {
       const sync = event;
 
       // ── Players (only useBuzzStore holds the player list) ──
       if (sync.players?.length > 0) {
-        console.log('[WS sync] players categoryScores:', JSON.stringify(
-          sync.players.map((p: any) => ({ name: p.name, categoryScores: p.categoryScores })),
-          null, 2
-        ));
         useBuzzStore.setState({ players: sync.players });
       }
 
@@ -305,13 +382,21 @@ export function handleWSEvent(event: WSEvent, currentUserId?: string): void {
         }
       }
 
-      // ── Session status ──
+      // ── Session status + sessionMode (propagés dans le sync) ──
       if (sync.session?.status) {
         const status = sync.session.status as any;
         useBuzzStore.getState().updateStatus(status);
         const paused = status === 'PAUSED';
         useBuzzStore.getState().setPaused(paused);
         useGameStore.getState().setPaused(paused);
+      }
+
+      // Mettre à jour sessionMode si le sync le contient
+      const syncSessionMode = (sync.session as any)?.sessionMode;
+      if (syncSessionMode) {
+        useBuzzStore.setState((state) => ({
+          session: state.session ? { ...state.session, sessionMode: syncSessionMode } : state.session,
+        }));
       }
       break;
     }

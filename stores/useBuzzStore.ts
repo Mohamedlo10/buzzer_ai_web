@@ -42,6 +42,20 @@ interface BuzzState {
   isPaused: boolean;
   isGameOver: boolean;
 
+  // Mode Sans Modérateur
+  displayWordIndex: number;
+  displayResumeWordIndex: number | null;
+  displayRunning: boolean;
+  questionFullyDisplayed: boolean;
+  myAnswerChoices: string[] | null;
+  myAnswerQuestionId: string | null;
+  answerTimeSeconds: number;
+  isSubmittingAnswer: boolean;
+  globalTimerRemaining: number;
+  globalTimerTotal: number;
+  globalTimerPaused: boolean;
+  answerReveal: { correctAnswer: string; winnerId: string | null; winnerName: string | null } | null;
+
   // Loading states
   isCreating: boolean;
   isJoining: boolean;
@@ -78,6 +92,13 @@ interface BuzzActions {
   updateScores: (scores: Record<string, number>) => void;
   updateStatus: (status: SessionStatus) => void;
 
+  // Mode Sans Modérateur
+  setDisplayWordIndex: (index: number) => void;
+  setQuestionFullyDisplayed: (fully: boolean) => void;
+  setDisplayRunning: (running: boolean) => void;
+  setIsSubmittingAnswer: (submitting: boolean) => void;
+  clearAnswerChoices: () => void;
+
   // Cleanup
   resetGame: () => void;
   leaveSession: () => void;
@@ -104,6 +125,18 @@ const initialState: BuzzState = {
   buzzerEnabled: false,
   isPaused: false,
   isGameOver: false,
+  displayWordIndex: 0,
+  displayResumeWordIndex: null,
+  displayRunning: false,
+  questionFullyDisplayed: false,
+  myAnswerChoices: null,
+  myAnswerQuestionId: null,
+  answerTimeSeconds: 15,
+  isSubmittingAnswer: false,
+  globalTimerRemaining: 0,
+  globalTimerTotal: 0,
+  globalTimerPaused: false,
+  answerReveal: null,
   isCreating: false,
   isJoining: false,
   isStarting: false,
@@ -277,6 +310,13 @@ export const useBuzzStore = create<BuzzState & BuzzActions>((set, get) => ({
       answeredWrongThisQuestion: false,
       myQueuePosition: null,
       buzzerEnabled: true,
+      displayWordIndex: 0,
+      displayResumeWordIndex: null,
+      displayRunning: true,
+      questionFullyDisplayed: false,
+      myAnswerChoices: null,
+      myAnswerQuestionId: null,
+      answerReveal: null,
     }),
 
   addToBuzzQueue: (item) =>
@@ -309,6 +349,13 @@ export const useBuzzStore = create<BuzzState & BuzzActions>((set, get) => ({
   setBuzzerEnabled: (enabled) => set({ buzzerEnabled: enabled }),
   setPaused: (paused) => set({ isPaused: paused, buzzerEnabled: !paused }),
   setGameOver: (isOver) => set({ isGameOver: isOver, buzzerEnabled: false }),
+
+  // Mode Sans Modérateur
+  setDisplayWordIndex: (index) => set({ displayWordIndex: index }),
+  setQuestionFullyDisplayed: (fully) => set({ questionFullyDisplayed: fully }),
+  setDisplayRunning: (running) => set({ displayRunning: running }),
+  setIsSubmittingAnswer: (submitting) => set({ isSubmittingAnswer: submitting }),
+  clearAnswerChoices: () => set({ myAnswerChoices: null, myAnswerQuestionId: null }),
 
   addPlayer: (player) =>
     set((state) => {

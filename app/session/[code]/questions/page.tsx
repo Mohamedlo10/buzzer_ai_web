@@ -19,7 +19,7 @@ import {
 
 import { SafeScreen } from '~/components/layout/SafeScreen';
 import * as sessionsApi from '~/lib/api/sessions';
-import type { ManualQuestion } from '~/types/api';
+import type { ManualQuestion, SessionResponse } from '~/types/api';
 
 const EMPTY_QUESTION: ManualQuestion = { text: '', answer: '', explanation: '' };
 
@@ -28,11 +28,13 @@ function QuestionItem({
   index,
   onUpdate,
   onRemove,
+  isWithoutModerator,
 }: {
   question: ManualQuestion;
   index: number;
-  onUpdate: (index: number, field: keyof ManualQuestion, value: string) => void;
+  onUpdate: (index: number, patch: Partial<ManualQuestion>) => void;
   onRemove: (index: number) => void;
+  isWithoutModerator: boolean;
 }) {
   const [showExplanation, setShowExplanation] = useState(false);
 
@@ -57,7 +59,7 @@ function QuestionItem({
           {/* Question text */}
           <textarea
             value={question.text}
-            onChange={(e) => onUpdate(index, 'text', e.target.value)}
+            onChange={(e) => onUpdate(index, { text: e.target.value })}
             placeholder="Question *"
             className="bg-[#292349] rounded-xl px-4 py-3 text-white border border-[#3E3666] focus:border-[#00D397] outline-none resize-none min-h-[80px]"
             rows={2}
@@ -67,7 +69,7 @@ function QuestionItem({
           <input
             type="text"
             value={question.answer}
-            onChange={(e) => onUpdate(index, 'answer', e.target.value)}
+            onChange={(e) => onUpdate(index, { answer: e.target.value })}
             placeholder="Réponse *"
             className="bg-[#292349] rounded-xl px-4 py-3 text-white border border-[#3E3666] focus:border-[#00D397] outline-none"
           />
@@ -90,11 +92,72 @@ function QuestionItem({
           {showExplanation && (
             <textarea
               value={question.explanation ?? ''}
-              onChange={(e) => onUpdate(index, 'explanation', e.target.value)}
+              onChange={(e) => onUpdate(index, { explanation: e.target.value })}
               placeholder="Explication (optionnel)"
               className="bg-[#292349] rounded-xl px-4 py-3 text-white border border-[#3E3666] focus:border-[#00D397] outline-none resize-none min-h-[80px]"
               rows={2}
             />
+          )}
+
+          {/* Sans Modérateur extra fields */}
+          {isWithoutModerator && (
+            <div className="flex flex-col gap-2 border-t border-[#3E3666] pt-3 mt-1">
+              {/* Type de question */}
+              <div className="flex gap-2">
+                <button
+                  onClick={() => onUpdate(index, { questionType: 'TEXT' })}
+                  className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${
+                    (question.questionType ?? 'TEXT') === 'TEXT'
+                      ? 'bg-[#00D397] text-[#292349]'
+                      : 'bg-[#3E3666] text-white/50'
+                  }`}
+                >
+                  📝 Texte
+                </button>
+                <button
+                  onClick={() => onUpdate(index, { questionType: 'IDENTIFICATION' })}
+                  className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${
+                    question.questionType === 'IDENTIFICATION'
+                      ? 'bg-[#00D397] text-[#292349]'
+                      : 'bg-[#3E3666] text-white/50'
+                  }`}
+                >
+                  🖼️ Identification
+                </button>
+              </div>
+
+              {/* URL image si IDENTIFICATION */}
+              {question.questionType === 'IDENTIFICATION' && (
+                <input
+                  type="url"
+                  value={question.imageUrl ?? ''}
+                  onChange={(e) => onUpdate(index, { imageUrl: e.target.value })}
+                  placeholder="https://... URL de l'image"
+                  className="w-full bg-[#292349] text-white text-sm rounded-xl border border-[#3E3666] px-4 py-3 placeholder-white/30 outline-none focus:border-[#00D397]"
+                />
+              )}
+
+              {/* Mauvais choix (leurres) */}
+              <div className="flex flex-col gap-1.5">
+                <p className="text-white/30 text-[10px] font-bold tracking-widest uppercase">
+                  Leurres (optionnel — laissez vide pour génération IA)
+                </p>
+                {(question.wrongChoices ?? ['', '']).map((choice, ci) => (
+                  <input
+                    key={ci}
+                    type="text"
+                    value={choice}
+                    onChange={(e) => {
+                      const newChoices = [...(question.wrongChoices ?? ['', ''])];
+                      newChoices[ci] = e.target.value;
+                      onUpdate(index, { wrongChoices: newChoices });
+                    }}
+                    placeholder={`Leurre ${ci + 1}`}
+                    className="w-full bg-[#292349] text-white text-sm rounded-xl border border-[#3E3666] px-4 py-3 placeholder-white/30 outline-none focus:border-[#00D397]"
+                  />
+                ))}
+              </div>
+            </div>
           )}
         </div>
       </div>
@@ -109,6 +172,7 @@ export default function QuestionsPage() {
   const code = params.code;
   const sessionId = searchParams.get('sessionId') ?? undefined;
 
+  const [session, setSession] = useState<SessionResponse | null>(null);
   const [questions, setQuestions] = useState<ManualQuestion[]>([{ ...EMPTY_QUESTION }]);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -120,28 +184,40 @@ export default function QuestionsPage() {
   const [isDownloadingTemplate, setIsDownloadingTemplate] = useState(false);
   const [previewQuestions, setPreviewQuestions] = useState<ManualQuestion[] | null>(null);
 
-  // Load questions on mount
+  const isWithoutModerator = session?.sessionMode === 'WITHOUT_MODERATOR';
+
+  // Load session info and questions on mount
   useEffect(() => {
     if (!sessionId) {
       setIsLoading(false);
       return;
     }
     setIsLoading(true);
-    sessionsApi.getManualQuestions(sessionId).then((loaded) => {
-      if (loaded && loaded.length > 0) {
-        setQuestions(
-          loaded.map((q) => ({
-            text: q.text,
-            answer: q.answer ?? '',
-            explanation: q.explanation ?? '',
-          })),
-        );
-      } else {
-        setQuestions([{ ...EMPTY_QUESTION }]);
-      }
-    }).catch(() => {
-      // keep current state
-    }).finally(() => {
+    Promise.all([
+      sessionsApi.getSession(sessionId).then((detail) => {
+        setSession(detail.session);
+      }).catch(() => {
+        // session info not critical — keep going
+      }),
+      sessionsApi.getManualQuestions(sessionId).then((loaded) => {
+        if (loaded && loaded.length > 0) {
+          setQuestions(
+            loaded.map((q) => ({
+              text: q.text,
+              answer: q.answer ?? '',
+              explanation: q.explanation ?? '',
+              questionType: q.questionType,
+              imageUrl: q.imageUrl,
+              wrongChoices: q.wrongChoices,
+            })),
+          );
+        } else {
+          setQuestions([{ ...EMPTY_QUESTION }]);
+        }
+      }).catch(() => {
+        // keep current state
+      }),
+    ]).finally(() => {
       setIsLoading(false);
     });
   }, [sessionId]);
@@ -155,9 +231,9 @@ export default function QuestionsPage() {
   }, []);
 
   const updateQuestion = useCallback(
-    (index: number, field: keyof ManualQuestion, value: string) => {
+    (index: number, patch: Partial<ManualQuestion>) => {
       setQuestions((q) =>
-        q.map((item, i) => (i === index ? { ...item, [field]: value } : item)),
+        q.map((item, i) => (i === index ? { ...item, ...patch } : item)),
       );
     },
     [],
@@ -263,6 +339,11 @@ export default function QuestionsPage() {
         text: q.text.trim(),
         answer: q.answer.trim(),
         explanation: q.explanation?.trim() || null,
+        ...(isWithoutModerator ? {
+          questionType: q.questionType ?? 'TEXT',
+          imageUrl: q.imageUrl?.trim() || null,
+          wrongChoices: (q.wrongChoices ?? []).filter((c) => c.trim() !== ''),
+        } : {}),
       }));
       await sessionsApi.setManualQuestions(sessionId, payload);
       router.back();
@@ -505,6 +586,7 @@ export default function QuestionsPage() {
               index={i}
               onUpdate={updateQuestion}
               onRemove={removeQuestion}
+              isWithoutModerator={isWithoutModerator}
             />
           ))}
 

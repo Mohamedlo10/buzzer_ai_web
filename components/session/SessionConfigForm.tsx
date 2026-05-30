@@ -13,9 +13,10 @@ import {
   X,
   Palette,
   Timer,
+  User,
 } from 'lucide-react';
 import { useBuzzStore } from '~/stores/useBuzzStore';
-import type { CreateSessionRequest, QuestionMode, TeamRequest } from '~/types/api';
+import type { CreateSessionRequest, QuestionMode, SessionMode, TeamRequest } from '~/types/api';
 
 const TEAM_PRESET_COLORS = [
   '#FF5733', '#3498DB', '#2ECC71', '#F39C12',
@@ -164,6 +165,10 @@ function TeamEditor({
 export function SessionConfigForm({ onSuccess, roomId, initialMaxPlayers }: SessionConfigFormProps) {
   const router = useRouter();
   const [questionMode, setQuestionMode] = useState<QuestionMode>('AI');
+  const [sessionMode, setSessionMode] = useState<SessionMode>('WITH_MODERATOR');
+  const [answerTimeSeconds, setAnswerTimeSeconds] = useState(15);
+  const [globalQuestionSeconds, setGlobalQuestionSeconds] = useState(30);
+  const [answerChoicesCount, setAnswerChoicesCount] = useState<number | null>(null);
   const [teams, setTeams] = useState<TeamRequest[]>(DEFAULT_TEAMS);
   const [config, setConfig] = useState<CreateSessionRequest>({
     debtAmount: 5,
@@ -196,7 +201,12 @@ export function SessionConfigForm({ onSuccess, roomId, initialMaxPlayers }: Sess
     }
 
     try {
-      const finalConfig = config.isTeamMode ? { ...config, teams } : config;
+      const withoutModeratorExtras = sessionMode === 'WITHOUT_MODERATOR'
+        ? { answerTimeSeconds, globalQuestionSeconds, answerChoicesCount }
+        : {};
+      const finalConfig = config.isTeamMode
+        ? { ...config, sessionMode, ...withoutModeratorExtras, teams }
+        : { ...config, sessionMode, ...withoutModeratorExtras };
       const result = await createSession(finalConfig);
 
       if (onSuccess) {
@@ -227,6 +237,95 @@ export function SessionConfigForm({ onSuccess, roomId, initialMaxPlayers }: Sess
     <div className="flex flex-col pb-24 sm:pb-12 h-[80vh] overflow-y-auto ">
       {/* Scrollable area */}
       <div className="flex-1 px-4 pt-5 pb-4 flex flex-col gap-4">
+
+        {/* Session Mode Toggle: Avec / Sans Modérateur */}
+        <div className="bg-[#342D5B] rounded-2xl border border-[#3E3666] p-4">
+          <p className="text-white/40 text-[10px] font-bold tracking-widest uppercase mb-3">Mode de jeu</p>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setSessionMode('WITH_MODERATOR')}
+              className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all ${
+                sessionMode === 'WITH_MODERATOR'
+                  ? 'bg-[#00D397] text-[#292349]'
+                  : 'bg-[#3E3666] text-white/60'
+              }`}
+            >
+              <User size={16} className="inline-block mr-2" />
+              Avec Modérateur
+            </button>
+            <button
+              onClick={() => setSessionMode('WITHOUT_MODERATOR')}
+              className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all ${
+                sessionMode === 'WITHOUT_MODERATOR'
+                  ? 'bg-[#00D397] text-[#292349]'
+                  : 'bg-[#3E3666] text-white/60'
+              }`}
+            >
+              <Bot size={16} className="inline-block mr-2" />
+              Sans Modérateur
+            </button>
+          </div>
+          {sessionMode === 'WITHOUT_MODERATOR' && (
+            <p className="text-white/40 text-xs mt-2 text-center">
+              Questions affichées progressivement · Réponses automatiques
+            </p>
+          )}
+        </div>
+
+        {/* Sans Modérateur settings */}
+        {sessionMode === 'WITHOUT_MODERATOR' && (
+          <div className="flex flex-col gap-3">
+            <StepperField
+              label="Temps pour répondre"
+              value={answerTimeSeconds}
+              suffix="s"
+              min={5}
+              max={60}
+              step={5}
+              onChange={setAnswerTimeSeconds}
+            />
+            <StepperField
+              label="Timer global par question"
+              value={globalQuestionSeconds}
+              suffix="s"
+              min={15}
+              max={120}
+              step={5}
+              onChange={setGlobalQuestionSeconds}
+            />
+            {/* Answer choices count */}
+            <div className="bg-[#342D5B] rounded-2xl border border-[#3E3666] p-4">
+              <p className="text-white/40 text-[10px] font-bold tracking-widest uppercase mb-3">
+                Nombre de choix de réponse
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setAnswerChoicesCount(null)}
+                  className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${
+                    answerChoicesCount === null
+                      ? 'bg-[#00D397] text-[#292349]'
+                      : 'bg-[#3E3666] text-white/60'
+                  }`}
+                >
+                  Auto
+                </button>
+                {[2, 3, 4, 5,6].map((n) => (
+                  <button
+                    key={n}
+                    onClick={() => setAnswerChoicesCount(n)}
+                    className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${
+                      answerChoicesCount === n
+                        ? 'bg-[#00D397] text-[#292349]'
+                        : 'bg-[#3E3666] text-white/60'
+                    }`}
+                  >
+                    {n}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Mode selector */}
         <div className="flex gap-3">
@@ -312,13 +411,15 @@ export function SessionConfigForm({ onSuccess, roomId, initialMaxPlayers }: Sess
                 onChange={(v) => setConfig((c) => ({ ...c, maxCategoriesPerPlayer: v }))}
               />
             )}
-            <StepperField
-              label="Temps réponse"
-              value={config.buzzCountdownSeconds ?? 10}
-              suffix="s"
-              min={5} max={60} step={5}
-              onChange={(v) => setConfig((c) => ({ ...c, buzzCountdownSeconds: v }))}
-            />
+            {sessionMode === 'WITH_MODERATOR' && (
+              <StepperField
+                label="Temps réponse"
+                value={config.buzzCountdownSeconds ?? 10}
+                suffix="s"
+                min={5} max={60} step={5}
+                onChange={(v) => setConfig((c) => ({ ...c, buzzCountdownSeconds: v }))}
+              />
+            )}
             <StepperField
               label="Dettes (pts)"
               value={config.debtAmount}

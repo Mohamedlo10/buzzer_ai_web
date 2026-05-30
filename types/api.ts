@@ -115,6 +115,8 @@ export type SessionStatus =
   | 'CANCELLED';
 
 export type QuestionMode = 'AI' | 'MANUAL';
+export type SessionMode = 'WITH_MODERATOR' | 'WITHOUT_MODERATOR';
+export type QuestionType = 'TEXT' | 'IDENTIFICATION';
 
 export interface TeamRequest {
   name: string;
@@ -141,12 +143,19 @@ export interface CreateSessionRequest {
   questionMode?: QuestionMode;
   teams?: TeamRequest[];
   buzzCountdownSeconds?: number;
+  sessionMode?: SessionMode;
+  answerTimeSeconds?: number;
+  globalQuestionSeconds?: number;
+  answerChoicesCount?: number | null;
 }
 
 export interface ManualQuestion {
   text: string;
   answer: string;
   explanation?: string | null;
+  questionType?: QuestionType;
+  imageUrl?: string | null;
+  wrongChoices?: string[];
 }
 
 export interface SetManualQuestionsRequest {
@@ -185,8 +194,12 @@ export interface SessionResponse {
   isPrivate: boolean;
   isTeamMode: boolean;
   questionMode: QuestionMode;
+  sessionMode: SessionMode;
   maxCategoriesPerPlayer: number;
   buzzCountdownSeconds: number;
+  answerTimeSeconds?: number;
+  globalQuestionSeconds?: number;
+  answerChoicesCount?: number | null;
   createdAt: string;
   startedAt: string | null;
   endedAt: string | null;
@@ -215,6 +228,9 @@ export interface QuestionResponse {
   orderIndex: number;
   winnerId: string | null;
   isSkipped: boolean;
+  questionType?: QuestionType;
+  imageUrl?: string | null;
+  answerChoices?: string[] | null;
 }
 
 export interface SessionDetailResponse {
@@ -870,4 +886,19 @@ export interface AdminQuestionResponse {
   sessionCode: string;
   winnerName: string | null;
   createdAt: string;
+}
+
+// ──────────────────────────────────────────────
+// Game Submit Answer
+// ──────────────────────────────────────────────
+
+export interface SubmitAnswerRequest {
+  chosenAnswer: string;
+}
+
+export interface SubmitAnswerResponse {
+  isCorrect: boolean;
+  newScore: number;
+  correctAnswer: string | null;
+  buzzQueue: BuzzQueueItem[];
 }

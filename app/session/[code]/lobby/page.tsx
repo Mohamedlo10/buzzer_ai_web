@@ -265,12 +265,15 @@ function ArcadePlayerCard({
             <button
               onClick={() => onEditCategories(player)}
               style={{
-                width: 32, height: 32, borderRadius: 8,
-                background: '#3E3666', border: '1px solid #4E4676',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+                padding: '5px 10px', borderRadius: 8,
+                background: '#8B5CF618', border: '1px solid #8B5CF630',
+                display: 'flex', alignItems: 'center', gap: 5, cursor: 'pointer',
               }}
             >
-              <Tag size={13} color="#8B5CF6" />
+              <Tag size={11} color="#8B5CF6" />
+              <span style={{ fontSize: 11, color: '#8B5CF6', fontWeight: 600 }}>
+                {(player.selectedCategories?.length ?? 0) > 0 ? 'Modifier' : 'Ajouter'}
+              </span>
             </button>
           )}
           {onKick && (
@@ -297,12 +300,16 @@ function ArcadePlayerCard({
         <button
           onClick={onEditSelf}
           style={{
-            width: 32, height: 32, borderRadius: 8, marginLeft: 8,
-            background: '#3E3666', border: '1px solid #4E4676',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+            padding: '5px 10px', borderRadius: 8, marginLeft: 8,
+            background: (player.selectedCategories?.length ?? 0) > 0 ? '#8B5CF618' : '#00D39720',
+            border: `1px solid ${(player.selectedCategories?.length ?? 0) > 0 ? '#8B5CF630' : '#00D39740'}`,
+            display: 'flex', alignItems: 'center', gap: 5, cursor: 'pointer',
           }}
         >
-          <Tag size={13} color="#8B5CF6" />
+          <Tag size={11} color={(player.selectedCategories?.length ?? 0) > 0 ? '#8B5CF6' : '#00D397'} />
+          <span style={{ fontSize: 11, fontWeight: 700, color: (player.selectedCategories?.length ?? 0) > 0 ? '#8B5CF6' : '#00D397' }}>
+            {(player.selectedCategories?.length ?? 0) > 0 ? 'Modifier' : 'Ajouter'}
+          </span>
         </button>
       )}
     </div>
@@ -542,7 +549,9 @@ export default function LobbyPage() {
   const handleStartGame = async () => {
     if (!session?.id || !code) return;
     if (session.questionMode === 'AI') {
-      const realPlayers = players.filter((p) => !p.isSpectator && !p.isManager).length;
+      const realPlayers = session.sessionMode !== 'WITH_MODERATOR'
+        ? players.filter((p) => !p.isSpectator).length
+        : players.filter((p) => !p.isSpectator && !p.isManager).length;
       const total = (session.maxCategoriesPerPlayer ?? 1) * (session.questionsPerCategory ?? 1) * realPlayers;
       if (total > Q_LIMIT) {
         const maxAllowed = Math.max(1, Math.floor(Q_LIMIT / ((session.maxCategoriesPerPlayer ?? 1) * realPlayers)));
@@ -996,6 +1005,53 @@ export default function LobbyPage() {
                 <p className={rajdhani.className} style={{ textAlign: 'center', fontSize: 13, color: '#e8e8f0d0', letterSpacing: 0.5 }}>
                   La partie démarre dès que le manager lance
                 </p>
+
+                {/* Categories CTA for non-manager players */}
+                {!currentPlayer?.isSpectator && session.questionMode !== 'MANUAL' && (
+                  <div style={{ marginTop: 14 }}>
+                    {(currentPlayer?.selectedCategories?.length ?? 0) === 0 ? (
+                      <button
+                        onClick={handleEditMyCategories}
+                        style={{
+                          width: '100%', padding: '14px 16px', borderRadius: 14, cursor: 'pointer',
+                          background: 'linear-gradient(135deg, #00D39715, #00D39705)',
+                          border: '2px solid #00D39740',
+                          display: 'flex', alignItems: 'center', gap: 12,
+                        }}
+                      >
+                        <div style={{ width: 36, height: 36, borderRadius: 10, background: '#00D39725', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          <Tag size={18} color="#00D397" />
+                        </div>
+                        <div style={{ flex: 1, textAlign: 'left' }}>
+                          <p className={rajdhani.className} style={{ color: '#00D397', fontWeight: 700, fontSize: 14 }}>Choisissez vos catégories</p>
+                          <p className={rajdhani.className} style={{ color: '#00D39770', fontSize: 11 }}>Requis avant le démarrage</p>
+                        </div>
+                        <ChevronRight size={16} color="#00D39760" />
+                      </button>
+                    ) : (
+                      <button
+                        onClick={handleEditMyCategories}
+                        style={{
+                          width: '100%', padding: '12px 14px', borderRadius: 14, cursor: 'pointer',
+                          background: '#342D5B', border: '1px solid #3E3666',
+                          display: 'flex', alignItems: 'center', gap: 10,
+                        }}
+                      >
+                        <div style={{ width: 32, height: 32, borderRadius: 9, background: '#8B5CF618', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          <Tag size={14} color="#8B5CF6" />
+                        </div>
+                        <div style={{ flex: 1, textAlign: 'left' }}>
+                          <p className={rajdhani.className} style={{ color: '#E8E8F0', fontWeight: 600, fontSize: 13 }}>Mes catégories</p>
+                          <p className={rajdhani.className} style={{ color: '#E8E8F045', fontSize: 11 }}>
+                            {currentPlayer!.selectedCategories.slice(0, 3).join(', ')}
+                            {currentPlayer!.selectedCategories.length > 3 ? ` +${currentPlayer!.selectedCategories.length - 3}` : ''}
+                          </p>
+                        </div>
+                        <span className={rajdhani.className} style={{ fontSize: 11, color: '#8B5CF6', fontWeight: 700 }}>Modifier</span>
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -1004,6 +1060,53 @@ export default function LobbyPage() {
         {/* ── MANAGER CONTROLS ── */}
         {isManager && (
           <div style={{ padding: '18px 16px 0' }}>
+            {/* Categories CTA for host when they're also a player (WITHOUT_MODERATOR mode) */}
+            {session.sessionMode !== 'WITH_MODERATOR' && session.questionMode !== 'MANUAL' && (
+              <div style={{ marginBottom: 12 }}>
+                {(currentPlayer?.selectedCategories?.length ?? 0) === 0 ? (
+                  <button
+                    onClick={handleEditMyCategories}
+                    style={{
+                      width: '100%', padding: '14px 16px', borderRadius: 14, cursor: 'pointer',
+                      background: 'linear-gradient(135deg, #00D39715, #00D39705)',
+                      border: '2px solid #00D39740',
+                      display: 'flex', alignItems: 'center', gap: 12,
+                    }}
+                  >
+                    <div style={{ width: 36, height: 36, borderRadius: 10, background: '#00D39725', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <Tag size={18} color="#00D397" />
+                    </div>
+                    <div style={{ flex: 1, textAlign: 'left' }}>
+                      <p className={rajdhani.className} style={{ color: '#00D397', fontWeight: 700, fontSize: 14 }}>Choisissez vos catégories</p>
+                      <p className={rajdhani.className} style={{ color: '#00D39770', fontSize: 11 }}>Vous jouez aussi dans ce mode</p>
+                    </div>
+                    <AlertCircle size={16} color="#00D397" />
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleEditMyCategories}
+                    style={{
+                      width: '100%', padding: '12px 14px', borderRadius: 14, cursor: 'pointer',
+                      background: '#342D5B', border: '1px solid #3E3666',
+                      display: 'flex', alignItems: 'center', gap: 10,
+                    }}
+                  >
+                    <div style={{ width: 32, height: 32, borderRadius: 9, background: '#8B5CF618', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <Tag size={14} color="#8B5CF6" />
+                    </div>
+                    <div style={{ flex: 1, textAlign: 'left' }}>
+                      <p className={rajdhani.className} style={{ color: '#E8E8F0', fontWeight: 600, fontSize: 13 }}>Mes catégories</p>
+                      <p className={rajdhani.className} style={{ color: '#E8E8F045', fontSize: 11 }}>
+                        {currentPlayer!.selectedCategories.slice(0, 3).join(', ')}
+                        {currentPlayer!.selectedCategories.length > 3 ? ` +${currentPlayer!.selectedCategories.length - 3}` : ''}
+                      </p>
+                    </div>
+                    <span className={rajdhani.className} style={{ fontSize: 11, color: '#8B5CF6', fontWeight: 700 }}>Modifier</span>
+                  </button>
+                )}
+              </div>
+            )}
+
             {/* Manual questions alert */}
             {session.questionMode === 'MANUAL' && (
               <ManualQuestionsAlert
@@ -1116,8 +1219,22 @@ export default function LobbyPage() {
                 isCurrentUser={player.userId === user?.id}
                 isSessionManager={isManager}
                 onKick={isManager ? handleKickPlayer : undefined}
-                onEditCategories={isManager && !player.isManager && session.questionMode !== 'MANUAL' ? handleEditCategories : undefined}
-                onEditSelf={player.userId === user?.id && !player.isSpectator && !player.isManager && session.questionMode !== 'MANUAL' ? handleEditMyCategories : undefined}
+                onEditCategories={
+                  isManager &&
+                  !player.isManager &&
+                  session.questionMode !== 'MANUAL' &&
+                  session.sessionMode === 'WITH_MODERATOR'
+                    ? handleEditCategories
+                    : undefined
+                }
+                onEditSelf={
+                  player.userId === user?.id &&
+                  !player.isSpectator &&
+                  (!player.isManager || session.sessionMode !== 'WITH_MODERATOR') &&
+                  session.questionMode !== 'MANUAL'
+                    ? handleEditMyCategories
+                    : undefined
+                }
                 isKicking={kickingPlayerId === player.id}
               />
             ))
@@ -1164,7 +1281,9 @@ export default function LobbyPage() {
             </div>
             <div style={{ padding: '16px 20px' }}>
               {(() => {
-                const realPlayers = players.filter((p) => !p.isSpectator && !p.isManager).length;
+                const realPlayers = session.sessionMode !== 'WITH_MODERATOR'
+                  ? players.filter((p) => !p.isSpectator).length
+                  : players.filter((p) => !p.isSpectator && !p.isManager).length;
                 const cats = session.maxCategoriesPerPlayer ?? 1;
                 const totalCurrent = cats * (session.questionsPerCategory ?? 1) * realPlayers;
                 const totalAdjusted = cats * adjustedQPerCat * realPlayers;
