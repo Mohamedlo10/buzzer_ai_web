@@ -182,6 +182,8 @@ export default function ProfilePage() {
   const rank = myRank?.rank || 0;
   const totalWins = myRank?.totalWins ?? null;
   const perfIndex = myRank?.performanceIndex ?? null;
+  const glickoRating = myRank?.glickoRating ?? null;
+  const glickoDeviation = myRank?.glickoDeviation ?? null;
   const accuracy = myRank?.globalAccuracyRate != null
     ? Math.round(myRank.globalAccuracyRate * 100)
     : null;
@@ -263,7 +265,7 @@ export default function ProfilePage() {
               <p className="text-white/60 text-sm">Rang Global</p>
             </div>
 
-            {/* Performance Index */}
+            {/* Glicko Rating */}
             <div className="flex-1 min-w-[45%] bg-[#342D5B] rounded-2xl p-4 border border-[#3E3666]">
               <div className="flex flex-row items-center justify-between mb-2">
                 <div className="w-10 h-10 rounded-xl bg-[#9B59B620] flex items-center justify-center">
@@ -273,11 +275,14 @@ export default function ProfilePage() {
                   <div className="w-5 h-5 border-2 border-[#9B59B6] border-t-transparent rounded-full animate-spin" />
                 ) : (
                   <span className="text-[#9B59B6] text-2xl font-bold">
-                    {perfIndex != null ? perfIndex.toFixed(1) : '-'}
+                    {glickoRating != null ? glickoRating.toFixed(0) : '-'}
                   </span>
                 )}
               </div>
-              <p className="text-white/60 text-sm">Indice de perf.</p>
+              <p className="text-white/60 text-sm">Rating Glicko-2</p>
+              {glickoDeviation != null && (
+                <p className="text-white/40 text-xs mt-0.5">±{glickoDeviation.toFixed(0)} incertitude</p>
+              )}
               {perfIndex != null && (
                 <div className="mt-2 h-1.5 bg-[#292349] rounded-full overflow-hidden">
                   <div

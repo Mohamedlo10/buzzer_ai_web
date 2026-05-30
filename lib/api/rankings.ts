@@ -37,6 +37,9 @@ export async function getMyGlobalRank(): Promise<{
   globalAccuracyRate?: number;
   avgCorrectPerGame?: number;
   performanceIndex?: number;
+  glickoRating?: number;
+  glickoDeviation?: number;
+  glickoVolatility?: number;
 }> {
   const res = await apiClient.get('/api/rankings/global/me');
   return res.data;

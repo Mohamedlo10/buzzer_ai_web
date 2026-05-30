@@ -61,92 +61,79 @@ function RankingInfoModal({ onClose }: { onClose: () => void }) {
         {/* Modal body */}
         <div className="px-5 py-4 space-y-4">
           <p className="text-white/70 text-sm leading-relaxed">
-            Le classement est basé sur un <span className="text-[#9B59B6] font-semibold">Indice de Performance [0–100]</span> indépendant
-            du nombre de points par bonne réponse, qui varie selon les sessions.
+            Le classement utilise le système <span className="text-[#9B59B6] font-semibold">Glicko-2</span>, un algorithme
+            de classement relatif (comme aux échecs). Il évalue ta force par rapport à tes adversaires,
+            pas par rapport à un barème de points fixe.
           </p>
 
-          {/* Score de compétence */}
+          {/* Comment ça marche */}
           <div>
             <div className="flex items-center gap-2 mb-2">
               <div className="h-px flex-1 bg-[#3E3666]" />
-              <span className="text-white/50 text-xs font-medium uppercase tracking-wider">Score de compétence</span>
+              <span className="text-white/50 text-xs font-medium uppercase tracking-wider">Comment ça marche</span>
               <div className="h-px flex-1 bg-[#3E3666]" />
             </div>
 
             <div className="space-y-3">
               <div className="bg-[#342D5B] rounded-xl p-4">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="text-lg">✅</span>
-                  <span className="text-white font-semibold text-sm">35% — Contribution absolue</span>
-                </div>
-                <p className="text-white/50 text-xs ml-7">Bonnes réponses / questions jouées</p>
-                <p className="text-white/40 text-xs ml-7 mt-0.5">→ Récompense les joueurs qui répondent le plus</p>
-              </div>
-
-              <div className="bg-[#342D5B] rounded-xl p-4">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-lg">🏆</span>
-                  <span className="text-white font-semibold text-sm">30% — Nombre de victoires</span>
-                </div>
-                <p className="text-white/50 text-xs ml-7">Total de parties remportées (plafonné à 10)</p>
-                <p className="text-white/40 text-xs ml-7 mt-0.5">→ Récompense les gagnants expérimentés</p>
-              </div>
-
-              <div className="bg-[#342D5B] rounded-xl p-4">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-lg">🏅</span>
-                  <span className="text-white font-semibold text-sm">20% — Taux de victoires</span>
-                </div>
-                <p className="text-white/50 text-xs ml-7">Parties gagnées / parties jouées</p>
-                <p className="text-white/40 text-xs ml-7 mt-0.5">→ Récompense la régularité</p>
-              </div>
-
-              <div className="bg-[#342D5B] rounded-xl p-4">
-                <div className="flex items-center gap-2 mb-1">
                   <span className="text-lg">🎯</span>
-                  <span className="text-white font-semibold text-sm">15% — Précision de buzz</span>
+                  <span className="text-white font-semibold text-sm">Rating (1500 = moyenne)</span>
                 </div>
-                <p className="text-white/50 text-xs ml-7">Bonnes réponses / buzzers tentés</p>
-                <p className="text-white/40 text-xs ml-7 mt-0.5">→ Pénalise les buzzers au hasard</p>
+                <p className="text-white/50 text-xs ml-7">Ton score principal. Il monte quand tu bats des joueurs forts, baisse quand tu perds contre des joueurs faibles.</p>
+              </div>
+
+              <div className="bg-[#342D5B] rounded-xl p-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-lg">📊</span>
+                  <span className="text-white font-semibold text-sm">Deviation (incertitude)</span>
+                </div>
+                <p className="text-white/50 text-xs ml-7">Élevée au début (~350), elle diminue au fil des parties. Un joueur bien établi bouge moins vite qu&apos;un nouveau.</p>
+              </div>
+
+              <div className="bg-[#342D5B] rounded-xl p-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-lg">⚡</span>
+                  <span className="text-white font-semibold text-sm">Volatilité</span>
+                </div>
+                <p className="text-white/50 text-xs ml-7">Capacité à changer de niveau rapidement. Un joueur en progression verra son rating monter plus vite.</p>
               </div>
             </div>
           </div>
 
-          {/* Coefficient de confiance */}
+          {/* Règles importantes */}
           <div>
             <div className="flex items-center gap-2 mb-2">
               <div className="h-px flex-1 bg-[#3E3666]" />
-              <span className="text-white/50 text-xs font-medium uppercase tracking-wider">Coefficient de confiance</span>
+              <span className="text-white/50 text-xs font-medium uppercase tracking-wider">Règles importantes</span>
               <div className="h-px flex-1 bg-[#3E3666]" />
             </div>
 
             <div className="bg-[#342D5B] rounded-xl p-4 space-y-2">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-lg">📊</span>
+              <div className="flex items-start gap-2">
+                <span className="text-white/70 text-xs mt-0.5">•</span>
                 <p className="text-white/70 text-xs leading-relaxed">
-                  Le score est multiplié par un coefficient qui augmente avec le nombre de parties jouées :
+                  <span className="text-white font-semibold">Battre un fort</span> rapporte beaucoup de points. Battre un faible en rapporte peu.
                 </p>
               </div>
-              <div className="grid grid-cols-2 gap-x-4 gap-y-1 ml-7">
-                {[
-                  ['1 partie', '×0.55'],
-                  ['3 parties', '×0.65'],
-                  ['5 parties', '×0.75'],
-                  ['7 parties', '×0.85'],
-                  ['10 parties', '×1.00'],
-                ].map(([label, coef]) => (
-                  <div key={label} className="flex items-center justify-between">
-                    <span className="text-white/50 text-xs">{label}</span>
-                    <span className={`text-xs font-semibold ${coef === '×1.00' ? 'text-[#00D397]' : 'text-white/70'}`}>{coef}</span>
-                  </div>
-                ))}
-                <div className="col-span-2 mt-1">
-                  <span className="text-[#00D397] text-xs">plein potentiel à 10 parties</span>
-                </div>
+              <div className="flex items-start gap-2">
+                <span className="text-white/70 text-xs mt-0.5">•</span>
+                <p className="text-white/70 text-xs leading-relaxed">
+                  <span className="text-white font-semibold">Perdre contre un faible</span> fait perdre beaucoup de points. Perdre contre un fort en fait perdre peu.
+                </p>
               </div>
-              <p className="text-white/40 text-xs ml-7 mt-1 leading-relaxed">
-                → Une seule partie parfaite ne suffit pas à dépasser un joueur régulier. Il faut au minimum 10 parties pour atteindre son plein potentiel.
-              </p>
+              <div className="flex items-start gap-2">
+                <span className="text-white/70 text-xs mt-0.5">•</span>
+                <p className="text-white/70 text-xs leading-relaxed">
+                  Le classement dans chaque partie compte : 1er bat tous les autres, 2ème bat ceux derrière, etc.
+                </p>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-white/70 text-xs mt-0.5">•</span>
+                <p className="text-white/70 text-xs leading-relaxed">
+                  <span className="text-white font-semibold">Plus tu joues, plus ton rating est fiable.</span> Pas d&apos;asymptote : si tu progresses, tu montes.
+                </p>
+              </div>
             </div>
           </div>
 
@@ -154,7 +141,7 @@ function RankingInfoModal({ onClose }: { onClose: () => void }) {
           <div className="flex items-start gap-2 bg-[#ffffff08] rounded-xl p-3">
             <Info size={14} color="#FFFFFF60" className="mt-0.5 shrink-0" />
             <p className="text-white/50 text-xs leading-relaxed">
-              Le score brut (points) est toujours affiché pour information mais n&apos;influe plus sur le rang.
+              Le score brut (points) et les stats de précision sont affichés pour information mais n&apos;influencent plus directement le rang global.
             </p>
           </div>
         </div>
@@ -177,7 +164,7 @@ function Podium({ rankings, currentPage }: { rankings: GlobalRanking[]; currentP
   if (!hasValidUsers) return null;
 
   const perf = (r: GlobalRanking) =>
-    r.performanceIndex != null ? r.performanceIndex.toFixed(1) : (r.totalScore ?? 0);
+    r.glickoRating != null ? r.glickoRating.toFixed(0) : (r.totalScore ?? 0);
 
   return (
     <div className="flex flex-row justify-center items-end mb-6 mt-4">
@@ -299,6 +286,7 @@ function RankingRow({
 
   const friendshipBtn = getFriendshipButton();
 
+  const glickoRating = entry.glickoRating;
   const perfIndex = entry.performanceIndex;
   const accuracy = entry.globalAccuracyRate != null
     ? Math.round(entry.globalAccuracyRate * 100)
@@ -341,12 +329,12 @@ function RankingRow({
             {isCurrentUser && ' (Vous)'}
           </span>
 
-          {/* Performance index */}
+          {/* Glicko rating */}
           <div className="flex flex-col items-end shrink-0">
-            {perfIndex != null ? (
+            {glickoRating != null ? (
               <>
-                <span className="text-[#9B59B6] font-bold text-sm leading-none">{perfIndex.toFixed(1)}</span>
-                <span className="text-white/30 text-[10px]">indice</span>
+                <span className="text-[#9B59B6] font-bold text-sm leading-none">{glickoRating.toFixed(0)}</span>
+                <span className="text-white/30 text-[10px]">rating</span>
               </>
             ) : (
               <>

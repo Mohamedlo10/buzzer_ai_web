@@ -363,6 +363,12 @@ export interface GlobalRanking {
   globalAccuracyRate?: number;
   avgCorrectPerGame?: number;
   performanceIndex?: number;
+
+  // Glicko-2 ranking system
+  glickoRating?: number;
+  glickoDeviation?: number;
+  glickoVolatility?: number;
+
   // Legacy nested user structure (optional for backward compatibility)
   user?: {
     id: string;
