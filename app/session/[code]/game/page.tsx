@@ -532,15 +532,15 @@ export default function GamePage() {
 
   const handleSubmitAnswer = useCallback(async (chosenAnswer: string) => {
     if (!session?.id || isSubmittingAnswer) return;
-    if (chosenAnswer === '__timeout__') {
-      clearAnswerChoices();
-      return;
-    }
+    const isTimeout = chosenAnswer === '__timeout__';
     setIsSubmittingAnswer(true);
     setAnswerSubmitResult(null);
     try {
-      const result = await gameApi.submitAnswer(session.id, { chosenAnswer });
-      setAnswerSubmitResult(result.isCorrect ? 'correct' : 'wrong');
+      // On timeout, submit an empty answer so the backend marks it as wrong and advances the queue
+      const result = await gameApi.submitAnswer(session.id, { chosenAnswer: isTimeout ? '' : chosenAnswer });
+      if (!isTimeout) {
+        setAnswerSubmitResult(result.isCorrect ? 'correct' : 'wrong');
+      }
       clearAnswerChoices();
     } catch {
       clearAnswerChoices();
