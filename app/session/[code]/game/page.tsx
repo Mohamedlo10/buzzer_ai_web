@@ -300,8 +300,8 @@ export default function GamePage() {
 
       setBuzzQueue(gameState.buzzQueue ?? []);
 
-      // Restore pending answer choices on reconnect (WITHOUT_MODERATOR, first in queue)
-      if (gameState.pendingChoices?.length) {
+      // Restore pending answer choices only if none are showing yet (reconnect case only, not during polls)
+      if (gameState.pendingChoices?.length && !useBuzzStore.getState().myAnswerChoices) {
         useBuzzStore.setState({
           myAnswerChoices: gameState.pendingChoices,
           myAnswerQuestionId: gameState.currentQuestion?.id ?? null,
