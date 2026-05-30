@@ -298,8 +298,7 @@ function RankingRow({
   const avgCorrect = entry.avgCorrectPerGame != null
     ? entry.avgCorrectPerGame.toFixed(1)
     : null;
-  const MIN_GAMES_ESTABLISHED = 5;
-  const isProvisional = (entry.totalGames ?? 0) < MIN_GAMES_ESTABLISHED;
+  const isProvisional = (entry.totalGames ?? 0) < 10;
 
   return (
     <div
@@ -334,18 +333,21 @@ function RankingRow({
 
           {/* Glicko rating */}
           <div className="flex flex-col items-end shrink-0 gap-0.5">
-            {glickoRating != null ? (
+            {isProvisional ? (
+              <div className="flex flex-col items-end">
+                <span className="text-[#F59E0B] text-[10px] font-semibold leading-tight">
+                  Classement après
+                </span>
+                <span className="text-[#F59E0B] text-[10px] font-semibold leading-tight">
+                  10 parties
+                </span>
+                <span className="text-white/30 text-[9px]">{entry.totalGames}/10 jouées</span>
+              </div>
+            ) : glickoRating != null ? (
               <>
-                <div className="flex items-center gap-1">
-                  {isProvisional && (
-                    <span className="text-[#F59E0B] text-[9px] font-bold tracking-wide uppercase bg-[#F59E0B20] px-1.5 py-0.5 rounded">
-                      Provisoire
-                    </span>
-                  )}
-                  <span className={`font-bold text-sm leading-none ${isProvisional ? 'text-[#F59E0B]' : 'text-[#9B59B6]'}`}>
-                    {glickoRating.toFixed(0)}
-                  </span>
-                </div>
+                <span className="text-[#9B59B6] font-bold text-sm leading-none">
+                  {glickoRating.toFixed(0)}
+                </span>
                 {glickoDeviation != null && (
                   <span className="text-white/25 text-[10px]">±{glickoDeviation.toFixed(0)}</span>
                 )}
