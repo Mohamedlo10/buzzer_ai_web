@@ -23,6 +23,9 @@ export function ProgressiveQuestionDisplay({
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const currentIndexRef = useRef(wordIndex);
   currentIndexRef.current = wordIndex;
+  const onFullyDisplayedRef = useRef(onFullyDisplayed);
+  onFullyDisplayedRef.current = onFullyDisplayed;
+  const hasCalledOnCompleteRef = useRef(false);
 
   const advance = useCallback(() => {
     if (currentIndexRef.current < words.length - 1) {
@@ -31,24 +34,29 @@ export function ProgressiveQuestionDisplay({
     } else {
       if (timerRef.current) clearInterval(timerRef.current);
       timerRef.current = null;
-      onFullyDisplayed?.();
+      if (!hasCalledOnCompleteRef.current) {
+        hasCalledOnCompleteRef.current = true;
+        onFullyDisplayedRef.current?.();
+      }
     }
-  }, [words.length, onWordAdvance, onFullyDisplayed]);
+  }, [words.length, onWordAdvance]);
 
   useEffect(() => {
     if (timerRef.current) clearInterval(timerRef.current);
     timerRef.current = null;
 
     if (isRunning && wordIndex < words.length - 1) {
+      hasCalledOnCompleteRef.current = false;
       timerRef.current = setInterval(advance, speedMs);
-    } else if (wordIndex >= words.length - 1) {
-      onFullyDisplayed?.();
+    } else if (wordIndex >= words.length - 1 && !hasCalledOnCompleteRef.current) {
+      hasCalledOnCompleteRef.current = true;
+      onFullyDisplayedRef.current?.();
     }
 
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [isRunning, wordIndex, words.length, speedMs, advance, onFullyDisplayed]);
+  }, [isRunning, wordIndex, words.length, speedMs, advance]);
 
   const revealedText = words.slice(0, wordIndex + 1).join(' ');
   const isFullyRevealed = wordIndex >= words.length - 1;
