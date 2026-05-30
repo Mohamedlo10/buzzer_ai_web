@@ -26,6 +26,8 @@ import {
 } from 'recharts';
 import { KpiCard } from '~/components/admin/KpiCard';
 import * as adminApi from '~/lib/api/admin';
+import { useAuthStore } from '~/stores/useAuthStore';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 const PERIOD_TABS = [
@@ -44,6 +46,8 @@ const CHART_TABS = [
 export default function AdminDashboardPage() {
   const [period, setPeriod] = useState('30d');
   const [chartTab, setChartTab] = useState('userGrowth');
+  const logout = useAuthStore((s) => s.logout);
+  const router = useRouter();
 
   const { data: stats, isLoading: statsLoading, refetch: refetchStats } = useQuery({
     queryKey: ['adminStats'],
@@ -83,13 +87,22 @@ export default function AdminDashboardPage() {
           <h1 className="text-white text-2xl font-bold">Dashboard</h1>
           <p className="text-white/50 text-sm">Vue d'ensemble de la plateforme</p>
         </div>
-        <button
-          onClick={() => refetchStats()}
-          className="flex items-center gap-2 px-4 py-2 bg-[#3E3666] rounded-xl text-white/70 hover:text-white hover:bg-[#4E4676] transition-colors text-sm"
-        >
-          <RefreshCw size={16} />
-          Actualiser
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => refetchStats()}
+            className="flex items-center gap-2 px-4 py-2 bg-[#3E3666] rounded-xl text-white/70 hover:text-white hover:bg-[#4E4676] transition-colors text-sm"
+          >
+            <RefreshCw size={16} />
+            Actualiser
+          </button>
+          <button
+            onClick={async () => { await logout(); router.replace('/'); }}
+            className="flex items-center gap-2 px-4 py-2 bg-[#3E3666] rounded-xl text-red-400 hover:text-red-300 hover:bg-[#4E4676] transition-colors text-sm"
+            title="Déconnexion"
+          >
+            <LogOut size={16} />
+          </button>
+        </div>
       </div>
 
       {/* KPI Cards */}
