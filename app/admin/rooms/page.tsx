@@ -1,79 +1,171 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Search, FolderOpen, Users, ChevronRight } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
+import {
+  ArrowLeft,
+  Eye,
+  Trash2,
+  ArrowRightLeft,
+  X,
+  FolderOpen,
+  Users,
+  Gamepad2,
+} from 'lucide-react';
 
-import { Card } from '~/components/ui/Card';
-import { Spinner } from '~/components/loading/Spinner';
+import { DataTable } from '~/components/admin/DataTable';
 import * as adminApi from '~/lib/api/admin';
-import type { AdminRoomSummaryResponse } from '~/types/api';
+import type { AdminRoomResponse } from '~/types/api';
 
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString('fr-FR', {
-    day: '2-digit', month: '2-digit', year: '2-digit',
-  });
-}
+const PAGE_SIZE = 20;
 
 export default function AdminRoomsPage() {
   const router = useRouter();
-  const [rooms, setRooms] = useState<AdminRoomSummaryResponse[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [search, setSearch] = useState('');
+  const queryClient = useQueryClient();
   const [page, setPage] = useState(0);
-  const [hasMore, setHasMore] = useState(true);
-
-  const loadRooms = useCallback(async (pageNum = 0, append = false, searchVal = search) => {
-    try {
-      const params: Record<string, unknown> = { page: pageNum, size: 20 };
-      if (searchVal.trim()) params.search = searchVal.trim();
-      const response = await adminApi.getAdminRooms(params);
-      if (append) {
-        setRooms((prev) => [...prev, ...response.content]);
-      } else {
-        setRooms(response.content);
-      }
-      setHasMore(!response.last);
-    } catch (err) {
-      console.error('Failed to load rooms:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [transferRoom, setTransferRoom] = useState<AdminRoomResponse | null>(null);
+  const [newOwnerId, setNewOwnerId] = useState('');
 
   useEffect(() => {
-    loadRooms();
-  }, [loadRooms]);
+    const t = setTimeout(() => setDebouncedSearch(search), 400);
+    return () => clearTimeout(t);
+  }, [search]);
 
-  const handleSearch = (val: string) => {
-    setSearch(val);
-    setPage(0);
-    setIsLoading(true);
-    loadRooms(0, false, val);
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: ['adminRooms', page, debouncedSearch],
+    queryFn: () =>
+      adminApi.getAdminRooms({
+        search: debouncedSearch || undefined,
+        page,
+        size: PAGE_SIZE,
+      }),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (roomId: string) => adminApi.deleteAdminRoom(roomId),
+    onSuccess: () => {
+      toast.success('Salle supprimée');
+      queryClient.invalidateQueries({ queryKey: ['adminRooms'] });
+    },
+    onError: () => toast.error('Impossible de supprimer la salle'),
+  });
+
+  const transferMutation = useMutation({
+    mutationFn: ({ roomId, newOwnerId: ownerId }: { roomId: string; newOwnerId: string }) =>
+      adminApi.transferRoomOwnership(roomId, ownerId),
+    onSuccess: () => {
+      toast.success('Propriété transférée');
+      setTransferRoom(null);
+      setNewOwnerId('');
+      queryClient.invalidateQueries({ queryKey: ['adminRooms'] });
+    },
+    onError: () => toast.error('Impossible de transférer la propriété'),
+  });
+
+  const handleDelete = (room: AdminRoomResponse) => {
+    if (!window.confirm(`Supprimer la salle "${room.name}" ?`)) return;
+    deleteMutation.mutate(room.id);
   };
 
-  const handleRefresh = async () => {
-    setIsRefreshing(true);
-    setPage(0);
-    await loadRooms(0, false, search);
-    setIsRefreshing(false);
+  const handleTransfer = () => {
+    if (!transferRoom || !newOwnerId.trim()) return;
+    transferMutation.mutate({ roomId: transferRoom.id, newOwnerId: newOwnerId.trim() });
   };
 
-  const handleLoadMore = () => {
-    if (hasMore && !isLoading) {
-      const nextPage = page + 1;
-      setPage(nextPage);
-      loadRooms(nextPage, true);
-    }
-  };
+  const rooms = data?.content ?? [];
+  const totalPages = data?.totalPages ?? 1;
 
-  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
-    if (scrollHeight - scrollTop - clientHeight < 80) {
-      handleLoadMore();
-    }
-  };
+  const columns = [
+    {
+      key: 'name',
+      header: 'Nom',
+      render: (row: AdminRoomResponse) => (
+        <div className="flex items-center gap-2">
+          <FolderOpen size={16} color="#9B59B6" />
+          <span className="text-white font-medium">{row.name}</span>
+        </div>
+      ),
+    },
+    { key: 'code', header: 'Code' },
+    { key: 'ownerUsername', header: 'Propriétaire' },
+    {
+      key: 'memberCount',
+      header: 'Membres',
+      render: (row: AdminRoomResponse) => (
+        <div className="flex items-center gap-1">
+          <Users size={14} color="#FFFFFF60" />
+          <span>{row.memberCount}</span>
+        </div>
+      ),
+    },
+    {
+      key: 'sessionCount',
+      header: 'Sessions',
+      render: (row: AdminRoomResponse) => (
+        <div className="flex items-center gap-1">
+          <Gamepad2 size={14} color="#FFFFFF60" />
+          <span>{row.sessionCount}</span>
+        </div>
+      ),
+    },
+    {
+      key: 'isActive',
+      header: 'Statut',
+      render: (row: AdminRoomResponse) => (
+        <span
+          className="text-xs px-2 py-0.5 rounded-full font-medium"
+          style={{
+            backgroundColor: row.isActive ? '#00D39720' : '#D5442F20',
+            color: row.isActive ? '#00D397' : '#D5442F',
+          }}
+        >
+          {row.isActive ? 'Active' : 'Inactive'}
+        </span>
+      ),
+    },
+    {
+      key: 'actions',
+      header: 'Actions',
+      render: (row: AdminRoomResponse) => (
+        <div className="flex items-center gap-2">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              router.push(`/admin/rooms/${row.id}`);
+            }}
+            className="p-1.5 rounded-lg bg-[#3E3666] hover:bg-[#4E4676] text-white/70 hover:text-white transition-colors"
+            title="Voir détail"
+          >
+            <Eye size={14} />
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setTransferRoom(row);
+            }}
+            className="p-1.5 rounded-lg bg-[#3E3666] hover:bg-[#4E4676] text-white/70 hover:text-white transition-colors"
+            title="Transférer propriété"
+          >
+            <ArrowRightLeft size={14} />
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDelete(row);
+            }}
+            className="p-1.5 rounded-lg bg-[#D5442F20] hover:bg-[#D5442F30] text-[#D5442F] transition-colors"
+            title="Supprimer"
+          >
+            <Trash2 size={14} />
+          </button>
+        </div>
+      ),
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-[#292349] flex flex-col">
@@ -88,90 +180,74 @@ export default function AdminRoomsPage() {
           </button>
           <div className="flex-1">
             <p className="text-white font-bold text-xl">Salles</p>
-            <p className="text-white/60 text-xs">{rooms.length} salle{rooms.length !== 1 ? 's' : ''}</p>
+            <p className="text-white/60 text-xs">
+              {data?.totalElements ?? 0} salle{(data?.totalElements ?? 0) !== 1 ? 's' : ''}
+            </p>
           </div>
           <button
-            onClick={handleRefresh}
-            disabled={isRefreshing}
+            onClick={() => refetch()}
+            disabled={isLoading}
             className="text-[#00D397] text-sm font-medium hover:opacity-80 disabled:opacity-40 transition-opacity"
           >
-            {isRefreshing ? 'Actualisation...' : 'Actualiser'}
+            {isLoading ? 'Actualisation...' : 'Actualiser'}
           </button>
         </div>
       </div>
 
-      {/* Search */}
-      <div className="px-4 py-3">
-        <div className="flex items-center bg-[#342D5B] rounded-xl border border-[#3E3666] px-4">
-          <Search size={18} color="#FFFFFF60" className="shrink-0" />
-          <input
-            value={search}
-            onChange={(e) => handleSearch(e.target.value)}
-            placeholder="Rechercher par nom ou code..."
-            className="flex-1 py-3 px-3 bg-transparent text-white focus:outline-none placeholder-white/40 text-sm"
-          />
-        </div>
+      <div className="flex-1 p-4 overflow-y-auto">
+        <DataTable
+          columns={columns}
+          data={rooms}
+          keyExtractor={(row) => row.id}
+          page={page}
+          totalPages={totalPages}
+          onPageChange={setPage}
+          searchPlaceholder="Rechercher par nom ou code..."
+          onSearch={setSearch}
+          searchQuery={search}
+          isLoading={isLoading}
+        />
       </div>
 
-      {/* Rooms list */}
-      <div className="flex-1 overflow-y-auto px-4" onScroll={handleScroll}>
-        {isLoading ? (
-          <div className="flex items-center justify-center py-16">
-            <Spinner text="Chargement..." />
+      {/* Transfer modal */}
+      {transferRoom && (
+        <div className="fixed inset-0 bg-black/60 flex items-end sm:items-center justify-center z-50 px-4">
+          <div className="absolute inset-0" onClick={() => setTransferRoom(null)} />
+          <div className="relative bg-[#342D5B] rounded-2xl border border-[#3E3666] p-6 w-full max-w-md">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-white font-bold">Transférer la salle</h3>
+              <button onClick={() => setTransferRoom(null)} className="p-1 text-white/50 hover:text-white">
+                <X size={18} />
+              </button>
+            </div>
+            <p className="text-white/60 text-sm mb-4">
+              Salle : <span className="text-white font-medium">{transferRoom.name}</span>
+            </p>
+            <label className="text-white/60 text-sm block mb-2">Nouveau propriétaire (userId)</label>
+            <input
+              value={newOwnerId}
+              onChange={(e) => setNewOwnerId(e.target.value)}
+              placeholder="ID utilisateur..."
+              className="w-full bg-[#292349] text-white px-4 py-3 rounded-xl border border-[#3E3666] focus:border-[#9B59B6] focus:outline-none text-sm mb-4"
+            />
+            <div className="flex gap-3">
+              <button
+                onClick={() => setTransferRoom(null)}
+                className="flex-1 py-3 rounded-xl bg-[#3E3666] text-white text-sm font-medium hover:bg-[#4E4676] transition-colors"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={handleTransfer}
+                disabled={!newOwnerId.trim() || transferMutation.isPending}
+                className="flex-1 py-3 rounded-xl bg-[#9B59B6] text-white text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40"
+              >
+                {transferMutation.isPending ? 'Transfert...' : 'Transférer'}
+              </button>
+            </div>
           </div>
-        ) : rooms.length === 0 ? (
-          <Card className="flex items-center justify-center py-12">
-            <p className="text-white/50">Aucune salle trouvée</p>
-          </Card>
-        ) : (
-          rooms.map((room) => (
-            <button
-              key={room.id}
-              onClick={() => router.push(`/admin/rooms/${room.id}`)}
-              className="w-full text-left mb-3"
-            >
-              <Card>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-[#3E3666] flex items-center justify-center shrink-0">
-                    <FolderOpen size={20} color="#FFFFFF" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="text-white font-semibold truncate">{room.name}</span>
-                      {!room.isActive && (
-                        <span className="text-xs px-1.5 py-0.5 rounded bg-[#D5442F20] text-[#D5442F] shrink-0">Inactive</span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-3 mt-0.5">
-                      <span className="text-white/40 text-xs">Code: {room.code}</span>
-                      <span className="text-white/40 text-xs">par {room.ownerUsername}</span>
-                    </div>
-                    <div className="flex items-center gap-3 mt-0.5">
-                      <div className="flex items-center gap-1">
-                        <Users size={11} color="#FFFFFF60" />
-                        <span className="text-white/50 text-xs">{room.memberCount} membre{room.memberCount !== 1 ? 's' : ''}</span>
-                      </div>
-                      <span className="text-white/40 text-xs">{room.sessionCount} session{room.sessionCount !== 1 ? 's' : ''}</span>
-                      <span className="text-white/30 text-xs">Créée {formatDate(room.createdAt)}</span>
-                    </div>
-                  </div>
-                  <ChevronRight size={18} color="#FFFFFF40" className="shrink-0" />
-                </div>
-              </Card>
-            </button>
-          ))
-        )}
-
-        {hasMore && !isLoading && (
-          <button
-            onClick={handleLoadMore}
-            className="w-full py-3 text-[#00D397] text-sm font-medium hover:opacity-80 transition-opacity mb-4"
-          >
-            Charger plus
-          </button>
-        )}
-        <div className="h-8" />
-      </div>
+        </div>
+      )}
     </div>
   );
 }

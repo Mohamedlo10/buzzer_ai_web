@@ -1,18 +1,52 @@
 'use client';
 
-import { useAuthStore } from '~/stores/useAuthStore';
-import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuthStore } from '~/stores/useAuthStore';
+import { AdminSidebar } from '~/components/admin/AdminSidebar';
+import { AdminHeader } from '~/components/admin/AdminHeader';
+import { Toaster } from 'sonner';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const user = useAuthStore((s) => s.user);
   const router = useRouter();
+  const user = useAuthStore((s) => s.user);
+  const isLoading = useAuthStore((s) => s.isLoading);
 
   useEffect(() => {
-    if (user && user.role !== 'SUPER_ADMIN') {
-      router.replace('/dashboard');
+    if (!isLoading && (!user || user.role !== 'SUPER_ADMIN')) {
+      router.replace('/');
     }
-  }, [user, router]);
+  }, [user, isLoading, router]);
 
-  return <>{children}</>;
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#292349] flex items-center justify-center">
+        <div className="w-10 h-10 border-4 border-[#9B59B6] border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!user || user.role !== 'SUPER_ADMIN') return null;
+
+  return (
+    <div className="min-h-screen bg-[#292349] flex">
+      <AdminSidebar />
+      <div className="flex-1 flex flex-col min-w-0">
+        <AdminHeader />
+        <main className="flex-1 p-6 overflow-y-auto">
+          {children}
+        </main>
+      </div>
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          style: {
+            background: '#342D5B',
+            color: '#fff',
+            border: '1px solid #3E3666',
+          },
+        }}
+      />
+    </div>
+  );
 }

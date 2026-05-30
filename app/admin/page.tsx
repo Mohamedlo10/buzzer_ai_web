@@ -1,453 +1,333 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Users, Gamepad2, Brain, DollarSign, Crown, ChevronRight, Cpu, LogOut, Trophy, AlertTriangle, CheckCircle, FolderOpen, BookOpen, X, RefreshCw } from 'lucide-react';
-
-import { Card } from '~/components/ui/Card';
-import { Spinner } from '~/components/loading/Spinner';
-import { StatCard } from '~/components/admin/StatCard';
+import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
+import {
+  Users,
+  Gamepad2,
+  Brain,
+  DollarSign,
+  Trophy,
+  Flame,
+  DoorOpen,
+  BookOpen,
+  Activity,
+  RefreshCw,
+} from 'lucide-react';
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from 'recharts';
+import { KpiCard } from '~/components/admin/KpiCard';
 import * as adminApi from '~/lib/api/admin';
-import * as rankingsApi from '~/lib/api/rankings';
-import type { AdminStatsResponse } from '~/types/api';
-import { useAuthStore } from '~/stores/useAuthStore';
+import Link from 'next/link';
+
+const PERIOD_TABS = [
+  { label: '7 jours', value: '7d' },
+  { label: '30 jours', value: '30d' },
+  { label: '90 jours', value: '90d' },
+];
+
+const CHART_TABS = [
+  { label: 'Utilisateurs', key: 'userGrowth', color: '#3B82F6' },
+  { label: 'Sessions', key: 'sessionCreated', color: '#10B981' },
+  { label: 'Coût AI', key: 'aiCost', color: '#F59E0B' },
+  { label: 'Joueurs actifs', key: 'activePlayers', color: '#9B59B6' },
+];
 
 export default function AdminDashboardPage() {
-  const router = useRouter();
-  const logout = useAuthStore((s) => s.logout);
-  const [stats, setStats] = useState<AdminStatsResponse | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [isRecalculatingGlobal, setIsRecalculatingGlobal] = useState(false);
-  const [isRecalculatingRooms, setIsRecalculatingRooms] = useState(false);
-  const [globalResult, setGlobalResult] = useState<{ ok: boolean; message: string } | null>(null);
-  const [roomsResult, setRoomsResult] = useState<{ ok: boolean; message: string } | null>(null);
-  const [confirmAction, setConfirmAction] = useState<'global' | 'rooms' | null>(null);
+  const [period, setPeriod] = useState('30d');
+  const [chartTab, setChartTab] = useState('userGrowth');
 
-  const loadStats = async () => {
-    try {
-      const data = await adminApi.getAdminStats();
-      setStats(data);
-    } catch (err) {
-      console.error('Failed to load admin stats:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const { data: stats, isLoading: statsLoading, refetch: refetchStats } = useQuery({
+    queryKey: ['adminStats'],
+    queryFn: adminApi.getAdminStats,
+  });
 
-  const handleConfirmRecalculate = async () => {
-    const action = confirmAction;
-    setConfirmAction(null);
-    if (!action) return;
+  const { data: timeline, isLoading: timelineLoading } = useQuery({
+    queryKey: ['adminTimeline', period],
+    queryFn: () => adminApi.getAdminTimeline(period),
+  });
 
-    if (action === 'global') {
-      setIsRecalculatingGlobal(true);
-      setGlobalResult(null);
-      try {
-        const res = await rankingsApi.recalculateGlobalRankings();
-        setGlobalResult({ ok: true, message: res.message });
-      } catch (err: any) {
-        const message = err?.response?.data?.message || err?.message || 'Erreur lors du recalcul';
-        setGlobalResult({ ok: false, message });
-      } finally {
-        setIsRecalculatingGlobal(false);
-      }
-    } else {
-      setIsRecalculatingRooms(true);
-      setRoomsResult(null);
-      try {
-        const res = await rankingsApi.recalculateRoomRankings();
-        setRoomsResult({ ok: true, message: res.message });
-      } catch (err: any) {
-        const message = err?.response?.data?.message || err?.message || 'Erreur lors du recalcul';
-        setRoomsResult({ ok: false, message });
-      } finally {
-        setIsRecalculatingRooms(false);
-      }
-    }
-  };
+  const { data: topStats, isLoading: topLoading } = useQuery({
+    queryKey: ['adminTopStats'],
+    queryFn: adminApi.getAdminTopStats,
+  });
 
-  const handleRefresh = async () => {
-    setIsRefreshing(true);
-    await loadStats();
-    setIsRefreshing(false);
-  };
+  const { data: activeSessions, isLoading: activeLoading } = useQuery({
+    queryKey: ['adminActiveSessions'],
+    queryFn: adminApi.getAdminActiveSessions,
+    refetchInterval: 10000,
+  });
 
-  useEffect(() => {
-    loadStats();
-  }, []);
+  const chartData = timeline
+    ? (timeline as any)[chartTab]?.map((d: any) => ({
+        date: new Date(d.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }),
+        value: d.costValue != null ? d.costValue : d.value,
+      }))
+    : [];
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-[#292349] flex items-center justify-center">
-        <Spinner text="Chargement..." />
-      </div>
-    );
-  }
-
-  if (!stats) {
-    return (
-      <div className="min-h-screen bg-[#292349] flex items-center justify-center px-4">
-        <div className="flex flex-col items-center">
-          <p className="text-white/60">Erreur de chargement</p>
-          <button
-            onClick={loadStats}
-            className="mt-4 bg-[#00D397] px-6 py-3 rounded-xl hover:bg-[#00B377] transition-colors"
-          >
-            <span className="text-[#292349] font-bold">Réessayer</span>
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  const totalTokens = stats.aiInputTokensThisMonth + stats.aiOutputTokensThisMonth;
+  const chartConfig = CHART_TABS.find((c) => c.key === chartTab);
 
   return (
-    <div className="min-h-screen bg-[#292349]">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="bg-[#292349] pt-6 pb-4 px-4 border-b border-[#3E3666]">
-        <div className="flex items-center">
-          <div className="flex-1">
-            <p className="text-white font-bold text-xl">Admin Dashboard</p>
-            <div className="flex items-center mt-0.5 gap-1">
-              <Crown size={12} color="#FFD700" />
-              <span className="text-[#FFD700] text-xs">Super Admin</span>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={handleRefresh}
-              disabled={isRefreshing}
-              className="text-[#00D397] text-sm font-medium hover:opacity-80 disabled:opacity-40 transition-opacity"
-            >
-              {isRefreshing ? 'Actualisation...' : 'Actualiser'}
-            </button>
-            <button
-              onClick={async () => { await logout(); router.replace('/login'); }}
-              className="w-9 h-9 rounded-full bg-[#D5442F20] flex items-center justify-center hover:bg-[#D5442F40] transition-colors"
-            >
-              <LogOut size={16} color="#D5442F" />
-            </button>
-          </div>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-white text-2xl font-bold">Dashboard</h1>
+          <p className="text-white/50 text-sm">Vue d'ensemble de la plateforme</p>
         </div>
-      </div>
-
-      <div className="overflow-y-auto">
-        {/* Stats Grid */}
-        <div className="px-4 pt-4">
-          <div className="flex flex-wrap gap-3">
-            <div className="w-[calc(50%-6px)]">
-              <StatCard
-                title="Utilisateurs"
-                value={stats.totalUsers}
-                icon={Users}
-                color="#00D397"
-              />
-            </div>
-            <div className="w-[calc(50%-6px)]">
-              <StatCard
-                title="Sessions actives"
-                value={stats.activeSessions}
-                icon={Gamepad2}
-                color="#FFD700"
-              />
-            </div>
-            <div className="w-[calc(50%-6px)]">
-              <StatCard
-                title="Total sessions"
-                value={stats.totalSessions}
-                icon={Brain}
-                color="#9B59B6"
-              />
-            </div>
-            <div className="w-[calc(50%-6px)]">
-              <StatCard
-                title="Coût AI (mois)"
-                value={`$${stats.aiCostThisMonth.toFixed(3)}`}
-                icon={DollarSign}
-                color="#D5442F"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* AI Tokens */}
-        <div className="px-4 pt-4">
-          <Card>
-            <div className="flex items-center gap-2 mb-4">
-              <Cpu size={16} color="#9B59B6" />
-              <p className="text-white font-semibold">Tokens AI ce mois</p>
-            </div>
-            <div className="flex justify-between mb-2">
-              <span className="text-white/60 text-sm">Input tokens</span>
-              <span className="text-white font-medium">{stats.aiInputTokensThisMonth.toLocaleString()}</span>
-            </div>
-            <div className="flex justify-between mb-3">
-              <span className="text-white/60 text-sm">Output tokens</span>
-              <span className="text-white font-medium">{stats.aiOutputTokensThisMonth.toLocaleString()}</span>
-            </div>
-            <div className="h-2 bg-[#3E3666] rounded-full overflow-hidden flex">
-              {totalTokens > 0 && (
-                <>
-                  <div
-                    className="h-full bg-[#4A90D9]"
-                    style={{ width: `${(stats.aiInputTokensThisMonth / totalTokens) * 100}%` }}
-                  />
-                  <div
-                    className="h-full bg-[#9B59B6]"
-                    style={{ width: `${(stats.aiOutputTokensThisMonth / totalTokens) * 100}%` }}
-                  />
-                </>
-              )}
-            </div>
-            <div className="flex gap-4 mt-2">
-              <div className="flex items-center gap-1">
-                <div className="w-2 h-2 rounded-full bg-[#4A90D9]" />
-                <span className="text-white/40 text-xs">Input</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <div className="w-2 h-2 rounded-full bg-[#9B59B6]" />
-                <span className="text-white/40 text-xs">Output</span>
-              </div>
-              <span className="text-white/40 text-xs ml-auto">Total: {totalTokens.toLocaleString()}</span>
-            </div>
-          </Card>
-        </div>
-
-        {/* Quick Actions */}
-        <div className="px-4 pt-4 pb-8">
-          <p className="text-white font-bold text-lg mb-3">Actions rapides</p>
-
-          <button
-            onClick={() => router.push('/admin/users')}
-            className="w-full bg-[#342D5B] rounded-xl p-4 border border-[#3E3666] mb-3 hover:opacity-80 transition-opacity text-left"
-          >
-            <div className="flex items-center">
-              <div className="w-10 h-10 rounded-lg bg-[#00D39720] flex items-center justify-center mr-3">
-                <Users size={20} color="#00D397" />
-              </div>
-              <div className="flex-1">
-                <p className="text-white font-semibold">Gestion utilisateurs</p>
-                <p className="text-white/50 text-sm">Voir et modifier les rôles</p>
-              </div>
-              <ChevronRight size={20} color="#FFFFFF" />
-            </div>
-          </button>
-
-          <button
-            onClick={() => router.push('/admin/sessions')}
-            className="w-full bg-[#342D5B] rounded-xl p-4 border border-[#3E3666] mb-3 hover:opacity-80 transition-opacity text-left"
-          >
-            <div className="flex items-center">
-              <div className="w-10 h-10 rounded-lg bg-[#FFD70020] flex items-center justify-center mr-3">
-                <Gamepad2 size={20} color="#FFD700" />
-              </div>
-              <div className="flex-1">
-                <p className="text-white font-semibold">Gestion sessions</p>
-                <p className="text-white/50 text-sm">Forcer l'arrêt des sessions</p>
-              </div>
-              <ChevronRight size={20} color="#FFFFFF" />
-            </div>
-          </button>
-
-          <button
-            onClick={() => router.push('/admin/rooms')}
-            className="w-full bg-[#342D5B] rounded-xl p-4 border border-[#3E3666] mb-3 hover:opacity-80 transition-opacity text-left"
-          >
-            <div className="flex items-center">
-              <div className="w-10 h-10 rounded-lg bg-[#4A90D920] flex items-center justify-center mr-3">
-                <FolderOpen size={20} color="#4A90D9" />
-              </div>
-              <div className="flex-1">
-                <p className="text-white font-semibold">Gestion salles</p>
-                <p className="text-white/50 text-sm">Membres et sessions par salle</p>
-              </div>
-              <ChevronRight size={20} color="#FFFFFF" />
-            </div>
-          </button>
-
-          <button
-            onClick={() => router.push('/admin/questions')}
-            className="w-full bg-[#342D5B] rounded-xl p-4 border border-[#3E3666] mb-3 hover:opacity-80 transition-opacity text-left"
-          >
-            <div className="flex items-center">
-              <div className="w-10 h-10 rounded-lg bg-[#E67E2220] flex items-center justify-center mr-3">
-                <BookOpen size={20} color="#E67E22" />
-              </div>
-              <div className="flex-1">
-                <p className="text-white font-semibold">Historique questions</p>
-                <p className="text-white/50 text-sm">Questions par catégorie et vainqueurs</p>
-              </div>
-              <ChevronRight size={20} color="#FFFFFF" />
-            </div>
-          </button>
-
-          {/* Maintenance des classements */}
-          <p className="text-white font-bold text-lg mb-3 mt-2">Maintenance des classements</p>
-
-          <div className="bg-[#FFD70010] rounded-xl p-3 border border-[#FFD70030] flex gap-2 mb-4">
-            <AlertTriangle size={14} color="#FFD700" className="flex-shrink-0 mt-0.5" />
-            <p className="text-[#FFD700] text-xs leading-relaxed">
-              Ces opérations remettent à zéro et recalculent les classements depuis l'historique complet des parties. Les parties jouées en tant que manager sont exclues. Une confirmation sera demandée avant chaque action.
-            </p>
-          </div>
-
-          {/* Global rankings */}
-          <div className="bg-[#342D5B] rounded-xl border border-[#3E3666] p-4 mb-3">
-            <div className="flex items-center mb-3">
-              <div className="w-10 h-10 rounded-lg bg-[#9B59B620] flex items-center justify-center mr-3 flex-shrink-0">
-                <Trophy size={20} color="#9B59B6" />
-              </div>
-              <div className="flex-1">
-                <p className="text-white font-semibold">Classement global</p>
-                <p className="text-white/50 text-sm">Recalcul toutes les statistiques joueurs</p>
-              </div>
-            </div>
-
-            {globalResult && (
-              <div
-                className={`flex items-center gap-2 rounded-lg px-3 py-2 mb-3 ${
-                  globalResult.ok
-                    ? 'bg-[#00D39715] border border-[#00D39740]'
-                    : 'bg-[#D5442F15] border border-[#D5442F40]'
-                }`}
-              >
-                {globalResult.ok
-                  ? <CheckCircle size={14} color="#00D397" />
-                  : <AlertTriangle size={14} color="#D5442F" />}
-                <span className={`text-xs font-medium ${globalResult.ok ? 'text-[#00D397]' : 'text-[#D5442F]'}`}>
-                  {globalResult.message}
-                </span>
-              </div>
-            )}
-
-            <button
-              onClick={() => setConfirmAction('global')}
-              disabled={isRecalculatingGlobal || isRecalculatingRooms}
-              className="w-full py-3 rounded-xl flex items-center justify-center gap-2 transition-colors disabled:opacity-60 bg-[#9B59B630] border border-[#9B59B650] hover:bg-[#9B59B650]"
-            >
-              {isRecalculatingGlobal ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-[#9B59B6] border-t-transparent rounded-full animate-spin" />
-                  <span className="text-[#9B59B6] font-semibold text-sm">Recalcul en cours...</span>
-                </>
-              ) : (
-                <>
-                  <RefreshCw size={16} color="#9B59B6" />
-                  <span className="text-[#9B59B6] font-semibold text-sm">Recalculer le classement global</span>
-                </>
-              )}
-            </button>
-          </div>
-
-          {/* Room rankings */}
-          <div className="bg-[#342D5B] rounded-xl border border-[#3E3666] p-4">
-            <div className="flex items-center mb-3">
-              <div className="w-10 h-10 rounded-lg bg-[#4A90D920] flex items-center justify-center mr-3 flex-shrink-0">
-                <FolderOpen size={20} color="#4A90D9" />
-              </div>
-              <div className="flex-1">
-                <p className="text-white font-semibold">Classements rooms</p>
-                <p className="text-white/50 text-sm">Recalcul des classements par salon</p>
-              </div>
-            </div>
-
-            {roomsResult && (
-              <div
-                className={`flex items-center gap-2 rounded-lg px-3 py-2 mb-3 ${
-                  roomsResult.ok
-                    ? 'bg-[#00D39715] border border-[#00D39740]'
-                    : 'bg-[#D5442F15] border border-[#D5442F40]'
-                }`}
-              >
-                {roomsResult.ok
-                  ? <CheckCircle size={14} color="#00D397" />
-                  : <AlertTriangle size={14} color="#D5442F" />}
-                <span className={`text-xs font-medium ${roomsResult.ok ? 'text-[#00D397]' : 'text-[#D5442F]'}`}>
-                  {roomsResult.message}
-                </span>
-              </div>
-            )}
-
-            <button
-              onClick={() => setConfirmAction('rooms')}
-              disabled={isRecalculatingGlobal || isRecalculatingRooms}
-              className="w-full py-3 rounded-xl flex items-center justify-center gap-2 transition-colors disabled:opacity-60 bg-[#4A90D930] border border-[#4A90D950] hover:bg-[#4A90D950]"
-            >
-              {isRecalculatingRooms ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-[#4A90D9] border-t-transparent rounded-full animate-spin" />
-                  <span className="text-[#4A90D9] font-semibold text-sm">Recalcul en cours...</span>
-                </>
-              ) : (
-                <>
-                  <RefreshCw size={16} color="#4A90D9" />
-                  <span className="text-[#4A90D9] font-semibold text-sm">Recalculer les classements rooms</span>
-                </>
-              )}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* ── Confirmation Modal ── */}
-      {confirmAction && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-6"
-          onClick={() => setConfirmAction(null)}
+        <button
+          onClick={() => refetchStats()}
+          className="flex items-center gap-2 px-4 py-2 bg-[#3E3666] rounded-xl text-white/70 hover:text-white hover:bg-[#4E4676] transition-colors text-sm"
         >
-          <div
-            className="bg-[#342D5B] rounded-2xl w-full max-w-sm border border-[#3E3666] overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Modal header */}
-            <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-[#3E3666]">
-              <div className="flex items-center gap-2">
-                <AlertTriangle size={18} color="#FFD700" />
-                <span className="text-white font-bold">Confirmer l'action</span>
-              </div>
-              <button
-                onClick={() => setConfirmAction(null)}
-                className="w-8 h-8 rounded-full bg-[#3E3666] flex items-center justify-center hover:bg-[#4E4676] transition-colors cursor-pointer"
-              >
-                <X size={16} color="#FFFFFF" />
-              </button>
-            </div>
+          <RefreshCw size={16} />
+          Actualiser
+        </button>
+      </div>
 
-            {/* Modal body */}
-            <div className="px-5 py-4">
-              <p className="text-white/80 text-sm leading-relaxed mb-3">
-                {confirmAction === 'global'
-                  ? 'Cette opération va recalculer tous les classements globaux depuis zéro (delete + recalcul complet).'
-                  : 'Cette opération va recalculer tous les classements par salon depuis zéro (delete + recalcul complet).'}
-              </p>
-              <div className="bg-[#FFD70010] rounded-lg p-3 border border-[#FFD70030] flex gap-2">
-                <AlertTriangle size={13} color="#FFD700" className="flex-shrink-0 mt-0.5" />
-                <p className="text-[#FFD700] text-xs leading-relaxed">
-                  Opération destructive — les données existantes seront supprimées avant recalcul. Continuer ?
-                </p>
-              </div>
-            </div>
+      {/* KPI Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <KpiCard
+          title="Utilisateurs"
+          value={stats?.totalUsers ?? '-'}
+          icon={Users}
+          iconColor="#3B82F6"
+          iconBg="#3B82F620"
+        />
+        <KpiCard
+          title="Sessions totales"
+          value={stats?.totalSessions ?? '-'}
+          icon={Gamepad2}
+          iconColor="#10B981"
+          iconBg="#10B98120"
+        />
+        <KpiCard
+          title="Sessions actives"
+          value={stats?.activeSessions ?? '-'}
+          icon={Activity}
+          iconColor="#F59E0B"
+          iconBg="#F59E0B20"
+        />
+        <KpiCard
+          title="Coût AI (mois)"
+          value={stats ? `$${stats.aiCostThisMonth.toFixed(2)}` : '-'}
+          icon={DollarSign}
+          iconColor="#EF4444"
+          iconBg="#EF444420"
+        />
+        <KpiCard
+          title="Questions générées"
+          value={stats?.totalQuestions ?? '-'}
+          icon={Brain}
+          iconColor="#8B5CF6"
+          iconBg="#8B5CF620"
+        />
+        <KpiCard
+          title="Tokens input"
+          value={stats?.aiInputTokensThisMonth ?? '-'}
+          icon={BookOpen}
+          iconColor="#06B6D4"
+          iconBg="#06B6D420"
+        />
+        <KpiCard
+          title="Tokens output"
+          value={stats?.aiOutputTokensThisMonth ?? '-'}
+          icon={BookOpen}
+          iconColor="#EC4899"
+          iconBg="#EC489920"
+        />
+        <KpiCard
+          title="Salles actives"
+          value={activeSessions?.length ?? '-'}
+          icon={DoorOpen}
+          iconColor="#00D397"
+          iconBg="#00D39720"
+        />
+      </div>
 
-            {/* Modal actions */}
-            <div className="px-5 pb-5 flex gap-3">
+      {/* Main Chart */}
+      <div className="bg-[#342D5B] rounded-2xl border border-[#3E3666] p-5">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+          <h2 className="text-white font-bold text-lg">Évolution temporelle</h2>
+          <div className="flex items-center gap-2">
+            {PERIOD_TABS.map((t) => (
               <button
-                onClick={() => setConfirmAction(null)}
-                className="flex-1 py-3 rounded-xl bg-[#3E3666] hover:bg-[#4E4676] transition-colors cursor-pointer"
+                key={t.value}
+                onClick={() => setPeriod(t.value)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                  period === t.value
+                    ? 'bg-[#9B59B6] text-white'
+                    : 'bg-[#3E3666] text-white/60 hover:text-white'
+                }`}
               >
-                <span className="text-white font-semibold text-sm">Annuler</span>
+                {t.label}
               </button>
-              <button
-                onClick={handleConfirmRecalculate}
-                className="flex-1 py-3 rounded-xl bg-[#D5442F30] border border-[#D5442F60] hover:bg-[#D5442F50] transition-colors cursor-pointer"
-              >
-                <span className="text-[#D5442F] font-semibold text-sm">Confirmer</span>
-              </button>
-            </div>
+            ))}
           </div>
         </div>
-      )}
+
+        <div className="flex flex-wrap gap-2 mb-4">
+          {CHART_TABS.map((t) => (
+            <button
+              key={t.key}
+              onClick={() => setChartTab(t.key)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5 ${
+                chartTab === t.key
+                  ? 'bg-[#292349] text-white'
+                  : 'text-white/40 hover:text-white/70'
+              }`}
+            >
+              <span className="w-2 h-2 rounded-full" style={{ backgroundColor: t.color }} />
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="h-72">
+          {timelineLoading ? (
+            <div className="h-full flex items-center justify-center text-white/50">Chargement...</div>
+          ) : (
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={chartData}>
+                <defs>
+                  <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor={chartConfig?.color} stopOpacity={0.3} />
+                    <stop offset="95%" stopColor={chartConfig?.color} stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#3E3666" />
+                <XAxis dataKey="date" stroke="#FFFFFF40" fontSize={12} />
+                <YAxis stroke="#FFFFFF40" fontSize={12} />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: '#1E1A40',
+                    border: '1px solid #3E3666',
+                    borderRadius: '12px',
+                    color: '#fff',
+                  }}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="value"
+                  stroke={chartConfig?.color}
+                  fill="url(#chartGradient)"
+                  strokeWidth={2}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+      </div>
+
+      {/* Bottom row : Top stats + Active sessions */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Top Players */}
+        <div className="bg-[#342D5B] rounded-2xl border border-[#3E3666] p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <Trophy size={18} color="#FFD700" />
+            <h3 className="text-white font-bold">Top Joueurs</h3>
+          </div>
+          {topLoading ? (
+            <div className="text-white/50 text-sm">Chargement...</div>
+          ) : (
+            <div className="space-y-3">
+              {topStats?.topPlayers.slice(0, 5).map((p, i) => (
+                <div key={p.userId} className="flex items-center gap-3">
+                  <span className={`w-6 text-center font-bold text-sm ${
+                    i === 0 ? 'text-[#FFD700]' : i === 1 ? 'text-[#C0C0C0]' : i === 2 ? 'text-[#CD7F32]' : 'text-white/40'
+                  }`}>
+                    {i + 1}
+                  </span>
+                  <img src={p.avatarUrl} alt="" className="w-8 h-8 rounded-full bg-[#292349]" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white text-sm font-medium truncate">{p.username}</p>
+                    <p className="text-white/40 text-xs">{p.totalWins} victoires</p>
+                  </div>
+                  <span className="text-[#9B59B6] font-bold text-sm">{p.glickoRating?.toFixed(0)}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Top Categories */}
+        <div className="bg-[#342D5B] rounded-2xl border border-[#3E3666] p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <Flame size={18} color="#F97316" />
+            <h3 className="text-white font-bold">Top Catégories</h3>
+          </div>
+          {topLoading ? (
+            <div className="text-white/50 text-sm">Chargement...</div>
+          ) : (
+            <div className="space-y-3">
+              {topStats?.topCategories.slice(0, 5).map((c, i) => (
+                <div key={c.category} className="flex items-center gap-3">
+                  <span className="w-6 text-center text-white/40 text-sm font-bold">{i + 1}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white text-sm font-medium truncate">{c.category}</p>
+                    <div className="w-full h-1.5 bg-[#292349] rounded-full mt-1">
+                      <div
+                        className="h-full rounded-full bg-orange-500"
+                        style={{ width: `${Math.min(100, (c.questionCount / (topStats.topCategories[0]?.questionCount || 1)) * 100)}%` }}
+                      />
+                    </div>
+                  </div>
+                  <span className="text-white/60 text-xs">{c.questionCount}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Active Sessions */}
+        <div className="bg-[#342D5B] rounded-2xl border border-[#3E3666] p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <Activity size={18} color="#00D397" />
+            <h3 className="text-white font-bold">Sessions en cours</h3>
+            <span className="ml-auto px-2 py-0.5 bg-[#00D39720] text-[#00D397] text-xs rounded-full font-semibold">
+              {activeSessions?.length ?? 0} live
+            </span>
+          </div>
+          {activeLoading ? (
+            <div className="text-white/50 text-sm">Chargement...</div>
+          ) : activeSessions?.length === 0 ? (
+            <div className="text-white/40 text-sm text-center py-6">Aucune session active</div>
+          ) : (
+            <div className="space-y-3 max-h-80 overflow-y-auto">
+              {activeSessions?.slice(0, 6).map((s) => (
+                <Link
+                  key={s.id}
+                  href={`/admin/sessions/${s.id}`}
+                  className="flex items-center gap-3 p-3 rounded-xl bg-[#292349] hover:bg-[#3E3666] transition-colors"
+                >
+                  <div className={`w-2.5 h-2.5 rounded-full ${
+                    s.status === 'PLAYING' ? 'bg-green-500 animate-pulse' :
+                    s.status === 'PAUSED' ? 'bg-yellow-500' :
+                    s.status === 'LOBBY' ? 'bg-blue-500' : 'bg-purple-500'
+                  }`} />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white text-sm font-medium truncate">#{s.code}</p>
+                    <p className="text-white/40 text-xs">{s.playerCount}/{s.maxPlayers} joueurs • Q{s.currentQuestionIndex}/{s.totalQuestions}</p>
+                  </div>
+                  <span className="text-white/30 text-xs">{formatDuration(s.secondsElapsed)}</span>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
+}
+
+function formatDuration(seconds: number) {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m}m${s.toString().padStart(2, '0')}s`;
 }

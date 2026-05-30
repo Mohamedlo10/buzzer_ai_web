@@ -1,8 +1,18 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { ArrowLeft, Crown, Users, Gamepad2 } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
+import {
+  ArrowLeft,
+  Crown,
+  Users,
+  Gamepad2,
+  Trash2,
+  ArrowRightLeft,
+  X,
+} from 'lucide-react';
 
 import { Card } from '~/components/ui/Card';
 import { Spinner } from '~/components/loading/Spinner';
@@ -32,17 +42,47 @@ export default function AdminRoomDetailPage() {
   const router = useRouter();
   const params = useParams();
   const roomId = params.roomId as string;
-
-  const [room, setRoom] = useState<AdminRoomDetailResponse | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<Tab>('info');
+  const [showTransferModal, setShowTransferModal] = useState(false);
+  const [newOwnerId, setNewOwnerId] = useState('');
 
-  useEffect(() => {
-    adminApi.getAdminRoomDetail(roomId)
-      .then(setRoom)
-      .catch(console.error)
-      .finally(() => setIsLoading(false));
-  }, [roomId]);
+  const { data: room, isLoading } = useQuery({
+    queryKey: ['adminRoomDetail', roomId],
+    queryFn: () => adminApi.getAdminRoomDetail(roomId),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: () => adminApi.deleteAdminRoom(roomId),
+    onSuccess: () => {
+      toast.success('Salle supprimée');
+      queryClient.invalidateQueries({ queryKey: ['adminRooms'] });
+      router.push('/admin/rooms');
+    },
+    onError: () => toast.error('Impossible de supprimer la salle'),
+  });
+
+  const transferMutation = useMutation({
+    mutationFn: (newOwner: string) => adminApi.transferRoomOwnership(roomId, newOwner),
+    onSuccess: () => {
+      toast.success('Propriété transférée');
+      setShowTransferModal(false);
+      setNewOwnerId('');
+      queryClient.invalidateQueries({ queryKey: ['adminRoomDetail', roomId] });
+      queryClient.invalidateQueries({ queryKey: ['adminRooms'] });
+    },
+    onError: () => toast.error('Impossible de transférer la propriété'),
+  });
+
+  const handleDelete = () => {
+    if (!window.confirm(`Supprimer la salle "${room?.name}" ? Cette action est irréversible.`)) return;
+    deleteMutation.mutate();
+  };
+
+  const handleTransfer = () => {
+    if (!newOwnerId.trim()) return;
+    transferMutation.mutate(newOwnerId.trim());
+  };
 
   if (isLoading) {
     return (
@@ -80,48 +120,65 @@ export default function AdminRoomDetailPage() {
               )}
             </div>
           </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowTransferModal(true)}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#3E3666] hover:bg-[#4E4676] text-white/80 hover:text-white transition-colors text-xs font-medium"
+            >
+              <ArrowRightLeft size={14} />
+              Transférer
+            </button>
+            <button
+              onClick={handleDelete}
+              disabled={deleteMutation.isPending}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#D5442F20] hover:bg-[#D5442F30] text-[#D5442F] transition-colors text-xs font-medium"
+            >
+              <Trash2 size={14} />
+              Supprimer
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Tabs */}
       <div className="flex border-b border-[#3E3666]">
-        {([['info', 'Infos'], ['members', 'Membres'], ['sessions', 'Sessions']] as [Tab, string][]).map(([tab, label]) => (
+        {(['info', 'members', 'sessions'] as const).map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
             className={`flex-1 py-3 text-sm font-medium transition-colors ${
-              activeTab === tab
-                ? 'text-[#00D397] border-b-2 border-[#00D397]'
-                : 'text-white/50 hover:text-white/80'
+              activeTab === tab ? 'text-[#00D397] border-b-2 border-[#00D397]' : 'text-white/50 hover:text-white/80'
             }`}
           >
-            {label}
+            {tab === 'info' ? 'Infos' : tab === 'members' ? 'Membres' : 'Sessions'}
           </button>
         ))}
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 pt-4">
-        {/* Info tab */}
+      <div className="flex-1 overflow-y-auto px-4 pt-4 pb-8">
         {activeTab === 'info' && (
-          <Card>
-            {[
-              ['Propriétaire', room.ownerUsername],
-              ['Description', room.description ?? '—'],
-              ['Max joueurs', room.maxPlayers],
-              ['Membres', room.members.length],
-              ['Sessions', room.sessions.length],
-              ['Créée', formatDate(room.createdAt)],
-              ['Mise à jour', formatDate(room.updatedAt)],
-            ].map(([label, value]) => (
-              <div key={String(label)} className="flex justify-between py-2 border-b border-[#3E3666] last:border-0">
-                <span className="text-white/50 text-sm">{label}</span>
-                <span className="text-white text-sm font-medium">{String(value)}</span>
-              </div>
-            ))}
-          </Card>
+          <div className="space-y-4">
+            <Card>
+              {[
+                ['Nom', room.name],
+                ['Code', room.code],
+                ['Description', room.description ?? '—'],
+                ['Propriétaire', room.ownerUsername],
+                ['Max joueurs', room.maxPlayers],
+                ['Membres', room.members.length],
+                ['Sessions', room.sessions.length],
+                ['Créée', formatDate(room.createdAt)],
+                ['Mise à jour', formatDate(room.updatedAt)],
+              ].map(([label, value]) => (
+                <div key={String(label)} className="flex justify-between py-2 border-b border-[#3E3666] last:border-0">
+                  <span className="text-white/50 text-sm">{label}</span>
+                  <span className="text-white text-sm font-medium">{String(value)}</span>
+                </div>
+              ))}
+            </Card>
+          </div>
         )}
 
-        {/* Members tab */}
         {activeTab === 'members' && (
           <>
             {room.members.length === 0 ? (
@@ -138,7 +195,12 @@ export default function AdminRoomDetailPage() {
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
                         <span className="text-white font-semibold">{member.username}</span>
-                        {member.isOwner && <Crown size={14} color="#FFD700" />}
+                        {member.isOwner && (
+                          <span className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-[#FFD70020] text-[#FFD700] font-medium">
+                            <Crown size={12} />
+                            Owner
+                          </span>
+                        )}
                       </div>
                       <span className="text-white/40 text-xs">Rejoint {formatDate(member.joinedAt)}</span>
                     </div>
@@ -149,7 +211,6 @@ export default function AdminRoomDetailPage() {
           </>
         )}
 
-        {/* Sessions tab */}
         {activeTab === 'sessions' && (
           <>
             {room.sessions.length === 0 ? (
@@ -200,9 +261,44 @@ export default function AdminRoomDetailPage() {
             )}
           </>
         )}
-
-        <div className="h-8" />
       </div>
+
+      {/* Transfer modal */}
+      {showTransferModal && (
+        <div className="fixed inset-0 bg-black/60 flex items-end sm:items-center justify-center z-50 px-4">
+          <div className="absolute inset-0" onClick={() => setShowTransferModal(false)} />
+          <div className="relative bg-[#342D5B] rounded-2xl border border-[#3E3666] p-6 w-full max-w-md">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-white font-bold">Transférer la propriété</h3>
+              <button onClick={() => setShowTransferModal(false)} className="p-1 text-white/50 hover:text-white">
+                <X size={18} />
+              </button>
+            </div>
+            <label className="text-white/60 text-sm block mb-2">Nouveau propriétaire (userId)</label>
+            <input
+              value={newOwnerId}
+              onChange={(e) => setNewOwnerId(e.target.value)}
+              placeholder="ID utilisateur..."
+              className="w-full bg-[#292349] text-white px-4 py-3 rounded-xl border border-[#3E3666] focus:border-[#9B59B6] focus:outline-none text-sm mb-4"
+            />
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowTransferModal(false)}
+                className="flex-1 py-3 rounded-xl bg-[#3E3666] text-white text-sm font-medium hover:bg-[#4E4676] transition-colors"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={handleTransfer}
+                disabled={!newOwnerId.trim() || transferMutation.isPending}
+                className="flex-1 py-3 rounded-xl bg-[#9B59B6] text-white text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40"
+              >
+                {transferMutation.isPending ? 'Transfert...' : 'Transférer'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

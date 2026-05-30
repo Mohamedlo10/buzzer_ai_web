@@ -1,342 +1,346 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Search, Shield, Crown, User, Trash2, X } from 'lucide-react';
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+} from '@tanstack/react-query';
+import {
+  Users,
+  Crown,
+  User,
+  ShieldCheck,
+  ShieldX,
+  Trash2,
+  Eye,
+  ChevronDown,
+  Ban,
+  CheckCircle2,
+} from 'lucide-react';
+import { toast } from 'sonner';
 
-import { Card } from '~/components/ui/Card';
-import { Spinner } from '~/components/loading/Spinner';
+import { DataTable, type Column } from '~/components/admin/DataTable';
 import { Avatar } from '~/components/ui/Avatar';
 import * as adminApi from '~/lib/api/admin';
-import type { UserResponse, UserRole } from '~/types/api';
+import type { UserRole } from '~/types/api';
 
-const ROLES = ['USER', 'SUPER_ADMIN'] as const;
-type AdminRole = (typeof ROLES)[number];
-
-const roleColors: Record<AdminRole, string> = {
-  USER:        '#00D397',
-  SUPER_ADMIN: '#FFD700',
-};
-
-const roleIcons: Record<AdminRole, React.ComponentType<{ size: number; color: string }>> = {
-  USER:        User,
-  SUPER_ADMIN: Crown,
-};
-
-function formatLastSeen(iso: string | null): string {
-  if (!iso) return 'Jamais connecté';
-  const diff = Date.now() - new Date(iso).getTime();
-  const min = Math.floor(diff / 60000);
-  const h = Math.floor(diff / 3600000);
-  const d = Math.floor(diff / 86400000);
-  if (min < 1) return "À l'instant";
-  if (min < 60) return `Il y a ${min} min`;
-  if (h < 24) return `Il y a ${h}h`;
-  if (d < 30) return `Il y a ${d}j`;
-  return new Date(iso).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: '2-digit' });
+interface AdminUser {
+  id: string;
+  username: string;
+  email: string | null;
+  avatarUrl: string | null;
+  role: UserRole;
+  isOnline: boolean;
+  banned: boolean;
+  createdAt: string;
 }
 
+const ALL_ROLES: UserRole[] = ['USER', 'ADMIN', 'SUPER_ADMIN'];
+
+const roleMeta: Record<
+  UserRole,
+  { label: string; color: string; bg: string; icon: React.ComponentType<{ size: number; color: string }> }
+> = {
+  USER:        { label: 'User',        color: '#00D397', bg: '#00D39720', icon: User },
+  ADMIN:       { label: 'Admin',       color: '#3B82F6', bg: '#3B82F620', icon: ShieldCheck },
+  SUPER_ADMIN: { label: 'Super Admin', color: '#FFD700', bg: '#FFD70020', icon: Crown },
+};
+
 function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: '2-digit' });
+  return new Date(iso).toLocaleDateString('fr-FR', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  });
 }
 
 export default function AdminUsersPage() {
   const router = useRouter();
-  const [users, setUsers] = useState<UserResponse[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const queryClient = useQueryClient();
+
+  const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
-  const [hasMore, setHasMore] = useState(true);
-  const [selectedUser, setSelectedUser] = useState<UserResponse | null>(null);
+  const size = 15;
+  const [roleOpenId, setRoleOpenId] = useState<string | null>(null);
 
-  const loadUsers = async (pageNum = 0, append = false) => {
-    try {
-      const response = await adminApi.getAllUsers(pageNum, 20);
-      if (append) {
-        setUsers((prev) => [...prev, ...response.content]);
-      } else {
-        setUsers(response.content);
-      }
-      setHasMore(!response.last);
-    } catch (err) {
-      console.error('Failed to load users:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const { data, isLoading } = useQuery({
+    queryKey: ['adminUsers', search, page, size],
+    queryFn: () =>
+      adminApi.getAdminUsers({ search: search || undefined, page, size }),
+    placeholderData: (previousData) => previousData,
+  });
 
-  const handleRefresh = async () => {
-    setIsRefreshing(true);
+  const users: AdminUser[] = data?.content ?? [];
+  const totalPages = data?.totalPages ?? 1;
+
+  const invalidateUsers = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ['adminUsers'] });
+  }, [queryClient]);
+
+  const updateRoleMutation = useMutation({
+    mutationFn: ({ userId, role }: { userId: string; role: UserRole }) =>
+      adminApi.updateUserRole(userId, role),
+    onSuccess: () => {
+      toast.success('Rôle mis à jour');
+      invalidateUsers();
+    },
+    onError: () => {
+      toast.error("Impossible de mettre à jour le rôle");
+    },
+  });
+
+  const banMutation = useMutation({
+    mutationFn: (userId: string) => adminApi.banUser(userId, 'Banni par un administrateur'),
+    onSuccess: () => {
+      toast.success('Utilisateur banni');
+      invalidateUsers();
+    },
+    onError: () => {
+      toast.error("Impossible de bannir l'utilisateur");
+    },
+  });
+
+  const unbanMutation = useMutation({
+    mutationFn: (userId: string) => adminApi.unbanUser(userId),
+    onSuccess: () => {
+      toast.success('Utilisateur débanni');
+      invalidateUsers();
+    },
+    onError: () => {
+      toast.error("Impossible de débannir l'utilisateur");
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (userId: string) => adminApi.deleteAdminUser(userId),
+    onSuccess: () => {
+      toast.success('Utilisateur supprimé');
+      invalidateUsers();
+    },
+    onError: () => {
+      toast.error("Impossible de supprimer l'utilisateur");
+    },
+  });
+
+  const handleSearch = (q: string) => {
+    setSearch(q);
     setPage(0);
-    await loadUsers(0, false);
-    setIsRefreshing(false);
   };
 
-  const handleLoadMore = () => {
-    if (hasMore && !isLoading) {
-      const nextPage = page + 1;
-      setPage(nextPage);
-      loadUsers(nextPage, true);
+  const handleDelete = (user: AdminUser) => {
+    if (window.confirm(`Supprimer ${user.username} ? Cette action est irréversible.`)) {
+      deleteMutation.mutate(user.id);
     }
   };
 
-  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
-    if (scrollHeight - scrollTop - clientHeight < 50) {
-      handleLoadMore();
-    }
-  };
-
-  const handleRoleChange = async (userId: string, newRole: AdminRole) => {
-    const confirmed = window.confirm(`Changer le rôle en ${newRole} ?`);
-    if (!confirmed) return;
-    try {
-      await adminApi.updateUserRole(userId, newRole);
-      setUsers((prev) =>
-        prev.map((u) => (u.id === userId ? { ...u, role: newRole as UserRole } : u))
-      );
-    } catch {
-      window.alert('Impossible de changer le rôle');
-    }
-  };
-
-  const handleDeleteUser = async (userId: string, username: string) => {
-    const confirmed = window.confirm(
-      `Supprimer ${username} ? Cette action est irréversible.`
-    );
-    if (!confirmed) return;
-    try {
-      await adminApi.deleteUser(userId);
-      setUsers((prev) => prev.filter((u) => u.id !== userId));
-      setSelectedUser(null);
-    } catch {
-      window.alert("Impossible de supprimer l'utilisateur");
-    }
-  };
-
-  const filteredUsers = users.filter(
-    (u) =>
-      u.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (u.email ?? '').toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  useEffect(() => {
-    loadUsers();
-  }, []);
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-[#292349] flex items-center justify-center">
-        <Spinner text="Chargement des utilisateurs..." />
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-[#292349] flex flex-col">
-      {/* Header */}
-      <div className="bg-[#292349] pt-6 pb-4 px-4 border-b border-[#3E3666]">
-        <div className="flex items-center">
-          <button
-            onClick={() => router.back()}
-            className="w-10 h-10 rounded-full bg-[#342D5B] flex items-center justify-center mr-3 hover:bg-[#3E3666] transition-colors"
-          >
-            <ArrowLeft size={20} color="#FFFFFF" />
-          </button>
-          <div className="flex-1">
-            <p className="text-white font-bold text-xl">Utilisateurs</p>
-            <p className="text-white/60 text-xs">{filteredUsers.length} / {users.length} utilisateur{users.length !== 1 ? 's' : ''}</p>
+  const columns: Column<AdminUser>[] = [
+    {
+      key: 'username',
+      header: 'Utilisateur',
+      width: '240px',
+      render: (row) => (
+        <div className="flex items-center gap-3">
+          <div className="relative shrink-0">
+            <Avatar avatarUrl={row.avatarUrl} username={row.username} size={36} />
+            <span
+              className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-[#342D5B] ${
+                row.isOnline ? 'bg-[#00D397]' : 'bg-[#6B7280]'
+              }`}
+            />
           </div>
-          <button
-            onClick={handleRefresh}
-            disabled={isRefreshing}
-            className="text-[#00D397] text-sm font-medium hover:opacity-80 disabled:opacity-40 transition-opacity"
-          >
-            {isRefreshing ? 'Actualisation...' : 'Actualiser'}
-          </button>
+          <div className="min-w-0">
+            <p className="text-white font-medium text-sm truncate">{row.username}</p>
+            <p className="text-white/40 text-xs truncate">{row.email ?? '—'}</p>
+          </div>
         </div>
-      </div>
+      ),
+    },
+    {
+      key: 'email',
+      header: 'Email',
+      render: (row) => <span className="text-white/70 text-sm">{row.email ?? '—'}</span>,
+    },
+    {
+      key: 'role',
+      header: 'Rôle',
+      width: '140px',
+      render: (row) => {
+        const meta = roleMeta[row.role] ?? roleMeta.USER;
+        const Icon = meta.icon;
+        return (
+          <div
+            className="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs font-semibold"
+            style={{ backgroundColor: meta.bg, color: meta.color }}
+          >
+            <Icon size={12} color={meta.color} />
+            {meta.label}
+          </div>
+        );
+      },
+    },
+    {
+      key: 'isOnline',
+      header: 'Statut',
+      width: '110px',
+      render: (row) => (
+        <span
+          className={`inline-flex items-center gap-1.5 text-xs font-medium ${
+            row.isOnline ? 'text-[#00D397]' : 'text-white/40'
+          }`}
+        >
+          <span className={`w-2 h-2 rounded-full ${row.isOnline ? 'bg-[#00D397]' : 'bg-white/30'}`} />
+          {row.isOnline ? 'En ligne' : 'Hors ligne'}
+        </span>
+      ),
+    },
+    {
+      key: 'banned',
+      header: 'Banni',
+      width: '90px',
+      render: (row) =>
+        row.banned ? (
+          <span className="inline-flex items-center gap-1 text-xs font-medium text-[#EF4444]">
+            <Ban size={12} />
+            Oui
+          </span>
+        ) : (
+          <span className="inline-flex items-center gap-1 text-xs font-medium text-white/40">
+            <CheckCircle2 size={12} />
+            Non
+          </span>
+        ),
+    },
+    {
+      key: 'createdAt',
+      header: 'Inscription',
+      width: '120px',
+      render: (row) => <span className="text-white/60 text-sm">{formatDate(row.createdAt)}</span>,
+    },
+    {
+      key: 'actions',
+      header: 'Actions',
+      width: '180px',
+      render: (row) => (
+        <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+          <button
+            onClick={() => router.push(`/admin/users/${row.id}`)}
+            className="p-1.5 rounded-lg bg-[#3E3666] hover:bg-[#4E4676] text-white/70 hover:text-white transition-colors"
+            title="Voir le détail"
+          >
+            <Eye size={14} />
+          </button>
 
-      {/* Search */}
-      <div className="px-4 py-3">
-        <div className="flex items-center bg-[#342D5B] rounded-xl px-4 gap-3">
-          <Search size={18} color="#FFFFFF60" />
-          <input
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Rechercher un utilisateur..."
-            className="flex-1 text-white py-3 bg-transparent outline-none placeholder-white/25"
-          />
-          {searchQuery.length > 0 && (
-            <button onClick={() => setSearchQuery('')}>
-              <X size={16} color="#FFFFFF60" />
+          <div className="relative">
+            <button
+              onClick={() => setRoleOpenId(roleOpenId === row.id ? null : row.id)}
+              className="p-1.5 rounded-lg bg-[#3E3666] hover:bg-[#4E4676] text-white/70 hover:text-white transition-colors flex items-center gap-1"
+              title="Changer le rôle"
+            >
+              <ShieldCheck size={14} />
+              <ChevronDown size={12} />
+            </button>
+            {roleOpenId === row.id && (
+              <>
+                <div
+                  className="fixed inset-0 z-10"
+                  onClick={() => setRoleOpenId(null)}
+                />
+                <div className="absolute right-0 top-full mt-1 z-20 w-40 bg-[#342D5B] border border-[#3E3666] rounded-xl shadow-xl overflow-hidden">
+                  {ALL_ROLES.map((r) => {
+                    const m = roleMeta[r];
+                    const Icon = m.icon;
+                    return (
+                      <button
+                        key={r}
+                        disabled={row.role === r || updateRoleMutation.isPending}
+                        onClick={() => {
+                          updateRoleMutation.mutate({ userId: row.id, role: r });
+                          setRoleOpenId(null);
+                        }}
+                        className={`w-full flex items-center gap-2 px-3 py-2 text-left text-sm transition-colors ${
+                          row.role === r
+                            ? 'text-white/30 cursor-default'
+                            : 'text-white hover:bg-[#3E3666]'
+                        }`}
+                      >
+                        <Icon size={14} color={row.role === r ? '#FFFFFF30' : m.color} />
+                        {m.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+          </div>
+
+          {row.banned ? (
+            <button
+              onClick={() => unbanMutation.mutate(row.id)}
+              disabled={unbanMutation.isPending}
+              className="p-1.5 rounded-lg bg-[#00D39720] hover:bg-[#00D39730] text-[#00D397] transition-colors"
+              title="Débannir"
+            >
+              <CheckCircle2 size={14} />
+            </button>
+          ) : (
+            <button
+              onClick={() => {
+                if (window.confirm(`Bannir ${row.username} ?`)) {
+                  banMutation.mutate(row.id);
+                }
+              }}
+              disabled={banMutation.isPending}
+              className="p-1.5 rounded-lg bg-[#EF444420] hover:bg-[#EF444430] text-[#EF4444] transition-colors"
+              title="Bannir"
+            >
+              <ShieldX size={14} />
             </button>
           )}
-        </div>
-      </div>
 
-      {/* Users list */}
-      <div className="flex-1 overflow-y-auto px-4" onScroll={handleScroll}>
-        {filteredUsers.map((user) => {
-          const role = (ROLES.includes(user.role as AdminRole) ? user.role : 'USER') as AdminRole;
-          const roleColor = roleColors[role];
-          const RoleIcon = roleIcons[role];
-
-          return (
-            <Card key={user.id} className="mb-3">
-              <div className="flex items-center gap-3">
-                {/* Avatar with online dot */}
-                <div className="relative shrink-0">
-                  <Avatar avatarUrl={user.avatarUrl} username={user.username} size={48} />
-                  <span
-                    className={`absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full border-2 border-[#342D5B] ${
-                      user.isOnline ? 'bg-[#00D397]' : 'bg-[#6B7280]'
-                    }`}
-                  />
-                </div>
-
-                {/* Info */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <p className="text-white font-semibold truncate">{user.username}</p>
-                    {user.role === 'SUPER_ADMIN' && (
-                      <Crown size={12} color="#FFD700" />
-                    )}
-                  </div>
-                  <p className="text-white/40 text-xs truncate">
-                    {user.isOnline ? (
-                      <span className="text-[#00D397]">En ligne</span>
-                    ) : (
-                      formatLastSeen(user.lastSeenAt)
-                    )}
-                  </p>
-                  <p className="text-white/30 text-xs">Inscrit le {formatDate(user.createdAt)}</p>
-                </div>
-
-                {/* Role badge */}
-                <button
-                  onClick={() => setSelectedUser(user)}
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg shrink-0"
-                  style={{ backgroundColor: `${roleColor}20` }}
-                >
-                  <RoleIcon size={12} color={roleColor} />
-                  <span className="text-xs font-semibold" style={{ color: roleColor }}>
-                    {role === 'SUPER_ADMIN' ? 'Admin' : 'User'}
-                  </span>
-                </button>
-              </div>
-            </Card>
-          );
-        })}
-
-        {filteredUsers.length === 0 && (
-          <Card className="flex items-center justify-center py-12">
-            <p className="text-white/50">Aucun utilisateur trouvé</p>
-          </Card>
-        )}
-
-        {hasMore && !searchQuery && (
           <button
-            onClick={handleLoadMore}
-            className="w-full py-3 text-[#00D397] text-sm font-medium hover:opacity-80 transition-opacity mb-4"
+            onClick={() => handleDelete(row)}
+            disabled={deleteMutation.isPending}
+            className="p-1.5 rounded-lg bg-[#EF444420] hover:bg-[#EF444430] text-[#EF4444] transition-colors"
+            title="Supprimer"
           >
-            Charger plus
+            <Trash2 size={14} />
           </button>
-        )}
-        <div className="h-8" />
+        </div>
+      ),
+    },
+  ];
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-white text-2xl font-bold flex items-center gap-2">
+            <Users size={24} color="#9B59B6" />
+            Utilisateurs
+          </h1>
+          <p className="text-white/50 text-sm mt-1">
+            {data?.totalElements ?? 0} utilisateur{data?.totalElements !== 1 ? 's' : ''} au total
+          </p>
+        </div>
       </div>
 
-      {/* User detail modal */}
-      {selectedUser && (
-        <div
-          className="fixed inset-0 bg-black/60 flex items-end justify-center z-50"
-          style={{ touchAction: 'none' }}
-        >
-          <div className="absolute inset-0" onClick={() => setSelectedUser(null)} />
-          <div className="relative bg-[#292349] rounded-t-3xl p-6 w-full max-w-2xl">
-            {/* User header */}
-            <div className="flex items-center gap-4 mb-6">
-              <Avatar avatarUrl={selectedUser.avatarUrl} username={selectedUser.username} size={56} />
-              <div className="flex-1">
-                <p className="text-white font-bold text-xl">{selectedUser.username}</p>
-                {selectedUser.email && (
-                  <p className="text-white/50 text-sm">{selectedUser.email}</p>
-                )}
-                <p className="text-white/30 text-xs mt-0.5">
-                  {selectedUser.isOnline ? (
-                    <span className="text-[#00D397]">● En ligne</span>
-                  ) : (
-                    `Dernière connexion : ${formatLastSeen(selectedUser.lastSeenAt)}`
-                  )}
-                </p>
-              </div>
-              <button
-                onClick={() => setSelectedUser(null)}
-                className="w-9 h-9 rounded-full bg-[#342D5B] flex items-center justify-center"
-              >
-                <X size={16} color="#FFFFFF80" />
-              </button>
-            </div>
-
-            {/* Info grid */}
-            <div className="bg-[#342D5B] rounded-2xl p-4 mb-4 space-y-2">
-              <div className="flex justify-between">
-                <span className="text-white/50 text-sm">Rôle actuel</span>
-                <span className="text-white text-sm font-medium">{selectedUser.role}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-white/50 text-sm">Avatar</span>
-                <span className="text-white text-sm">{selectedUser.avatarStyle ?? '—'}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-white/50 text-sm">Inscrit le</span>
-                <span className="text-white text-sm">{formatDate(selectedUser.createdAt)}</span>
-              </div>
-            </div>
-
-            {/* Change role */}
-            <p className="text-white/60 text-xs uppercase tracking-wider mb-2 ml-1">Changer le rôle</p>
-            {ROLES.map((role) => {
-              const RoleIcon = roleIcons[role];
-              const isSelected = selectedUser.role === role;
-              return (
-                <button
-                  key={role}
-                  onClick={() => {
-                    handleRoleChange(selectedUser.id, role);
-                    setSelectedUser(null);
-                  }}
-                  className={`flex items-center w-full py-3.5 px-1 border-b border-[#3E3666] last:border-b-0 transition-colors ${
-                    isSelected ? 'opacity-50 cursor-default' : 'hover:bg-white/5'
-                  }`}
-                  disabled={isSelected}
-                >
-                  <div
-                    className="w-9 h-9 rounded-full flex items-center justify-center mr-3"
-                    style={{ backgroundColor: `${roleColors[role]}20` }}
-                  >
-                    <RoleIcon size={16} color={roleColors[role]} />
-                  </div>
-                  <span className={`flex-1 text-left ${isSelected ? 'text-[#00D397] font-bold' : 'text-white'}`}>
-                    {role === 'SUPER_ADMIN' ? 'Super Admin' : 'Utilisateur'}
-                  </span>
-                  {isSelected && <div className="w-2 h-2 rounded-full bg-[#00D397]" />}
-                </button>
-              );
-            })}
-
-            {/* Delete */}
-            <button
-              onClick={() => handleDeleteUser(selectedUser.id, selectedUser.username)}
-              className="mt-5 w-full py-4 rounded-xl bg-[#D5442F15] hover:bg-[#D5442F25] transition-colors flex items-center justify-center gap-2"
-            >
-              <Trash2 size={16} color="#D5442F" />
-              <span className="text-[#D5442F] font-bold">Supprimer l'utilisateur</span>
-            </button>
-          </div>
-        </div>
-      )}
+      {/* Table */}
+      <DataTable
+        columns={columns}
+        data={users}
+        keyExtractor={(row) => row.id}
+        page={page}
+        totalPages={totalPages}
+        onPageChange={setPage}
+        searchPlaceholder="Rechercher par nom ou email..."
+        onSearch={handleSearch}
+        searchQuery={search}
+        isLoading={isLoading}
+        onRowClick={(row) => router.push(`/admin/users/${row.id}`)}
+      />
     </div>
   );
 }

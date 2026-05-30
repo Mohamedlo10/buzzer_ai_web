@@ -1,26 +1,52 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { ArrowLeft, Square, Users, Trophy, BookOpen, CheckCircle, XCircle } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
+import {
+  ArrowLeft,
+  Square,
+  Users,
+  Trophy,
+  BookOpen,
+  CheckCircle,
+  XCircle,
+  Info,
+  Swords,
+  Clock,
+  Zap,
+} from 'lucide-react';
 
 import { Card } from '~/components/ui/Card';
 import { Spinner } from '~/components/loading/Spinner';
-import * as adminApi from '~/lib/api/admin';
-import type { AdminSessionDetailResponse, AdminSessionStatus } from '~/types/api';
+import { DataTable, type Column } from '~/components/admin/DataTable';
+import {
+  getAdminSessionDetail,
+  forceStopSession,
+} from '~/lib/api/admin';
+import type {
+  AdminSessionDetailResponse,
+  AdminSessionStatus,
+  AdminSessionPlayer,
+  AdminSessionQuestion,
+} from '~/types/api';
 
-const STATUS_CONFIG: Record<AdminSessionStatus, { label: string; color: string }> = {
-  LOBBY:      { label: 'Lobby',         color: '#00D397' },
-  GENERATING: { label: 'Génération...', color: '#FFD700' },
-  PLAYING:    { label: 'En cours',      color: '#4A90D9' },
-  PAUSED:     { label: 'Pause',         color: '#F39C12' },
-  RESULTS:    { label: 'Terminée',      color: '#C0C0C0' },
-  CANCELLED:  { label: 'Annulée',       color: '#D5442F' },
+const STATUS_CONFIG: Record<
+  AdminSessionStatus,
+  { label: string; color: string; bg: string; icon: React.ElementType }
+> = {
+  LOBBY:      { label: 'Lobby',      color: '#00D397', bg: '#00D39720', icon: Users },
+  GENERATING: { label: 'Génération', color: '#FFD700', bg: '#FFD70020', icon: Zap },
+  PLAYING:    { label: 'En cours',   color: '#4A90D9', bg: '#4A90D920', icon: Swords },
+  PAUSED:     { label: 'Pause',      color: '#F39C12', bg: '#F39C1220', icon: Clock },
+  RESULTS:    { label: 'Terminée',   color: '#C0C0C0', bg: '#C0C0C020', icon: Trophy },
+  CANCELLED:  { label: 'Annulée',    color: '#D5442F', bg: '#D5442F20', icon: XCircle },
 };
 
 const DIFFICULTY_CONFIG = {
-  EASY:   { label: 'Facile', color: '#00D397' },
-  MEDIUM: { label: 'Moyen',  color: '#F39C12' },
+  EASY:   { label: 'Facile',    color: '#00D397' },
+  MEDIUM: { label: 'Moyen',     color: '#F39C12' },
   HARD:   { label: 'Difficile', color: '#D5442F' },
 };
 
@@ -37,38 +63,41 @@ type Tab = 'info' | 'players' | 'questions';
 export default function AdminSessionDetailPage() {
   const router = useRouter();
   const params = useParams();
+  const queryClient = useQueryClient();
   const sessionId = params.sessionId as string;
 
-  const [session, setSession] = useState<AdminSessionDetailResponse | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isStopping, setIsStopping] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>('info');
 
-  useEffect(() => {
-    adminApi.getAdminSessionDetail(sessionId)
-      .then(setSession)
-      .catch(console.error)
-      .finally(() => setIsLoading(false));
-  }, [sessionId]);
+  const {
+    data: session,
+    isLoading,
+  } = useQuery({
+    queryKey: ['adminSessionDetail', sessionId],
+    queryFn: () => getAdminSessionDetail(sessionId),
+  });
 
-  const handleForceStop = async () => {
+  const stopMutation = useMutation({
+    mutationFn: forceStopSession,
+    onSuccess: () => {
+      toast.success('Session arrêtée avec succès');
+      queryClient.invalidateQueries({ queryKey: ['adminSessionDetail', sessionId] });
+      queryClient.invalidateQueries({ queryKey: ['adminSessions'] });
+      queryClient.invalidateQueries({ queryKey: ['adminActiveSessions'] });
+    },
+    onError: () => {
+      toast.error("Impossible d'arrêter la session");
+    },
+  });
+
+  const handleForceStop = () => {
     if (!session) return;
-    const confirmed = window.confirm(`Forcer l'arrêt de la session ${session.code} ?`);
-    if (!confirmed) return;
-    setIsStopping(true);
-    try {
-      await adminApi.forceStopSession(session.id);
-      setSession((prev) => prev ? { ...prev, status: 'RESULTS' } : prev);
-    } catch {
-      window.alert("Impossible d'arrêter la session");
-    } finally {
-      setIsStopping(false);
-    }
+    if (!window.confirm(`Forcer l'arrêt de la session ${session.code} ?`)) return;
+    stopMutation.mutate(session.id);
   };
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#292349] flex items-center justify-center">
+      <div className="min-h-[60vh] flex items-center justify-center">
         <Spinner text="Chargement..." />
       </div>
     );
@@ -76,7 +105,7 @@ export default function AdminSessionDetailPage() {
 
   if (!session) {
     return (
-      <div className="min-h-screen bg-[#292349] flex items-center justify-center">
+      <div className="min-h-[60vh] flex items-center justify-center">
         <p className="text-white/50">Session introuvable</p>
       </div>
     );
@@ -84,26 +113,142 @@ export default function AdminSessionDetailPage() {
 
   const cfg = STATUS_CONFIG[session.status] ?? STATUS_CONFIG['RESULTS'];
   const canStop = ['PLAYING', 'PAUSED', 'LOBBY', 'GENERATING'].includes(session.status);
+  const StatusIcon = cfg.icon;
+
   const sortedPlayers = [...session.players].sort((a, b) => b.score - a.score);
+  const rankedPlayers = sortedPlayers.map((p, i) => ({ ...p, rank: i + 1 }));
+
+  const playerColumns: Column<AdminSessionPlayer & { rank: number }>[] = [
+    {
+      key: 'rank',
+      header: '#',
+      width: '50px',
+      render: (row) => (
+        <span className={`text-xs font-bold ${
+          row.rank === 1 ? 'text-[#FFD700]' :
+          row.rank === 2 ? 'text-[#C0C0C0]' :
+          row.rank === 3 ? 'text-[#CD7F32]' :
+          'text-white/60'
+        }`}>
+          #{row.rank}
+        </span>
+      ),
+    },
+    {
+      key: 'username',
+      header: 'Joueur',
+      render: (row) => (
+        <div className="flex items-center gap-2">
+          <span className="text-white font-medium">{row.username}</span>
+          {row.isManager && (
+            <span className="text-xs px-1.5 py-0.5 rounded bg-[#FFD70020] text-[#FFD700]">Manager</span>
+          )}
+          {row.isSpectator && (
+            <span className="text-xs px-1.5 py-0.5 rounded bg-[#FFFFFF10] text-white/50">Spectateur</span>
+          )}
+        </div>
+      ),
+    },
+    {
+      key: 'score',
+      header: 'Score',
+      width: '80px',
+      render: (row) => <span className="text-[#00D397] font-bold">{row.score}</span>,
+    },
+    {
+      key: 'joinedAt',
+      header: 'Rejoint',
+      width: '130px',
+      render: (row) => <span className="text-white/50 text-xs">{formatDate(row.joinedAt)}</span>,
+    },
+  ];
+
+  const questionColumns: Column<AdminSessionQuestion>[] = [
+    {
+      key: 'orderIndex',
+      header: '#',
+      width: '50px',
+      render: (row) => <span className="text-white/60 text-xs">#{row.orderIndex + 1}</span>,
+    },
+    {
+      key: 'category',
+      header: 'Catégorie',
+      width: '120px',
+      render: (row) => (
+        <span className="text-xs px-2 py-0.5 rounded bg-[#3E3666] text-white/70">{row.category}</span>
+      ),
+    },
+    {
+      key: 'difficulty',
+      header: 'Difficulté',
+      width: '100px',
+      render: (row) => {
+        const diff = DIFFICULTY_CONFIG[row.difficulty] ?? DIFFICULTY_CONFIG['MEDIUM'];
+        return (
+          <span
+            className="text-xs px-2 py-0.5 rounded-full font-medium"
+            style={{ backgroundColor: `${diff.color}20`, color: diff.color }}
+          >
+            {diff.label}
+          </span>
+        );
+      },
+    },
+    {
+      key: 'text',
+      header: 'Question',
+      render: (row) => (
+        <span className="text-white text-sm line-clamp-2">{row.text}</span>
+      ),
+    },
+    {
+      key: 'answer',
+      header: 'Réponse',
+      width: '150px',
+      render: (row) => (
+        <div className="flex items-center gap-1.5">
+          <CheckCircle size={12} color="#00D397" />
+          <span className="text-[#00D397] text-sm font-medium truncate">{row.answer}</span>
+        </div>
+      ),
+    },
+    {
+      key: 'winner',
+      header: 'Vainqueur',
+      width: '130px',
+      render: (row) =>
+        row.winnerName ? (
+          <div className="flex items-center gap-1.5">
+            <Trophy size={12} color="#FFD700" />
+            <span className="text-[#FFD700] text-xs">{row.winnerName}</span>
+          </div>
+        ) : row.isSkipped ? (
+          <span className="text-[#F39C12] text-xs">Passée</span>
+        ) : (
+          <span className="text-white/30 text-xs">—</span>
+        ),
+    },
+  ];
 
   return (
-    <div className="min-h-screen bg-[#292349] flex flex-col">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="bg-[#292349] pt-6 pb-4 px-4 border-b border-[#3E3666]">
-        <div className="flex items-center">
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div className="flex items-center gap-3">
           <button
-            onClick={() => router.back()}
-            className="w-10 h-10 rounded-full bg-[#342D5B] flex items-center justify-center mr-3 hover:bg-[#3E3666] transition-colors"
+            onClick={() => router.push('/admin/sessions')}
+            className="w-10 h-10 rounded-full bg-[#342D5B] flex items-center justify-center hover:bg-[#3E3666] transition-colors"
           >
             <ArrowLeft size={20} color="#FFFFFF" />
           </button>
-          <div className="flex-1">
-            <p className="text-white font-bold text-xl tracking-widest">{session.code}</p>
-            <div className="flex items-center gap-2 mt-0.5">
+          <div>
+            <div className="flex items-center gap-3 flex-wrap">
+              <h1 className="text-white text-2xl font-bold tracking-wider">#{session.code}</h1>
               <span
-                className="text-xs font-semibold px-2 py-0.5 rounded-full"
-                style={{ backgroundColor: `${cfg.color}20`, color: cfg.color }}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold"
+                style={{ backgroundColor: cfg.bg, color: cfg.color }}
               >
+                <StatusIcon size={12} />
                 {cfg.label}
               </span>
               {session.isTeamMode && (
@@ -113,150 +258,135 @@ export default function AdminSessionDetailPage() {
                 <span className="text-xs px-2 py-0.5 rounded-full bg-[#FFFFFF10] text-white/50">Privée</span>
               )}
             </div>
+            <p className="text-white/50 text-sm mt-0.5">
+              Manager : <span className="text-white/80">{session.managerUsername}</span>
+              {' · '}
+              Créée : {formatDate(session.createdAt)}
+            </p>
           </div>
-          {canStop && (
-            <button
-              onClick={handleForceStop}
-              disabled={isStopping}
-              className="flex items-center gap-1.5 bg-[#D5442F20] px-3 py-2 rounded-xl hover:bg-[#D5442F30] transition-colors disabled:opacity-40"
-            >
-              <Square size={14} color="#D5442F" />
-              <span className="text-[#D5442F] text-xs font-semibold">
-                {isStopping ? 'Arrêt...' : 'Forcer arrêt'}
-              </span>
-            </button>
-          )}
         </div>
+        {canStop && (
+          <button
+            onClick={handleForceStop}
+            disabled={stopMutation.isPending}
+            className="flex items-center gap-2 px-4 py-2 bg-[#D5442F20] rounded-xl hover:bg-[#D5442F30] transition-colors disabled:opacity-40"
+          >
+            <Square size={14} color="#D5442F" />
+            <span className="text-[#D5442F] text-sm font-semibold">
+              {stopMutation.isPending ? 'Arrêt...' : 'Forcer arrêt'}
+            </span>
+          </button>
+        )}
       </div>
 
       {/* Tabs */}
       <div className="flex border-b border-[#3E3666]">
-        {([['info', 'Infos'], ['players', 'Joueurs'], ['questions', 'Questions']] as [Tab, string][]).map(([tab, label]) => (
+        {([
+          ['info', 'Infos', Info],
+          ['players', `Joueurs (${session.players.length})`, Users],
+          ['questions', `Questions (${session.questions.length})`, BookOpen],
+        ] as [Tab, string, React.ElementType][]).map(([tab, label, Icon]) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`flex-1 py-3 text-sm font-medium transition-colors ${
+            className={`flex items-center gap-2 px-5 py-3 text-sm font-medium transition-colors ${
               activeTab === tab
                 ? 'text-[#00D397] border-b-2 border-[#00D397]'
                 : 'text-white/50 hover:text-white/80'
             }`}
           >
+            <Icon size={16} />
             {label}
           </button>
         ))}
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 pt-4">
-        {/* Info tab */}
+      {/* Content */}
+      <div>
         {activeTab === 'info' && (
-          <Card>
-            {[
-              ['Manager', session.managerUsername],
-              ['Salle', session.roomName ?? '—'],
-              ['Code salle', session.roomCode ?? '—'],
-              ['Mode questions', session.questionMode],
-              ['Joueurs', `${session.players.length} / ${session.maxPlayers}`],
-              ['Questions', `${session.currentQuestionIndex} / ${session.totalQuestions}`],
-              ['Points / bonne réponse', session.pointsPerCorrectAnswer],
-              ['Countdown buzz (s)', session.buzzCountdownSeconds],
-              ['Dette', session.debtAmount],
-              ['Questions / catégorie', session.questionsPerCategory],
-              ['Créée', formatDate(session.createdAt)],
-              ['Démarrée', formatDate(session.startedAt)],
-              ['Terminée', formatDate(session.endedAt)],
-            ].map(([label, value]) => (
-              <div key={String(label)} className="flex justify-between py-2 border-b border-[#3E3666] last:border-0">
-                <span className="text-white/50 text-sm">{label}</span>
-                <span className="text-white text-sm font-medium">{String(value)}</span>
-              </div>
-            ))}
-          </Card>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <InfoCard
+              title="Général"
+              rows={[
+                ['Statut', cfg.label],
+                ['Code', session.code],
+                ['Mode questions', session.questionMode],
+                ['Privée', session.isPrivate ? 'Oui' : 'Non'],
+                ['Mode équipe', session.isTeamMode ? 'Oui' : 'Non'],
+              ]}
+            />
+            <InfoCard
+              title="Paramètres"
+              rows={[
+                ['Joueurs max', String(session.maxPlayers)],
+                ['Questions', `${session.totalQuestions}`],
+                ['Questions / catégorie', String(session.questionsPerCategory)],
+                ['Points / bonne réponse', String(session.pointsPerCorrectAnswer)],
+                ['Countdown buzz', `${session.buzzCountdownSeconds}s`],
+                ['Dette', String(session.debtAmount)],
+              ]}
+            />
+            <InfoCard
+              title="Progression"
+              rows={[
+                ['Question courante', `${session.currentQuestionIndex} / ${session.totalQuestions}`],
+                ['Joueurs', `${session.players.length} / ${session.maxPlayers}`],
+              ]}
+            />
+            <InfoCard
+              title="Dates"
+              rows={[
+                ['Créée', formatDate(session.createdAt)],
+                ['Démarrée', formatDate(session.startedAt)],
+                ['Terminée', formatDate(session.endedAt)],
+              ]}
+            />
+            {session.roomName && (
+              <InfoCard
+                title="Salle"
+                rows={[
+                  ['Nom', session.roomName],
+                  ['Code', session.roomCode ?? '—'],
+                ]}
+              />
+            )}
+          </div>
         )}
 
-        {/* Players tab */}
         {activeTab === 'players' && (
-          <>
-            {sortedPlayers.length === 0 ? (
-              <Card className="flex items-center justify-center py-10">
-                <p className="text-white/50">Aucun joueur</p>
-              </Card>
-            ) : (
-              sortedPlayers.map((player, index) => (
-                <Card key={player.id} className="mb-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-[#3E3666] flex items-center justify-center shrink-0">
-                      <span className="text-white/60 text-xs font-bold">#{index + 1}</span>
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-white font-semibold">{player.username}</span>
-                        {player.isManager && (
-                          <span className="text-xs px-1.5 py-0.5 rounded bg-[#FFD70020] text-[#FFD700]">Manager</span>
-                        )}
-                        {player.isSpectator && (
-                          <span className="text-xs px-1.5 py-0.5 rounded bg-[#FFFFFF10] text-white/50">Spectateur</span>
-                        )}
-                      </div>
-                      <span className="text-white/40 text-xs">Rejoint {formatDate(player.joinedAt)}</span>
-                    </div>
-                    <span className="text-[#00D397] font-bold text-lg">{player.score}</span>
-                  </div>
-                </Card>
-              ))
-            )}
-          </>
+          <DataTable
+            columns={playerColumns}
+            data={rankedPlayers}
+            keyExtractor={(row) => row.id}
+            isLoading={false}
+          />
         )}
 
-        {/* Questions tab */}
         {activeTab === 'questions' && (
-          <>
-            {session.questions.length === 0 ? (
-              <Card className="flex items-center justify-center py-10">
-                <p className="text-white/50">Aucune question</p>
-              </Card>
-            ) : (
-              session.questions.map((q) => {
-                const diff = DIFFICULTY_CONFIG[q.difficulty] ?? DIFFICULTY_CONFIG['MEDIUM'];
-                return (
-                  <Card key={q.id} className="mb-3">
-                    <div className="flex items-start justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <span className="text-white/40 text-xs">#{q.orderIndex + 1}</span>
-                        <span className="text-xs px-1.5 py-0.5 rounded bg-[#3E3666] text-white/60">{q.category}</span>
-                        <span
-                          className="text-xs px-1.5 py-0.5 rounded"
-                          style={{ backgroundColor: `${diff.color}20`, color: diff.color }}
-                        >
-                          {diff.label}
-                        </span>
-                      </div>
-                      {q.isSkipped && (
-                        <span className="text-xs text-[#F39C12]">Passée</span>
-                      )}
-                    </div>
-                    <p className="text-white text-sm mb-2">{q.text}</p>
-                    <div className="flex items-center gap-2 bg-[#00D39710] rounded-lg px-3 py-2">
-                      <CheckCircle size={13} color="#00D397" />
-                      <span className="text-[#00D397] text-sm font-medium">{q.answer}</span>
-                    </div>
-                    {q.winnerName && (
-                      <div className="flex items-center gap-2 mt-2">
-                        <Trophy size={13} color="#FFD700" />
-                        <span className="text-[#FFD700] text-xs">Vainqueur : {q.winnerName}</span>
-                      </div>
-                    )}
-                    {q.explanation && (
-                      <p className="text-white/40 text-xs mt-2 italic">{q.explanation}</p>
-                    )}
-                  </Card>
-                );
-              })
-            )}
-          </>
+          <DataTable
+            columns={questionColumns}
+            data={session.questions}
+            keyExtractor={(row) => row.id}
+            isLoading={false}
+          />
         )}
-
-        <div className="h-8" />
       </div>
     </div>
+  );
+}
+
+function InfoCard({ title, rows }: { title: string; rows: [string, string][] }) {
+  return (
+    <Card>
+      <h3 className="text-white font-bold mb-3">{title}</h3>
+      <div className="space-y-2">
+        {rows.map(([label, value]) => (
+          <div key={label} className="flex justify-between text-sm">
+            <span className="text-white/50">{label}</span>
+            <span className="text-white font-medium">{value}</span>
+          </div>
+        ))}
+      </div>
+    </Card>
   );
 }

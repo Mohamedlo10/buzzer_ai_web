@@ -896,6 +896,125 @@ export interface AdminQuestionResponse {
   createdAt: string;
 }
 
+// ─── NEW ADMIN TYPES (Big Bang redesign) ──────────────────────────────────
+
+export interface AdminTimelineResponse {
+  period: string;
+  userGrowth: Array<{ date: string; value: number; costValue?: number }>;
+  sessionCreated: Array<{ date: string; value: number; costValue?: number }>;
+  sessionCompleted: Array<{ date: string; value: number; costValue?: number }>;
+  aiCost: Array<{ date: string; value: number; costValue?: number }>;
+  activePlayers: Array<{ date: string; value: number; costValue?: number }>;
+}
+
+export interface AdminTopStatsResponse {
+  topPlayers: Array<{
+    userId: string;
+    username: string;
+    avatarUrl: string;
+    totalGames: number;
+    totalWins: number;
+    glickoRating: number;
+    winRate: number;
+  }>;
+  topCategories: Array<{
+    category: string;
+    questionCount: number;
+    gamesPlayed: number;
+  }>;
+  topRooms: Array<{
+    roomId: string;
+    name: string;
+    code: string;
+    ownerUsername: string;
+    memberCount: number;
+    sessionCount: number;
+  }>;
+}
+
+export interface AdminUserDetailResponse {
+  userId: string;
+  username: string;
+  email: string | null;
+  avatarUrl: string | null;
+  role: UserRole;
+  isOnline: boolean;
+  banned: boolean;
+  bannedAt: string | null;
+  bannedReason: string | null;
+  createdAt: string;
+  lastSeenAt: string | null;
+  totalGames: number;
+  totalWins: number;
+  totalScore: number;
+  bestScore: number;
+  avgScore: number;
+  winRate: number;
+  glickoRating: number;
+  glickoDeviation: number;
+  totalCorrectAnswers: number;
+  totalWrongBuzzes: number;
+  globalAccuracyRate: number;
+  recentSessions: Array<{
+    sessionId: string;
+    code: string;
+    status: string;
+    score: number | null;
+    rank: number | null;
+    totalPlayers: number;
+    endedAt: string | null;
+  }>;
+  friends: Array<{
+    userId: string;
+    username: string;
+    avatarUrl: string | null;
+  }>;
+  rooms: Array<{
+    roomId: string;
+    name: string;
+    code: string;
+    isOwner: boolean;
+    joinedAt: string;
+  }>;
+}
+
+export interface AdminActiveSessionResponse {
+  id: string;
+  code: string;
+  status: string;
+  managerUsername: string;
+  roomName: string | null;
+  currentQuestionIndex: number;
+  totalQuestions: number;
+  playerCount: number;
+  maxPlayers: number;
+  connectedPlayers: number;
+  startedAt: string | null;
+  createdAt: string;
+  secondsElapsed: number;
+  players: Array<{
+    userId: string;
+    name: string;
+    score: number;
+    isManager: boolean;
+    isOnline: boolean | null;
+  }>;
+}
+
+export interface AdminAuditLogResponse {
+  id: string;
+  adminId: string;
+  adminUsername: string;
+  action: string;
+  entityType: string;
+  entityId: string | null;
+  details: Record<string, unknown> | null;
+  ipAddress: string | null;
+  createdAt: string;
+}
+
+export interface AdminRoomResponse extends AdminRoomSummaryResponse {}
+
 // ──────────────────────────────────────────────
 // Game Submit Answer
 // ──────────────────────────────────────────────

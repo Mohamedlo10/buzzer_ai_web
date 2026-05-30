@@ -1,8 +1,21 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Search, BookOpen, ChevronRight, CheckCircle, Trophy, X } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
+import {
+  ArrowLeft,
+  Search,
+  BookOpen,
+  ChevronRight,
+  ChevronLeft,
+  CheckCircle,
+  X,
+  Save,
+  Trash2,
+  Pencil,
+} from 'lucide-react';
 
 import { Card } from '~/components/ui/Card';
 import { Spinner } from '~/components/loading/Spinner';
@@ -15,118 +28,127 @@ const DIFFICULTY_CONFIG = {
   HARD:   { label: 'Difficile', color: '#D5442F' },
 };
 
+const DIFFICULTY_OPTIONS = ['EASY', 'MEDIUM', 'HARD'] as const;
+
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('fr-FR', {
     day: '2-digit', month: '2-digit', year: '2-digit',
   });
 }
 
+const PAGE_SIZE = 20;
+
 export default function AdminQuestionsPage() {
   const router = useRouter();
+  const queryClient = useQueryClient();
 
-  // Categories view
-  const [categories, setCategories] = useState<AdminCategoryResponse[]>([]);
+  // Categories state
   const [catSearch, setCatSearch] = useState('');
+  const [debouncedCatSearch, setDebouncedCatSearch] = useState('');
   const [catPage, setCatPage] = useState(0);
-  const [catHasMore, setCatHasMore] = useState(true);
-  const [catLoading, setCatLoading] = useState(true);
 
-  // Questions view
+  // Questions state
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [questions, setQuestions] = useState<AdminQuestionResponse[]>([]);
   const [qSearch, setQSearch] = useState('');
+  const [debouncedQSearch, setDebouncedQSearch] = useState('');
   const [qPage, setQPage] = useState(0);
-  const [qHasMore, setQHasMore] = useState(true);
-  const [qLoading, setQLoading] = useState(false);
 
-  const loadCategories = useCallback(async (pageNum = 0, append = false, searchVal = catSearch) => {
-    try {
-      const params: Record<string, unknown> = { page: pageNum, size: 20 };
-      if (searchVal.trim()) params.search = searchVal.trim();
-      const response = await adminApi.getAdminQuestionCategories(params);
-      if (append) {
-        setCategories((prev) => [...prev, ...response.content]);
-      } else {
-        setCategories(response.content);
-      }
-      setCatHasMore(!response.last);
-    } catch (err) {
-      console.error('Failed to load categories:', err);
-    } finally {
-      setCatLoading(false);
-    }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const loadQuestions = useCallback(async (category: string, pageNum = 0, append = false, searchVal = qSearch) => {
-    setQLoading(true);
-    try {
-      const params: { category: string; search?: string; page: number; size: number } = { category, page: pageNum, size: 20 };
-      if (searchVal.trim()) params.search = searchVal.trim();
-      const response = await adminApi.getAdminQuestions(params);
-      if (append) {
-        setQuestions((prev) => [...prev, ...response.content]);
-      } else {
-        setQuestions(response.content);
-      }
-      setQHasMore(!response.last);
-    } catch (err) {
-      console.error('Failed to load questions:', err);
-    } finally {
-      setQLoading(false);
-    }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  // Inline editing state
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState<Partial<AdminQuestionResponse>>({});
 
   useEffect(() => {
-    loadCategories();
-  }, [loadCategories]);
+    const t = setTimeout(() => setDebouncedCatSearch(catSearch), 400);
+    return () => clearTimeout(t);
+  }, [catSearch]);
 
-  const handleCatSearch = (val: string) => {
-    setCatSearch(val);
-    setCatPage(0);
-    setCatLoading(true);
-    loadCategories(0, false, val);
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedQSearch(qSearch), 400);
+    return () => clearTimeout(t);
+  }, [qSearch]);
+
+  const { data: categoriesData, isLoading: catLoading } = useQuery({
+    queryKey: ['adminQuestionCategories', catPage, debouncedCatSearch],
+    queryFn: () =>
+      adminApi.getAdminQuestionCategories({
+        search: debouncedCatSearch || undefined,
+        page: catPage,
+        size: PAGE_SIZE,
+      }),
+    enabled: !selectedCategory,
+  });
+
+  const { data: questionsData, isLoading: qLoading } = useQuery({
+    queryKey: ['adminQuestions', selectedCategory, qPage, debouncedQSearch],
+    queryFn: () =>
+      adminApi.getAdminQuestions({
+        category: selectedCategory!,
+        search: debouncedQSearch || undefined,
+        page: qPage,
+        size: PAGE_SIZE,
+      }),
+    enabled: !!selectedCategory,
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: { text?: string; answer?: string; explanation?: string; difficulty?: string };
+    }) => adminApi.updateAdminQuestion(id, data),
+    onSuccess: () => {
+      toast.success('Question mise à jour');
+      setEditingId(null);
+      queryClient.invalidateQueries({ queryKey: ['adminQuestions'] });
+    },
+    onError: () => toast.error('Impossible de mettre à jour la question'),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => adminApi.deleteAdminQuestion(id),
+    onSuccess: () => {
+      toast.success('Question supprimée');
+      queryClient.invalidateQueries({ queryKey: ['adminQuestions'] });
+    },
+    onError: () => toast.error('Impossible de supprimer la question'),
+  });
+
+  const startEdit = (q: AdminQuestionResponse) => {
+    setEditingId(q.id);
+    setEditForm({
+      text: q.text,
+      answer: q.answer,
+      explanation: q.explanation ?? '',
+      difficulty: q.difficulty,
+    });
   };
 
-  const handleCatLoadMore = () => {
-    if (catHasMore && !catLoading) {
-      const next = catPage + 1;
-      setCatPage(next);
-      loadCategories(next, true);
-    }
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditForm({});
   };
 
-  const handleCatScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
-    if (scrollHeight - scrollTop - clientHeight < 80) handleCatLoadMore();
+  const saveEdit = (id: string) => {
+    updateMutation.mutate({
+      id,
+      data: {
+        text: editForm.text,
+        answer: editForm.answer,
+        explanation: editForm.explanation || undefined,
+        difficulty: editForm.difficulty,
+      },
+    });
   };
 
-  const handleSelectCategory = (category: string) => {
-    setSelectedCategory(category);
-    setQuestions([]);
-    setQSearch('');
-    setQPage(0);
-    loadQuestions(category, 0, false, '');
+  const handleDeleteQuestion = (q: AdminQuestionResponse) => {
+    if (!window.confirm('Supprimer cette question ?')) return;
+    deleteMutation.mutate(q.id);
   };
 
-  const handleQSearch = (val: string) => {
-    if (!selectedCategory) return;
-    setQSearch(val);
-    setQPage(0);
-    loadQuestions(selectedCategory, 0, false, val);
-  };
-
-  const handleQLoadMore = () => {
-    if (qHasMore && !qLoading && selectedCategory) {
-      const next = qPage + 1;
-      setQPage(next);
-      loadQuestions(selectedCategory, next, true);
-    }
-  };
-
-  const handleQScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
-    if (scrollHeight - scrollTop - clientHeight < 80) handleQLoadMore();
-  };
+  const categories = categoriesData?.content ?? [];
+  const questions = questionsData?.content ?? [];
 
   // Questions view
   if (selectedCategory) {
@@ -136,14 +158,19 @@ export default function AdminQuestionsPage() {
         <div className="bg-[#292349] pt-6 pb-4 px-4 border-b border-[#3E3666]">
           <div className="flex items-center">
             <button
-              onClick={() => setSelectedCategory(null)}
+              onClick={() => {
+                setSelectedCategory(null);
+                setEditingId(null);
+              }}
               className="w-10 h-10 rounded-full bg-[#342D5B] flex items-center justify-center mr-3 hover:bg-[#3E3666] transition-colors"
             >
               <ArrowLeft size={20} color="#FFFFFF" />
             </button>
             <div className="flex-1 min-w-0">
               <p className="text-white font-bold text-lg truncate">{selectedCategory}</p>
-              <p className="text-white/60 text-xs">{questions.length} question{questions.length !== 1 ? 's' : ''}</p>
+              <p className="text-white/60 text-xs">
+                {questionsData?.totalElements ?? 0} question{(questionsData?.totalElements ?? 0) !== 1 ? 's' : ''}
+              </p>
             </div>
           </div>
         </div>
@@ -154,20 +181,23 @@ export default function AdminQuestionsPage() {
             <Search size={18} color="#FFFFFF60" className="shrink-0" />
             <input
               value={qSearch}
-              onChange={(e) => handleQSearch(e.target.value)}
+              onChange={(e) => {
+                setQSearch(e.target.value);
+                setQPage(0);
+              }}
               placeholder="Rechercher dans les questions..."
               className="flex-1 py-3 px-3 bg-transparent text-white focus:outline-none placeholder-white/40 text-sm"
             />
             {qSearch && (
-              <button onClick={() => handleQSearch('')}>
+              <button onClick={() => setQSearch('')}>
                 <X size={16} color="#FFFFFF60" />
               </button>
             )}
           </div>
         </div>
 
-        {/* Questions list */}
-        <div className="flex-1 overflow-y-auto px-4" onScroll={handleQScroll}>
+        {/* Questions table */}
+        <div className="flex-1 overflow-y-auto px-4 pb-8">
           {qLoading && questions.length === 0 ? (
             <div className="flex items-center justify-center py-16">
               <Spinner text="Chargement..." />
@@ -177,51 +207,161 @@ export default function AdminQuestionsPage() {
               <p className="text-white/50">Aucune question trouvée</p>
             </Card>
           ) : (
-            questions.map((q) => {
-              const diff = DIFFICULTY_CONFIG[q.difficulty] ?? DIFFICULTY_CONFIG['MEDIUM'];
-              return (
-                <Card key={q.id} className="mb-3">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span
-                      className="text-xs px-1.5 py-0.5 rounded"
-                      style={{ backgroundColor: `${diff.color}20`, color: diff.color }}
-                    >
-                      {diff.label}
-                    </span>
-                    {q.isSkipped && (
-                      <span className="text-xs px-1.5 py-0.5 rounded bg-[#F39C1220] text-[#F39C12]">Passée</span>
-                    )}
-                    <span className="text-white/30 text-xs ml-auto">Session: {q.sessionCode}</span>
-                  </div>
-                  <p className="text-white text-sm mb-2">{q.text}</p>
-                  <div className="flex items-center gap-2 bg-[#00D39710] rounded-lg px-3 py-2 mb-2">
-                    <CheckCircle size={13} color="#00D397" />
-                    <span className="text-[#00D397] text-sm font-medium">{q.answer}</span>
-                  </div>
-                  {q.winnerName && (
-                    <div className="flex items-center gap-2">
-                      <Trophy size={13} color="#FFD700" />
-                      <span className="text-[#FFD700] text-xs">Vainqueur : {q.winnerName}</span>
-                    </div>
-                  )}
-                  {q.explanation && (
-                    <p className="text-white/40 text-xs mt-2 italic">{q.explanation}</p>
-                  )}
-                  <p className="text-white/20 text-xs mt-2">{formatDate(q.createdAt)}</p>
-                </Card>
-              );
-            })
-          )}
+            <div className="bg-[#342D5B] rounded-2xl border border-[#3E3666] overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left">
+                  <thead>
+                    <tr className="border-b border-[#3E3666]">
+                      <th className="px-4 py-3 text-xs font-semibold text-white/60 uppercase">Question</th>
+                      <th className="px-4 py-3 text-xs font-semibold text-white/60 uppercase">Réponse</th>
+                      <th className="px-4 py-3 text-xs font-semibold text-white/60 uppercase">Explication</th>
+                      <th className="px-4 py-3 text-xs font-semibold text-white/60 uppercase">Difficulté</th>
+                      <th className="px-4 py-3 text-xs font-semibold text-white/60 uppercase text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {questions.map((q) => {
+                      const isEditing = editingId === q.id;
+                      const diff = DIFFICULTY_CONFIG[q.difficulty] ?? DIFFICULTY_CONFIG['MEDIUM'];
+                      return (
+                        <tr key={q.id} className="border-b border-[#3E3666] last:border-b-0">
+                          <td className="px-4 py-3 text-sm text-white/80 min-w-[200px]">
+                            {isEditing ? (
+                              <textarea
+                                value={editForm.text ?? ''}
+                                onChange={(e) => setEditForm((prev) => ({ ...prev, text: e.target.value }))}
+                                className="w-full bg-[#292349] text-white px-3 py-2 rounded-lg border border-[#3E3666] focus:border-[#9B59B6] focus:outline-none text-sm resize-y min-h-[60px]"
+                              />
+                            ) : (
+                              <span className="line-clamp-2">{q.text}</span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3 text-sm text-white/80 min-w-[140px]">
+                            {isEditing ? (
+                              <input
+                                value={editForm.answer ?? ''}
+                                onChange={(e) => setEditForm((prev) => ({ ...prev, answer: e.target.value }))}
+                                className="w-full bg-[#292349] text-white px-3 py-2 rounded-lg border border-[#3E3666] focus:border-[#9B59B6] focus:outline-none text-sm"
+                              />
+                            ) : (
+                              <div className="flex items-center gap-1">
+                                <CheckCircle size={13} color="#00D397" />
+                                <span className="text-[#00D397] font-medium">{q.answer}</span>
+                              </div>
+                            )}
+                          </td>
+                          <td className="px-4 py-3 text-sm text-white/80 min-w-[180px]">
+                            {isEditing ? (
+                              <textarea
+                                value={editForm.explanation ?? ''}
+                                onChange={(e) =>
+                                  setEditForm((prev) => ({ ...prev, explanation: e.target.value }))
+                                }
+                                className="w-full bg-[#292349] text-white px-3 py-2 rounded-lg border border-[#3E3666] focus:border-[#9B59B6] focus:outline-none text-sm resize-y min-h-[60px]"
+                              />
+                            ) : (
+                              <span className="text-white/50 italic line-clamp-2">{q.explanation ?? '—'}</span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3 text-sm min-w-[100px]">
+                            {isEditing ? (
+                              <select
+                                value={editForm.difficulty ?? 'MEDIUM'}
+                                onChange={(e) =>
+                                  setEditForm((prev) => ({ ...prev, difficulty: e.target.value }))
+                                }
+                                className="w-full bg-[#292349] text-white px-3 py-2 rounded-lg border border-[#3E3666] focus:border-[#9B59B6] focus:outline-none text-sm"
+                              >
+                                {DIFFICULTY_OPTIONS.map((d) => (
+                                  <option key={d} value={d}>
+                                    {DIFFICULTY_CONFIG[d].label}
+                                  </option>
+                                ))}
+                              </select>
+                            ) : (
+                              <span
+                                className="text-xs px-2 py-0.5 rounded font-medium"
+                                style={{ backgroundColor: `${diff.color}20`, color: diff.color }}
+                              >
+                                {diff.label}
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3 text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              {isEditing ? (
+                                <>
+                                  <button
+                                    onClick={() => saveEdit(q.id)}
+                                    disabled={updateMutation.isPending}
+                                    className="p-1.5 rounded-lg bg-[#00D39720] hover:bg-[#00D39730] text-[#00D397] transition-colors"
+                                    title="Sauvegarder"
+                                  >
+                                    <Save size={14} />
+                                  </button>
+                                  <button
+                                    onClick={cancelEdit}
+                                    className="p-1.5 rounded-lg bg-[#3E3666] hover:bg-[#4E4676] text-white/70 hover:text-white transition-colors"
+                                    title="Annuler"
+                                  >
+                                    <X size={14} />
+                                  </button>
+                                </>
+                              ) : (
+                                <>
+                                  <button
+                                    onClick={() => startEdit(q)}
+                                    className="p-1.5 rounded-lg bg-[#3E3666] hover:bg-[#4E4676] text-white/70 hover:text-white transition-colors"
+                                    title="Éditer"
+                                  >
+                                    <Pencil size={14} />
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeleteQuestion(q)}
+                                    className="p-1.5 rounded-lg bg-[#D5442F20] hover:bg-[#D5442F30] text-[#D5442F] transition-colors"
+                                    title="Supprimer"
+                                  >
+                                    <Trash2 size={14} />
+                                  </button>
+                                </>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
 
-          {qHasMore && !qLoading && (
-            <button
-              onClick={handleQLoadMore}
-              className="w-full py-3 text-[#00D397] text-sm font-medium hover:opacity-80 transition-opacity mb-4"
-            >
-              Charger plus
-            </button>
+              {/* Pagination */}
+              {(questionsData?.totalPages ?? 1) > 1 && (
+                <div className="flex items-center justify-between px-4 py-3 border-t border-[#3E3666]">
+                  <span className="text-white/40 text-xs">
+                    Page {qPage + 1} / {questionsData?.totalPages}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setQPage((p) => Math.max(0, p - 1))}
+                      disabled={qPage === 0}
+                      className="p-1.5 rounded-lg bg-[#3E3666] text-white disabled:opacity-30 hover:bg-[#4E4676] transition-colors"
+                    >
+                      <ChevronLeft size={16} />
+                    </button>
+                    <button
+                      onClick={() =>
+                        setQPage((p) => Math.min((questionsData?.totalPages ?? 1) - 1, p + 1))
+                      }
+                      disabled={qPage >= (questionsData?.totalPages ?? 1) - 1}
+                      className="p-1.5 rounded-lg bg-[#3E3666] text-white disabled:opacity-30 hover:bg-[#4E4676] transition-colors"
+                    >
+                      <ChevronRight size={16} />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           )}
-          <div className="h-8" />
         </div>
       </div>
     );
@@ -241,7 +381,9 @@ export default function AdminQuestionsPage() {
           </button>
           <div className="flex-1">
             <p className="text-white font-bold text-xl">Historique questions</p>
-            <p className="text-white/60 text-xs">{categories.length} catégorie{categories.length !== 1 ? 's' : ''}</p>
+            <p className="text-white/60 text-xs">
+              {categoriesData?.totalElements ?? 0} catégorie{(categoriesData?.totalElements ?? 0) !== 1 ? 's' : ''}
+            </p>
           </div>
         </div>
       </div>
@@ -252,7 +394,10 @@ export default function AdminQuestionsPage() {
           <Search size={18} color="#FFFFFF60" className="shrink-0" />
           <input
             value={catSearch}
-            onChange={(e) => handleCatSearch(e.target.value)}
+            onChange={(e) => {
+              setCatSearch(e.target.value);
+              setCatPage(0);
+            }}
             placeholder="Rechercher une catégorie..."
             className="flex-1 py-3 px-3 bg-transparent text-white focus:outline-none placeholder-white/40 text-sm"
           />
@@ -260,8 +405,8 @@ export default function AdminQuestionsPage() {
       </div>
 
       {/* Categories list */}
-      <div className="flex-1 overflow-y-auto px-4" onScroll={handleCatScroll}>
-        {catLoading ? (
+      <div className="flex-1 overflow-y-auto px-4 pb-8">
+        {catLoading && categories.length === 0 ? (
           <div className="flex items-center justify-center py-16">
             <Spinner text="Chargement..." />
           </div>
@@ -270,40 +415,63 @@ export default function AdminQuestionsPage() {
             <p className="text-white/50">Aucune catégorie trouvée</p>
           </Card>
         ) : (
-          categories.map((cat) => (
-            <button
-              key={cat.category}
-              onClick={() => handleSelectCategory(cat.category)}
-              className="w-full text-left mb-3"
-            >
-              <Card>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-[#4A90D920] flex items-center justify-center shrink-0">
-                    <BookOpen size={20} color="#4A90D9" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-white font-semibold">{cat.category}</p>
-                    <div className="flex items-center gap-3 mt-0.5">
-                      <span className="text-white/50 text-xs">{cat.questionCount} question{cat.questionCount !== 1 ? 's' : ''}</span>
-                      <span className="text-white/30 text-xs">Dernière: {formatDate(cat.lastUsedAt)}</span>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {categories.map((cat) => (
+              <button
+                key={cat.category}
+                onClick={() => {
+                  setSelectedCategory(cat.category);
+                  setQPage(0);
+                  setQSearch('');
+                }}
+                className="text-left"
+              >
+                <Card className="h-full hover:border-[#9B59B6] transition-colors">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-10 h-10 rounded-xl bg-[#4A90D920] flex items-center justify-center shrink-0">
+                      <BookOpen size={20} color="#4A90D9" />
                     </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-white font-semibold truncate">{cat.category}</p>
+                    </div>
+                    <ChevronRight size={18} color="#FFFFFF40" />
                   </div>
-                  <ChevronRight size={18} color="#FFFFFF40" />
-                </div>
-              </Card>
-            </button>
-          ))
+                  <div className="flex items-center justify-between">
+                    <span className="text-white/50 text-xs">
+                      {cat.questionCount} question{cat.questionCount !== 1 ? 's' : ''}
+                    </span>
+                    <span className="text-white/30 text-xs">Dernière: {formatDate(cat.lastUsedAt)}</span>
+                  </div>
+                </Card>
+              </button>
+            ))}
+          </div>
         )}
 
-        {catHasMore && !catLoading && (
-          <button
-            onClick={handleCatLoadMore}
-            className="w-full py-3 text-[#00D397] text-sm font-medium hover:opacity-80 transition-opacity mb-4"
-          >
-            Charger plus
-          </button>
+        {/* Pagination categories */}
+        {(categoriesData?.totalPages ?? 1) > 1 && (
+          <div className="flex items-center justify-end gap-2 mt-4">
+            <button
+              onClick={() => setCatPage((p) => Math.max(0, p - 1))}
+              disabled={catPage === 0}
+              className="p-1.5 rounded-lg bg-[#3E3666] text-white disabled:opacity-30 hover:bg-[#4E4676] transition-colors"
+            >
+              <ChevronLeft size={16} />
+            </button>
+            <span className="text-white/40 text-xs">
+              Page {catPage + 1} / {categoriesData?.totalPages}
+            </span>
+            <button
+              onClick={() =>
+                setCatPage((p) => Math.min((categoriesData?.totalPages ?? 1) - 1, p + 1))
+              }
+              disabled={catPage >= (categoriesData?.totalPages ?? 1) - 1}
+              className="p-1.5 rounded-lg bg-[#3E3666] text-white disabled:opacity-30 hover:bg-[#4E4676] transition-colors"
+            >
+              <ChevronRight size={16} />
+            </button>
+          </div>
         )}
-        <div className="h-8" />
       </div>
     </div>
   );
