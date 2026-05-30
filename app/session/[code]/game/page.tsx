@@ -300,6 +300,15 @@ export default function GamePage() {
 
       setBuzzQueue(gameState.buzzQueue ?? []);
 
+      // Restore pending answer choices on reconnect (WITHOUT_MODERATOR, first in queue)
+      if (gameState.pendingChoices?.length) {
+        useBuzzStore.setState({
+          myAnswerChoices: gameState.pendingChoices,
+          myAnswerQuestionId: gameState.currentQuestion?.id ?? null,
+          answerTimeSeconds: gameState.pendingAnswerTimeSeconds ?? 15,
+        });
+      }
+
       if (gameState.players?.length) {
         useBuzzStore.setState({ players: gameState.players });
       }

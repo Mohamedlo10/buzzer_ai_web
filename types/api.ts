@@ -289,6 +289,8 @@ export interface GameStateResponse {
   myPlayer: PlayerResponse | null;
   hasBuzzed?: boolean;
   teams?: TeamResponse[];
+  pendingChoices?: string[] | null;
+  pendingAnswerTimeSeconds?: number | null;
 }
 
 // ──────────────────────────────────────────────
