@@ -101,6 +101,41 @@ function RankingInfoModal({ onClose }: { onClose: () => void }) {
             </div>
           </div>
 
+          {/* Bonus activité */}
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <div className="h-px flex-1 bg-[#3E3666]" />
+              <span className="text-white/50 text-xs font-medium uppercase tracking-wider">Bonus activité</span>
+              <div className="h-px flex-1 bg-[#3E3666]" />
+            </div>
+            <div className="bg-[#342D5B] rounded-xl p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-lg">🎮</span>
+                <span className="text-white font-semibold text-sm">Plus tu joues, mieux tu es classé</span>
+              </div>
+              <p className="text-white/50 text-xs ml-7 mb-3">
+                Le score final qui détermine ta position intègre un bonus lié au nombre de parties jouées.
+              </p>
+              <div className="grid grid-cols-2 gap-2 text-center">
+                {[
+                  { games: 10, bonus: '+47' },
+                  { games: 25, bonus: '+75' },
+                  { games: 60, bonus: '+116' },
+                  { games: 100, bonus: '+150' },
+                ].map(({ games, bonus }) => (
+                  <div key={games} className="bg-[#292349] rounded-lg px-3 py-2">
+                    <span className="text-[#00D397] font-bold text-sm">{bonus}</span>
+                    <span className="text-white/40 text-xs"> pts</span>
+                    <p className="text-white/40 text-xs">{games} parties</p>
+                  </div>
+                ))}
+              </div>
+              <p className="text-white/30 text-[10px] mt-2 text-center">
+                Formule : rating − déviation + √(parties) × 15
+              </p>
+            </div>
+          </div>
+
           {/* Règles importantes */}
           <div>
             <div className="flex items-center gap-2 mb-2">
@@ -131,7 +166,7 @@ function RankingInfoModal({ onClose }: { onClose: () => void }) {
               <div className="flex items-start gap-2">
                 <span className="text-white/70 text-xs mt-0.5">•</span>
                 <p className="text-white/70 text-xs leading-relaxed">
-                  <span className="text-white font-semibold">Plus tu joues, plus ton rating est fiable.</span> Pas d&apos;asymptote : si tu progresses, tu montes.
+                  <span className="text-white font-semibold">Moins de 10 parties</span> → classement provisoire affiché en fin de liste.
                 </p>
               </div>
             </div>
