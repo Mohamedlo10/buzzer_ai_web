@@ -284,11 +284,10 @@ export function handleWSEvent(event: WSEvent, currentUserId?: string): void {
 
     // ─── Sans Modérateur ─────────────────────
     case 'word_advance': {
-      const ev = event as any;
       useBuzzStore.setState({
-        displayWordIndex: ev.wordIndex,
-        displayRunning: !ev.fullyDisplayed,
-        ...(ev.fullyDisplayed ? { questionFullyDisplayed: true } : {}),
+        displayWordIndex: event.wordIndex,
+        displayRunning: !event.fullyDisplayed,
+        ...(event.fullyDisplayed ? { questionFullyDisplayed: true } : {}),
       });
       break;
     }

@@ -283,6 +283,12 @@ export interface GameChoicesEvent extends BaseWSMessage {
   answerTimeSeconds: number;
 }
 
+export interface WordAdvanceEvent extends BaseWSMessage {
+  type: 'word_advance';
+  wordIndex: number;
+  fullyDisplayed: boolean;
+}
+
 // ──────────────────────────────────────────────
 // Union Type
 // ──────────────────────────────────────────────
@@ -330,4 +336,5 @@ export type WSEvent =
   | QuestionDisplayResumeEvent
   | QuestionTimerEvent
   | AnswerRevealEvent
-  | GameChoicesEvent;
+  | GameChoicesEvent
+  | WordAdvanceEvent;
