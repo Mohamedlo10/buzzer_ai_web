@@ -15,7 +15,7 @@ export function ProgressiveQuestionDisplay({
   text,
   wordIndex,
   isRunning,
-  speedMs = 350,
+  speedMs = 600,
   onWordAdvance,
   onFullyDisplayed,
 }: ProgressiveQuestionDisplayProps) {

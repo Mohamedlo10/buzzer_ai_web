@@ -275,7 +275,7 @@ export default function GamePage() {
         const q = gameState.currentQuestion;
         if (q?.text) {
           const words = q.text.split(' ');
-          const syncedIndex = Math.min(Math.floor(elapsedMs / 350), words.length - 1);
+          const syncedIndex = Math.min(Math.floor(elapsedMs / 600), words.length - 1);
           const storeState = useBuzzStore.getState() as any;
           if (syncedIndex > (storeState.displayWordIndex ?? 0)) {
             useBuzzStore.setState({
