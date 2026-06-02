@@ -293,6 +293,14 @@ function mapTopicMessageToWSEvent(
         wordIndex: payload.wordIndex ?? 0,
       } as any;
 
+    case 'word-advance':
+      return {
+        type: 'word_advance',
+        sessionId,
+        wordIndex: payload.wordIndex ?? 0,
+        fullyDisplayed: payload.fullyDisplayed ?? false,
+      } as any;
+
     case 'question-timer':
       return {
         type: 'question_timer',
@@ -368,6 +376,7 @@ export class WebSocketManager {
     'countdown',
     'sync',
     'question-display-resume',
+    'word-advance',
     'question-timer',
     'answer-reveal',
   ] as const;

@@ -283,6 +283,16 @@ export function handleWSEvent(event: WSEvent, currentUserId?: string): void {
       break;
 
     // ─── Sans Modérateur ─────────────────────
+    case 'word_advance': {
+      const ev = event as any;
+      useBuzzStore.setState({
+        displayWordIndex: ev.wordIndex,
+        displayRunning: !ev.fullyDisplayed,
+        ...(ev.fullyDisplayed ? { questionFullyDisplayed: true } : {}),
+      });
+      break;
+    }
+
     case 'question_display_resume': {
       // Reprendre depuis la position courante (displayWordIndex) — ne pas réinitialiser à 0
       useBuzzStore.setState({ displayRunning: true });
@@ -300,26 +310,6 @@ export function handleWSEvent(event: WSEvent, currentUserId?: string): void {
         globalTimerPaused: event.paused,
         globalTimerTotal: newTotal,
       });
-
-      // Synchroniser la position du mot courant depuis le temps écoulé
-      // elapsedMs = (total - restant) * 1000 ; wordIndex = floor(elapsedMs / 350ms)
-      if (!event.paused && newTotal > 0) {
-        const elapsedMs = (newTotal - event.remainingSeconds) * 1000;
-        const question = useBuzzStore.getState().currentQuestion;
-        if (question?.text) {
-          const words = question.text.split(' ');
-          const syncedIndex = Math.min(Math.floor(elapsedMs / 350), words.length - 1);
-          const currentIndex = (useBuzzStore.getState() as any).displayWordIndex ?? 0;
-          if (syncedIndex > currentIndex) {
-            useBuzzStore.setState({
-              displayWordIndex: syncedIndex,
-              ...(syncedIndex >= words.length - 1
-                ? { questionFullyDisplayed: true, displayRunning: false }
-                : {}),
-            });
-          }
-        }
-      }
       break;
     }
 

@@ -267,24 +267,16 @@ export default function GamePage() {
         }));
       }
 
-      // Synchroniser la position du mot sur reconnexion/refresh
-      const serverGlobalTotal = gameState.session.globalQuestionSeconds as number | undefined;
-      const serverGlobalRemaining = gameState.session.globalTimerRemainingSeconds as number | undefined;
-      if (serverGlobalTotal && serverGlobalRemaining !== undefined && serverGlobalRemaining > 0) {
-        const elapsedMs = (serverGlobalTotal - serverGlobalRemaining) * 1000;
+      // Restore word index from server state on reconnect
+      const serverDisplayWordIndex = (gameState as any).displayWordIndex;
+      if (serverDisplayWordIndex != null && serverDisplayWordIndex > 0) {
         const q = gameState.currentQuestion;
-        if (q?.text) {
-          const words = q.text.split(' ');
-          const syncedIndex = Math.min(Math.floor(elapsedMs / 600), words.length - 1);
-          const storeState = useBuzzStore.getState() as any;
-          if (syncedIndex > (storeState.displayWordIndex ?? 0)) {
-            useBuzzStore.setState({
-              displayWordIndex: syncedIndex,
-              displayRunning: syncedIndex < words.length - 1,
-              ...(syncedIndex >= words.length - 1 ? { questionFullyDisplayed: true } : {}),
-            });
-          }
-        }
+        const totalWords = q?.text ? q.text.split(' ').length : 1;
+        useBuzzStore.setState({
+          displayWordIndex: serverDisplayWordIndex,
+          displayRunning: serverDisplayWordIndex < totalWords - 1,
+          ...(serverDisplayWordIndex >= totalWords - 1 ? { questionFullyDisplayed: true } : {}),
+        });
       }
 
       if (gameState.currentQuestion) {
@@ -976,8 +968,6 @@ export default function GamePage() {
                       text={currentQuestion.text}
                       wordIndex={displayWordIndex}
                       isRunning={displayRunning && !someoneIsAnswering}
-                      onWordAdvance={setDisplayWordIndex}
-                      onFullyDisplayed={() => setQuestionFullyDisplayed(true)}
                     />
                     {/* Indicateur pause quand quelqu'un répond */}
                     {someoneIsAnswering && (
