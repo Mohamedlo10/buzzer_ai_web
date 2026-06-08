@@ -674,7 +674,7 @@ export default function GamePage() {
           </button>
 
           <div className="flex-1 min-w-0">
-            <p className="text-txt font-display font-semibold text-[17px]">
+            <p className="text-txt font-display font-semibold sm:text-[17px]">
               Question {questionIndex + 1}
               {session.totalQuestions > 0 && (
                 <span className="text-txt-40 font-normal"> / {session.totalQuestions}</span>
@@ -857,7 +857,7 @@ export default function GamePage() {
         {isManager && !isWithoutModerator && (
           <div className="px-4 pt-4">
             {/* Dashboard Header */}
-            <div className="flex flex-row items-center justify-between mb-3">
+            {/* <div className="flex flex-row items-center justify-between mb-3">
               <div className="bg-surface rounded-2xl px-4 py-2 border border-line">
                 <p className="text-txt font-bold text-lg">
                   Question {questionIndex + 1}/{session.totalQuestions || '?'}
@@ -875,7 +875,7 @@ export default function GamePage() {
                   </span>
                 </div>
               </div>
-            </div>
+            </div> */}
 
             {/* Question & Answer Cards */}
             <div className="flex flex-row gap-3 mb-4">
