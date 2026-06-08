@@ -32,7 +32,7 @@ export function Slider({
   return (
     <div className="mb-6">
       <div className="flex flex-row items-center justify-between mb-3">
-        <span className="text-white/80 text-sm font-medium">{label}</span>
+        <span className="text-txt-60 text-sm font-medium">{label}</span>
         <span className="text-[#00D397] font-bold text-lg">
           {value}{suffix}
         </span>
@@ -45,15 +45,15 @@ export function Slider({
           disabled={value <= min}
           className={`w-10 h-10 rounded-lg flex items-center justify-center text-xl font-bold transition-colors ${
             value <= min
-              ? 'bg-[#3E3666]/50 text-white/30 cursor-not-allowed'
-              : 'bg-[#3E3666] text-white hover:bg-[#4E4676] cursor-pointer'
+              ? 'bg-surface-2/50 text-txt-40 cursor-not-allowed'
+              : 'bg-surface-2 text-txt hover:bg-surface-2 cursor-pointer'
           }`}
         >
           −
         </button>
 
         {/* Slider track + native range input */}
-        <div className="flex-1 relative h-2 bg-[#3E3666] rounded-full overflow-hidden">
+        <div className="flex-1 relative h-2 bg-surface-2 rounded-full overflow-hidden">
           <div
             className="h-full rounded-full bg-[#00D397]"
             style={{ width: `${percentage}%` }}
@@ -76,8 +76,8 @@ export function Slider({
           disabled={value >= max}
           className={`w-10 h-10 rounded-lg flex items-center justify-center text-xl font-bold transition-colors ${
             value >= max
-              ? 'bg-[#3E3666]/50 text-white/30 cursor-not-allowed'
-              : 'bg-[#3E3666] text-white hover:bg-[#4E4676] cursor-pointer'
+              ? 'bg-surface-2/50 text-txt-40 cursor-not-allowed'
+              : 'bg-surface-2 text-txt hover:bg-surface-2 cursor-pointer'
           }`}
         >
           +
@@ -86,8 +86,8 @@ export function Slider({
 
       {/* Min/Max labels */}
       <div className="flex flex-row justify-between mt-2">
-        <span className="text-white/40 text-xs">{min}{suffix}</span>
-        <span className="text-white/40 text-xs">{max}{suffix}</span>
+        <span className="text-txt-40 text-xs">{min}{suffix}</span>
+        <span className="text-txt-40 text-xs">{max}{suffix}</span>
       </div>
     </div>
   );

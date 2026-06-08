@@ -73,47 +73,51 @@ export function AnswerChoicesPanel({
     : '#D5442F';
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-4 animate-[rise_0.4s_both]">
       <div className="flex items-center gap-3">
-        <div className="flex-1 h-2 bg-[#3E3666] rounded-full overflow-hidden">
+        <div className="flex-1 h-2 bg-surface-2 rounded-full overflow-hidden">
           <div
             className="h-full rounded-full transition-all duration-1000"
             style={{ width: `${pct}%`, backgroundColor: timerColor }}
           />
         </div>
-        <span className="text-white font-bold text-sm w-8 text-right" style={{ color: timerColor }}>
+        <span className="font-bold text-sm w-8 text-right tabular-nums" style={{ color: timerColor }}>
           {remaining}s
         </span>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-2.5">
         {choices.map((choice, i) => {
           const isSelected = selectedIndex === i;
           const showCorrect = result === 'correct' && isSelected;
           const showWrong = result === 'wrong' && isSelected;
-
-          let borderColor = 'border-[#3E3666]';
-          let bgColor = 'bg-[#342D5B]';
-          if (showCorrect) { borderColor = 'border-[#00D397]'; bgColor = 'bg-[#00D39720]'; }
-          if (showWrong) { borderColor = 'border-[#D5442F]'; bgColor = 'bg-[#D5442F20]'; }
+          const dimmed = selectedIndex !== null && !isSelected;
 
           return (
             <button
               key={i}
+              type="button"
               onClick={() => handleSelect(i, choice)}
               disabled={hasSubmittedRef.current || isSubmitting || !!result}
-              className={`flex items-center gap-4 w-full ${bgColor} rounded-xl border ${borderColor} p-4 h-14 text-left active:scale-95 transition-all duration-150 disabled:opacity-60`}
+              className={`flex items-center gap-2.5 w-full rounded-[14px] border-[1.5px] p-3.5 min-h-[58px] text-left transition-all duration-150 active:scale-[0.98] disabled:cursor-default ${
+                showCorrect ? 'bg-accent/18 border-accent' :
+                showWrong ? 'bg-buzz/18 border-buzz animate-[shake_0.4s_ease]' :
+                isSelected ? 'bg-accent/18 border-accent' :
+                'bg-surface border-line'
+              } ${dimmed ? 'opacity-45' : ''}`}
             >
-              <span className="w-8 h-8 rounded-lg bg-[#3E3666] flex items-center justify-center text-white font-bold text-sm shrink-0">
+              <span className="w-[30px] h-[30px] rounded-[9px] bg-surface-2 flex items-center justify-center text-txt font-bold text-[13px] shrink-0">
                 {CHOICE_LABELS[i]}
               </span>
-              <span className="text-white text-base font-medium flex-1">{choice}</span>
-              {showCorrect && <CheckCircle size={20} className="text-[#00D397] shrink-0" />}
-              {showWrong && <XCircle size={20} className="text-[#D5442F] shrink-0" />}
+              <span className="text-txt text-[14.5px] font-semibold leading-snug flex-1">{choice}</span>
+              {showCorrect && <CheckCircle size={18} className="text-accent shrink-0" />}
+              {showWrong && <XCircle size={18} className="text-buzz shrink-0" />}
             </button>
           );
         })}
       </div>
+
+      <p className="text-txt-60 text-xs text-center">Réponds vite pour maximiser tes points</p>
     </div>
   );
 }

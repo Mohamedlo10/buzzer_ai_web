@@ -12,7 +12,7 @@ export function GlobalTimerBar({ totalSeconds, remainingSeconds, paused = false 
 
   return (
     <div className="flex items-center gap-2 px-4 py-1">
-      <div className="flex-1 h-1.5 bg-[#3E3666] rounded-full overflow-hidden">
+      <div className="flex-1 h-1.5 bg-surface-2 rounded-full overflow-hidden">
         <div
           className={`h-full rounded-full transition-all duration-1000 ${paused ? 'opacity-50' : ''}`}
           style={{ width: `${pct}%`, backgroundColor: color }}
@@ -25,7 +25,7 @@ export function GlobalTimerBar({ totalSeconds, remainingSeconds, paused = false 
         {remainingSeconds}
       </span>
       {paused && (
-        <span className="text-white/30 text-[10px] font-bold tracking-widest">⏸</span>
+        <span className="text-txt-40 text-[10px] font-bold tracking-widest">⏸</span>
       )}
     </div>
   );

@@ -53,12 +53,12 @@ function StepperField({
   onChange: (val: number) => void;
 }) {
   return (
-    <div className="bg-[#342D5B] rounded-2xl border border-[#3E3666] p-4 flex flex-col">
-      <p className="text-white/40 text-[10px] font-bold tracking-widest uppercase mb-3">{label}</p>
+    <div className="bg-surface rounded-2xl border border-line p-4 flex flex-col">
+      <p className="text-txt-40 text-[10px] font-bold tracking-widest uppercase mb-3">{label}</p>
       <div className="flex items-center justify-between gap-2">
         <button
           onClick={() => onChange(Math.max(min, value - step))}
-          className="w-9 h-9 rounded-full bg-[#3E3666] flex items-center justify-center text-white text-lg font-bold hover:bg-[#4E4676] active:scale-95 transition-all shrink-0"
+          className="w-9 h-9 rounded-full bg-surface-2 flex items-center justify-center text-txt text-lg font-bold hover:bg-surface-2 active:scale-95 transition-all shrink-0"
         >
           −
         </button>
@@ -67,7 +67,7 @@ function StepperField({
         </span>
         <button
           onClick={() => onChange(Math.min(max, value + step))}
-          className="w-9 h-9 rounded-full bg-[#3E3666] flex items-center justify-center text-white text-lg font-bold hover:bg-[#4E4676] active:scale-95 transition-all shrink-0"
+          className="w-9 h-9 rounded-full bg-surface-2 flex items-center justify-center text-txt text-lg font-bold hover:bg-surface-2 active:scale-95 transition-all shrink-0"
         >
           +
         </button>
@@ -114,9 +114,9 @@ function TeamEditor({
           <button
             onClick={() => cycleColor(index)}
             className="w-10 h-10 rounded-xl flex items-center justify-center mr-3 flex-shrink-0 transition-opacity hover:opacity-80"
-            style={{ backgroundColor: team.color ?? '#3E3666' }}
+            style={{ backgroundColor: team.color ?? 'var(--surface-2)' }}
           >
-            <Palette size={16} color="#FFFFFF" />
+            <Palette size={16} className="text-white" />
           </button>
 
           {/* Name input */}
@@ -126,17 +126,18 @@ function TeamEditor({
             onChange={e => updateName(index, e.target.value)}
             placeholder={`Équipe ${index + 1}`}
             maxLength={20}
-            className="flex-1 bg-[#292349] rounded-xl px-4 py-3 text-white border border-[#3E3666] focus:outline-none focus:border-[#00D397] placeholder:text-white/25"
+            className="flex-1 bg-bg rounded-xl px-4 py-3 text-txt border border-line focus:outline-none focus:border-[#00D397] placeholder:text-txt-25"
           />
 
           {/* Remove button */}
           <button
             onClick={() => removeTeam(index)}
             disabled={teams.length <= 2}
-            className="w-10 h-10 rounded-xl flex items-center justify-center ml-3 flex-shrink-0 transition-colors"
-            style={{ backgroundColor: teams.length <= 2 ? '#3E366640' : '#D5442F20' }}
+            className={`w-10 h-10 rounded-xl flex items-center justify-center ml-3 shrink-0 transition-colors ${
+              teams.length <= 2 ? 'bg-surface-2/40' : 'bg-buzz/20'
+            }`}
           >
-            <X size={16} color={teams.length <= 2 ? '#FFFFFF20' : '#D5442F'} />
+            <X size={16} className={teams.length <= 2 ? 'text-txt-25' : 'text-buzz'} />
           </button>
         </div>
       ))}
@@ -144,10 +145,10 @@ function TeamEditor({
       {teams.length < 8 && (
         <button
           onClick={addTeam}
-          className="w-full flex flex-row items-center justify-center py-3 rounded-xl border border-dashed border-[#3E3666] hover:bg-[#3E366620] transition-colors gap-2"
+          className="w-full flex flex-row items-center justify-center py-3 rounded-xl border border-dashed border-line hover:bg-surface-2/30 transition-colors gap-2 text-txt-60"
         >
-          <Plus size={16} color="#FFFFFF60" />
-          <span className="text-white/60 text-sm">Ajouter une équipe</span>
+          <Plus size={16} />
+          <span className="text-txt-60 text-sm">Ajouter une équipe</span>
         </button>
       )}
 
@@ -239,15 +240,15 @@ export function SessionConfigForm({ onSuccess, roomId, initialMaxPlayers }: Sess
       <div className="flex-1 px-4 pt-5 pb-4 flex flex-col gap-4">
 
         {/* Session Mode Toggle: Avec / Sans Modérateur */}
-        <div className="bg-[#342D5B] rounded-2xl border border-[#3E3666] p-4">
-          <p className="text-white/40 text-[10px] font-bold tracking-widest uppercase mb-3">Mode de jeu</p>
+        <div className="bg-surface rounded-2xl border border-line p-4">
+          <p className="text-txt-40 text-[10px] font-bold tracking-widest uppercase mb-3">Mode de jeu</p>
           <div className="flex gap-2">
             <button
               onClick={() => setSessionMode('WITH_MODERATOR')}
               className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all ${
                 sessionMode === 'WITH_MODERATOR'
-                  ? 'bg-[#00D397] text-[#292349]'
-                  : 'bg-[#3E3666] text-white/60'
+                  ? 'bg-[#00D397] text-btn-fg'
+                  : 'bg-surface-2 text-txt-60'
               }`}
             >
               <User size={16} className="inline-block mr-2" />
@@ -257,8 +258,8 @@ export function SessionConfigForm({ onSuccess, roomId, initialMaxPlayers }: Sess
               onClick={() => setSessionMode('WITHOUT_MODERATOR')}
               className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all ${
                 sessionMode === 'WITHOUT_MODERATOR'
-                  ? 'bg-[#00D397] text-[#292349]'
-                  : 'bg-[#3E3666] text-white/60'
+                  ? 'bg-[#00D397] text-btn-fg'
+                  : 'bg-surface-2 text-txt-60'
               }`}
             >
               <Bot size={16} className="inline-block mr-2" />
@@ -266,7 +267,7 @@ export function SessionConfigForm({ onSuccess, roomId, initialMaxPlayers }: Sess
             </button>
           </div>
           {sessionMode === 'WITHOUT_MODERATOR' && (
-            <p className="text-white/40 text-xs mt-2 text-center">
+            <p className="text-txt-40 text-xs mt-2 text-center">
               Questions affichées progressivement · Réponses automatiques
             </p>
           )}
@@ -294,8 +295,8 @@ export function SessionConfigForm({ onSuccess, roomId, initialMaxPlayers }: Sess
               onChange={setGlobalQuestionSeconds}
             />
             {/* Answer choices count */}
-            <div className="bg-[#342D5B] rounded-2xl border border-[#3E3666] p-4">
-              <p className="text-white/40 text-[10px] font-bold tracking-widest uppercase mb-3">
+            <div className="bg-surface rounded-2xl border border-line p-4">
+              <p className="text-txt-40 text-[10px] font-bold tracking-widest uppercase mb-3">
                 Nombre de choix de réponse
               </p>
               <div className="flex gap-2">
@@ -303,8 +304,8 @@ export function SessionConfigForm({ onSuccess, roomId, initialMaxPlayers }: Sess
                   onClick={() => setAnswerChoicesCount(null)}
                   className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${
                     answerChoicesCount === null
-                      ? 'bg-[#00D397] text-[#292349]'
-                      : 'bg-[#3E3666] text-white/60'
+                      ? 'bg-[#00D397] text-btn-fg'
+                      : 'bg-surface-2 text-txt-60'
                   }`}
                 >
                   Auto
@@ -315,8 +316,8 @@ export function SessionConfigForm({ onSuccess, roomId, initialMaxPlayers }: Sess
                     onClick={() => setAnswerChoicesCount(n)}
                     className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${
                       answerChoicesCount === n
-                        ? 'bg-[#00D397] text-[#292349]'
-                        : 'bg-[#3E3666] text-white/60'
+                        ? 'bg-[#00D397] text-btn-fg'
+                        : 'bg-surface-2 text-txt-60'
                     }`}
                   >
                     {n}
@@ -334,22 +335,22 @@ export function SessionConfigForm({ onSuccess, roomId, initialMaxPlayers }: Sess
             className={`flex-1 flex flex-col items-center gap-2 py-5 rounded-2xl border-2 transition-all ${
               questionMode === 'AI'
                 ? 'border-[#00D397] bg-[#00D39715]'
-                : 'border-[#3E3666] bg-[#342D5B]'
+                : 'border-line bg-surface'
             }`}
           >
             <Bot size={28} color={questionMode === 'AI' ? '#00D397' : '#FFFFFF40'} />
-            <span className={`font-bold text-sm ${questionMode === 'AI' ? 'text-[#00D397]' : 'text-white/40'}`}>IA</span>
+            <span className={`font-bold text-sm ${questionMode === 'AI' ? 'text-[#00D397]' : 'text-txt-40'}`}>IA</span>
           </button>
           <button
             onClick={() => handleModeChange('MANUAL')}
             className={`flex-1 flex flex-col items-center gap-2 py-5 rounded-2xl border-2 transition-all ${
               questionMode === 'MANUAL'
                 ? 'border-[#FFD700] bg-[#FFD70015]'
-                : 'border-[#3E3666] bg-[#342D5B]'
+                : 'border-line bg-surface'
             }`}
           >
             <PenLine size={28} color={questionMode === 'MANUAL' ? '#FFD700' : '#FFFFFF40'} />
-            <span className={`font-bold text-sm ${questionMode === 'MANUAL' ? 'text-[#FFD700]' : 'text-white/40'}`}>Manuel</span>
+            <span className={`font-bold text-sm ${questionMode === 'MANUAL' ? 'text-[#FFD700]' : 'text-txt-40'}`}>Manuel</span>
           </button>
           
         </div>
@@ -365,17 +366,17 @@ export function SessionConfigForm({ onSuccess, roomId, initialMaxPlayers }: Sess
           )}
         
           {/* Mode équipe */}
-        <div className="bg-[#342D5B] rounded-2xl border border-[#3E3666] px-4 py-3 flex items-center justify-between">
+        <div className="bg-surface rounded-2xl border border-line px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Users size={16} color="#4A90D9" />
-            <span className="text-white font-medium text-sm">Mode équipe</span>
+            <span className="text-txt font-medium text-sm">Mode équipe</span>
           </div>
           <button
             role="switch"
             aria-checked={config.isTeamMode}
             onClick={() => setConfig((c) => ({ ...c, isTeamMode: !c.isTeamMode }))}
             className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${
-              config.isTeamMode ? 'bg-[#00D397]' : 'bg-[#3E3666]'
+              config.isTeamMode ? 'bg-[#00D397]' : 'bg-surface-2'
             }`}
           >
             <span className={`inline-block h-5 w-5 rounded-full bg-white shadow transition-transform ${config.isTeamMode ? 'translate-x-6' : 'translate-x-1'}`} />
@@ -384,8 +385,8 @@ export function SessionConfigForm({ onSuccess, roomId, initialMaxPlayers }: Sess
 
         {/* Team Editor */}
         {config.isTeamMode && (
-          <div className="bg-[#342D5B] rounded-2xl border border-[#3E3666] p-4">
-            <p className="text-white/40 text-[10px] font-bold tracking-widest uppercase mb-3">Équipes</p>
+          <div className="bg-surface rounded-2xl border border-line p-4">
+            <p className="text-txt-40 text-[10px] font-bold tracking-widest uppercase mb-3">Équipes</p>
             <TeamEditor teams={teams} onChange={setTeams} />
           </div>
         )}
@@ -393,7 +394,7 @@ export function SessionConfigForm({ onSuccess, roomId, initialMaxPlayers }: Sess
 
         {/* Params grid */}
         <div>
-          <p className="text-white/40 text-[10px] font-bold tracking-widest uppercase mb-3">Paramètres du jeu</p>
+          <p className="text-txt-40 text-[10px] font-bold tracking-widest uppercase mb-3">Paramètres du jeu</p>
           <div className="grid grid-cols-2 gap-3">
             {questionMode === 'AI' && (
               <StepperField
@@ -443,7 +444,7 @@ export function SessionConfigForm({ onSuccess, roomId, initialMaxPlayers }: Sess
 
       
         {/* Summary pill */}
-        <div className="bg-[#342D5B] rounded-2xl border border-[#3E3666] px-4 py-3">
+        <div className="bg-surface rounded-2xl border border-line px-4 py-3">
           <div className="flex items-center gap-3 mb-2">
             <div className="flex gap-1.5">
               <div className="w-5 h-5 rounded-full bg-[#00D39730] flex items-center justify-center">
@@ -456,7 +457,7 @@ export function SessionConfigForm({ onSuccess, roomId, initialMaxPlayers }: Sess
                 <Target size={10} color="#FFD700" />
               </div>
             </div>
-            <p className="text-white/60 text-xs flex-1">
+            <p className="text-txt-60 text-xs flex-1">
               Quiz {questionMode === 'AI' ? 'IA' : 'Manuel'} • {config.maxPlayers} Joueurs
               {questionMode === 'AI' ? ` • ${config.questionsPerCategory} questions/cat` : ''}
             </p>
@@ -474,34 +475,34 @@ export function SessionConfigForm({ onSuccess, roomId, initialMaxPlayers }: Sess
       </div>
 
       {/* Bottom action bar */}
-      <div className="flex gap-3 px-4 py-4 border-t border-[#3E3666] bg-[#292349] shrink-0">
+      <div className="flex gap-3 px-4 py-4 border-t border-line bg-bg shrink-0">
         <button
           onClick={() => {/* handled by parent modal close */}}
           className="flex flex-col items-center gap-1 px-5"
         >
-          <div className="w-10 h-10 rounded-full bg-[#3E3666] flex items-center justify-center">
+          <div className="w-10 h-10 rounded-full bg-surface-2 flex items-center justify-center">
             <X size={20} color="#FFFFFF80" />
           </div>
-          <span className="text-white/40 text-[10px] font-bold tracking-wider uppercase">Annuler</span>
+          <span className="text-txt-40 text-[10px] font-bold tracking-wider uppercase">Annuler</span>
         </button>
         <button
           onClick={handleCreate}
           disabled={isCreating}
-          className="flex-1 rounded-full py-4 flex items-center justify-center gap-2 transition-all active:scale-95"
-          style={isCreating
-            ? { background: '#3E3666' }
-            : { background: 'linear-gradient(135deg, #00D397, #00B383)', boxShadow: '0 4px 20px rgba(0,211,151,0.35)' }
-          }
+          className={`flex-1 rounded-full py-4 flex items-center justify-center gap-2 transition-all active:scale-95 ${
+            isCreating
+              ? 'bg-surface-2'
+              : 'bg-gradient-to-br from-accent to-[#00B383] shadow-[0_4px_20px_rgba(0,211,151,0.35)]'
+          }`}
         >
           {isCreating ? (
             <>
-              <div className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-              <span className="text-white font-bold text-base">Création...</span>
+              <div className="w-5 h-5 border-2 border-txt-40 border-t-txt rounded-full animate-spin" />
+              <span className="text-txt font-bold text-base">Création...</span>
             </>
           ) : (
             <>
-              <Plus size={20} color="#292349" strokeWidth={3} />
-              <span className="text-[#292349] font-bold text-base tracking-wider uppercase">Créer la session</span>
+              <Plus size={20} className="text-btn-fg" strokeWidth={3} />
+              <span className="text-btn-fg font-bold text-base tracking-wider uppercase">Créer la session</span>
             </>
           )}
         </button>

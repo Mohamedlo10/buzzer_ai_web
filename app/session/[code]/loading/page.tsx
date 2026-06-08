@@ -127,101 +127,103 @@ export default function LoadingPage() {
   }, [session?.id, fetchSession, isConnected]);
 
   return (
-    <SafeScreen className="bg-[#292349]">
-      <div className="flex flex-col flex-1 min-h-screen items-center justify-center px-8">
+    <SafeScreen>
+      <div className="flex flex-col flex-1 min-h-screen items-center justify-center px-7 text-center">
         {/* Large Percentage */}
-        <div className="flex flex-col items-center mb-8">
-          <p className="text-[#00D397] text-7xl font-bold">
+        <div className="flex flex-col items-center mb-7">
+          <p className="text-accent font-display text-7xl font-semibold leading-none">
             {Math.round(progress)}%
           </p>
-          <p className="text-white/60 text-lg mt-2">
+          <p className="text-txt-60 text-[15px] mt-2">
             {isComplete
               ? 'Questions prêtes !'
               : error
               ? error
-              : 'Génération en cours...'}
+              : 'Génération en cours…'}
           </p>
         </div>
 
-        {/* Progress Bar */}
+        {/* Progress Bar + runner */}
         <div className="w-full max-w-sm">
-          <div className="h-12 bg-[#3E3666] rounded-full overflow-hidden relative">
+          <div className="h-11 bg-surface-2 rounded-full overflow-hidden relative">
             <div
-              className="absolute h-full bg-[#00D397] rounded-full transition-all duration-500"
-              style={{ width: `${Math.max(progress, 2)}%` }}
+              className="absolute inset-y-0 left-0 rounded-full transition-all duration-400"
+              style={{
+                width: `${Math.max(progress, 3)}%`,
+                background: 'linear-gradient(90deg, #00B383, #00D397)',
+              }}
             />
-            {/* Running character approximation */}
             <div
-              className="absolute top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white flex items-center justify-center transition-all duration-500"
-              style={{ left: `calc(${Math.max(progress, 2)}% - 16px)` }}
+              className="absolute top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white flex items-center justify-center text-[15px] transition-all duration-400 shadow-sm"
+              style={{ left: `calc(${Math.max(progress, 3)}% - 16px)` }}
             >
-              <span className="text-[#292349] text-sm font-bold">🏃</span>
+              🏃
             </div>
           </div>
 
-          {/* Status text */}
-          <div className="flex flex-row justify-between mt-3">
-            <span className="text-white/50 text-sm">
-              {totalQuestions > 0
-                ? `${currentQuestion} / ${totalQuestions} %`
-                : 'Préparation...'}
+          <div className="flex flex-row justify-between mt-2.5 text-xs">
+            <span className="text-txt-60">
+              {isComplete
+                ? 'Terminé'
+                : totalQuestions > 0
+                ? `${currentQuestion} / ${totalQuestions}`
+                : 'Préparation…'}
             </span>
             {isConnected ? (
-              <div className="flex flex-row items-center">
-                <div className="w-2 h-2 rounded-full bg-[#00D397] mr-1.5" />
-                <span className="text-[#00D397] text-sm">Connecté</span>
-              </div>
+              <span className="text-accent flex items-center gap-1.5">
+                <span className="dotpulse" />
+                Connecté
+              </span>
             ) : (
-              <div className="flex flex-row items-center">
-                <div className="w-2 h-2 rounded-full bg-[#D5442F] mr-1.5" />
-                <span className="text-white/40 text-sm">Connexion...</span>
-              </div>
+              <span className="text-txt-40 flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-buzz" />
+                Connexion…
+              </span>
             )}
           </div>
         </div>
 
-        {/* Fun info */}
-        <div className="mt-12 flex flex-col items-center">
-          <div className="w-16 h-16 rounded-full bg-[#00D39720] flex items-center justify-center mb-4">
+        {/* Status hint */}
+        <div className="mt-10 flex flex-col items-center">
+          <div className="w-14 h-14 rounded-full bg-accent/13 flex items-center justify-center mb-3">
             {isComplete ? (
-              <Sparkles size={28} color="#00D397" />
+              <Sparkles size={26} className="text-accent" />
             ) : (
-              <Zap size={28} color="#00D397" />
+              <Zap size={26} className="text-accent" />
             )}
           </div>
-
-          <p className="text-white/50 text-center text-sm max-w-xs">
+          <p className="text-txt-60 text-center text-sm max-w-xs leading-relaxed">
             {isComplete
               ? 'Toutes les questions sont générées !'
               : progress < 30
-              ? "L'IA prépare vos questions personnalisées..."
+              ? "L'IA prépare vos questions personnalisées…"
               : progress < 60
-              ? 'Encore un peu de patience...'
+              ? 'Encore un peu de patience…'
               : progress < 90
               ? 'Presque terminé !'
-              : 'Dernières vérifications...'}
+              : 'Dernières vérifications…'}
           </p>
         </div>
 
         {/* Rule explainer */}
-        <div className="mt-8 w-full max-w-sm">
-          <div className="p-4 bg-[#3E3666] rounded-xl border border-white/10">
-            <p className="text-white font-semibold text-sm mb-2">Règle du buzz anticipé</p>
-            <p className="text-white/70 text-sm leading-relaxed">
-              Si un joueur buzz avant que le modérateur de la salle ait fini de lire la question et qu&apos;il répond
-              faux, une pénalité de points est appliquée.
+        <div className="mt-7 w-full max-w-sm text-left">
+          <div className="p-3.5 bg-surface rounded-2xl border border-line">
+            <p className="text-txt font-bold text-[13.5px] mb-1">Règle du buzz anticipé</p>
+            <p className="text-txt-60 text-[12.5px] leading-relaxed">
+              Buzzer avant la fin de la lecture <strong className="text-txt font-semibold">et</strong> se tromper
+              applique une pénalité de points.
             </p>
 
-            <div className="mt-3 space-y-2">
-              <div className="p-2 rounded-lg bg-[#D5442F1A] border border-[#D5442F40]">
-                <p className="text-[#FF8A7A] text-xs font-semibold">Faux avec pénalité</p>
-                <p className="text-white/70 text-xs">Buzz trop tôt + mauvaise réponse = retrait de points.</p>
+            <div className="mt-3 flex flex-col gap-1.5">
+              <div className="p-2 rounded-[10px] bg-buzz/10 border border-buzz/25">
+                <p className="text-buzz-h text-[11.5px] font-bold">Faux avec pénalité</p>
+                <p className="text-txt-60 text-[11.5px]">Buzz trop tôt + mauvaise réponse → retrait de points.</p>
               </div>
 
-              <div className="p-2 rounded-lg bg-[#00D39714] border border-[#00D39740]">
-                <p className="text-[#00D397] text-xs font-semibold">Faux sans pénalité</p>
-                <p className="text-white/70 text-xs">
-                  Mauvaise réponse après la lecture complète de la question = pas de retrait de points.
+              <div className="p-2 rounded-[10px] bg-accent/9 border border-accent/25">
+                <p className="text-accent text-[11.5px] font-bold">Faux sans pénalité</p>
+                <p className="text-txt-60 text-[11.5px]">
+                  Mauvaise réponse après lecture complète → aucun retrait.
                 </p>
               </div>
             </div>
@@ -238,10 +240,10 @@ export default function LoadingPage() {
             <div className="flex flex-row gap-3">
               <button
                 onClick={() => router.replace(`/session/${code}/lobby`)}
-                className="flex-1 flex flex-row items-center justify-center bg-[#3E3666] py-3.5 rounded-xl hover:bg-[#4E4676] transition-colors"
+                className="flex-1 flex flex-row items-center justify-center bg-surface-2 py-3.5 rounded-xl hover:bg-surface-2 transition-colors"
               >
                 <ArrowLeft size={18} color="#FFFFFF" />
-                <span className="text-white font-semibold ml-2">Retour au lobby</span>
+                <span className="text-txt font-semibold ml-2">Retour au lobby</span>
               </button>
 
               <button
@@ -255,8 +257,8 @@ export default function LoadingPage() {
                 }}
                 className="flex-1 flex flex-row items-center justify-center bg-[#00D397] py-3.5 rounded-xl hover:bg-[#00B377] transition-colors"
               >
-                <RefreshCw size={18} color="#292349" />
-                <span className="text-[#292349] font-semibold ml-2">Réessayer</span>
+                <RefreshCw size={18} className="text-btn-fg" />
+                <span className="text-btn-fg font-semibold ml-2">Réessayer</span>
               </button>
             </div>
           </div>
@@ -280,7 +282,7 @@ export default function LoadingPage() {
               }}
               className="w-full flex flex-row items-center justify-center bg-[#D5442F] py-3.5 rounded-xl hover:bg-[#B53320] transition-colors"
             >
-              <span className="text-white font-semibold">
+              <span className="text-txt font-semibold">
                 {isCancelling ? 'Annulation…' : 'Arrêter la génération'}
               </span>
             </button>
@@ -288,7 +290,7 @@ export default function LoadingPage() {
         )}
 
         <div className="mt-8">
-          <p className="text-white/20 text-xs">Session {code}</p>
+          <p className="text-txt-25 text-xs">Session {code}</p>
         </div>
       </div>
     </SafeScreen>

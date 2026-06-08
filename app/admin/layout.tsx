@@ -20,7 +20,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#292349] flex items-center justify-center">
+      <div className="min-h-screen bg-bg flex items-center justify-center">
         <div className="w-10 h-10 border-4 border-[#9B59B6] border-t-transparent rounded-full animate-spin" />
       </div>
     );
@@ -29,7 +29,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   if (!user || user.role !== 'SUPER_ADMIN') return null;
 
   return (
-    <div className="min-h-screen bg-[#292349] flex">
+    <div className="min-h-screen bg-bg flex">
       <AdminSidebar />
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header desktop only — mobile header is inside AdminSidebar */}
@@ -44,11 +44,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <Toaster
         position="top-right"
         toastOptions={{
-          style: {
-            background: '#342D5B',
-            color: '#fff',
-            border: '1px solid #3E3666',
-          },
+          className: 'bg-surface text-txt border border-line',
         }}
       />
     </div>

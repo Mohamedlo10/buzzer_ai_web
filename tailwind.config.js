@@ -21,6 +21,35 @@ module.exports = {
         'text-secondary': '#A89CC8',
         'text-muted': '#7B6FA0',
         'border-color': '#3E3666',
+
+        // ── Design tokens (theme-aware via CSS variables, see global.css) ──
+        bg: 'var(--bg)',
+        'bg-deep': 'var(--bg-deep)',
+        surface: 'var(--surface)',
+        'surface-2': 'var(--surface-2)',
+        line: 'var(--line)',
+        txt: 'var(--txt)',
+        'txt-60': 'var(--txt-60)',
+        'txt-40': 'var(--txt-40)',
+        'txt-25': 'var(--txt-25)',
+        scrim: 'var(--scrim)',
+
+        // ── Brand colors (identical in both themes) ──
+        accent: '#00D397',
+        'accent-d': '#00B383',
+        energy: '#FFD700',
+        buzz: '#D5442F',
+        'buzz-h': '#FF6B4A',
+        host: '#8B5CF6',
+        team: '#4A90D9',
+        warn: '#F59E0B',
+        silver: '#C0C0C0',
+        bronze: '#CD7F32',
+        'btn-fg': '#08231B',
+      },
+      fontFamily: {
+        display: ['var(--font-display)', 'system-ui', 'sans-serif'],
+        ui: ['var(--font-ui)', 'system-ui', 'sans-serif'],
       },
       borderRadius: {
         'casino': '20px',

@@ -86,19 +86,19 @@ export default function JoinRoomPage() {
         onScan={handleQRScan}
       />
 
-      <div className="min-h-screen bg-[#292349]">
+      <div className="min-h-screen bg-bg">
         {/* Header */}
-        <div className="bg-[#292349] pt-6 pb-4 px-4 border-b border-[#3E3666]">
+        <div className="bg-bg pt-6 pb-4 px-4 border-b border-line">
           <div className="flex items-center">
             <button
               onClick={() => router.back()}
-              className="w-10 h-10 rounded-full bg-[#342D5B] flex items-center justify-center mr-3 hover:bg-[#3E3666] transition-colors"
+              className="w-10 h-10 rounded-full bg-surface flex items-center justify-center mr-3 hover:bg-surface-2 transition-colors"
             >
               <ArrowLeft size={20} color="#FFFFFF" />
             </button>
             <div className="flex-1">
-              <p className="text-white font-bold text-xl">Rejoindre une Salle</p>
-              <p className="text-white/60 text-xs mt-0.5">
+              <p className="text-txt font-bold text-xl">Rejoindre une Salle</p>
+              <p className="text-txt-60 text-xs mt-0.5">
                 Entrez le code ou scannez un QR code
               </p>
             </div>
@@ -115,7 +115,7 @@ export default function JoinRoomPage() {
                 </div>
               </div>
 
-              <p className="text-white font-medium mb-2">Code de la salle</p>
+              <p className="text-txt font-medium mb-2">Code de la salle</p>
               <input
                 value={code}
                 onChange={(e) => {
@@ -123,7 +123,7 @@ export default function JoinRoomPage() {
                   setError(null);
                 }}
                 placeholder="Ex: ROOM-ABC"
-                className="w-full bg-[#292349] rounded-xl px-4 py-3 text-white text-center text-xl font-bold tracking-widest border border-[#3E3666] focus:border-[#00D397] focus:outline-none uppercase placeholder-white/25"
+                className="w-full bg-bg rounded-xl px-4 py-3 text-txt text-center text-xl font-bold tracking-widest border border-line focus:border-[#00D397] focus:outline-none uppercase placeholder:text-txt-25"
                 maxLength={20}
                 autoFocus
               />
@@ -140,7 +140,7 @@ export default function JoinRoomPage() {
               disabled={isJoining}
               className={`w-full py-4 rounded-2xl flex items-center justify-center transition-colors mb-3 ${
                 isJoining
-                  ? 'bg-[#3E3666] cursor-not-allowed'
+                  ? 'bg-surface-2 cursor-not-allowed'
                   : 'bg-[#00D397] hover:bg-[#00B377]'
               }`}
               style={!isJoining ? { boxShadow: '0 0 12px rgba(0,211,151,0.4)' } : undefined}
@@ -148,7 +148,7 @@ export default function JoinRoomPage() {
               {isJoining ? (
                 <Spinner text="Connexion..." />
               ) : (
-                <span className="text-[#292349] font-bold text-lg">Rejoindre</span>
+                <span className="text-btn-fg font-bold text-lg">Rejoindre</span>
               )}
             </button>
 
@@ -156,10 +156,10 @@ export default function JoinRoomPage() {
             <button
               onClick={() => setShowScanner(true)}
               disabled={isJoining}
-              className="w-full py-4 rounded-2xl flex items-center justify-center gap-3 bg-[#342D5B] border border-[#3E3666] hover:bg-[#3E3666] transition-colors"
+              className="w-full py-4 rounded-2xl flex items-center justify-center gap-3 bg-surface border border-line hover:bg-surface-2 transition-colors"
             >
               <QrCode size={20} color="#00D397" />
-              <span className="text-white font-semibold">Scanner un QR code</span>
+              <span className="text-txt font-semibold">Scanner un QR code</span>
             </button>
           </div>
 

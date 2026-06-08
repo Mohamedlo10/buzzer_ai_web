@@ -59,14 +59,14 @@ export default function AdminAuditLogsPage() {
       key: 'createdAt',
       header: 'Date',
       render: (row: AdminAuditLogResponse) => (
-        <span className="text-white/70 text-xs">{formatDate(row.createdAt)}</span>
+        <span className="text-txt-60 text-xs">{formatDate(row.createdAt)}</span>
       ),
     },
     {
       key: 'adminUsername',
       header: 'Admin',
       render: (row: AdminAuditLogResponse) => (
-        <span className="text-white font-medium">{row.adminUsername}</span>
+        <span className="text-txt font-medium">{row.adminUsername}</span>
       ),
     },
     {
@@ -82,14 +82,14 @@ export default function AdminAuditLogsPage() {
       key: 'entityType',
       header: "Type d'entité",
       render: (row: AdminAuditLogResponse) => (
-        <span className="text-white/60 text-xs">{row.entityType}</span>
+        <span className="text-txt-60 text-xs">{row.entityType}</span>
       ),
     },
     {
       key: 'entityId',
       header: 'ID Entité',
       render: (row: AdminAuditLogResponse) => (
-        <span className="text-white/40 text-xs font-mono truncate max-w-[100px] block">
+        <span className="text-txt-40 text-xs font-mono truncate max-w-[100px] block">
           {row.entityId ?? '—'}
         </span>
       ),
@@ -98,7 +98,7 @@ export default function AdminAuditLogsPage() {
       key: 'details',
       header: 'Détails',
       render: (row: AdminAuditLogResponse) => (
-        <span className="text-white/50 text-xs line-clamp-2">
+        <span className="text-txt-60 text-xs line-clamp-2">
           {row.details ? JSON.stringify(row.details) : '—'}
         </span>
       ),
@@ -108,19 +108,19 @@ export default function AdminAuditLogsPage() {
   const hasActiveFilters = action || adminId || entityType || from || to;
 
   return (
-    <div className="min-h-screen bg-[#292349] flex flex-col">
+    <div className="min-h-screen bg-bg flex flex-col">
       {/* Header */}
-      <div className="bg-[#292349] pt-6 pb-4 px-4 border-b border-[#3E3666]">
+      <div className="bg-bg pt-6 pb-4 px-4 border-b border-line">
         <div className="flex items-center">
           <button
             onClick={() => router.back()}
-            className="w-10 h-10 rounded-full bg-[#342D5B] flex items-center justify-center mr-3 hover:bg-[#3E3666] transition-colors"
+            className="w-10 h-10 rounded-full bg-surface flex items-center justify-center mr-3 hover:bg-surface-2 transition-colors"
           >
             <ArrowLeft size={20} color="#FFFFFF" />
           </button>
           <div className="flex-1">
-            <p className="text-white font-bold text-xl">Audit Logs</p>
-            <p className="text-white/60 text-xs">
+            <p className="text-txt font-bold text-xl">Audit Logs</p>
+            <p className="text-txt-60 text-xs">
               {data?.totalElements ?? 0} entrée{(data?.totalElements ?? 0) !== 1 ? 's' : ''}
             </p>
           </div>
@@ -142,7 +142,7 @@ export default function AdminAuditLogsPage() {
             className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-medium transition-colors ${
               showFilters || hasActiveFilters
                 ? 'bg-[#9B59B6] border-[#9B59B6] text-white'
-                : 'bg-[#342D5B] border-[#3E3666] text-white/70 hover:text-white'
+                : 'bg-surface border-line text-txt-60 hover:text-txt'
             }`}
           >
             <Filter size={15} />
@@ -159,7 +159,7 @@ export default function AdminAuditLogsPage() {
                 setTo('');
                 setPage(0);
               }}
-              className="flex items-center gap-1 text-white/50 hover:text-white text-sm transition-colors"
+              className="flex items-center gap-1 text-txt-60 hover:text-txt text-sm transition-colors"
             >
               <X size={14} />
               Réinitialiser
@@ -169,8 +169,8 @@ export default function AdminAuditLogsPage() {
 
         {showFilters && (
           <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-            <div className="bg-[#342D5B] rounded-xl border border-[#3E3666] px-4 py-2">
-              <label className="text-white/40 text-xs block mb-1">Action</label>
+            <div className="bg-surface rounded-xl border border-line px-4 py-2">
+              <label className="text-txt-40 text-xs block mb-1">Action</label>
               <input
                 value={action}
                 onChange={(e) => {
@@ -178,11 +178,11 @@ export default function AdminAuditLogsPage() {
                   setPage(0);
                 }}
                 placeholder="ex: DELETE"
-                className="w-full bg-transparent text-white text-sm focus:outline-none placeholder-white/30"
+                className="w-full bg-transparent text-txt text-sm focus:outline-none placeholder-white/30"
               />
             </div>
-            <div className="bg-[#342D5B] rounded-xl border border-[#3E3666] px-4 py-2">
-              <label className="text-white/40 text-xs block mb-1">Admin ID</label>
+            <div className="bg-surface rounded-xl border border-line px-4 py-2">
+              <label className="text-txt-40 text-xs block mb-1">Admin ID</label>
               <input
                 value={adminId}
                 onChange={(e) => {
@@ -190,11 +190,11 @@ export default function AdminAuditLogsPage() {
                   setPage(0);
                 }}
                 placeholder="ID admin..."
-                className="w-full bg-transparent text-white text-sm focus:outline-none placeholder-white/30"
+                className="w-full bg-transparent text-txt text-sm focus:outline-none placeholder-white/30"
               />
             </div>
-            <div className="bg-[#342D5B] rounded-xl border border-[#3E3666] px-4 py-2">
-              <label className="text-white/40 text-xs block mb-1">Type d'entité</label>
+            <div className="bg-surface rounded-xl border border-line px-4 py-2">
+              <label className="text-txt-40 text-xs block mb-1">Type d'entité</label>
               <input
                 value={entityType}
                 onChange={(e) => {
@@ -202,11 +202,11 @@ export default function AdminAuditLogsPage() {
                   setPage(0);
                 }}
                 placeholder="ex: USER"
-                className="w-full bg-transparent text-white text-sm focus:outline-none placeholder-white/30"
+                className="w-full bg-transparent text-txt text-sm focus:outline-none placeholder-white/30"
               />
             </div>
-            <div className="bg-[#342D5B] rounded-xl border border-[#3E3666] px-4 py-2">
-              <label className="text-white/40 text-xs block mb-1">Depuis</label>
+            <div className="bg-surface rounded-xl border border-line px-4 py-2">
+              <label className="text-txt-40 text-xs block mb-1">Depuis</label>
               <input
                 type="date"
                 value={from}
@@ -214,11 +214,11 @@ export default function AdminAuditLogsPage() {
                   setFrom(e.target.value);
                   setPage(0);
                 }}
-                className="w-full bg-transparent text-white text-sm focus:outline-none"
+                className="w-full bg-transparent text-txt text-sm focus:outline-none"
               />
             </div>
-            <div className="bg-[#342D5B] rounded-xl border border-[#3E3666] px-4 py-2">
-              <label className="text-white/40 text-xs block mb-1">Jusqu'à</label>
+            <div className="bg-surface rounded-xl border border-line px-4 py-2">
+              <label className="text-txt-40 text-xs block mb-1">Jusqu'à</label>
               <input
                 type="date"
                 value={to}
@@ -226,7 +226,7 @@ export default function AdminAuditLogsPage() {
                   setTo(e.target.value);
                   setPage(0);
                 }}
-                className="w-full bg-transparent text-white text-sm focus:outline-none"
+                className="w-full bg-transparent text-txt text-sm focus:outline-none"
               />
             </div>
           </div>

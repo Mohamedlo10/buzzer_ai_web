@@ -86,7 +86,7 @@ export default function AdminRoomsPage() {
       render: (row: AdminRoomResponse) => (
         <div className="flex items-center gap-2">
           <FolderOpen size={16} color="#9B59B6" />
-          <span className="text-white font-medium">{row.name}</span>
+          <span className="text-txt font-medium">{row.name}</span>
         </div>
       ),
     },
@@ -137,7 +137,7 @@ export default function AdminRoomsPage() {
               e.stopPropagation();
               router.push(`/admin/rooms/${row.id}`);
             }}
-            className="p-1.5 rounded-lg bg-[#3E3666] hover:bg-[#4E4676] text-white/70 hover:text-white transition-colors"
+            className="p-1.5 rounded-lg bg-surface-2 hover:bg-surface-2 text-txt-60 hover:text-txt transition-colors"
             title="Voir détail"
           >
             <Eye size={14} />
@@ -147,7 +147,7 @@ export default function AdminRoomsPage() {
               e.stopPropagation();
               setTransferRoom(row);
             }}
-            className="p-1.5 rounded-lg bg-[#3E3666] hover:bg-[#4E4676] text-white/70 hover:text-white transition-colors"
+            className="p-1.5 rounded-lg bg-surface-2 hover:bg-surface-2 text-txt-60 hover:text-txt transition-colors"
             title="Transférer propriété"
           >
             <ArrowRightLeft size={14} />
@@ -168,19 +168,19 @@ export default function AdminRoomsPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#292349] flex flex-col">
+    <div className="min-h-screen bg-bg flex flex-col">
       {/* Header */}
-      <div className="bg-[#292349] pt-6 pb-4 px-4 border-b border-[#3E3666]">
+      <div className="bg-bg pt-6 pb-4 px-4 border-b border-line">
         <div className="flex items-center">
           <button
             onClick={() => router.back()}
-            className="w-10 h-10 rounded-full bg-[#342D5B] flex items-center justify-center mr-3 hover:bg-[#3E3666] transition-colors"
+            className="w-10 h-10 rounded-full bg-surface flex items-center justify-center mr-3 hover:bg-surface-2 transition-colors"
           >
             <ArrowLeft size={20} color="#FFFFFF" />
           </button>
           <div className="flex-1">
-            <p className="text-white font-bold text-xl">Salles</p>
-            <p className="text-white/60 text-xs">
+            <p className="text-txt font-bold text-xl">Salles</p>
+            <p className="text-txt-60 text-xs">
               {data?.totalElements ?? 0} salle{(data?.totalElements ?? 0) !== 1 ? 's' : ''}
             </p>
           </div>
@@ -213,27 +213,27 @@ export default function AdminRoomsPage() {
       {transferRoom && (
         <div className="fixed inset-0 bg-black/60 flex items-end sm:items-center justify-center z-50 px-4">
           <div className="absolute inset-0" onClick={() => setTransferRoom(null)} />
-          <div className="relative bg-[#342D5B] rounded-2xl border border-[#3E3666] p-6 w-full max-w-md">
+          <div className="relative bg-surface rounded-2xl border border-line p-6 w-full max-w-md">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-white font-bold">Transférer la salle</h3>
-              <button onClick={() => setTransferRoom(null)} className="p-1 text-white/50 hover:text-white">
+              <h3 className="text-txt font-bold">Transférer la salle</h3>
+              <button onClick={() => setTransferRoom(null)} className="p-1 text-txt-60 hover:text-txt">
                 <X size={18} />
               </button>
             </div>
-            <p className="text-white/60 text-sm mb-4">
-              Salle : <span className="text-white font-medium">{transferRoom.name}</span>
+            <p className="text-txt-60 text-sm mb-4">
+              Salle : <span className="text-txt font-medium">{transferRoom.name}</span>
             </p>
-            <label className="text-white/60 text-sm block mb-2">Nouveau propriétaire (userId)</label>
+            <label className="text-txt-60 text-sm block mb-2">Nouveau propriétaire (userId)</label>
             <input
               value={newOwnerId}
               onChange={(e) => setNewOwnerId(e.target.value)}
               placeholder="ID utilisateur..."
-              className="w-full bg-[#292349] text-white px-4 py-3 rounded-xl border border-[#3E3666] focus:border-[#9B59B6] focus:outline-none text-sm mb-4"
+              className="w-full bg-bg text-txt px-4 py-3 rounded-xl border border-line focus:border-[#9B59B6] focus:outline-none text-sm mb-4"
             />
             <div className="flex gap-3">
               <button
                 onClick={() => setTransferRoom(null)}
-                className="flex-1 py-3 rounded-xl bg-[#3E3666] text-white text-sm font-medium hover:bg-[#4E4676] transition-colors"
+                className="flex-1 py-3 rounded-xl bg-surface-2 text-txt text-sm font-medium hover:bg-surface-2 transition-colors"
               >
                 Annuler
               </button>

@@ -47,19 +47,19 @@ export default function CreateRoomPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#292349]">
+    <div className="min-h-screen bg-bg">
       {/* Header */}
-      <div className="bg-[#292349] pt-6 pb-4 px-4 border-b border-[#3E3666]">
+      <div className="bg-bg pt-6 pb-4 px-4 border-b border-line">
         <div className="flex items-center">
           <button
             onClick={() => router.back()}
-            className="w-10 h-10 rounded-full bg-[#342D5B] flex items-center justify-center mr-3 hover:bg-[#3E3666] transition-colors"
+            className="w-10 h-10 rounded-full bg-surface flex items-center justify-center mr-3 hover:bg-surface-2 transition-colors"
           >
             <ArrowLeft size={20} color="#FFFFFF" />
           </button>
           <div className="flex-1">
-            <p className="text-white font-bold text-xl">Nouvelle Salle</p>
-            <p className="text-white/60 text-xs mt-0.5">Créez un espace pour vos parties</p>
+            <p className="text-txt font-bold text-xl">Nouvelle Salle</p>
+            <p className="text-txt-60 text-xs mt-0.5">Créez un espace pour vos parties</p>
           </div>
         </div>
       </div>
@@ -74,7 +74,7 @@ export default function CreateRoomPage() {
               </div>
             </div>
 
-            <p className="text-white font-medium mb-2">Nom de la salle *</p>
+            <p className="text-txt font-medium mb-2">Nom de la salle *</p>
             <input
               value={name}
               onChange={(e) => {
@@ -82,16 +82,16 @@ export default function CreateRoomPage() {
                 setError(null);
               }}
               placeholder="Ex: Soirée quiz, Les Champions..."
-              className="w-full bg-[#292349] rounded-xl px-4 py-3 text-white border border-[#3E3666] focus:border-[#00D397] focus:outline-none mb-4 placeholder-white/25"
+              className="w-full bg-bg rounded-xl px-4 py-3 text-txt border border-line focus:border-[#00D397] focus:outline-none mb-4 placeholder:text-txt-25"
               maxLength={50}
               autoFocus
             />
 
             <div className="flex items-center justify-between mb-2">
-              <p className="text-white font-medium">Nombre maximum de joueurs</p>
-              <div className="flex items-center gap-2 bg-[#292349] rounded-xl border border-[#3E3666] px-3 py-1.5">
+              <p className="text-txt font-medium">Nombre maximum de joueurs</p>
+              <div className="flex items-center gap-2 bg-bg rounded-xl border border-line px-3 py-1.5">
                 <Users size={14} color="#00D397" />
-                <span className="text-white font-bold text-sm w-8 text-center">{maxPlayers}</span>
+                <span className="text-txt font-bold text-sm w-8 text-center">{maxPlayers}</span>
               </div>
             </div>
             <input
@@ -102,17 +102,17 @@ export default function CreateRoomPage() {
               onChange={(e) => setMaxPlayers(Number(e.target.value))}
               className="w-full accent-[#00D397] mb-1"
             />
-            <div className="flex justify-between text-white/30 text-xs mb-4">
+            <div className="flex justify-between text-txt-40 text-xs mb-4">
               <span>2</span>
               <span>250</span>
             </div>
 
-            <p className="text-white font-medium mb-2">Description (optionnel)</p>
+            <p className="text-txt font-medium mb-2">Description (optionnel)</p>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Décrivez votre salle..."
-              className="w-full bg-[#292349] rounded-xl px-4 py-3 text-white border border-[#3E3666] focus:border-[#00D397] focus:outline-none resize-none placeholder-white/25"
+              className="w-full bg-bg rounded-xl px-4 py-3 text-txt border border-line focus:border-[#00D397] focus:outline-none resize-none placeholder:text-txt-25"
               maxLength={200}
               rows={3}
               style={{ minHeight: 80 }}
@@ -130,7 +130,7 @@ export default function CreateRoomPage() {
             disabled={isCreating}
             className={`w-full py-4 rounded-2xl flex items-center justify-center transition-colors ${
               isCreating
-                ? 'bg-[#3E3666] cursor-not-allowed'
+                ? 'bg-surface-2 cursor-not-allowed'
                 : 'bg-[#00D397] hover:bg-[#00B377]'
             }`}
             style={
@@ -142,7 +142,7 @@ export default function CreateRoomPage() {
             {isCreating ? (
               <Spinner text="Création..." />
             ) : (
-              <span className="text-[#292349] font-bold text-lg">Créer la salle</span>
+              <span className="text-btn-fg font-bold text-lg">Créer la salle</span>
             )}
           </button>
         </div>

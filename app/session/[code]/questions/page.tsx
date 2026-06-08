@@ -40,13 +40,13 @@ function QuestionItem({
 
   return (
     <div className="mb-3">
-      <div className="bg-[#342D5B] rounded-2xl border border-[#3E3666] overflow-hidden">
+      <div className="bg-surface rounded-2xl border border-line overflow-hidden">
         {/* Header */}
-        <div className="flex flex-row items-center px-4 py-3 border-b border-[#3E3666]">
+        <div className="flex flex-row items-center px-4 py-3 border-b border-line">
           <div className="w-7 h-7 rounded-lg bg-[#FFD70020] flex items-center justify-center mr-3">
             <span className="text-[#FFD700] font-bold text-xs">{index + 1}</span>
           </div>
-          <span className="text-white/60 text-sm flex-1">Question {index + 1}</span>
+          <span className="text-txt-60 text-sm flex-1">Question {index + 1}</span>
           <button
             onClick={() => onRemove(index)}
             className="w-8 h-8 rounded-full bg-red-500/20 flex items-center justify-center hover:bg-red-500/30 transition-colors"
@@ -61,7 +61,7 @@ function QuestionItem({
             value={question.text}
             onChange={(e) => onUpdate(index, { text: e.target.value })}
             placeholder="Question *"
-            className="bg-[#292349] rounded-xl px-4 py-3 text-white border border-[#3E3666] focus:border-[#00D397] outline-none resize-none min-h-[80px]"
+            className="bg-bg rounded-xl px-4 py-3 text-txt border border-line focus:border-accent outline-none resize-none min-h-[80px]"
             rows={2}
           />
 
@@ -71,7 +71,7 @@ function QuestionItem({
             value={question.answer}
             onChange={(e) => onUpdate(index, { answer: e.target.value })}
             placeholder="Réponse *"
-            className="bg-[#292349] rounded-xl px-4 py-3 text-white border border-[#3E3666] focus:border-[#00D397] outline-none"
+            className="bg-bg rounded-xl px-4 py-3 text-txt border border-line focus:border-accent outline-none"
           />
 
           {/* Explanation toggle */}
@@ -84,7 +84,7 @@ function QuestionItem({
             ) : (
               <ChevronDown size={14} color="#FFFFFF40" />
             )}
-            <span className="text-white/40 text-xs ml-1">
+            <span className="text-txt-40 text-xs ml-1">
               {showExplanation ? "Masquer l'explication" : 'Ajouter une explication (optionnel)'}
             </span>
           </button>
@@ -94,22 +94,22 @@ function QuestionItem({
               value={question.explanation ?? ''}
               onChange={(e) => onUpdate(index, { explanation: e.target.value })}
               placeholder="Explication (optionnel)"
-              className="bg-[#292349] rounded-xl px-4 py-3 text-white border border-[#3E3666] focus:border-[#00D397] outline-none resize-none min-h-[80px]"
+              className="bg-bg rounded-xl px-4 py-3 text-txt border border-line focus:border-accent outline-none resize-none min-h-[80px]"
               rows={2}
             />
           )}
 
           {/* Sans Modérateur extra fields */}
           {isWithoutModerator && (
-            <div className="flex flex-col gap-2 border-t border-[#3E3666] pt-3 mt-1">
+            <div className="flex flex-col gap-2 border-t border-line pt-3 mt-1">
               {/* Type de question */}
               <div className="flex gap-2">
                 <button
                   onClick={() => onUpdate(index, { questionType: 'TEXT' })}
                   className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${
                     (question.questionType ?? 'TEXT') === 'TEXT'
-                      ? 'bg-[#00D397] text-[#292349]'
-                      : 'bg-[#3E3666] text-white/50'
+                      ? 'bg-[#00D397] text-btn-fg'
+                      : 'bg-surface-2 text-txt-60'
                   }`}
                 >
                   📝 Texte
@@ -118,8 +118,8 @@ function QuestionItem({
                   onClick={() => onUpdate(index, { questionType: 'IDENTIFICATION' })}
                   className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${
                     question.questionType === 'IDENTIFICATION'
-                      ? 'bg-[#00D397] text-[#292349]'
-                      : 'bg-[#3E3666] text-white/50'
+                      ? 'bg-[#00D397] text-btn-fg'
+                      : 'bg-surface-2 text-txt-60'
                   }`}
                 >
                   🖼️ Identification
@@ -133,13 +133,13 @@ function QuestionItem({
                   value={question.imageUrl ?? ''}
                   onChange={(e) => onUpdate(index, { imageUrl: e.target.value })}
                   placeholder="https://... URL de l'image"
-                  className="w-full bg-[#292349] text-white text-sm rounded-xl border border-[#3E3666] px-4 py-3 placeholder-white/30 outline-none focus:border-[#00D397]"
+                  className="w-full bg-bg text-txt text-sm rounded-xl border border-line px-4 py-3 placeholder:text-txt-40 outline-none focus:border-accent"
                 />
               )}
 
               {/* Mauvais choix (leurres) */}
               <div className="flex flex-col gap-1.5">
-                <p className="text-white/30 text-[10px] font-bold tracking-widest uppercase">
+                <p className="text-txt-40 text-[10px] font-bold tracking-widest uppercase">
                   Leurres (optionnel — laissez vide pour génération IA)
                 </p>
                 {(question.wrongChoices ?? ['', '']).map((choice, ci) => (
@@ -153,7 +153,7 @@ function QuestionItem({
                       onUpdate(index, { wrongChoices: newChoices });
                     }}
                     placeholder={`Leurre ${ci + 1}`}
-                    className="w-full bg-[#292349] text-white text-sm rounded-xl border border-[#3E3666] px-4 py-3 placeholder-white/30 outline-none focus:border-[#00D397]"
+                    className="w-full bg-bg text-txt text-sm rounded-xl border border-line px-4 py-3 placeholder:text-txt-40 outline-none focus:border-accent"
                   />
                 ))}
               </div>
@@ -359,29 +359,29 @@ export default function QuestionsPage() {
 
   if (isLoading) {
     return (
-      <SafeScreen className="bg-[#292349]">
+      <SafeScreen>
         <div className="flex-1 flex flex-col items-center justify-center min-h-screen">
           <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-          <p className="text-white/60 text-sm mt-3">Chargement des questions...</p>
+          <p className="text-txt-60 text-sm mt-3">Chargement des questions...</p>
         </div>
       </SafeScreen>
     );
   }
 
   return (
-    <SafeScreen className="bg-[#292349]">
+    <SafeScreen>
       {/* Header */}
-      <div className="bg-[#292349] pt-6 pb-4 px-4 border-b border-[#3E3666] sticky top-0 z-10">
+      <div className="bg-bg pt-6 pb-4 px-4 border-b border-line sticky top-0 z-10">
         <div className="flex flex-row items-center">
           <button
             onClick={() => router.back()}
-            className="w-10 h-10 rounded-full bg-[#342D5B] flex items-center justify-center mr-3 hover:bg-[#3E3666] transition-colors"
+            className="w-10 h-10 rounded-full bg-surface flex items-center justify-center mr-3 hover:bg-surface-2 transition-colors"
           >
             <ArrowLeft size={20} color="#FFFFFF" />
           </button>
           <div className="flex-1">
-            <p className="text-white font-bold text-xl">Questions manuelles</p>
-            <p className="text-white/50 text-xs">
+            <p className="text-txt font-bold text-xl">Questions manuelles</p>
+            <p className="text-txt-60 text-xs">
               {validCount} question(s) valide(s)
             </p>
           </div>
@@ -389,13 +389,13 @@ export default function QuestionsPage() {
             onClick={handleSave}
             disabled={isSaving || validCount === 0}
             className={`px-4 py-2 rounded-xl transition-colors ${
-              validCount > 0 && !isSaving ? 'bg-[#00D397] hover:bg-[#00B377]' : 'bg-[#3E3666] cursor-not-allowed'
+              validCount > 0 && !isSaving ? 'bg-[#00D397] hover:bg-[#00B377]' : 'bg-surface-2 cursor-not-allowed'
             }`}
           >
             {isSaving ? (
               <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
             ) : (
-              <span className={`font-bold text-sm ${validCount > 0 ? 'text-[#292349]' : 'text-white/40'}`}>
+              <span className={`font-bold text-sm ${validCount > 0 ? 'text-btn-fg' : 'text-txt-40'}`}>
                 Enregistrer
               </span>
             )}
@@ -408,10 +408,10 @@ export default function QuestionsPage() {
         <div className="px-4 pt-4 mb-2">
           <button
             onClick={() => setShowImport((s) => !s)}
-            className="w-full bg-[#342D5B] rounded-2xl border border-[#3E3666] px-4 py-3 flex flex-row items-center hover:bg-[#3E3666] transition-colors"
+            className="w-full bg-surface rounded-2xl border border-line px-4 py-3 flex flex-row items-center hover:bg-surface-2 transition-colors"
           >
             <FileSpreadsheet size={18} color="#9B59B6" />
-            <span className="text-white font-semibold text-sm ml-2 flex-1 text-left">
+            <span className="text-txt font-semibold text-sm ml-2 flex-1 text-left">
               Importer des questions
             </span>
             {showImport ? (
@@ -423,7 +423,7 @@ export default function QuestionsPage() {
 
           {showImport && (
             <div className="mt-2">
-              <div className="bg-[#342D5B] rounded-2xl border border-[#3E3666] p-4">
+              <div className="bg-surface rounded-2xl border border-line p-4">
                 {/* Download Template */}
                 <button
                   onClick={handleDownloadTemplate}
@@ -442,17 +442,17 @@ export default function QuestionsPage() {
                   )}
                 </button>
 
-                <p className="text-white/50 text-xs mb-3">Choisissez une méthode d'import :</p>
+                <p className="text-txt-60 text-xs mb-3">Choisissez une méthode d'import :</p>
 
                 <div className="flex flex-row gap-2 mb-4">
                   <button
                     onClick={() => setImportMode('excel')}
                     className={`flex-1 py-3 rounded-xl flex flex-col items-center transition-colors ${
-                      importMode === 'excel' ? 'bg-[#9B59B6]' : 'bg-[#3E3666] hover:bg-[#4E4676]'
+                      importMode === 'excel' ? 'bg-[#9B59B6]' : 'bg-surface-2 hover:bg-surface-2'
                     }`}
                   >
                     <FileUp size={18} color={importMode === 'excel' ? '#FFFFFF' : '#FFFFFF60'} />
-                    <span className={`text-sm font-medium mt-1 ${importMode === 'excel' ? 'text-white' : 'text-white/60'}`}>
+                    <span className={`text-sm font-medium mt-1 ${importMode === 'excel' ? 'text-txt' : 'text-txt-60'}`}>
                       Fichier Excel
                     </span>
                   </button>
@@ -460,11 +460,11 @@ export default function QuestionsPage() {
                   <button
                     onClick={() => setImportMode('paste')}
                     className={`flex-1 py-3 rounded-xl flex flex-col items-center transition-colors ${
-                      importMode === 'paste' ? 'bg-[#9B59B6]' : 'bg-[#3E3666] hover:bg-[#4E4676]'
+                      importMode === 'paste' ? 'bg-[#9B59B6]' : 'bg-surface-2 hover:bg-surface-2'
                     }`}
                   >
                     <ClipboardPaste size={18} color={importMode === 'paste' ? '#FFFFFF' : '#FFFFFF60'} />
-                    <span className={`text-sm font-medium mt-1 ${importMode === 'paste' ? 'text-white' : 'text-white/60'}`}>
+                    <span className={`text-sm font-medium mt-1 ${importMode === 'paste' ? 'text-txt' : 'text-txt-60'}`}>
                       Coller du texte
                     </span>
                   </button>
@@ -474,12 +474,12 @@ export default function QuestionsPage() {
                 {importMode === 'excel' && (
                   <div className="mb-3">
                     <label className="cursor-pointer block">
-                      <div className="bg-[#292349] rounded-xl border-2 border-dashed border-[#9B59B6] p-6 flex flex-col items-center hover:border-[#B56CD6] transition-colors">
+                      <div className="bg-bg rounded-xl border-2 border-dashed border-[#9B59B6] p-6 flex flex-col items-center hover:border-[#B56CD6] transition-colors">
                         <FileUp size={32} color="#9B59B6" />
-                        <p className="text-white font-semibold mt-2">
+                        <p className="text-txt font-semibold mt-2">
                           Cliquez pour sélectionner un fichier
                         </p>
-                        <p className="text-white/40 text-xs mt-1">.xlsx ou .xls</p>
+                        <p className="text-txt-40 text-xs mt-1">.xlsx ou .xls</p>
                       </div>
                       <input
                         type="file"
@@ -499,7 +499,7 @@ export default function QuestionsPage() {
                 {/* Paste Text */}
                 {importMode === 'paste' && (
                   <div className="mb-3">
-                    <p className="text-white/50 text-xs mb-2">
+                    <p className="text-txt-60 text-xs mb-2">
                       Formats acceptés :{'\n'}
                       • <span className="text-[#00D397]">#</span> (préféré) : Question # Réponse # Explication{'\n'}
                       • <span className="text-[#00D397]">Tab</span> : Question↹Réponse↹Explication
@@ -508,20 +508,20 @@ export default function QuestionsPage() {
                       value={pasteText}
                       onChange={(e) => setPasteText(e.target.value)}
                       placeholder={"Coller ici...\nEx: Quelle est la capitale du Japon ? # Tokyo # Pays en Asie"}
-                      className="w-full bg-[#292349] rounded-xl px-4 py-3 text-white border border-[#3E3666] focus:border-[#00D397] outline-none resize-none mb-3"
+                      className="w-full bg-bg rounded-xl px-4 py-3 text-txt border border-line focus:border-accent outline-none resize-none mb-3"
                       rows={5}
                     />
                     <button
                       onClick={handlePasteImport}
                       disabled={!pasteText.trim() || isParsing}
                       className={`w-full py-3 rounded-xl flex items-center justify-center transition-colors ${
-                        pasteText.trim() && !isParsing ? 'bg-[#9B59B6] hover:bg-[#A56CE6]' : 'bg-[#3E3666] cursor-not-allowed'
+                        pasteText.trim() && !isParsing ? 'bg-[#9B59B6] hover:bg-[#A56CE6]' : 'bg-surface-2 cursor-not-allowed'
                       }`}
                     >
                       {isParsing ? (
                         <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                       ) : (
-                        <span className="text-white font-semibold text-sm">Importer</span>
+                        <span className="text-txt font-semibold text-sm">Importer</span>
                       )}
                     </button>
                   </div>
@@ -534,23 +534,23 @@ export default function QuestionsPage() {
         {/* Preview Section */}
         {previewQuestions && previewQuestions.length > 0 && (
           <div className="px-4 mb-4">
-            <div className="bg-[#342D5B] rounded-2xl border border-[#9B59B6] p-4">
+            <div className="bg-surface rounded-2xl border border-[#9B59B6] p-4">
               <div className="flex flex-row items-center justify-between mb-3">
-                <p className="text-white font-bold text-base">
+                <p className="text-txt font-bold text-base">
                   Preview ({previewQuestions.length} questions)
                 </p>
                 <button
                   onClick={handleCancelPreview}
-                  className="px-3 py-1.5 rounded-full bg-[#3E3666] hover:bg-[#4E4676] transition-colors"
+                  className="px-3 py-1.5 rounded-full bg-surface-2 hover:bg-surface-2 transition-colors"
                 >
-                  <span className="text-white/60 text-xs">Annuler</span>
+                  <span className="text-txt-60 text-xs">Annuler</span>
                 </button>
               </div>
 
               <div className="max-h-60 overflow-y-auto mb-3">
                 {previewQuestions.map((q, i) => (
-                  <div key={i} className="py-2 border-b border-[#3E3666] last:border-b-0">
-                    <p className="text-white text-sm truncate">
+                  <div key={i} className="py-2 border-b border-line last:border-b-0">
+                    <p className="text-txt text-sm truncate">
                       {i + 1}. {q.text}
                     </p>
                     <p className="text-[#00D397] text-xs">
@@ -564,7 +564,7 @@ export default function QuestionsPage() {
                 onClick={handleConfirmPreview}
                 className="w-full py-3 rounded-xl bg-[#00D397] flex items-center justify-center hover:bg-[#00B377] transition-colors"
               >
-                <span className="text-[#292349] font-bold">Confirmer et ajouter</span>
+                <span className="text-btn-fg font-bold">Confirmer et ajouter</span>
               </button>
             </div>
           </div>
@@ -574,7 +574,7 @@ export default function QuestionsPage() {
         <div className="px-4 pt-2">
           <div className="flex flex-row items-center mb-3">
             <PenLine size={16} color="#FFD700" />
-            <p className="text-white font-bold text-base ml-2">
+            <p className="text-txt font-bold text-base ml-2">
               Questions ({questions.length})
             </p>
           </div>
@@ -593,11 +593,11 @@ export default function QuestionsPage() {
           {/* Add question button */}
           <button
             onClick={addQuestion}
-            className="w-full border-2 border-dashed border-[#3E3666] rounded-2xl py-4 flex items-center justify-center hover:border-[#00D397] hover:bg-[#00D39710] transition-colors mt-1"
+            className="w-full border-2 border-dashed border-line rounded-2xl py-4 flex items-center justify-center hover:border-[#00D397] hover:bg-[#00D39710] transition-colors mt-1"
           >
             <div className="flex flex-row items-center">
               <Plus size={18} color="#FFFFFF40" />
-              <span className="text-white/40 font-semibold text-sm ml-2">
+              <span className="text-txt-40 font-semibold text-sm ml-2">
                 Ajouter une question
               </span>
             </div>
@@ -620,24 +620,24 @@ export default function QuestionsPage() {
             onClick={handleSave}
             disabled={isSaving || validCount === 0}
             className={`w-full py-4 rounded-2xl flex flex-row items-center justify-center transition-colors ${
-              validCount > 0 && !isSaving ? 'bg-[#00D397] hover:bg-[#00B377]' : 'bg-[#3E3666] cursor-not-allowed'
+              validCount > 0 && !isSaving ? 'bg-[#00D397] hover:bg-[#00B377]' : 'bg-surface-2 cursor-not-allowed'
             }`}
           >
             {isSaving ? (
               <>
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-3" />
-                <span className="text-white font-bold text-lg">Enregistrement...</span>
+                <span className="text-txt font-bold text-lg">Enregistrement...</span>
               </>
             ) : (
               <>
                 <Check
                   size={22}
-                  color={validCount > 0 ? '#292349' : '#FFFFFF40'}
+                  className={validCount > 0 ? "text-btn-fg" : "text-txt-40"}
                   strokeWidth={2.5}
                 />
                 <span
                   className={`font-bold text-lg ml-2 ${
-                    validCount > 0 ? 'text-[#292349]' : 'text-white/40'
+                    validCount > 0 ? 'text-btn-fg' : 'text-txt-40'
                   }`}
                 >
                   Enregistrer {validCount > 0 ? `(${validCount})` : ''}

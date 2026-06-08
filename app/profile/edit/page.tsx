@@ -106,28 +106,31 @@ export default function EditProfilePage() {
 
   return (
     <SafeScreen>
-      <div className="flex flex-col min-h-screen bg-[#1E1A3A]">
+      <div className="flex flex-col min-h-screen bg-bg">
         {/* Header */}
-        <div className="flex flex-row items-center px-4 pt-12 pb-4 bg-[#292349] border-b border-[#3E3666]">
+        <div className="flex flex-row items-center px-4 pt-12 pb-4 bg-bg border-b border-line">
           <button
             onClick={() => router.back()}
-            className="w-10 h-10 rounded-full bg-[#342D5B] flex items-center justify-center mr-3 hover:bg-[#3E3666] transition-colors"
+            className="w-10 h-10 rounded-full bg-surface flex items-center justify-center mr-3 hover:bg-surface-2 transition-colors text-txt"
           >
-            <ArrowLeft size={20} color="#FFFFFF" />
+            <ArrowLeft size={20} />
           </button>
-          <p className="text-white font-bold text-xl flex-1">Modifier le profil</p>
+          <p className="text-txt font-bold text-xl flex-1">Modifier le profil</p>
           <button
             onClick={() => updateProfileMutation.mutate()}
             disabled={updateProfileMutation.isPending || !username.trim() || !hasChanges}
-            className="flex flex-row items-center gap-2 px-4 py-2 rounded-xl transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
-            style={{ background: hasChanges && username.trim() ? 'linear-gradient(to right, #6366F1, #8B5CF6)' : '#3E3666' }}
+            className={`flex flex-row items-center gap-2 px-4 py-2 rounded-xl transition-opacity disabled:opacity-40 disabled:cursor-not-allowed ${
+              hasChanges && username.trim()
+                ? 'bg-gradient-to-r from-indigo-500 to-violet-500'
+                : 'bg-surface-2'
+            }`}
           >
             {updateProfileMutation.isPending ? (
               <Spinner />
             ) : (
               <>
-                <Save size={16} color="#fff" />
-                <span className="text-white text-sm font-semibold">Sauvegarder</span>
+                <Save size={16} className="text-white" />
+                <span className="text-txt text-sm font-semibold">Sauvegarder</span>
               </>
             )}
           </button>
@@ -139,12 +142,12 @@ export default function EditProfilePage() {
             <div className="w-28 h-28 rounded-full overflow-hidden border-4 border-[#6366F1] shadow-lg shadow-indigo-500/30 mb-2">
               <img src={previewUrl} alt="Avatar preview" className="w-full h-full object-cover" />
             </div>
-            <p className="text-white/50 text-xs mt-1">{selectedStyle} · {selectedSeed}</p>
+            <p className="text-txt-60 text-xs mt-1">{selectedStyle} · {selectedSeed}</p>
           </div>
 
           {/* Style selector */}
           <div className="mb-6">
-            <p className="text-white/60 text-xs font-semibold uppercase tracking-wider mb-3 px-4">Style</p>
+            <p className="text-txt-60 text-xs font-semibold uppercase tracking-wider mb-3 px-4">Style</p>
             <div className="flex flex-row gap-3 overflow-x-auto px-4 pb-2 scrollbar-none">
               {AVATAR_STYLES.map((style) => {
                 const isActive = selectedStyle === style.id;
@@ -156,9 +159,8 @@ export default function EditProfilePage() {
                   >
                     <div
                       className={`w-16 h-16 rounded-2xl overflow-hidden border-2 transition-all mb-1.5 ${
-                        isActive ? 'border-[#6366F1] shadow-md shadow-indigo-500/40' : 'border-[#3E3666]'
+                        isActive ? 'border-indigo-500 shadow-md shadow-indigo-500/40 bg-indigo-500/10' : 'border-line bg-surface'
                       }`}
-                      style={isActive ? { background: '#6366F115' } : { background: '#342D5B' }}
                     >
                       <img
                         src={getAvatarUrl(style.id, selectedSeed)}
@@ -168,7 +170,7 @@ export default function EditProfilePage() {
                     </div>
                     <span
                       className={`text-[10px] font-semibold text-center leading-tight max-w-[64px] ${
-                        isActive ? 'text-[#6366F1]' : 'text-white/50'
+                        isActive ? 'text-[#6366F1]' : 'text-txt-60'
                       }`}
                     >
                       {style.label}
@@ -181,7 +183,7 @@ export default function EditProfilePage() {
 
           {/* Seed / avatar grid */}
           <div className="px-4 mb-8">
-            <p className="text-white/60 text-xs font-semibold uppercase tracking-wider mb-3">Choisir un avatar</p>
+            <p className="text-txt-60 text-xs font-semibold uppercase tracking-wider mb-3">Choisir un avatar</p>
             <div className="grid grid-cols-6 gap-3">
               {seeds.map((seed) => {
                 const isSelected = selectedSeed === seed;
@@ -192,7 +194,7 @@ export default function EditProfilePage() {
                     className={`relative rounded-2xl overflow-hidden border-2 transition-all ${
                       isSelected
                         ? 'border-[#6366F1] shadow-md shadow-indigo-500/40'
-                        : 'border-[#3E3666] hover:border-[#6366F1]/50'
+                        : 'border-line hover:border-[#6366F1]/50'
                     }`}
                     style={{ aspectRatio: '1' }}
                   >
@@ -216,25 +218,25 @@ export default function EditProfilePage() {
 
           {/* Info fields */}
           <div className="px-4 mb-10">
-            <p className="text-white/60 text-xs font-semibold uppercase tracking-wider mb-3">Informations</p>
-            <div className="bg-[#342D5B] rounded-2xl border border-[#3E3666] overflow-hidden">
-              <div className="px-4 pt-4 pb-3 border-b border-[#3E3666]">
-                <p className="text-white/50 text-xs mb-1.5">Nom d&apos;utilisateur</p>
+            <p className="text-txt-60 text-xs font-semibold uppercase tracking-wider mb-3">Informations</p>
+            <div className="bg-surface rounded-2xl border border-line overflow-hidden">
+              <div className="px-4 pt-4 pb-3 border-b border-line">
+                <p className="text-txt-60 text-xs mb-1.5">Nom d&apos;utilisateur</p>
                 <input
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="w-full bg-transparent text-white text-base font-medium focus:outline-none placeholder:text-white/30"
+                  className="w-full bg-transparent text-txt text-base font-medium focus:outline-none placeholder:text-txt-40"
                   placeholder="Votre pseudo"
                   autoCapitalize="none"
                 />
               </div>
               <div className="px-4 pt-3 pb-4">
-                <p className="text-white/50 text-xs mb-1.5">Email</p>
+                <p className="text-txt-60 text-xs mb-1.5">Email</p>
                 <input
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   type="email"
-                  className="w-full bg-transparent text-white text-base font-medium focus:outline-none placeholder:text-white/30"
+                  className="w-full bg-transparent text-txt text-base font-medium focus:outline-none placeholder:text-txt-40"
                   placeholder="votre@email.com"
                   autoCapitalize="none"
                 />

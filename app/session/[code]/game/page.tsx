@@ -30,6 +30,8 @@ import { AnswerChoicesPanel } from '~/components/game/AnswerChoicesPanel';
 import { GlobalTimerBar } from '~/components/game/GlobalTimerBar';
 import { AnswerRevealOverlay } from '~/components/game/AnswerRevealOverlay';
 import { IdentificationQuestionDisplay } from '~/components/game/IdentificationQuestionDisplay';
+import { LiveLeaderboard } from '~/components/game/LiveLeaderboard';
+import { PlayerProfileModal } from '~/components/ui/PlayerProfileModal';
 import { useBuzzStore } from '~/stores/useBuzzStore';
 import { useAuthStore } from '~/stores/useAuthStore';
 import { useGameSocket } from '~/lib/websocket/useGameSocket';
@@ -77,13 +79,13 @@ function ExpandableCard({
       </div>
 
       <p
-        className={`text-white text-base leading-relaxed ${isBold ? 'font-bold' : ''} ${!expanded ? 'line-clamp-6' : ''}`}
+        className={`text-txt text-base leading-relaxed ${isBold ? 'font-bold' : ''} ${!expanded ? 'line-clamp-6' : ''}`}
       >
         {content}
       </p>
 
       {subContent && (
-        <p className={`text-white/50 text-xs mt-2 leading-relaxed ${!expanded ? 'line-clamp-4' : ''}`}>
+        <p className={`text-txt-60 text-xs mt-2 leading-relaxed ${!expanded ? 'line-clamp-4' : ''}`}>
           {subContent}
         </p>
       )}
@@ -96,7 +98,7 @@ function ExpandableCard({
 
       {expanded && (
         <div className="flex flex-row items-center mt-2">
-          <span className="text-white/40 text-xs">Cliquez pour réduire ↑</span>
+          <span className="text-txt-40 text-xs">Cliquez pour réduire ↑</span>
         </div>
       )}
     </button>
@@ -125,6 +127,8 @@ export default function GamePage() {
   const prevCategoryRef = useRef<string | null>(null);
   const [manualQuestions, setManualQuestions] = useState<ManualQuestion[]>([]);
   const [showAnswer, setShowAnswer] = useState(true);
+  const [profileUserId, setProfileUserId] = useState<string | null>(null);
+  const [showBuzzFlash, setShowBuzzFlash] = useState(false);
 
   // Buzz countdown state
   const [countdown, setCountdown] = useState<{ playerId: string; seconds: number } | null>(null);
@@ -510,6 +514,10 @@ export default function GamePage() {
       const fullyDisplayed = useBuzzStore.getState().questionFullyDisplayed;
       await gameApi.buzz(session.id, timestamp, fullyDisplayed);
       setHasBuzzed(true);
+      if (isWithoutModerator) {
+        setShowBuzzFlash(true);
+        setTimeout(() => setShowBuzzFlash(false), 850);
+      }
     } catch (err: any) {
       if (err?.response?.status === 409) {
         setHasBuzzed(true);
@@ -624,13 +632,13 @@ export default function GamePage() {
 
   if (!session || !currentQuestion) {
     return (
-      <SafeScreen className="bg-[#292349]">
+      <SafeScreen>
         <div className="flex-1 flex flex-col justify-center items-center min-h-screen">
           <div className="flex flex-col items-center">
             <div className="w-20 h-20 rounded-full bg-[#00D39720] flex items-center justify-center mb-4">
               <Zap size={40} color="#00D397" />
             </div>
-            <p className="text-white font-semibold">Chargement du jeu...</p>
+            <p className="text-txt font-semibold">Chargement du jeu...</p>
           </div>
         </div>
       </SafeScreen>
@@ -650,103 +658,72 @@ export default function GamePage() {
     !answeredWrongThisQuestion;
 
   return (
-    <SafeScreen className="bg-[#292349]">
+    <SafeScreen>
       {/* Header */}
-      <div className="bg-[#292349] pt-6 pb-4 px-4 border-b border-[#3E3666] sticky top-0 z-10">
-        <div className="flex flex-row items-center">
+      <div className="bg-bg pt-6 pb-3 px-4 border-b border-line sticky top-0 z-10">
+        <div className="flex items-center gap-2.5">
           <button
+            type="button"
             onClick={() => {
-              if (session?.roomId) {
-                router.replace(`/room/${session.roomId}`);
-              } else {
-                router.replace('/');
-              }
+              if (session?.roomId) router.replace(`/room/${session.roomId}`);
+              else router.replace('/');
             }}
-            className="w-10 h-10 rounded-full bg-[#342D5B] flex items-center justify-center mr-3 hover:bg-[#3E3666] transition-colors"
+            className="w-9 h-9 rounded-full bg-surface border border-line flex items-center justify-center shrink-0"
           >
-            <ArrowLeft size={20} color="#FFFFFF" />
+            <ArrowLeft size={18} className="text-txt" />
           </button>
 
-          <div className="flex-1">
-            <p className="text-white font-bold text-xl">
+          <div className="flex-1 min-w-0">
+            <p className="text-txt font-display font-semibold text-[17px]">
               Question {questionIndex + 1}
               {session.totalQuestions > 0 && (
-                <span className="text-white/40 text-base font-normal">
-                  {' '}/ {session.totalQuestions}
-                </span>
+                <span className="text-txt-40 font-normal"> / {session.totalQuestions}</span>
               )}
             </p>
-            <div className="flex flex-row items-center mt-0.5">
-              {isConnected ? (
-                <div className="w-2 h-2 rounded-full bg-[#00D397] mr-2" />
-              ) : (
-                <div className="w-2 h-2 rounded-full bg-[#D5442F] mr-2" />
-              )}
-              <span className="text-white/60 text-xs">
-                {isConnected ? 'Connecté' : 'Déconnecté'}
-              </span>
+            <div className="flex items-center gap-1.5 mt-0.5">
+              <span className={`w-1.5 h-1.5 rounded-full ${isConnected ? 'bg-accent' : 'bg-buzz'}`} />
+              <span className="text-txt-60 text-[11px]">{isConnected ? 'Connecté' : 'Déconnecté'}</span>
             </div>
           </div>
 
-          {isManager && !isWithoutModerator && (
-            <div className="flex flex-row items-center bg-[#FFD70020] px-3 py-1.5 rounded-full mr-2">
-              <Crown size={12} color="#FFD700" />
-              <span className="text-[#FFD700] text-xs font-semibold ml-1">Manager</span>
-            </div>
+          {isManager && (
+            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-energy/12 border border-energy/30 text-energy text-[10px] font-bold shrink-0">
+              <Crown size={10} fill="#FFD700" color="#FFD700" />
+              {isWithoutModerator ? 'Host' : 'Manager'}
+            </span>
           )}
-          {isManager && isWithoutModerator && (
-            <div className="flex flex-row items-center bg-[#8B5CF620] px-3 py-1.5 rounded-full mr-2">
-              <Crown size={12} color="#8B5CF6" />
-              <span className="text-[#8B5CF6] text-xs font-semibold ml-1">Host</span>
-            </div>
-          )}
-
           {isSpectator && (
-            <div className="flex flex-row items-center bg-[#FFD70020] px-3 py-1.5 rounded-full">
-              <Eye size={12} color="#FFD700" />
-              <span className="text-[#FFD700] text-xs font-semibold ml-1">Spectateur</span>
-            </div>
-          )}
-
-          {isWithoutModerator && (
-            <div className="flex flex-row items-center bg-[#00D39720] px-3 py-1.5 rounded-full ml-2 border border-[#00D39740]">
-              <Zap size={12} color="#00D397" />
-              <span className="text-[#00D397] text-xs font-semibold ml-1">Sans Modérateur</span>
-            </div>
-          )}
-          {!isWithoutModerator && (
-            <div className="flex flex-row items-center bg-[#FFD70020] px-3 py-1.5 rounded-full ml-2 border border-[#FFD70040]">
-              <Crown size={12} color="#FFD700" />
-              <span className="text-[#FFD700] text-xs font-semibold ml-1">Avec Modérateur</span>
-            </div>
-          )}
-          {isTeamMode && (
-            <div className="flex flex-row items-center bg-[#4A90D920] px-3 py-1.5 rounded-full ml-2">
-              <Users size={12} color="#4A90D9" />
-              <span className="text-[#4A90D9] text-xs font-semibold ml-1">Équipes</span>
-            </div>
+            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-energy/12 text-energy text-[10px] font-bold shrink-0">
+              <Eye size={10} />
+              Spectateur
+            </span>
           )}
         </div>
 
-        {/* Category & Difficulty */}
-        <div className="flex flex-row items-center mt-3">
-          <div className="bg-[#00D39720] px-3 py-1.5 rounded-full border border-[#00D39740]">
-            <span className="text-[#00D397] sm:text-sm text-xs font-medium">
-              {currentQuestion.category}
+        <div className="flex flex-wrap gap-1.5 mt-2.5">
+          <span className="px-2 py-1 rounded-full bg-accent/12 border border-accent/30 text-accent text-[11px] font-semibold">
+            {currentQuestion.category}
+          </span>
+          <span className="px-2 py-1 rounded-full bg-surface-2 border border-line text-txt-60 text-[11px] font-semibold">
+            {currentQuestion.difficulty}
+          </span>
+          <span className={`px-2 py-1 rounded-full text-[11px] font-semibold border ${
+            isWithoutModerator ? 'bg-host/12 border-host/30 text-host' : 'bg-energy/12 border-energy/30 text-energy'
+          }`}>
+            {isWithoutModerator ? 'Sans modérateur' : 'Avec modérateur'}
+          </span>
+          {isTeamMode && (
+            <span className="px-2 py-1 rounded-full bg-team/12 border border-team/30 text-team text-[11px] font-semibold">
+              Équipes
             </span>
-          </div>
-          <div className="bg-[#3E3666] px-3 py-1.5 rounded-full ml-2">
-            <span className="text-white/60 sm:text-sm text-xs">
-              {currentQuestion.difficulty}
-            </span>
-          </div>
+          )}
         </div>
       </div>
 
 
       {/* Global Timer — Sans Modérateur, sticky sous le header */}
       {isWithoutModerator && globalTimerTotal > 0 && (
-        <div className="sticky top-[88px] z-10 px-4 py-1.5 bg-[#292349] border-b border-[#3E3666]">
+        <div className="sticky top-[88px] z-10 px-4 py-1.5 bg-bg border-b border-line">
           <GlobalTimerBar
             totalSeconds={globalTimerTotal}
             remainingSeconds={globalTimerRemaining}
@@ -758,9 +735,9 @@ export default function GamePage() {
       {/* PAUSE Overlay */}
       {isPaused && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
-          <div className="bg-[#342D5B] px-10 py-8 rounded-3xl border-2 border-[#FFD700] flex flex-col items-center animate-in zoom-in-95 duration-200">
+          <div className="bg-surface px-10 py-8 rounded-3xl border-2 border-[#FFD700] flex flex-col items-center animate-in zoom-in-95 duration-200">
             <p className="text-[#FFD700] font-bold text-3xl text-center">PAUSE</p>
-            <p className="text-white/60 text-center mt-3">
+            <p className="text-txt-60 text-center mt-3">
               Le jeu est en pause
             </p>
 
@@ -771,9 +748,9 @@ export default function GamePage() {
                 className="mt-6 px-8 py-4 bg-[#00D397] rounded-2xl hover:bg-[#00B377] transition-colors disabled:opacity-60 flex items-center gap-2"
               >
                 {isPauseToggling && (
-                  <div className="w-4 h-4 border-2 border-[#292349] border-t-transparent rounded-full animate-spin" />
+                  <div className="w-4 h-4 border-2 border-btn-fg border-t-transparent rounded-full animate-spin" />
                 )}
-                <span className="text-[#292349] font-bold text-lg">Reprendre</span>
+                <span className="text-btn-fg font-bold text-lg">Reprendre</span>
               </button>
             )}
           </div>
@@ -787,10 +764,10 @@ export default function GamePage() {
             <div className="w-24 h-24 rounded-full bg-white flex items-center justify-center mb-4">
               <Layers size={48} color="#4A90D9" />
             </div>
-            <p className="text-white/70 text-base font-semibold uppercase tracking-widest mb-2">
+            <p className="text-txt-60 text-base font-semibold uppercase tracking-widest mb-2">
               Nouvelle catégorie
             </p>
-            <p className="text-white font-bold text-4xl text-center">
+            <p className="text-txt font-bold text-4xl text-center">
               {currentQuestion.category}
             </p>
           </div>
@@ -805,17 +782,17 @@ export default function GamePage() {
               <div className="w-24 h-24 rounded-full bg-white flex items-center justify-center mb-4">
                 <Hand size={48} color="#D5442F" />
               </div>
-              <p className="text-white font-bold text-5xl">BUZZ !</p>
-              <p className="text-white/90 text-2xl font-semibold mt-3">
+              <p className="text-txt font-bold text-5xl">BUZZ !</p>
+              <p className="text-txt-60 text-2xl font-semibold mt-3">
                 {firstBuzzer.playerName}
               </p>
-              <p className="text-white/60 text-base mt-1">
+              <p className="text-txt-60 text-base mt-1">
                 A buzzé en {firstBuzzer.timeDiffMs < 1000
                   ? `${firstBuzzer.timeDiffMs}ms`
                   : `${(firstBuzzer.timeDiffMs / 1000).toFixed(1)}s`}
               </p>
               {buzzQueue.length > 1 && (
-                <p className="text-white/50 text-sm mt-2">
+                <p className="text-txt-60 text-sm mt-2">
                   +{buzzQueue.length - 1} autre{buzzQueue.length > 2 ? 's' : ''} en attente
                 </p>
               )}
@@ -826,7 +803,7 @@ export default function GamePage() {
           <div className="px-4 pb-8">
             <div className="bg-black/40 rounded-2xl overflow-hidden">
               <div className="px-4 py-3 bg-black/30">
-                <p className="text-white font-semibold text-center">File d'attente</p>
+                <p className="text-txt font-semibold text-center">File d'attente</p>
               </div>
               {buzzQueue.slice(0, 3).map((item, index) => (
                 <div
@@ -834,12 +811,12 @@ export default function GamePage() {
                   className={`flex flex-row items-center px-4 py-3 border-b border-white/10 ${index === 0 ? 'bg-white/15' : ''}`}
                 >
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center mr-3 ${index === 0 ? 'bg-white' : 'bg-white/30'}`}>
-                    <span className={`font-bold ${index === 0 ? 'text-[#D5442F]' : 'text-white'}`}>
+                    <span className={`font-bold ${index === 0 ? 'text-[#D5442F]' : 'text-txt'}`}>
                       {index + 1}
                     </span>
                   </div>
                   <div className="flex-1 flex flex-row items-center gap-2 flex-wrap">
-                    <span className={`font-medium ${item.playerId === currentPlayer?.id ? 'text-[#FFD700]' : 'text-white'}`}>
+                    <span className={`font-medium ${item.playerId === currentPlayer?.id ? 'text-[#FFD700]' : 'text-txt'}`}>
                       {item.playerName}
                       {item.playerId === currentPlayer?.id ? ' (Vous)' : ''}
                     </span>
@@ -855,7 +832,7 @@ export default function GamePage() {
                       );
                     })()}
                   </div>
-                  <span className="text-white/60 text-sm">
+                  <span className="text-txt-60 text-sm">
                     {item.timeDiffMs < 1000
                       ? `${item.timeDiffMs}ms`
                       : `${(item.timeDiffMs / 1000).toFixed(1)}s`}
@@ -864,7 +841,7 @@ export default function GamePage() {
               ))}
               {buzzQueue.length > 3 && (
                 <div className="px-4 py-2 bg-black/20">
-                  <p className="text-white/40 text-center text-sm">
+                  <p className="text-txt-40 text-center text-sm">
                     +{buzzQueue.length - 3} autres joueurs...
                   </p>
                 </div>
@@ -881,8 +858,8 @@ export default function GamePage() {
           <div className="px-4 pt-4">
             {/* Dashboard Header */}
             <div className="flex flex-row items-center justify-between mb-3">
-              <div className="bg-[#342D5B] rounded-2xl px-4 py-2 border border-[#3E3666]">
-                <p className="text-white font-bold text-lg">
+              <div className="bg-surface rounded-2xl px-4 py-2 border border-line">
+                <p className="text-txt font-bold text-lg">
                   Question {questionIndex + 1}/{session.totalQuestions || '?'}
                 </p>
               </div>
@@ -892,8 +869,8 @@ export default function GamePage() {
                     {currentQuestion.category}
                   </span>
                 </div>
-                <div className="bg-[#3E3666] px-3 py-1.5 rounded-full ml-2">
-                  <span className="text-white/60 text-sm">
+                <div className="bg-surface-2 px-3 py-1.5 rounded-full ml-2">
+                  <span className="text-txt-60 text-sm">
                     {currentQuestion.difficulty}
                   </span>
                 </div>
@@ -907,17 +884,17 @@ export default function GamePage() {
                 icon={<Mic size={14} color="#00D397" />}
                 label="QUESTION"
                 content={currentQuestion.text}
-                bgColor="bg-[#342D5B]"
-                borderColor="border-[#3E3666]"
+                bgColor="bg-surface"
+                borderColor="border-line"
               />
 
               <div className="flex-1 flex flex-col">
                 <button
                   onClick={() => setShowAnswer((v) => !v)}
-                  className="flex flex-row items-center gap-1 self-end mb-1 px-2 py-0.5 rounded-full bg-[#3E3666] hover:opacity-80 transition-opacity"
+                  className="flex flex-row items-center gap-1 self-end mb-1 px-2 py-0.5 rounded-full bg-surface-2 hover:opacity-80 transition-opacity"
                 >
                   {showAnswer ? <EyeOff size={11} color="#FFFFFF80" /> : <Eye size={11} color="#FFFFFF80" />}
-                  <span className="text-white/50 text-xs">{showAnswer ? 'Masquer' : 'Afficher'}</span>
+                  <span className="text-txt-60 text-xs">{showAnswer ? 'Masquer' : 'Afficher'}</span>
                 </button>
                 {showAnswer ? (
                   <ExpandableCard
@@ -931,7 +908,7 @@ export default function GamePage() {
                     isBold
                   />
                 ) : (
-                  <div className="flex-1 bg-[#3E366640] rounded-2xl border border-dashed border-[#3E3666] flex items-center justify-center min-h-[80px]">
+                  <div className="flex-1 bg-surface-2/40 rounded-2xl border border-dashed border-line flex items-center justify-center min-h-[80px]">
                     <EyeOff size={20} color="#FFFFFF30" />
                   </div>
                 )}
@@ -971,7 +948,7 @@ export default function GamePage() {
                     />
                     {/* Indicateur pause quand quelqu'un répond */}
                     {someoneIsAnswering && (
-                      <div className="absolute top-2 right-2 flex items-center gap-1.5 bg-[#292349]/80 px-2 py-1 rounded-full">
+                      <div className="absolute top-2 right-2 flex items-center gap-1.5 bg-bg/80 px-2 py-1 rounded-full">
                         <div className="w-1.5 h-1.5 rounded-full bg-[#FFD700]" />
                         <span className="text-[#FFD700] text-[10px] font-bold tracking-widest uppercase">Pause</span>
                       </div>
@@ -1011,13 +988,13 @@ export default function GamePage() {
 
                 {/* ── En file d'attente (position 2+) ── */}
                 {queuePosition > 0 && (
-                  <div className="bg-[#342D5B] border border-[#3E3666] rounded-2xl p-4 flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-full bg-[#3E3666] flex items-center justify-center shrink-0">
-                      <span className="text-white font-bold text-sm">#{queuePosition + 1}</span>
+                  <div className="bg-surface border border-line rounded-2xl p-4 flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-full bg-surface-2 flex items-center justify-center shrink-0">
+                      <span className="text-txt font-bold text-sm">#{queuePosition + 1}</span>
                     </div>
                     <div>
-                      <p className="text-white font-semibold text-sm">En file d'attente</p>
-                      <p className="text-white/50 text-xs">
+                      <p className="text-txt font-semibold text-sm">En file d'attente</p>
+                      <p className="text-txt-60 text-xs">
                         Vous répondrez si {buzzQueue[0]?.playerName} se trompe
                       </p>
                     </div>
@@ -1026,7 +1003,7 @@ export default function GamePage() {
 
                 {/* ── Quelqu'un répond (pas dans la file) ── */}
                 {someoneIsAnswering && !actualHasBuzzed && !answeredWrongThisQuestion && (
-                  <div className="bg-[#342D5B] border border-[#3E3666] rounded-2xl px-4 py-3 flex items-center gap-3">
+                  <div className="bg-surface border border-line rounded-2xl px-4 py-3 flex items-center gap-3">
                     <div className="flex gap-1 shrink-0">
                       {[0,1,2].map((i) => (
                         <div
@@ -1036,8 +1013,8 @@ export default function GamePage() {
                         />
                       ))}
                     </div>
-                    <p className="text-white/60 text-sm">
-                      <span className="text-white font-semibold">{buzzQueue[0].playerName}</span> répond...
+                    <p className="text-txt-60 text-sm">
+                      <span className="text-txt font-semibold">{buzzQueue[0].playerName}</span> répond...
                     </p>
                   </div>
                 )}
@@ -1054,17 +1031,33 @@ export default function GamePage() {
 
               </div>
             ) : (
-              /* WITH_MODERATOR: "Écoutez la question" card */
-              <div className="bg-[#342D5B] rounded-3xl p-4 border border-[#3E3666] flex flex-col items-center">
-                <div className="w-16 h-16 rounded-full bg-[#00D39720] flex items-center justify-center mb-2">
-                  <Mic size={26} color="#00D397" />
-                </div>
-                <p className="text-white text-base font-semibold text-center mb-1">
-                  Écoutez la question...
-                </p>
-                <p className="text-white/50 text-center">
-                  {currentQuestion.category} • {currentQuestion.difficulty}
-                </p>
+              <div className="flex flex-col gap-3">
+                {/* WITH_MODERATOR: écoute ou statut post-buzz */}
+                {amIFirstInQueue && !answeredWrongThisQuestion ? (
+                  <div className="bg-surface rounded-2xl border border-accent p-3.5 flex items-center gap-3">
+                    <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin shrink-0" />
+                    <div>
+                      <p className="text-txt font-bold text-sm">Tu as buzzé ! Réponds à voix haute</p>
+                      <p className="text-txt-60 text-xs">En attente de la validation du modérateur…</p>
+                    </div>
+                  </div>
+                ) : answeredWrongThisQuestion ? (
+                  <div className="bg-buzz/12 border border-buzz/30 rounded-2xl p-3.5 flex items-center gap-3">
+                    <XCircle size={18} className="text-buzz shrink-0" />
+                    <div>
+                      <p className="text-buzz font-bold text-sm">Réponse incorrecte</p>
+                      <p className="text-txt-60 text-xs">Buzzer désactivé — les autres peuvent répondre</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="bg-surface rounded-2xl p-5 border border-line flex flex-col items-center text-center">
+                    <div className="w-[60px] h-[60px] rounded-full bg-accent/13 flex items-center justify-center mb-2.5">
+                      <Mic size={26} className="text-accent" />
+                    </div>
+                    <p className="text-txt font-semibold text-base">Écoute la question…</p>
+                    <p className="text-txt-60 text-[13px] mt-1">Le modérateur lit la question à voix haute</p>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -1073,14 +1066,14 @@ export default function GamePage() {
         {/* Spectator View */}
         {isSpectator && (
           <div className="px-4 pt-4">
-            <div className="bg-[#342D5B] rounded-3xl p-8 border border-[#3E3666] flex flex-col items-center">
+            <div className="bg-surface rounded-3xl p-8 border border-line flex flex-col items-center">
               <div className="w-20 h-20 rounded-full bg-[#FFD70020] flex items-center justify-center mb-4">
                 <Eye size={32} color="#FFD700" />
               </div>
               <p className="text-[#FFD700] text-xl font-semibold text-center mb-2">
                 Mode spectateur
               </p>
-              <p className="text-white/50 text-center">
+              <p className="text-txt-60 text-center">
                 Vous observez la partie
               </p>
             </div>
@@ -1103,17 +1096,17 @@ export default function GamePage() {
 
         {/* Buzz Queue */}
         <div className="px-4 pt-2">
-          <div className={`rounded-3xl border overflow-hidden ${buzzQueue.length > 0 ? 'border-[#00D397] bg-[#00D39708]' : 'border-[#3E3666] bg-[#342D5B]'}`}>
+          <div className={`rounded-3xl border overflow-hidden ${buzzQueue.length > 0 ? 'border-[#00D397] bg-[#00D39708]' : 'border-line bg-surface'}`}>
             {/* Queue Header */}
-            <div className={`px-4 py-3 border-b ${buzzQueue.length > 0 ? 'border-[#00D39740] bg-[#00D39715]' : 'border-[#3E3666]'}`}>
+            <div className={`px-4 py-3 border-b ${buzzQueue.length > 0 ? 'border-[#00D39740] bg-[#00D39715]' : 'border-line'}`}>
               <div className="flex flex-row items-center justify-between">
                 <div className="flex flex-row items-center">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center mr-2 ${buzzQueue.length > 0 ? 'bg-[#00D397]' : 'bg-[#3E3666]'}`}>
-                    <Zap size={16} color={buzzQueue.length > 0 ? '#292349' : '#FFFFFF60'} />
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center mr-2 ${buzzQueue.length > 0 ? 'bg-[#00D397]' : 'bg-surface-2'}`}>
+                    <Zap size={16} className={buzzQueue.length > 0 ? 'text-btn-fg' : 'text-txt-40'} />
                   </div>
-                  <p className="text-white font-bold text-base">File d'attente</p>
-                  <div className={`px-2.5 py-0.5 rounded-full ml-2 ${buzzQueue.length > 0 ? 'bg-[#00D397]' : 'bg-[#3E3666]'}`}>
-                    <span className={`font-semibold text-sm ${buzzQueue.length > 0 ? 'text-[#292349]' : 'text-white'}`}>{buzzQueue.length}</span>
+                  <p className="text-txt font-bold text-base">File d'attente</p>
+                  <div className={`px-2.5 py-0.5 rounded-full ml-2 ${buzzQueue.length > 0 ? 'bg-[#00D397]' : 'bg-surface-2'}`}>
+                    <span className={`font-semibold text-sm ${buzzQueue.length > 0 ? 'text-btn-fg' : 'text-txt'}`}>{buzzQueue.length}</span>
                   </div>
                 </div>
                 {buzzQueue.length > 0 && (
@@ -1132,11 +1125,11 @@ export default function GamePage() {
                 <div className="px-4 py-3 bg-[#00D39715] border-b border-[#00D39730]">
                   <div className="flex flex-row items-center">
                     <div className="w-12 h-12 rounded-full bg-[#00D397] flex items-center justify-center mr-3">
-                      <span className="font-bold text-[#292349] text-lg">1</span>
+                      <span className="font-bold text-btn-fg text-lg">1</span>
                     </div>
                     <div className="flex-1">
                       <div className="flex flex-row items-center gap-2 flex-wrap">
-                        <p className="text-white font-bold text-lg">
+                        <p className="text-txt font-bold text-lg">
                           {buzzQueue[0].playerName}
                         </p>
                         {isTeamMode && buzzQueue[0].teamName && (() => {
@@ -1162,12 +1155,12 @@ export default function GamePage() {
                     </div>
                     {buzzQueue[0].timeDiffMs >= 0 && (
                       <div className="flex flex-col items-end">
-                        <p className="text-white font-bold text-base">
+                        <p className="text-txt font-bold text-base">
                           {buzzQueue[0].timeDiffMs < 1000
                             ? `${buzzQueue[0].timeDiffMs}ms`
                             : `${(buzzQueue[0].timeDiffMs / 1000).toFixed(1)}s`}
                         </p>
-                        <p className="text-white/40 text-xs">réaction</p>
+                        <p className="text-txt-40 text-xs">réaction</p>
                       </div>
                     )}
                   </div>
@@ -1175,7 +1168,7 @@ export default function GamePage() {
                   {/* Buzz countdown — WITH_MODERATOR uniquement */}
                   {!isWithoutModerator && countdown && countdown.playerId === buzzQueue[0].playerId && (
                     <div className="mt-3 flex flex-row items-center gap-3">
-                      <div className="flex-1 h-1.5 rounded-full bg-[#3E3666] overflow-hidden">
+                      <div className="flex-1 h-1.5 rounded-full bg-surface-2 overflow-hidden">
                         <div
                           className="h-full rounded-full transition-all duration-1000 ease-linear"
                           style={{
@@ -1202,11 +1195,11 @@ export default function GamePage() {
                         className="flex-1 py-3 rounded-xl bg-[#00D397] flex items-center justify-center hover:bg-[#00B377] transition-colors disabled:opacity-60"
                       >
                         {isValidating ? (
-                          <div className="w-4 h-4 border-2 border-[#292349] border-t-transparent rounded-full animate-spin" />
+                          <div className="w-4 h-4 border-2 border-btn-fg border-t-transparent rounded-full animate-spin" />
                         ) : (
                           <div className="flex flex-row items-center">
-                            <CheckCircle size={18} color="#292349" />
-                            <span className="text-[#292349] font-bold ml-1.5">Correct</span>
+                            <CheckCircle size={18} className="text-btn-fg" />
+                            <span className="text-btn-fg font-bold ml-1.5">Correct</span>
                           </div>
                         )}
                       </button>
@@ -1215,16 +1208,16 @@ export default function GamePage() {
                         disabled={isValidating}
                         className="flex-1 py-3 rounded-xl bg-[#D5442F] flex items-center justify-center hover:bg-[#B53320] transition-colors disabled:opacity-60"
                       >
-                        <span className="text-white/70 text-xs">Sans pénalité</span>
+                        <span className="text-txt-60 text-xs">Sans pénalité</span>
                       </button>
                       <button
                         onClick={() => setPendingWrong({ applyPenalty: true })}
                         disabled={isValidating}
-                                              className="px-3 py-3 rounded-xl bg-[#3E3666] flex items-center justify-center hover:bg-[#4E4676] transition-colors disabled:opacity-60"
+                                              className="px-3 py-3 rounded-xl bg-surface-2 flex items-center justify-center hover:bg-surface-2 transition-colors disabled:opacity-60"
                       >
                         <div className="flex flex-row items-center">
                           <XCircle size={18} color="#FFFFFF" />
-                          <span className="text-white font-bold ml-1.5">Faux avec - </span>
+                          <span className="text-txt font-bold ml-1.5">Faux avec - </span>
                         </div>
                       </button>
 
@@ -1236,13 +1229,13 @@ export default function GamePage() {
                 {buzzQueue.slice(1).map((item, index) => (
                   <div
                     key={item.playerId}
-                    className="flex flex-row items-center px-4 py-2.5 border-b border-[#3E3666] last:border-b-0"
+                    className="flex flex-row items-center px-4 py-2.5 border-b border-line last:border-b-0"
                   >
-                    <div className="w-8 h-8 rounded-full bg-[#3E3666] flex items-center justify-center mr-3">
-                      <span className="font-bold text-white text-sm">{index + 2}</span>
+                    <div className="w-8 h-8 rounded-full bg-surface-2 flex items-center justify-center mr-3">
+                      <span className="font-bold text-txt text-sm">{index + 2}</span>
                     </div>
                     <div className="flex-1 flex flex-row items-center gap-2 flex-wrap">
-                      <span className={`font-medium ${item.playerId === currentPlayer?.id ? 'text-[#00D397]' : 'text-white/80'}`}>
+                      <span className={`font-medium ${item.playerId === currentPlayer?.id ? 'text-[#00D397]' : 'text-txt-60'}`}>
                         {item.playerName}
                         {item.playerId === currentPlayer?.id && ' (Vous)'}
                       </span>
@@ -1258,7 +1251,7 @@ export default function GamePage() {
                         );
                       })()}
                     </div>
-                    <span className="text-white/50 text-sm">
+                    <span className="text-txt-60 text-sm">
                       {item.timeDiffMs < 1000
                         ? `${item.timeDiffMs}ms`
                         : `${(item.timeDiffMs / 1000).toFixed(1)}s`}
@@ -1268,10 +1261,10 @@ export default function GamePage() {
               </div>
             ) : (
               <div className="px-5 py-6 flex flex-col items-center">
-                <div className="w-14 h-14 rounded-full bg-[#3E3666] flex items-center justify-center mb-2">
+                <div className="w-14 h-14 rounded-full bg-surface-2 flex items-center justify-center mb-2">
                   <Zap size={24} color="#FFFFFF40" />
                 </div>
-                <p className="text-white/50 text-center text-sm">
+                <p className="text-txt-60 text-center text-sm">
                   En attente de buzz...
                 </p>
               </div>
@@ -1286,12 +1279,12 @@ export default function GamePage() {
               <button
                 onClick={() => setShowSkipConfirm(true)}
                 disabled={isSkipping}
-                className="flex-1 py-3 rounded-xl bg-[#3E3666] flex items-center justify-center hover:bg-[#4E4676] transition-colors disabled:opacity-60"
+                className="flex-1 py-3 rounded-xl bg-surface-2 flex items-center justify-center hover:bg-surface-2 transition-colors disabled:opacity-60"
               >
                 {isSkipping ? (
                   <div className="w-4 h-4 border-2 border-white/60 border-t-transparent rounded-full animate-spin" />
                 ) : (
-                  <span className="text-white/80 font-medium text-sm">Passer</span>
+                  <span className="text-txt-60 font-medium text-sm">Passer</span>
                 )}
               </button>
               {!isWithoutModerator && (
@@ -1301,13 +1294,13 @@ export default function GamePage() {
                   className={`flex-1 py-3 rounded-xl flex items-center justify-center transition-colors ${
                     buzzQueue.length > 0 && !isResettingBuzzer
                       ? 'bg-[#D5442F30] hover:bg-[#D5442F50]'
-                      : 'bg-[#3E3666] opacity-50 cursor-not-allowed'
+                      : 'bg-surface-2 opacity-50 cursor-not-allowed'
                   }`}
                 >
                   {isResettingBuzzer ? (
                     <div className="w-4 h-4 border-2 border-[#D5442F] border-t-transparent rounded-full animate-spin" />
                   ) : (
-                    <span className={`font-medium text-sm ${buzzQueue.length > 0 ? 'text-[#D5442F]' : 'text-white/40'}`}>
+                    <span className={`font-medium text-sm ${buzzQueue.length > 0 ? 'text-[#D5442F]' : 'text-txt-40'}`}>
                       Reset
                     </span>
                   )}
@@ -1324,11 +1317,11 @@ export default function GamePage() {
               >
                 <div className="flex flex-row items-center justify-center">
                   {isPauseToggling ? (
-                    <div className={`w-4 h-4 border-2 border-t-transparent rounded-full animate-spin ${isPaused ? 'border-[#292349]' : 'border-[#FFD700]'}`} />
+                    <div className={`w-4 h-4 border-2 border-t-transparent rounded-full animate-spin ${isPaused ? 'border-btn-fg' : 'border-[#FFD700]'}`} />
                   ) : isPaused ? (
                     <>
-                      <PlayCircle size={18} color="#292349" className="mr-1.5" />
-                      <span className="font-bold text-sm text-[#292349]">Reprendre</span>
+                      <PlayCircle size={18} className="text-btn-fg mr-1.5" />
+                      <span className="font-bold text-sm text-btn-fg">Reprendre</span>
                     </>
                   ) : (
                     <>
@@ -1342,151 +1335,54 @@ export default function GamePage() {
           </div>
         )}
 
-        {/* Leaderboard */}
+        {/* Live Leaderboard */}
         <div className="px-4 pt-3 pb-12">
           {isTeamMode ? (
-            /* ── Team Leaderboard ── */
-            <div className="bg-[#342D5B] rounded-2xl border border-[#4A90D940] overflow-hidden">
-              <div className="px-4 py-3 border-b border-[#4A90D930] bg-[#4A90D908]">
+            <div className="bg-surface rounded-2xl border border-team/25 overflow-hidden">
+              <div className="px-4 py-3 border-b border-line bg-team/5">
                 <div className="flex flex-row items-center justify-between">
-                  <div className="flex flex-row items-center">
-                    <Users size={16} color="#4A90D9" />
-                    <p className="text-white font-bold text-base ml-2">Classement Équipes</p>
+                  <div className="flex flex-row items-center gap-2">
+                    <Users size={16} className="text-team" />
+                    <p className="text-txt font-bold text-sm">Classement Équipes</p>
                   </div>
-                  <span className="text-white/40 text-xs">{teamLeaderboard.length} équipes</span>
+                  <span className="text-txt-40 text-xs">{teamLeaderboard.length} équipes</span>
                 </div>
               </div>
-
               {teamLeaderboard.map((team, index) => {
                 const isMyTeam = team.members.some((m) => m.userId === user?.id);
                 const teamColor = team.teamColor || '#4A90D9';
                 return (
-                  <div key={team.teamId} className="border-b border-[#3E3666] last:border-b-0">
-                    {/* Team Row */}
+                  <div key={team.teamId} className="border-b border-line last:border-b-0">
                     <div
                       className="px-4 py-3 flex flex-row items-center"
                       style={{ background: isMyTeam ? `${teamColor}10` : undefined }}
                     >
-                      <div
-                        className="w-8 h-8 rounded-full flex items-center justify-center mr-3 font-bold text-sm"
-                        style={{ backgroundColor: `${teamColor}30`, color: teamColor }}
-                      >
+                      <span className="w-7 h-7 rounded-full flex items-center justify-center mr-2 text-sm font-bold" style={{ backgroundColor: `${teamColor}30`, color: teamColor }}>
                         {index + 1}
-                      </div>
-                      <div
-                        className="w-3 h-3 rounded-full mr-2"
-                        style={{ backgroundColor: teamColor }}
-                      />
-                      <p className={`flex-1 font-bold text-base ${isMyTeam ? 'text-[#4A90D9]' : 'text-white'}`}>
-                        {team.teamName}
-                        {isMyTeam && <span className="text-xs font-normal ml-1 opacity-70"> (votre équipe)</span>}
-                      </p>
-                      <span className="font-bold text-base" style={{ color: index === 0 ? '#FFD700' : '#FFFFFF' }}>
-                        {team.totalScore} pts
                       </span>
+                      <p className={`flex-1 font-bold text-sm ${isMyTeam ? 'text-team' : 'text-txt'}`}>{team.teamName}</p>
+                      <span className="font-bold text-sm text-txt">{team.totalScore} pts</span>
                     </div>
-
-                    {/* Members */}
-                    {team.members
-                      .sort((a, b) => b.score - a.score)
-                      .map((member) => (
-                        <div
-                          key={member.id}
-                          className="flex flex-row items-center px-4 py-2 border-t border-[#3E3666]/50 ml-4"
-                        >
-                          <Avatar
-                            avatarUrl={member.avatarUrl}
-                            username={member.name}
-                            size={26}
-                            borderColor={member.userId === user?.id ? '#00D397' : undefined}
-                          />
-                          <p className={`flex-1 ml-2 text-sm ${member.userId === user?.id ? 'text-[#00D397]' : 'text-white/70'}`}>
-                            {member.name}
-                            {member.userId === user?.id && ' (Vous)'}
-                          </p>
-                          <span className="text-white/60 text-sm font-medium">{member.score} pts</span>
-                        </div>
-                      ))}
                   </div>
                 );
               })}
             </div>
           ) : (
-            /* ── Individual Leaderboard ── */
-            <div className="bg-[#342D5B] rounded-2xl border border-[#3E3666] overflow-hidden">
-              <div className="px-4 py-3 border-b border-[#3E3666] bg-[#FFD70008]">
-                <div className="flex flex-row items-center justify-between">
-                  <div className="flex flex-row items-center">
-                    <Trophy size={16} color="#FFD700" />
-                    <p className="text-white font-bold text-base ml-2">Classement</p>
-                  </div>
-                  <span className="text-white/40 text-xs">{players.length} joueurs</span>
-                </div>
-              </div>
-
-              {/* Top 3 */}
-              <div className="flex flex-row px-2 py-2 gap-2 border-b border-[#3E3666]">
-                {[...players]
-                  .sort((a, b) => b.score - a.score)
-                  .slice(0, 3)
-                  .map((player, index) => (
-                    <div
-                      key={player.id}
-                      className={`flex-1 rounded-xl p-2.5 ${
-                        index === 0 ? 'bg-[#FFD70020] border border-[#FFD70040]' :
-                        index === 1 ? 'bg-[#C0C0C020] border border-[#C0C0C040]' :
-                        'bg-[#CD7F3220] border border-[#CD7F3240]'
-                      }`}
-                    >
-                      <div className="flex flex-row items-center gap-1.5 mb-1.5">
-                        <Avatar
-                          avatarUrl={player.avatarUrl}
-                          username={player.name}
-                          size={28}
-                          borderColor={index === 0 ? '#FFD700' : index === 1 ? '#C0C0C0' : '#CD7F32'}
-                        />
-                        <span className={`font-bold text-xs ${
-                          index === 0 ? 'text-[#FFD700]' :
-                          index === 1 ? 'text-[#C0C0C0]' :
-                          'text-[#CD7F32]'
-                        }`}>#{index + 1}</span>
-                      </div>
-                      <p className="text-white font-semibold text-xs truncate">{player.name}</p>
-                      <p className="text-white/70 text-xs font-medium">{player.score} pts</p>
-                    </div>
-                  ))}
-              </div>
-
-              {/* Other players */}
-              <div>
-                {[...players]
-                  .sort((a, b) => b.score - a.score)
-                  .slice(3)
-                  .map((player, index) => (
-                    <div
-                      key={player.id}
-                      className="flex flex-row items-center px-4 py-2 border-b border-[#3E3666] last:border-b-0"
-                    >
-                      <span className="text-white/40 text-xs w-6">{index + 4}</span>
-                      <Avatar
-                        avatarUrl={player.avatarUrl}
-                        username={player.name}
-                        size={32}
-                        borderColor={player.userId === user?.id ? '#00D397' : undefined}
-                      />
-                      <div className="flex-1 ml-2">
-                        <p className={`font-medium text-sm ${player.userId === user?.id ? 'text-[#00D397]' : 'text-white/80'}`}>
-                          {player.name}
-                        </p>
-                      </div>
-                      <span className="text-white font-semibold text-sm">{player.score} pts</span>
-                    </div>
-                  ))}
-              </div>
-            </div>
+            <LiveLeaderboard
+              players={players}
+              currentUserId={user?.id}
+              onPlayerTap={(p) => p.userId && setProfileUserId(p.userId)}
+            />
           )}
         </div>
       </div>
+      {/* Buzz flash overlay — sans modérateur */}
+      {showBuzzFlash && isWithoutModerator && (
+        <div className="fixed inset-0 z-30 bg-accent mix-blend-overlay animate-flash pointer-events-none" />
+      )}
+
+      <PlayerProfileModal userId={profileUserId} onClose={() => setProfileUserId(null)} />
+
       {/* Answer Reveal Overlay — mode sans modérateur */}
       {answerReveal && (
         <AnswerRevealOverlay

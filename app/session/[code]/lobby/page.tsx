@@ -18,7 +18,6 @@ import {
   Trophy,
   Hash,
   Trash2,
-  Tag,
   QrCode,
   PenLine,
   TrendingUp,
@@ -27,6 +26,7 @@ import {
   DoorOpen,
   Share2,
   Gamepad2,
+  Zap,
 } from 'lucide-react';
 import { Orbitron, Rajdhani } from 'next/font/google';
 
@@ -34,6 +34,7 @@ import { SafeScreen } from '~/components/layout/SafeScreen';
 import { QRCodeModal } from '~/components/ui/QRCodeModal';
 import { Avatar } from '~/components/ui/Avatar';
 import { ConfirmModal } from '~/components/ui/ConfirmModal';
+import { PlayerProfileModal } from '~/components/ui/PlayerProfileModal';
 import { useBuzzStore } from '~/stores/useBuzzStore';
 import { useAuthStore } from '~/stores/useAuthStore';
 import { useGameSocket } from '~/lib/websocket/useGameSocket';
@@ -46,275 +47,6 @@ import type { RoomInfo, PlayerResponse, TeamResponse } from '~/types/api';
 
 const orbitron = Orbitron({ subsets: ['latin'], weight: ['400', '700', '900'] });
 const rajdhani = Rajdhani({ subsets: ['latin'], weight: ['400', '500', '600', '700'] });
-
-// ─── ARCADE CSS ───────────────────────────────────────────────────────────────
-const ARCADE_CSS = `
-  .arcade-grid {
-    position: absolute;
-    bottom: 0;
-    left: -80%;
-    right: -80%;
-    height: 280%;
-    background-image:
-      linear-gradient(rgba(0,211,151,0.07) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0,211,151,0.07) 1px, transparent 1px);
-    background-size: 56px 56px;
-    transform: perspective(320px) rotateX(65deg);
-    transform-origin: 50% 100%;
-    animation: arcade-grid-scroll 5s linear infinite;
-    pointer-events: none;
-  }
-  @keyframes arcade-grid-scroll {
-    from { background-position: 0 0; }
-    to   { background-position: 0 56px; }
-  }
-  @keyframes blink-live {
-    0%, 100% { opacity: 1; }
-    50%       { opacity: 0.2; }
-  }
-  @keyframes neon-code {
-    0%, 100% { text-shadow: 0 0 4px #00D397, 0 0 14px #00D39770, 0 0 28px #00D39740; }
-    50%       { text-shadow: 0 0 8px #00D397, 0 0 22px #00D397,   0 0 44px #00D39760; }
-  }
-  @keyframes dot-pop {
-    0%, 80%, 100% { transform: scale(0.55); opacity: 0.25; }
-    40%           { transform: scale(1.5);  opacity: 1; }
-  }
-  @keyframes crown-float {
-    0%, 100% { transform: translateY(0px);   }
-    50%       { transform: translateY(-5px);  }
-  }
-  @keyframes ambient-throb {
-    0%, 100% { opacity: 0.25; }
-    50%       { opacity: 0.65; }
-  }
-  @keyframes you-glow {
-    0%, 100% { box-shadow: 0 0 0 1px #00D397, 0 0 14px #00D39720, inset 0 0 12px #00D39706; }
-    50%       { box-shadow: 0 0 0 2px #00D397, 0 0 28px #00D39740, inset 0 0 22px #00D39710; }
-  }
-  .a-blink     { animation: blink-live    1.1s ease-in-out infinite; }
-  .a-neon-code { animation: neon-code     2.5s ease-in-out infinite; }
-  .a-dot-pop   { animation: dot-pop       1.4s ease-in-out infinite; }
-  .a-crown     { animation: crown-float   2s   ease-in-out infinite; }
-  .a-ambient   { animation: ambient-throb 3s   ease-in-out infinite; }
-  .a-you-glow  { animation: you-glow      2s   ease-in-out infinite; }
-  .scanline {
-    position: absolute;
-    inset: 0;
-    background: repeating-linear-gradient(
-      0deg,
-      transparent, transparent 2px,
-      rgba(0,211,151,0.025) 2px,
-      rgba(0,211,151,0.025) 4px
-    );
-    pointer-events: none;
-    border-radius: inherit;
-  }
-`;
-
-// ─── ArcadePlayerCard ─────────────────────────────────────────────────────────
-function ArcadePlayerCard({
-  player,
-  avatarUrl,
-  isCurrentUser,
-  isSessionManager,
-  onKick,
-  onEditCategories,
-  onEditSelf,
-  isKicking,
-}: {
-  player: PlayerResponse;
-  avatarUrl?: string | null;
-  isCurrentUser: boolean;
-  isSessionManager: boolean;
-  onKick?: (id: string, name: string) => void;
-  onEditCategories?: (p: PlayerResponse) => void;
-  onEditSelf?: () => void;
-  isKicking?: boolean;
-}) {
-  return (
-    <div
-      className={isCurrentUser ? 'a-you-glow' : ''}
-      style={{
-        display: 'flex',
-        flexDirection: 'row',
-        alignItems: 'center',
-        padding: '14px 16px',
-        borderRadius: 16,
-        marginBottom: 10,
-        border: `1px solid ${isCurrentUser ? '#00D397' : player.isManager ? '#FFD700' : '#aba6c2'}`,
-        background: isCurrentUser
-          ? 'linear-gradient(135deg, #00D39718 0%, #342D5B 100%)'
-          : player.isManager
-          ? 'linear-gradient(135deg, #FFD70012 0%, #342D5B 100%)'
-          : '#342D5B',
-      }}
-    >
-      {/* Avatar */}
-      <div style={{ position: 'relative', marginRight: 12, flexShrink: 0 }}>
-        <div
-          style={{
-            width: 52,
-            height: 52,
-            borderRadius: '50%',
-            padding: 2,
-            background: player.isManager
-              ? 'linear-gradient(135deg, #FFD700, #FF8C42)'
-              : isCurrentUser
-              ? 'linear-gradient(135deg, #00D397, #00B383)'
-              : 'linear-gradient(135deg, #4E4676, #3E3666)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: isCurrentUser
-              ? '0 0 12px #00D39740'
-              : player.isManager
-              ? '0 0 12px #FFD70040'
-              : 'none',
-          }}
-        >
-          {player.isSpectator ? (
-            <div style={{ width: 46, height: 46, borderRadius: '50%', background: '#3E3666', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Eye size={18} color="#FFD700" />
-            </div>
-          ) : (
-            <Avatar avatarUrl={avatarUrl ?? player.avatarUrl} username={player.name} size={46} />
-          )}
-        </div>
-        {player.isManager && (
-          <div
-            className="a-crown"
-            style={{ position: 'absolute', top: -8, left: '50%', transform: 'translateX(-50%)' }}
-          >
-            <Crown size={12} color="#FFD700" fill="#FFD700" />
-          </div>
-        )}
-      </div>
-
-      {/* Info */}
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, alignItems: 'center' }}>
-          <span
-            className={rajdhani.className}
-            style={{
-              fontWeight: 700,
-              fontSize: 15,
-              letterSpacing: 0.4,
-              color: isCurrentUser ? '#00D397' : player.isManager ? '#FFD700' : '#E8E8F0',
-            }}
-          >
-            {player.name}
-          </span>
-          {isCurrentUser && (
-            <span
-              className={rajdhani.className}
-              style={{
-                fontSize: 10, fontWeight: 700, padding: '2px 5px', borderRadius: 4,
-                background: '#00D39718', color: '#00D397', border: '1px solid #00D39740', letterSpacing: 1,
-              }}
-            >
-              VOUS
-            </span>
-          )}
-          {player.isManager && (
-            <span
-              className={rajdhani.className}
-              style={{
-                fontSize: 10, fontWeight: 700, padding: '2px 5px', borderRadius: 4,
-                background: '#FFD70018', color: '#FFD700', border: '1px solid #FFD70040', letterSpacing: 1,
-              }}
-            >
-              HOST
-            </span>
-          )}
-          {player.isSpectator && (
-            <span
-              className={rajdhani.className}
-              style={{
-                fontSize: 10, fontWeight: 700, padding: '2px 5px', borderRadius: 4,
-                background: '#4A90D918', color: '#4A90D9', border: '1px solid #4A90D940', letterSpacing: 1,
-              }}
-            >
-              SPECTATEUR
-            </span>
-          )}
-        </div>
-
-        {!player.isSpectator && player.selectedCategories?.length > 0 && (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 6 }}>
-            {player.selectedCategories.map((cat) => (
-              <span
-                key={cat}
-                className={rajdhani.className}
-                style={{
-                  fontSize: 11, padding: '2px 8px', borderRadius: 999,
-                  background: '#3E3666', color: '#cfcbe4', border: '1px solid #4E4676',
-                }}
-              >
-                {cat}
-              </span>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Actions */}
-      {isSessionManager && !isCurrentUser && (
-        <div style={{ display: 'flex', gap: 7, marginLeft: 8 }}>
-          {onEditCategories && (
-            <button
-              onClick={() => onEditCategories(player)}
-              style={{
-                padding: '5px 10px', borderRadius: 8,
-                background: '#8B5CF618', border: '1px solid #8B5CF630',
-                display: 'flex', alignItems: 'center', gap: 5, cursor: 'pointer',
-              }}
-            >
-              <Tag size={11} color="#8B5CF6" />
-              <span style={{ fontSize: 11, color: '#8B5CF6', fontWeight: 600 }}>
-                {(player.selectedCategories?.length ?? 0) > 0 ? 'Modifier' : 'Ajouter'}
-              </span>
-            </button>
-          )}
-          {onKick && (
-            <button
-              onClick={() => onKick(player.id, player.name)}
-              disabled={isKicking}
-              style={{
-                width: 32, height: 32, borderRadius: 8,
-                background: '#FF3A5C10', border: '1px solid #FF3A5C28',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: 'pointer', opacity: isKicking ? 0.5 : 1,
-              }}
-            >
-              {isKicking ? (
-                <div style={{ width: 13, height: 13, border: '2px solid #FF3A5C', borderTopColor: 'transparent', borderRadius: '50%' }} className="animate-spin" />
-              ) : (
-                <Trash2 size={13} color="#FF3A5C" />
-              )}
-            </button>
-          )}
-        </div>
-      )}
-      {isCurrentUser && onEditSelf && (
-        <button
-          onClick={onEditSelf}
-          style={{
-            padding: '5px 10px', borderRadius: 8, marginLeft: 8,
-            background: (player.selectedCategories?.length ?? 0) > 0 ? '#8B5CF618' : '#00D39720',
-            border: `1px solid ${(player.selectedCategories?.length ?? 0) > 0 ? '#8B5CF630' : '#00D39740'}`,
-            display: 'flex', alignItems: 'center', gap: 5, cursor: 'pointer',
-          }}
-        >
-          <Tag size={11} color={(player.selectedCategories?.length ?? 0) > 0 ? '#8B5CF6' : '#00D397'} />
-          <span style={{ fontSize: 11, fontWeight: 700, color: (player.selectedCategories?.length ?? 0) > 0 ? '#8B5CF6' : '#00D397' }}>
-            {(player.selectedCategories?.length ?? 0) > 0 ? 'Modifier' : 'Ajouter'}
-          </span>
-        </button>
-      )}
-    </div>
-  );
-}
 
 // ─── ManualQuestionsAlert ─────────────────────────────────────────────────────
 function ManualQuestionsAlert({
@@ -330,35 +62,31 @@ function ManualQuestionsAlert({
 }) {
   const has = totalQuestions > 0;
   return (
-    <div style={{ borderRadius: 14, background: '#342D5B', border: '1px solid #FFD70025', marginBottom: 12, overflow: 'hidden' }}>
-      <div style={{ padding: '12px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{ width: 34, height: 34, borderRadius: 9, background: '#FFD70015', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <PenLine size={16} color="#FFD700" />
+    <div className="rounded-[14px] bg-surface border border-energy/15 mb-3 overflow-hidden">
+      <div className="px-3.5 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-2.5">
+          <div className="w-[34px] h-[34px] rounded-[9px] bg-energy/10 flex items-center justify-center">
+            <PenLine size={16} className="text-energy" />
           </div>
           <div>
-            <p style={{ color: '#E8E8F0', fontWeight: 700, fontSize: 13 }}>Questions manuelles</p>
-            <p style={{ color: '#e8e8f087', fontSize: 11 }}>
+            <p className="text-txt font-bold text-[13px]">Questions manuelles</p>
+            <p className="text-txt-60 text-[11px]">
               {has ? `${totalQuestions} question(s) prête(s)` : 'Aucune question saisie'}
             </p>
           </div>
         </div>
         <button
           onClick={onNavigate}
-          style={{
-            padding: '6px 12px', borderRadius: 9,
-            background: '#FFD70015', border: '1px solid #FFD70030',
-            color: '#FFD700', fontSize: 12, fontWeight: 600, cursor: 'pointer',
-          }}
+          className="px-3 py-1.5 rounded-[9px] bg-energy/10 border border-energy/20 text-energy text-xs font-semibold cursor-pointer hover:bg-energy/15 transition-colors"
         >
           {has ? 'Modifier' : 'Ajouter'}
         </button>
       </div>
       {!has && (
-        <div style={{ padding: '0 14px 12px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '7px 12px', borderRadius: 9, background: '#FF3A5C0C', border: '1px solid #FF3A5C20' }}>
-            <AlertCircle size={12} color="#FF3A5C" />
-            <span style={{ color: '#FF3A5C', fontSize: 11 }}>Ajoutez des questions avant de démarrer</span>
+        <div className="px-3.5 pb-3">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-[9px] bg-buzz/5 border border-buzz/15">
+            <AlertCircle size={12} className="text-buzz shrink-0" />
+            <span className="text-buzz text-[11px]">Ajoutez des questions avant de démarrer</span>
           </div>
         </div>
       )}
@@ -389,43 +117,61 @@ function ArcadeTeamsSection({
   rajdhaniClass: string;
 }) {
   return (
-    <div style={{ padding: '20px 16px 0' }}>
-      <div style={{ borderRadius: 18, overflow: 'hidden', background: '#342D5B', border: '1px solid #3E3666' }}>
-        <div style={{ padding: '14px 20px', borderBottom: '1px solid #3E3666', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Trophy size={14} color="#4A90D9" />
-            <span className={orbitronClass} style={{ color: '#E8E8F070', fontSize: 10, letterSpacing: 2, fontWeight: 700 }}>ÉQUIPES</span>
+    <div className="px-4 pt-5">
+      <div className="rounded-[18px] overflow-hidden bg-surface border border-line">
+        <div className="px-5 py-3.5 border-b border-line flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Trophy size={14} className="text-[#4A90D9]" />
+            <span className={`${orbitronClass} text-txt-40 text-[10px] tracking-[0.2em] font-bold`}>ÉQUIPES</span>
           </div>
           {!isManager && (
             <button
               onClick={onChangeTeam}
-              style={{ padding: '5px 11px', borderRadius: 8, background: '#4A90D912', border: '1px solid #4A90D928', color: '#4A90D9', fontSize: 11, fontWeight: 600, cursor: 'pointer' }}
+              className="px-2.5 py-1 rounded-lg bg-[#4A90D9]/10 border border-[#4A90D9]/15 text-[#4A90D9] text-[11px] font-semibold cursor-pointer hover:bg-[#4A90D9]/15 transition-colors"
             >
               Changer
             </button>
           )}
         </div>
         {teams.map((team, idx) => (
-          <div key={team.id} style={{ borderBottom: idx < teams.length - 1 ? '1px solid #3E3666' : 'none' }}>
-            <div style={{ padding: '10px 20px', display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div style={{ width: 9, height: 9, borderRadius: '50%', background: team.color ?? '#3A3A5E', boxShadow: `0 0 5px ${team.color ?? '#3A3A5E'}` }} />
-              <span className={rajdhaniClass} style={{ flex: 1, color: '#E8E8F0', fontWeight: 600, fontSize: 14 }}>{team.name}</span>
-              <span className={rajdhaniClass} style={{ color: '#E8E8F038', fontSize: 12 }}>{team.members.length} joueur{team.members.length !== 1 ? 's' : ''}</span>
+          <div key={team.id} className={idx < teams.length - 1 ? 'border-b border-line' : ''}>
+            <div className="px-5 py-2.5 flex items-center gap-2.5">
+              <div
+                className="w-2 h-2 rounded-full shrink-0"
+                style={{
+                  background: team.color ?? '#3A3A5E',
+                  boxShadow: `0 0 5px ${team.color ?? '#3A3A5E'}`,
+                }}
+              />
+              <span className={`${rajdhaniClass} flex-1 text-txt font-semibold text-sm`}>{team.name}</span>
+              <span className={`${rajdhaniClass} text-txt-40 text-xs`}>
+                {team.members.length} joueur{team.members.length !== 1 ? 's' : ''}
+              </span>
             </div>
             {team.members.map((member) => {
               const isMe = member.id === currentPlayerId;
               return (
-                <div key={member.id} style={{ padding: '6px 20px', display: 'flex', alignItems: 'center', gap: 10, background: isMe ? '#00D39706' : 'transparent' }}>
-                  <Avatar avatarUrl={member.userId ? (avatarMap[member.userId] ?? member.avatarUrl) : member.avatarUrl} username={member.name} size={26} borderColor={isMe ? '#00D397' : undefined} />
-                  <span className={rajdhaniClass} style={{ flex: 1, fontSize: 13, color: isMe ? '#00D397' : '#E8E8F070', fontWeight: isMe ? 600 : 400 }}>
+                <div
+                  key={member.id}
+                  className={`px-5 py-1.5 flex items-center gap-2.5 ${isMe ? 'bg-accent/5' : ''}`}
+                >
+                  <Avatar
+                    avatarUrl={member.userId ? (avatarMap[member.userId] ?? member.avatarUrl) : member.avatarUrl}
+                    username={member.name}
+                    size={26}
+                    borderColor={isMe ? '#00D397' : undefined}
+                  />
+                  <span
+                    className={`${rajdhaniClass} flex-1 text-[13px] ${isMe ? 'text-accent font-semibold' : 'text-txt-60'}`}
+                  >
                     {member.name}{isMe ? ' (vous)' : ''}
                   </span>
                   {isManager && (
                     <button
                       onClick={() => onManagerReassign(member.id, member.name)}
-                      style={{ width: 26, height: 26, borderRadius: 6, background: '#3E3666', border: '1px solid #4E4676', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                      className="w-[26px] h-[26px] rounded-md bg-surface-2 border border-line flex items-center justify-center cursor-pointer hover:bg-surface-2/80 transition-colors text-txt-40"
                     >
-                      <ChevronRight size={11} color="#E8E8F038" />
+                      <ChevronRight size={11} />
                     </button>
                   )}
                 </div>
@@ -458,6 +204,10 @@ export default function LobbyPage() {
   const [isSavingConfig, setIsSavingConfig] = useState(false);
   const [avatarMap, setAvatarMap] = useState<Record<string, string | null>>({});
   const [showStartConfirm, setShowStartConfirm] = useState(false);
+  const [profileUserId, setProfileUserId] = useState<string | null>(null);
+  const [reqOpen, setReqOpen] = useState(false);
+  const [reqText, setReqText] = useState('');
+  const [reqSent, setReqSent] = useState(false);
 
   const user = useAuthStore((state) => state.user);
   const { session, players, teams, fetchSession, startSession, deleteSession, isStarting, leaveSession } = useBuzzStore();
@@ -657,21 +407,34 @@ export default function LobbyPage() {
   const managerPlayer = players.find((p) => p.isManager);
   const realPlayerCount = players.filter((p) => !p.isSpectator).length;
   const canStart = realPlayerCount >= 2 && (session?.questionMode !== 'MANUAL' || (session?.totalQuestions ?? 0) > 0);
+  const isWithoutModerator = session?.sessionMode === 'WITHOUT_MODERATOR';
+  const totalQuestionsEstimate = (session?.maxCategoriesPerPlayer ?? 1) * (session?.questionsPerCategory ?? 1) * Math.max(1, realPlayerCount);
+
+  const CATEGORY_EMOJI: Record<string, string> = {
+    Histoire: '📜', Science: '🔬', Sports: '🏆', Géographie: '🌍',
+    'Culture G': '🌐', Cinéma: '🎬',
+  };
+
+  const handleSendCategoryRequest = () => {
+    if (reqText.trim().length < 3) return;
+    setReqSent(true);
+    setTimeout(() => {
+      setReqOpen(false);
+      setReqSent(false);
+      setReqText('');
+    }, 1600);
+  };
 
   // ── Loading ──
   if (!session) {
     return (
-      <SafeScreen style={{ backgroundColor: '#292349' }}>
-        <style>{ARCADE_CSS}</style>
-        <div style={{ position: 'fixed', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
-          <div className="arcade-grid" />
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
-          <div style={{ width: 72, height: 72, borderRadius: '50%', background: '#00D39715', border: '2px solid #00D39740', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
-            <Gamepad2 size={34} color="#00D397" />
+      <SafeScreen>
+        <div className="flex flex-col items-center justify-center min-h-screen">
+          <div className="w-16 h-16 rounded-full bg-accent/13 border border-accent/30 flex items-center justify-center mb-4">
+            <Gamepad2 size={30} className="text-accent" />
           </div>
-          <p className={orbitron.className} style={{ color: '#00D397', fontSize: 16, fontWeight: 700, letterSpacing: 3 }}>
-            CHARGEMENT...
+          <p className={`${orbitron.className} text-accent text-sm font-bold tracking-widest`}>
+            CHARGEMENT…
           </p>
         </div>
       </SafeScreen>
@@ -679,434 +442,215 @@ export default function LobbyPage() {
   }
 
   return (
-    <SafeScreen style={{ backgroundColor: '#292349' }}>
-      <style>{ARCADE_CSS}</style>
-
-      {/* ── Fixed Background ── */}
-      <div style={{ position: 'fixed', inset: 0, overflow: 'hidden', zIndex: 0, pointerEvents: 'none' }}>
-        <div className="arcade-grid" />
-        {/* Radial fade */}
-        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at center, transparent 20%, #292349 85%)' }} />
-        {/* Top / bottom fade */}
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, #292349 0%, transparent 25%, transparent 70%, #292349 100%)' }} />
-        {/* Edge vignette purple */}
-        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at center, transparent 50%, #1F1B3B80 85%, #1A1535 100%)' }} />
-      </div>
-
+    <SafeScreen>
       {/* ── Header ── */}
-      <div
-        style={{
-          position: 'sticky', top: 0, zIndex: 20,
-          padding: '24px 16px 14px',
-          borderBottom: '1px solid #5B3E9022',
-          background: 'linear-gradient(to bottom, #120d2d 60%, transparent)',
-        }}
-      >
-        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-          {/* Back */}
+      <div className="sticky top-0 z-20 bg-bg/95 backdrop-blur-sm border-b border-line px-4 pt-6 pb-3">
+        <div className="flex items-center gap-2">
           <button
+            type="button"
             onClick={() => { if (session?.roomId) router.replace(`/room/${session.roomId}`); else router.replace('/'); }}
-            style={{
-              width: 40, height: 40, borderRadius: '50%', marginRight: 12,
-              background: '#3E3666', border: '1px solid #4E4676',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
-            }}
+            className="w-9 h-9 rounded-full bg-surface border border-line flex items-center justify-center shrink-0"
           >
-            <ArrowLeft size={18} color="#e8e8f0" />
+            <ArrowLeft size={18} className="text-txt" />
           </button>
 
-          {/* Title */}
-          <div style={{ flex: 1 }}>
-            <h1
-              className={orbitron.className}
-              style={{ color: '#E8E8F0', fontSize: 18, fontWeight: 900, letterSpacing: 2, margin: 0 }}
-            >
-              MATCH EN ATTENTE
+          <div className="flex-1 min-w-0">
+            <h1 className={`${orbitron.className} text-txt text-base font-bold tracking-wide`}>
+              Salon d&apos;attente
             </h1>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 3 }}>
-              <div style={{ width: 6, height: 6, borderRadius: '50%', background: isConnected ? '#00D397' : '#FF3A5C', boxShadow: isConnected ? '0 0 6px #00D397' : '0 0 6px #FF3A5C' }} />
-              <span
-                className={rajdhani.className}
-                style={{ fontSize: 10, letterSpacing: 2, color: isConnected ? '#00D39790' : '#FF3A5C90', fontWeight: 600 }}
-              >
+            <div className="flex items-center gap-1.5 mt-0.5">
+              <span className={`w-1.5 h-1.5 rounded-full ${isConnected ? 'bg-accent' : 'bg-buzz'}`} />
+              <span className={`text-[10px] font-semibold tracking-wider ${isConnected ? 'text-accent/80' : 'text-buzz/80'}`}>
                 {isConnected ? 'CONNECTÉ' : 'DÉCONNECTÉ'}
               </span>
+              {roomInfo && (
+                <span className="text-txt-40 text-[10px] truncate">· {roomInfo.name}</span>
+              )}
             </div>
           </div>
 
-          {/* LIVE badge */}
-          <div
-            style={{
-              display: 'flex', alignItems: 'center', gap: 5,
-              padding: '4px 10px', borderRadius: 7, marginRight: 8,
-              background: '#FF3A5C18', border: '1px solid #FF3A5C',
-            }}
-          >
-            <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#FF3A5C', boxShadow: '0 0 4px #FF3A5C' }} />
-            <span className={orbitron.className} style={{ fontSize: 10, fontWeight: 700, color: '#FF3A5C', letterSpacing: 1 }}>LIVE</span>
-          </div>
-
-          {/* Manager badge */}
-          {isManager && (
-            <div
-              className="a-crown"
-              style={{
-                display: 'flex', alignItems: 'center', gap: 5,
-                padding: '4px 10px', borderRadius: 7, marginRight: 8,
-                background: '#FFD70015', border: '1px solid #FFD700',
-              }}
+          <div className="flex items-center gap-1.5 shrink-0">
+            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-buzz/12 border border-buzz/40 text-buzz text-[10px] font-bold">
+              <span className="w-1.5 h-1.5 rounded-full bg-buzz animate-pulse" />
+              LIVE
+            </span>
+            {isManager && (
+              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-energy/12 border border-energy/40 text-energy text-[10px] font-bold">
+                <Crown size={10} fill="#FFD700" color="#FFD700" />
+                HOST
+              </span>
+            )}
+            <span className={`${orbitron.className} px-2 py-1 rounded-lg bg-surface border border-line text-txt text-[10px] font-bold tracking-widest`}>
+              {code}
+            </span>
+            <button
+              type="button"
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              className="w-8 h-8 rounded-full bg-surface border border-line flex items-center justify-center"
             >
-              <Crown size={11} color="#FFD700" fill="#FFD700" />
-              <span className={orbitron.className} style={{ fontSize: 10, fontWeight: 700, color: '#FFD700', letterSpacing: 1 }}>HOST</span>
-            </div>
-          )}
-
-          {/* Refresh */}
-          <button
-            onClick={handleRefresh}
-            disabled={isRefreshing}
-            style={{
-              width: 36, height: 36, borderRadius: '50%',
-              background: '#3E3666', border: '1px solid #4E4676',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
-            }}
-          >
-            <RefreshCw size={14} color={isRefreshing ? '#00D397' : '#e8e8f0'} className={isRefreshing ? 'animate-spin' : ''} />
-          </button>
+              <RefreshCw size={13} className={`text-txt ${isRefreshing ? 'animate-spin text-accent' : ''}`} />
+            </button>
+          </div>
         </div>
       </div>
 
       {/* ── Scrollable Content ── */}
-      <div style={{ position: 'relative', zIndex: 10, overflowY: 'auto', paddingBottom: 32 }}>
+      <div className="overflow-y-auto pb-8 px-4">
 
-        {/* ── SESSION CODE — Terminal ── */}
-        <div style={{ padding: '20px 16px 0' }}>
-          <div
-            style={{
-              borderRadius: 18, overflow: 'hidden', position: 'relative',
-              background: '#1E1A3A',
-              border: '1px solid #00D39730',
-              boxShadow: '0 0 40px #00D39708, inset 0 0 30px #00D39704',
-            }}
-          >
-            <div className="scanline" />
-            <div style={{ padding: '16px 18px', position: 'relative', zIndex: 1 }}>
-              {/* Terminal dots */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
-                <div style={{ display: 'flex', gap: 5 }}>
-                  {['#FF3A5C', '#FFD700', '#00D397'].map((c) => (
-                    <div key={c} style={{ width: 9, height: 9, borderRadius: '50%', background: c }} />
-                  ))}
-                </div>
-                <span className={rajdhani.className} style={{ color: '#00D39755', fontSize: 10, letterSpacing: 2 }}>
-                  SESSION_CODE.exe
-                </span>
-              </div>
+        {/* ── Hero ── */}
+        <div className="text-center mt-4 mb-4 animate-[pop_0.5s_both]">
+          <div className="inline-flex justify-center">
+            <Avatar
+              avatarUrl={currentPlayer?.userId ? (avatarMap[currentPlayer.userId] ?? currentPlayer.avatarUrl) : user?.avatarUrl}
+              username={currentPlayer?.name ?? user?.username ?? 'Joueur'}
+              size={74}
+              borderColor="#00D397"
+            />
+          </div>
+          <h2 className="text-txt text-[23px] font-bold mt-3">Tu es dans la partie !</h2>
+          <p className="text-txt-60 text-sm mt-1">
+            Salut <strong className="text-txt">{currentPlayer?.name ?? user?.username}</strong> — garde ton pouce prêt
+          </p>
+        </div>
 
-              {/* Code */}
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 16 }}>
-                <span className={rajdhani.className} style={{ color: '#00D39755', fontSize: 13, letterSpacing: 1 }}>&gt;_</span>
-                <span
-                  className={`${orbitron.className} a-neon-code`}
-                  style={{ fontSize: 46, fontWeight: 900, letterSpacing: 8, color: '#00D397' }}
-                >
-                  {code}
-                </span>
-              </div>
+        {/* ── Mode badges ── */}
+        <div className="flex flex-wrap gap-1.5 justify-center mb-4">
+          <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold border ${
+            isWithoutModerator ? 'bg-host/12 border-host/30 text-host' : 'bg-energy/12 border-energy/30 text-energy'
+          }`}>
+            <Crown size={12} />
+            {isWithoutModerator ? 'Sans modérateur' : 'Avec modérateur'}
+          </span>
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-accent/12 border border-accent/30 text-accent">
+            <Zap size={12} />
+            {session.questionMode === 'MANUAL' ? `${session.totalQuestions} questions` : `~${totalQuestionsEstimate} questions`}
+          </span>
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-surface border border-line text-txt-60">
+            <Users size={12} />
+            {players.length}/{session.maxPlayers}
+          </span>
+        </div>
 
-              {/* Actions */}
-              <div style={{ display: 'flex', gap: 8 }}>
-                <button
-                  onClick={handleCopyCode}
-                  style={{
-                    flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
-                    padding: '10px 0', borderRadius: 11, cursor: 'pointer',
-                    background: isCopied ? '#00D39718' : '#3E3666',
-                    border: `1px solid ${isCopied ? '#00D39750' : '#4E4676'}`,
-                  }}
-                >
-                  {isCopied ? <Check size={15} color="#00D397" /> : <Copy size={15} color="#ffffffcf" />}
-                  <span className={rajdhani.className} style={{ fontSize: 13, fontWeight: 600, letterSpacing: 1, color: isCopied ? '#00D397' : '#ffffffcf' }}>
-                    {isCopied ? 'COPIÉ' : 'COPIER'}
-                  </span>
-                </button>
-                <button
-                  onClick={handleShare}
-                  style={{
-                    flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
-                    padding: '10px 0', borderRadius: 11, cursor: 'pointer',
-                    background: '#00D39712', border: '1px solid #00D39738',
-                  }}
-                >
-                  <Share2 size={15} color="#00D397" />
-                  <span className={rajdhani.className} style={{ fontSize: 13, fontWeight: 600, letterSpacing: 1, color: '#00D397' }}>PARTAGER</span>
-                </button>
-                <button
-                  onClick={() => setShowQRModal(true)}
-                  style={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    padding: '10px 14px', borderRadius: 11, cursor: 'pointer',
-                    background: '#FFD70010', border: '1px solid #FFD70028',
-                  }}
-                >
-                  <QrCode size={16} color="#FFD700" />
-                </button>
-              </div>
-            </div>
+        {/* ── Share code ── */}
+        <div className="bg-surface rounded-2xl border border-line p-3.5 mb-4">
+          <p className={`${orbitron.className} text-accent text-3xl font-black tracking-[0.2em] text-center mb-3`}>{code}</p>
+          <div className="flex gap-2">
+            <button type="button" onClick={handleCopyCode} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-surface-2 border border-line text-txt text-sm font-semibold">
+              {isCopied ? <Check size={14} className="text-accent" /> : <Copy size={14} />}
+              {isCopied ? 'Copié' : 'Copier'}
+            </button>
+            <button type="button" onClick={handleShare} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-accent/10 border border-accent/30 text-accent text-sm font-semibold">
+              <Share2 size={14} />
+              Partager
+            </button>
+            <button type="button" onClick={() => setShowQRModal(true)} className="px-3 py-2.5 rounded-xl bg-energy/10 border border-energy/30">
+              <QrCode size={16} className="text-energy" />
+            </button>
           </div>
         </div>
 
-        {/* ── PLAYER COUNT BAR ── */}
-        <div style={{ padding: '14px 16px 0' }}>
-          <div style={{ borderRadius: 16, padding: '14px 18px', background: '#342D5B', border: '1px solid #777099' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-              <span className={orbitron.className} style={{ fontSize: 9, fontWeight: 700, color: '#e8e8f0e8', letterSpacing: 2 }}>
-                JOUEURS CONNECTÉS
-              </span>
-              <span className={orbitron.className} style={{ fontSize: 14, fontWeight: 900 }}>
-                <span style={{ color: '#00D397' }}>{players.length}</span>
-                <span style={{ color: '#E8E8F025' }}> / {session.maxPlayers}</span>
-              </span>
+        {/* ── Mes catégories ── */}
+        {!currentPlayer?.isSpectator && session.questionMode !== 'MANUAL' && (
+          <div className="bg-surface rounded-2xl border border-line p-3.5 mb-4">
+            <div className="flex items-center justify-between mb-2.5">
+              <span className="text-host text-[10px] font-bold tracking-widest uppercase">Mes catégories</span>
+              <button
+                type="button"
+                onClick={handleEditMyCategories}
+                className="px-2.5 py-1 rounded-full text-xs font-semibold bg-host/16 border border-host/30 text-host"
+              >
+                ✎ Modifier
+              </button>
             </div>
-
-            {/* Bar */}
-            <div style={{ width: '100%', height: 5, borderRadius: 999, background: '#3E3666', marginBottom: 12, overflow: 'hidden' }}>
-              <div
-                style={{
-                  height: '100%', borderRadius: 999,
-                  width: `${(players.length / session.maxPlayers) * 100}%`,
-                  background: 'linear-gradient(90deg, #00D397, #00C877)',
-                  boxShadow: '0 0 8px #00D39750',
-                  transition: 'width 0.6s ease',
-                }}
-              />
-            </div>
-
-            {/* Avatars */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, alignItems: 'center' }}>
-              {players.map((p) => (
-                <div
-                  key={p.id}
-                  title={p.name}
-                  style={{
-                    borderRadius: '50%',
-                    border: `2px solid ${p.isManager ? '#FFD700' : p.userId === user?.id ? '#00D397' : '#4E4676'}`,
-                    boxShadow: p.isManager ? '0 0 6px #FFD70040' : p.userId === user?.id ? '0 0 6px #00D39740' : 'none',
-                  }}
-                >
-                  {p.isSpectator ? (
-                    <div style={{ width: 28, height: 28, borderRadius: '50%', background: '#FFD70012', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <Eye size={12} color="#FFD700" />
-                    </div>
-                  ) : (
-                    <Avatar avatarUrl={p.userId ? (avatarMap[p.userId] ?? p.avatarUrl) : p.avatarUrl} username={p.name} size={28} />
-                  )}
-                </div>
+            <div className="flex flex-wrap gap-1.5">
+              {(currentPlayer?.selectedCategories ?? []).map((cat) => (
+                <span key={cat} className="px-2 py-1 rounded-full bg-bg border border-line text-txt text-xs">
+                  {CATEGORY_EMOJI[cat] ? `${CATEGORY_EMOJI[cat]} ` : ''}{cat}
+                </span>
               ))}
-              {Array.from({ length: Math.min(5, Math.max(0, session.maxPlayers - players.length)) }).map((_, i) => (
-                <div key={`slot-${i}`} style={{ width: 28, height: 28, borderRadius: '50%', border: '2px dashed #747482', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#1E1E2E' }} />
-                </div>
-              ))}
-              {session.maxPlayers - players.length > 5 && (
-                <span className={rajdhani.className} style={{ color: '#e8e8f0d3', fontSize: 11 }}>+{session.maxPlayers - players.length - 5} slots</span>
+              {(currentPlayer?.selectedCategories?.length ?? 0) === 0 && (
+                <span className="text-txt-40 text-xs">Aucune catégorie sélectionnée</span>
               )}
+              <button
+                type="button"
+                onClick={() => setReqOpen((v) => !v)}
+                className="px-2 py-1 rounded-full border border-dashed border-line text-txt-60 text-xs hover:bg-surface-2 transition-colors"
+              >
+                + Demander
+              </button>
             </div>
-          </div>
-        </div>
-
-        {/* ── Room info ── */}
-        {roomInfo && (
-          <div style={{ padding: '10px 16px 0' }}>
-            <div style={{ padding: '10px 14px', borderRadius: 12, background: '#342D5B', border: '1px solid #807a9e', display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Hash size={12} color="#E8E8F030" />
-              <span className={rajdhani.className} style={{ fontSize: 13, color: '#e8e8f0f5' }}>Salle :</span>
-              <span className={rajdhani.className} style={{ fontSize: 13, fontWeight: 600, color: '#00D397' }}>{roomInfo.name}</span>
-            </div>
+            {reqOpen && (
+              <div className="mt-3 flex flex-col gap-2 animate-[rise_0.25s_both]">
+                {reqSent ? (
+                  <div className="flex items-center gap-2 text-accent text-sm">
+                    <Check size={14} />
+                    Demande envoyée à l&apos;hôte
+                  </div>
+                ) : (
+                  <>
+                    <input
+                      value={reqText}
+                      onChange={(e) => setReqText(e.target.value)}
+                      placeholder="Suggère une catégorie à l'hôte…"
+                      className="w-full bg-bg border border-line rounded-xl px-3.5 py-2.5 text-txt text-sm outline-none focus:border-accent"
+                    />
+                    <button
+                      type="button"
+                      disabled={reqText.trim().length < 3}
+                      onClick={handleSendCategoryRequest}
+                      className="w-full py-2.5 rounded-xl bg-accent text-btn-fg font-bold text-sm disabled:opacity-40"
+                    >
+                      Envoyer la demande
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
           </div>
         )}
 
-        {/* ── WAITING BLOCK (non-manager) ── */}
+        {/* ── Waiting (non-manager) ── */}
         {!isManager && (
-          <div style={{ padding: '18px 16px 0' }}>
-            <div
-              style={{
-                borderRadius: 20, padding: '22px 18px', position: 'relative', overflow: 'hidden',
-                background: '#342D5B',
-                border: '1px solid #FF3A5C30',
-              }}
-            >
-              {/* Ambient glow */}
-              <div
-                className="a-ambient"
-                style={{
-                  position: 'absolute', inset: 0, borderRadius: 20,
-                  background: 'radial-gradient(ellipse at center, #FF3A5C09 0%, transparent 70%)',
-                  pointerEvents: 'none',
-                }}
-              />
-
-              <div style={{ position: 'relative', zIndex: 1 }}>
-                {/* Pulsing dots */}
-                <div style={{ display: 'flex', justifyContent: 'center', gap: 10, marginBottom: 18 }}>
-                  {[0, 1, 2].map((i) => (
-                    <div
-                      key={i}
-                      className="a-dot-pop"
-                      style={{
-                        width: 12, height: 12, borderRadius: '50%',
-                        background: '#FF3A5C', boxShadow: '0 0 8px #FF3A5C',
-                        animationDelay: `${i * 0.18}s`,
-                      }}
-                    />
-                  ))}
-                </div>
-
-                {/* Main text */}
-                <p
-                  className={orbitron.className}
-                  style={{ textAlign: 'center', fontSize: 22, fontWeight: 900, letterSpacing: 2, color: '#E8E8F0', lineHeight: 1.2, marginBottom: 16 }}
-                >
-                  EN ATTENTE<br />
-                  <span style={{ color: '#FF3A5C' }}>DU HOST</span>
-                </p>
-
-                {/* Manager star player */}
-                {managerPlayer && (
-                  <div
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: 12,
-                      padding: '12px 16px', borderRadius: 14, marginBottom: 14,
-                      background: '#FFD70015', border: '1px solid #FFD70030',
-                    }}
-                  >
-                    <div className="a-crown">
-                      <Crown size={18} color="#FFD700" fill="#FFD700" />
-                    </div>
-                    <div
-                      style={{
-                        width: 44, height: 44, borderRadius: '50%', padding: 2, flexShrink: 0,
-                        background: 'linear-gradient(135deg, #FFD700, #FF8C42)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        boxShadow: '0 0 12px #FFD70050',
-                      }}
-                    >
-                      <Avatar avatarUrl={managerPlayer.avatarUrl} username={managerPlayer.name} size={40} />
-                    </div>
-                    <div>
-                      <p className={orbitron.className} style={{ color: '#FFD700', fontSize: 15, fontWeight: 900, letterSpacing: 1 }}>
-                        {managerPlayer.name}
-                      </p>
-                      <p className={rajdhani.className} style={{ color: '#FFD70065', fontSize: 10, letterSpacing: 1 }}>HOST DE LA PARTIE</p>
-                    </div>
-                  </div>
-                )}
-
-                <p className={rajdhani.className} style={{ textAlign: 'center', fontSize: 13, color: '#e8e8f0d0', letterSpacing: 0.5 }}>
-                  La partie démarre dès que le manager lance
-                </p>
-
-                {/* Categories CTA for non-manager players */}
-                {!currentPlayer?.isSpectator && session.questionMode !== 'MANUAL' && (
-                  <div style={{ marginTop: 14 }}>
-                    {(currentPlayer?.selectedCategories?.length ?? 0) === 0 ? (
-                      <button
-                        onClick={handleEditMyCategories}
-                        style={{
-                          width: '100%', padding: '14px 16px', borderRadius: 14, cursor: 'pointer',
-                          background: 'linear-gradient(135deg, #00D39715, #00D39705)',
-                          border: '2px solid #00D39740',
-                          display: 'flex', alignItems: 'center', gap: 12,
-                        }}
-                      >
-                        <div style={{ width: 36, height: 36, borderRadius: 10, background: '#00D39725', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                          <Tag size={18} color="#00D397" />
-                        </div>
-                        <div style={{ flex: 1, textAlign: 'left' }}>
-                          <p className={rajdhani.className} style={{ color: '#00D397', fontWeight: 700, fontSize: 14 }}>Choisissez vos catégories</p>
-                          <p className={rajdhani.className} style={{ color: '#00D39770', fontSize: 11 }}>Requis avant le démarrage</p>
-                        </div>
-                        <ChevronRight size={16} color="#00D39760" />
-                      </button>
-                    ) : (
-                      <button
-                        onClick={handleEditMyCategories}
-                        style={{
-                          width: '100%', padding: '12px 14px', borderRadius: 14, cursor: 'pointer',
-                          background: '#342D5B', border: '1px solid #3E3666',
-                          display: 'flex', alignItems: 'center', gap: 10,
-                        }}
-                      >
-                        <div style={{ width: 32, height: 32, borderRadius: 9, background: '#8B5CF618', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                          <Tag size={14} color="#8B5CF6" />
-                        </div>
-                        <div style={{ flex: 1, textAlign: 'left' }}>
-                          <p className={rajdhani.className} style={{ color: '#E8E8F0', fontWeight: 600, fontSize: 13 }}>Mes catégories</p>
-                          <p className={rajdhani.className} style={{ color: '#E8E8F045', fontSize: 11 }}>
-                            {currentPlayer!.selectedCategories.slice(0, 3).join(', ')}
-                            {currentPlayer!.selectedCategories.length > 3 ? ` +${currentPlayer!.selectedCategories.length - 3}` : ''}
-                          </p>
-                        </div>
-                        <span className={rajdhani.className} style={{ fontSize: 11, color: '#8B5CF6', fontWeight: 700 }}>Modifier</span>
-                      </button>
-                    )}
-                  </div>
-                )}
-              </div>
+          <div className="bg-surface rounded-2xl border border-buzz/25 p-4 mb-4 text-center relative overflow-hidden">
+            <div className="flex justify-center gap-2 mb-3">
+              {[0, 1, 2].map((i) => (
+                <span
+                  key={i}
+                  className="w-2.5 h-2.5 rounded-full bg-buzz animate-pulse"
+                  style={{ animationDelay: `${i * 0.18}s` }}
+                />
+              ))}
             </div>
+            <p className={`${orbitron.className} text-txt text-lg font-bold tracking-wide`}>
+              En attente <span className="text-buzz">du host</span>
+            </p>
+            {managerPlayer && (
+              <div className="flex items-center justify-center gap-2.5 mt-3 p-2.5 rounded-xl bg-energy/10 border border-energy/25">
+                <Crown size={16} className="text-energy" fill="#FFD700" />
+                <Avatar avatarUrl={managerPlayer.avatarUrl} username={managerPlayer.name} size={36} borderColor="#FFD700" />
+                <div className="text-left">
+                  <p className="text-energy font-bold text-sm">{managerPlayer.name}</p>
+                  <p className="text-txt-40 text-[10px] tracking-wider">HOST DE LA PARTIE</p>
+                </div>
+              </div>
+            )}
+            <p className="text-txt-60 text-xs mt-3">La partie démarre dès que le manager lance</p>
+            {(currentPlayer?.selectedCategories?.length ?? 0) === 0 && !currentPlayer?.isSpectator && session.questionMode !== 'MANUAL' && (
+              <button
+                type="button"
+                onClick={handleEditMyCategories}
+                className="w-full mt-3 py-3 rounded-xl bg-accent/10 border border-accent/30 text-accent font-bold text-sm"
+              >
+                Choisir vos catégories
+              </button>
+            )}
           </div>
         )}
 
         {/* ── MANAGER CONTROLS ── */}
         {isManager && (
-          <div style={{ padding: '18px 16px 0' }}>
-            {/* Categories CTA for host when they're also a player (WITHOUT_MODERATOR mode) */}
-            {session.sessionMode !== 'WITH_MODERATOR' && session.questionMode !== 'MANUAL' && (
-              <div style={{ marginBottom: 12 }}>
-                {(currentPlayer?.selectedCategories?.length ?? 0) === 0 ? (
-                  <button
-                    onClick={handleEditMyCategories}
-                    style={{
-                      width: '100%', padding: '14px 16px', borderRadius: 14, cursor: 'pointer',
-                      background: 'linear-gradient(135deg, #00D39715, #00D39705)',
-                      border: '2px solid #00D39740',
-                      display: 'flex', alignItems: 'center', gap: 12,
-                    }}
-                  >
-                    <div style={{ width: 36, height: 36, borderRadius: 10, background: '#00D39725', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      <Tag size={18} color="#00D397" />
-                    </div>
-                    <div style={{ flex: 1, textAlign: 'left' }}>
-                      <p className={rajdhani.className} style={{ color: '#00D397', fontWeight: 700, fontSize: 14 }}>Choisissez vos catégories</p>
-                      <p className={rajdhani.className} style={{ color: '#00D39770', fontSize: 11 }}>Vous jouez aussi dans ce mode</p>
-                    </div>
-                    <AlertCircle size={16} color="#00D397" />
-                  </button>
-                ) : (
-                  <button
-                    onClick={handleEditMyCategories}
-                    style={{
-                      width: '100%', padding: '12px 14px', borderRadius: 14, cursor: 'pointer',
-                      background: '#342D5B', border: '1px solid #3E3666',
-                      display: 'flex', alignItems: 'center', gap: 10,
-                    }}
-                  >
-                    <div style={{ width: 32, height: 32, borderRadius: 9, background: '#8B5CF618', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      <Tag size={14} color="#8B5CF6" />
-                    </div>
-                    <div style={{ flex: 1, textAlign: 'left' }}>
-                      <p className={rajdhani.className} style={{ color: '#E8E8F0', fontWeight: 600, fontSize: 13 }}>Mes catégories</p>
-                      <p className={rajdhani.className} style={{ color: '#E8E8F045', fontSize: 11 }}>
-                        {currentPlayer!.selectedCategories.slice(0, 3).join(', ')}
-                        {currentPlayer!.selectedCategories.length > 3 ? ` +${currentPlayer!.selectedCategories.length - 3}` : ''}
-                      </p>
-                    </div>
-                    <span className={rajdhani.className} style={{ fontSize: 11, color: '#8B5CF6', fontWeight: 700 }}>Modifier</span>
-                  </button>
-                )}
-              </div>
-            )}
-
+          <div className="mb-4">
             {/* Manual questions alert */}
             {session.questionMode === 'MANUAL' && (
               <ManualQuestionsAlert
@@ -1119,29 +663,26 @@ export default function LobbyPage() {
 
             {/* BIG START BUTTON */}
             <button
+              type="button"
               onClick={handleManagerStartClick}
-              disabled={isStarting}
-              style={{
-                width: '100%', padding: '20px 0',
-                borderRadius: 18, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12,
-                cursor: isStarting ? 'not-allowed' : 'pointer',
-                background: canStart ? 'linear-gradient(135deg, #00D397 0%, #00C877 100%)' : '#3E3666',
-                border: canStart ? 'none' : '1px solid #4E4676',
-                boxShadow: canStart ? '0 0 40px #00D39730, 0 6px 24px #00D39718' : 'none',
-                marginBottom: 10,
-                transition: 'transform 0.15s ease',
-              }}
+              disabled={isStarting || !canStart}
+              className={`w-full py-5 rounded-2xl flex items-center justify-center gap-2.5 mb-2.5 transition-all ${
+                canStart && !isStarting
+                  ? 'bg-accent hover:bg-accent-d shadow-glow-success'
+                  : 'bg-surface-2 border border-line cursor-not-allowed'
+              }`}
             >
               {isStarting ? (
                 <>
-                  <div style={{ width: 20, height: 20, border: '2.5px solid #292349', borderTopColor: 'transparent', borderRadius: '50%' }} className="animate-spin" />
-                  <span className={orbitron.className} style={{ fontSize: 18, fontWeight: 900, color: '#292349' }}>DÉMARRAGE...</span>
+                  <div className="w-5 h-5 border-2 border-btn-fg border-t-transparent rounded-full animate-spin" />
+                  <span className={`${orbitron.className} text-btn-fg text-lg font-bold`}>DÉMARRAGE…</span>
                 </>
               ) : (
                 <>
-                  <Play size={22} color={canStart ? '#292349' : '#E8E8F028'} fill={canStart ? '#292349' : '#E8E8F028'} />
-                  <span className={orbitron.className} style={{ fontSize: 18, fontWeight: 900, color: canStart ? '#292349' : '#E8E8F028', letterSpacing: 1 }}>
-                    LANCER LA PARTIE
+                  <span className="dotpulse" style={{ background: canStart ? '#08231B' : 'var(--txt-40)' }} />
+                  <Play size={20} className={canStart ? 'text-btn-fg' : 'text-txt-40'} fill="currentColor" />
+                  <span className={`${orbitron.className} text-lg font-bold tracking-wide ${canStart ? 'text-btn-fg' : 'text-txt-40'}`}>
+                    Lancer la partie
                   </span>
                 </>
               )}
@@ -1202,84 +743,119 @@ export default function LobbyPage() {
           />
         )}
 
-        {/* ── PLAYER CARDS ── */}
-        <div style={{ padding: '20px 16px 0' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-            <Users size={13} color="#E8E8F035" />
-            <span className={orbitron.className} style={{ fontSize: 9, fontWeight: 700, color: '#ffffffd3', letterSpacing: 2 }}>COMBATTANTS</span>
-            <div style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, #E8E8F012, transparent)' }} />
+        {/* ── Players grid ── */}
+        <div className="bg-surface rounded-2xl border border-line p-3.5 mb-4 flex flex-col min-h-[180px]">
+          <div className="flex items-center justify-between mb-3.5">
+            <span className="text-txt-40 text-[10px] font-bold tracking-widest uppercase">Joueurs connectés</span>
+            <span className="px-2 py-0.5 rounded-full bg-surface-2 text-txt text-xs font-semibold">{players.length}</span>
           </div>
 
           {players.length > 0 ? (
-            players.map((player) => (
-              <ArcadePlayerCard
-                key={player.id}
-                player={player}
-                avatarUrl={player.userId ? avatarMap[player.userId] : null}
-                isCurrentUser={player.userId === user?.id}
-                isSessionManager={isManager}
-                onKick={isManager ? handleKickPlayer : undefined}
-                onEditCategories={
-                  isManager &&
-                  !player.isManager &&
-                  session.questionMode !== 'MANUAL' &&
-                  session.sessionMode === 'WITH_MODERATOR'
-                    ? handleEditCategories
-                    : undefined
-                }
-                onEditSelf={
-                  player.userId === user?.id &&
-                  !player.isSpectator &&
-                  (!player.isManager || session.sessionMode !== 'WITH_MODERATOR') &&
-                  session.questionMode !== 'MANUAL'
-                    ? handleEditMyCategories
-                    : undefined
-                }
-                isKicking={kickingPlayerId === player.id}
-              />
-            ))
+            <div className="grid grid-cols-4 gap-3 overflow-y-auto max-h-[280px]">
+              {players.map((player) => {
+                const isYou = player.userId === user?.id;
+                return (
+                  <button
+                    key={player.id}
+                    type="button"
+                    onClick={() => player.userId && setProfileUserId(player.userId)}
+                    className="flex flex-col items-center gap-1.5 p-0 bg-transparent border-0 cursor-pointer animate-[pop_0.35s_both]"
+                  >
+                    <div className="relative">
+                      {player.isSpectator ? (
+                        <div className="w-[46px] h-[46px] rounded-full bg-energy/12 border-2 border-energy/40 flex items-center justify-center">
+                          <Eye size={16} className="text-energy" />
+                        </div>
+                      ) : (
+                        <Avatar
+                          avatarUrl={player.userId ? (avatarMap[player.userId] ?? player.avatarUrl) : player.avatarUrl}
+                          username={player.name}
+                          size={46}
+                          borderColor={player.isManager ? '#FFD700' : isYou ? '#00D397' : undefined}
+                        />
+                      )}
+                      {player.isManager && (
+                        <div className="absolute -top-1 left-1/2 -translate-x-1/2">
+                          <Crown size={11} fill="#FFD700" color="#FFD700" />
+                        </div>
+                      )}
+                    </div>
+                    <span className={`text-[11.5px] font-semibold w-full text-center truncate ${isYou ? 'text-txt' : 'text-txt-60'}`}>
+                      {isYou ? 'Toi' : player.name}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '32px 0', borderRadius: 16, border: '1px dashed #3E3666' }}>
-              <Users size={28} color="#E8E8F018" />
-              <p className={rajdhani.className} style={{ marginTop: 10, fontSize: 12, color: '#E8E8F030', letterSpacing: 2 }}>EN ATTENTE DE JOUEURS...</p>
+            <div className="flex-1 flex flex-col items-center justify-center py-8 border border-dashed border-line rounded-xl">
+              <Users size={28} className="text-txt-25" />
+              <p className="text-txt-40 text-xs mt-2 tracking-wider">En attente de joueurs…</p>
+            </div>
+          )}
+
+          {/* Manager player actions */}
+          {isManager && players.length > 0 && (
+            <div className="mt-3 pt-3 border-t border-line flex flex-col gap-2">
+              {players.filter((p) => p.userId !== user?.id).map((player) => (
+                <div key={`actions-${player.id}`} className="flex items-center gap-2">
+                  <span className="text-txt text-xs font-medium flex-1 truncate">{player.name}</span>
+                  {session.questionMode !== 'MANUAL' && session.sessionMode === 'WITH_MODERATOR' && !player.isManager && (
+                    <button type="button" onClick={() => handleEditCategories(player)} className="px-2 py-1 rounded-lg bg-host/12 text-host text-[10px] font-semibold">
+                      Catégories
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => handleKickPlayer(player.id, player.name)}
+                    disabled={kickingPlayerId === player.id}
+                    className="w-7 h-7 rounded-lg bg-buzz/10 border border-buzz/25 flex items-center justify-center"
+                  >
+                    {kickingPlayerId === player.id ? (
+                      <div className="w-3 h-3 border-2 border-buzz border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <Trash2 size={12} className="text-buzz" />
+                    )}
+                  </button>
+                </div>
+              ))}
             </div>
           )}
         </div>
 
         {/* ── Non-manager quit ── */}
         {!isManager && (
-          <div style={{ padding: '14px 16px 0' }}>
-            <button
-              onClick={handleLeave}
-              style={{
-                width: '100%', padding: '14px 0', borderRadius: 16,
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, cursor: 'pointer',
-                background: '#FF3A5C10', border: '1px solid #FF3A5C35',
-              }}
-            >
-              <DoorOpen size={17} color="#FF3A5C" />
-              <span className={rajdhani.className} style={{ fontSize: 15, fontWeight: 700, color: '#FF3A5C', letterSpacing: 1 }}>
-                QUITTER LA SESSION
-              </span>
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={handleLeave}
+            className="w-full py-3.5 rounded-2xl flex items-center justify-center gap-2 bg-buzz/10 border border-buzz/30 text-buzz font-bold text-sm mb-2"
+          >
+            <DoorOpen size={16} />
+            Quitter la session
+          </button>
+        )}
+
+        {!isManager && (
+          <p className="text-txt-40 text-[11.5px] text-center mb-2">
+            L&apos;hôte démarre quand tout le monde est prêt
+          </p>
         )}
       </div>
 
       {/* ── Question Limit Modal ── */}
       {showQLimit && session && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: 20 }}>
-          <div style={{ width: '100%', maxWidth: 360, borderRadius: 24, overflow: 'hidden', background: '#342D5B', border: '1px solid #FF3A5C35' }}>
-            <div style={{ padding: '18px 20px 14px', borderBottom: '1px solid #3E3666', display: 'flex', alignItems: 'center', gap: 12 }}>
-              <div style={{ width: 38, height: 38, borderRadius: 11, background: '#FF3A5C12', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <TrendingUp size={18} color="#FF3A5C" />
+        <div className="fixed inset-0 bg-scrim flex items-center justify-center z-50 p-5 backdrop-blur-sm">
+          <div className="w-full max-w-[360px] rounded-3xl overflow-hidden bg-surface border border-buzz/20 shadow-2xl">
+            <div className="px-5 pt-[18px] pb-3.5 border-b border-line flex items-center gap-3">
+              <div className="w-[38px] h-[38px] rounded-[11px] bg-buzz/10 flex items-center justify-center shrink-0">
+                <TrendingUp size={18} className="text-buzz" />
               </div>
               <div>
-                <p className={orbitron.className} style={{ color: '#E8E8F0', fontWeight: 700, fontSize: 15 }}>Limite dépassée</p>
-                <p className={rajdhani.className} style={{ color: '#E8E8F045', fontSize: 11 }}>Le total de questions dépasse 60</p>
+                <p className={`${orbitron.className} text-txt font-bold text-[15px]`}>Limite dépassée</p>
+                <p className={`${rajdhani.className} text-txt-40 text-[11px]`}>Le total de questions dépasse 60</p>
               </div>
             </div>
-            <div style={{ padding: '16px 20px' }}>
+            <div className="px-5 py-4">
               {(() => {
                 const realPlayers = session.sessionMode !== 'WITH_MODERATOR'
                   ? players.filter((p) => !p.isSpectator).length
@@ -1290,8 +866,8 @@ export default function LobbyPage() {
                 const maxAllowed = Math.max(1, Math.floor(Q_LIMIT / (cats * realPlayers)));
                 return (
                   <>
-                    <div style={{ borderRadius: 14, padding: '12px 14px', background: '#292349', marginBottom: 14 }}>
-                      <p className={rajdhani.className} style={{ fontSize: 9, color: '#E8E8F038', letterSpacing: 2, marginBottom: 10 }}>SITUATION ACTUELLE</p>
+                    <div style={{ borderRadius: 14, padding: '12px 14px', background: 'var(--bg)', marginBottom: 14 }}>
+                      <p className={`${rajdhani.className} text-[9px] text-txt-40 tracking-[0.2em] mb-2.5`}>SITUATION ACTUELLE</p>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, flexWrap: 'wrap' }}>
                         {[
                           { val: cats, label: 'cat/joueur', color: '#C084FC' },
@@ -1305,7 +881,7 @@ export default function LobbyPage() {
                           item.val === null ? (
                             <span key={i} style={{ color: item.color, fontWeight: 700, fontSize: 14 }}>{item.label}</span>
                           ) : (
-                            <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '6px 10px', borderRadius: 9, background: item.bg ?? '#342D5B' }}>
+                            <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '6px 10px', borderRadius: 9, background: item.bg ?? 'var(--surface)' }}>
                               <span style={{ color: item.color, fontWeight: 700, fontSize: 17 }}>{item.val}</span>
                               <span style={{ color: '#E8E8F038', fontSize: 9 }}>{item.label}</span>
                             </div>
@@ -1316,58 +892,60 @@ export default function LobbyPage() {
 
                     <div style={{ marginBottom: 14 }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                        <p className={rajdhani.className} style={{ color: '#E8E8F0', fontWeight: 600, fontSize: 13 }}>Questions par catégorie</p>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                          <button onClick={() => setAdjustedQPerCat((v) => Math.max(1, v - 1))} style={{ width: 28, height: 28, borderRadius: 8, background: '#3E3666', border: '1px solid #4E4676', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-                            <Minus size={13} color="#E8E8F0" />
+                        <p className={`${rajdhani.className} text-txt font-semibold text-[13px]`}>Questions par catégorie</p>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => setAdjustedQPerCat((v) => Math.max(1, v - 1))}
+                            className="w-7 h-7 rounded-lg bg-surface-2 border border-line flex items-center justify-center cursor-pointer text-txt hover:bg-surface-2/80 transition-colors"
+                          >
+                            <Minus size={13} />
                           </button>
-                          <div style={{ padding: '4px 12px', borderRadius: 8, background: '#00D39712', minWidth: 44, textAlign: 'center' }}>
-                            <span style={{ color: '#00D397', fontWeight: 700, fontSize: 16 }}>{adjustedQPerCat}</span>
+                          <div className="px-3 py-1 rounded-lg bg-accent/10 min-w-[44px] text-center">
+                            <span className="text-accent font-bold text-base">{adjustedQPerCat}</span>
                           </div>
-                          <button onClick={() => setAdjustedQPerCat((v) => Math.min(maxAllowed, v + 1))} style={{ width: 28, height: 28, borderRadius: 8, background: '#3E3666', border: '1px solid #4E4676', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-                            <Plus size={13} color="#E8E8F0" />
+                          <button
+                            onClick={() => setAdjustedQPerCat((v) => Math.min(maxAllowed, v + 1))}
+                            className="w-7 h-7 rounded-lg bg-surface-2 border border-line flex items-center justify-center cursor-pointer text-txt hover:bg-surface-2/80 transition-colors"
+                          >
+                            <Plus size={13} />
                           </button>
                         </div>
                       </div>
                       <Slider label="" value={adjustedQPerCat} onValueChange={setAdjustedQPerCat} min={1} max={maxAllowed} suffix="" />
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8 }}>
-                        <span className={rajdhani.className} style={{ fontSize: 11, color: '#E8E8F038' }}>Total ajusté :</span>
-                        <span className={rajdhani.className} style={{ fontSize: 12, fontWeight: 600, color: totalAdjusted <= Q_LIMIT ? '#00D397' : '#FF3A5C' }}>
+                      <div className="flex justify-between mt-2">
+                        <span className={`${rajdhani.className} text-[11px] text-txt-40`}>Total ajusté :</span>
+                        <span className={`${rajdhani.className} text-xs font-semibold ${totalAdjusted <= Q_LIMIT ? 'text-accent' : 'text-buzz'}`}>
                           {totalAdjusted} questions
                         </span>
                       </div>
                     </div>
 
-                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, padding: '10px 12px', borderRadius: 10, background: '#292349', marginBottom: 16 }}>
-                      <AlertCircle size={13} color="#FFD700" style={{ flexShrink: 0, marginTop: 1 }} />
-                      <p className={rajdhani.className} style={{ fontSize: 11, color: '#E8E8F045', lineHeight: 1.5 }}>
-                        Max recommandé : <span style={{ color: '#E8E8F0', fontWeight: 600 }}>{maxAllowed} Q/catégorie</span> avec {realPlayers} joueur{realPlayers > 1 ? 's' : ''}.
+                    <div className="flex items-start gap-2 px-3 py-2.5 rounded-[10px] bg-bg mb-4">
+                      <AlertCircle size={13} className="text-energy shrink-0 mt-0.5" />
+                      <p className={`${rajdhani.className} text-[11px] text-txt-40 leading-relaxed`}>
+                        Max recommandé : <span className="text-txt font-semibold">{maxAllowed} Q/catégorie</span> avec {realPlayers} joueur{realPlayers > 1 ? 's' : ''}.
                       </p>
                     </div>
 
-                    <div style={{ display: 'flex', gap: 10 }}>
+                    <div className="flex gap-2.5">
                       <button
                         onClick={() => setShowQLimit(false)}
-                        style={{ flex: 1, padding: '13px 0', borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, cursor: 'pointer', background: '#3E3666' }}
+                        className="flex-1 py-3 rounded-[14px] flex items-center justify-center gap-1.5 cursor-pointer bg-surface-2 hover:bg-surface-2/80 transition-colors"
                       >
-                        <X size={14} color="#E8E8F040" />
-                        <span className={rajdhani.className} style={{ fontSize: 13, color: '#e8e8f0cc', fontWeight: 500 }}>Annuler</span>
+                        <X size={14} className="text-txt-40" />
+                        <span className={`${rajdhani.className} text-[13px] text-txt-60 font-medium`}>Annuler</span>
                       </button>
                       <button
                         onClick={handleStartWithAdjustedQ}
                         disabled={isSavingConfig || isStarting}
-                        style={{
-                          flex: 1, padding: '13px 0', borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, cursor: 'pointer',
-                          background: 'linear-gradient(135deg, #00D397, #00C877)',
-                          opacity: isSavingConfig || isStarting ? 0.6 : 1,
-                        }}
+                        className="flex-1 py-3 rounded-[14px] flex items-center justify-center gap-1.5 cursor-pointer bg-gradient-to-br from-accent to-[#00C877] disabled:opacity-60 transition-opacity"
                       >
                         {isSavingConfig || isStarting ? (
-                          <div style={{ width: 14, height: 14, border: '2px solid #292349', borderTopColor: 'transparent', borderRadius: '50%' }} className="animate-spin" />
+                          <div className="w-3.5 h-3.5 border-2 border-btn-fg border-t-transparent rounded-full animate-spin" />
                         ) : (
-                          <Play size={14} color="#292349" fill="#292349" />
+                          <Play size={14} className="text-btn-fg" fill="currentColor" />
                         )}
-                        <span className={orbitron.className} style={{ fontSize: 12, fontWeight: 700, color: '#292349' }}>LANCER</span>
+                        <span className={`${orbitron.className} text-[12px] font-bold text-btn-fg`}>LANCER</span>
                       </button>
                     </div>
                   </>
@@ -1390,23 +968,23 @@ export default function LobbyPage() {
 
       {/* ── Team Picker ── */}
       {showTeamPicker && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', zIndex: 50 }}>
-          <div style={{ borderRadius: '24px 24px 0 0', width: '100%', maxWidth: 480, background: '#342D5B', borderTop: '1px solid #3E3666' }}>
-            <div style={{ padding: '18px 20px 12px', borderBottom: '1px solid #3E3666', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div className="fixed inset-0 bg-scrim flex items-end justify-center z-50 backdrop-blur-sm">
+          <div className="rounded-t-3xl w-full max-w-[480px] bg-surface border-t border-line animate-[sheetup_.3s_ease-out_both]">
+            <div className="px-5 pt-[18px] pb-3 border-b border-line flex items-center justify-between">
               <div>
-                <p className={orbitron.className} style={{ color: '#E8E8F0', fontWeight: 700, fontSize: 15 }}>Changer d'équipe</p>
+                <p className={`${orbitron.className} text-txt font-bold text-[15px]`}>Changer d&apos;équipe</p>
                 {teamPickerTargetPlayer && (
-                  <p className={rajdhani.className} style={{ color: '#E8E8F045', fontSize: 11, marginTop: 2 }}>{teamPickerTargetPlayer.name}</p>
+                  <p className={`${rajdhani.className} text-txt-40 text-[11px] mt-0.5`}>{teamPickerTargetPlayer.name}</p>
                 )}
               </div>
               <button
                 onClick={() => { setShowTeamPicker(false); setTeamPickerTargetPlayer(null); }}
-                style={{ width: 34, height: 34, borderRadius: '50%', background: '#3E3666', border: '1px solid #4E4676', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                className="w-[34px] h-[34px] rounded-full bg-surface-2 border border-line flex items-center justify-center cursor-pointer text-txt hover:bg-surface-2/80 transition-colors"
               >
-                <X size={16} color="#E8E8F0" />
+                <X size={16} />
               </button>
             </div>
-            <div style={{ maxHeight: 300, overflowY: 'auto', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div className="max-h-[300px] overflow-y-auto p-3 flex flex-col gap-2">
               {teams.map((team) => {
                 const isCurrent = team.members.some((m) => m.id === teamPickerTargetPlayer?.id);
                 return (
@@ -1414,19 +992,23 @@ export default function LobbyPage() {
                     key={team.id}
                     onClick={() => teamPickerTargetPlayer && handleAssignTeam(teamPickerTargetPlayer.id, team.id)}
                     disabled={isChangingTeam || isCurrent}
+                    className="flex items-center px-4 py-3.5 rounded-[14px] cursor-pointer transition-opacity disabled:opacity-60"
                     style={{
-                      display: 'flex', alignItems: 'center', padding: '14px 16px', borderRadius: 14, cursor: 'pointer',
-                      background: isCurrent ? (team.color ? `${team.color}12` : '#3E3666') : '#292349',
-                      border: `1px solid ${isCurrent ? (team.color ?? '#00D397') : '#3E3666'}`,
-                      opacity: isChangingTeam ? 0.6 : 1,
+                      background: isCurrent ? (team.color ? `${team.color}12` : 'var(--surface-2)') : 'var(--bg)',
+                      border: `1px solid ${isCurrent ? (team.color ?? '#00D397') : 'var(--line)'}`,
                     }}
                   >
-                    <div style={{ width: 12, height: 12, borderRadius: '50%', background: team.color ?? '#3A3A5E', marginRight: 12 }} />
-                    <span className={rajdhani.className} style={{ flex: 1, color: '#E8E8F0', fontWeight: 600, fontSize: 14 }}>{team.name}</span>
-                    <span className={rajdhani.className} style={{ color: '#E8E8F038', fontSize: 12 }}>{team.members.length} joueur{team.members.length !== 1 ? 's' : ''}</span>
+                    <div
+                      className="w-3 h-3 rounded-full mr-3 shrink-0"
+                      style={{ background: team.color ?? '#3A3A5E' }}
+                    />
+                    <span className={`${rajdhani.className} flex-1 text-txt font-semibold text-sm text-left`}>{team.name}</span>
+                    <span className={`${rajdhani.className} text-txt-40 text-xs`}>
+                      {team.members.length} joueur{team.members.length !== 1 ? 's' : ''}
+                    </span>
                     {isCurrent && (
-                      <div style={{ marginLeft: 10, padding: '3px 8px', borderRadius: 7, background: '#00D39712' }}>
-                        <span className={rajdhani.className} style={{ fontSize: 11, fontWeight: 600, color: '#00D397' }}>Actuel</span>
+                      <div className="ml-2.5 px-2 py-0.5 rounded-md bg-accent/10">
+                        <span className={`${rajdhani.className} text-[11px] font-semibold text-accent`}>Actuel</span>
                       </div>
                     )}
                   </button>
@@ -1444,6 +1026,8 @@ export default function LobbyPage() {
       )}
 
       {/* ── Start Confirm Modal ── */}
+      <PlayerProfileModal userId={profileUserId} onClose={() => setProfileUserId(null)} />
+
       <ConfirmModal
         open={showStartConfirm}
         title="Démarrer la partie ?"

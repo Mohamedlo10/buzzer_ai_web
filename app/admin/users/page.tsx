@@ -145,14 +145,14 @@ export default function AdminUsersPage() {
           <div className="relative shrink-0">
             <Avatar avatarUrl={row.avatarUrl} username={row.username} size={36} />
             <span
-              className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-[#342D5B] ${
+              className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-surface ${
                 row.isOnline ? 'bg-[#00D397]' : 'bg-[#6B7280]'
               }`}
             />
           </div>
           <div className="min-w-0">
-            <p className="text-white font-medium text-sm truncate">{row.username}</p>
-            <p className="text-white/40 text-xs truncate">{row.email ?? '—'}</p>
+            <p className="text-txt font-medium text-sm truncate">{row.username}</p>
+            <p className="text-txt-40 text-xs truncate">{row.email ?? '—'}</p>
           </div>
         </div>
       ),
@@ -160,7 +160,7 @@ export default function AdminUsersPage() {
     {
       key: 'email',
       header: 'Email',
-      render: (row) => <span className="text-white/70 text-sm">{row.email ?? '—'}</span>,
+      render: (row) => <span className="text-txt-60 text-sm">{row.email ?? '—'}</span>,
     },
     {
       key: 'role',
@@ -187,7 +187,7 @@ export default function AdminUsersPage() {
       render: (row) => (
         <span
           className={`inline-flex items-center gap-1.5 text-xs font-medium ${
-            row.isOnline ? 'text-[#00D397]' : 'text-white/40'
+            row.isOnline ? 'text-[#00D397]' : 'text-txt-40'
           }`}
         >
           <span className={`w-2 h-2 rounded-full ${row.isOnline ? 'bg-[#00D397]' : 'bg-white/30'}`} />
@@ -206,7 +206,7 @@ export default function AdminUsersPage() {
             Oui
           </span>
         ) : (
-          <span className="inline-flex items-center gap-1 text-xs font-medium text-white/40">
+          <span className="inline-flex items-center gap-1 text-xs font-medium text-txt-40">
             <CheckCircle2 size={12} />
             Non
           </span>
@@ -216,7 +216,7 @@ export default function AdminUsersPage() {
       key: 'createdAt',
       header: 'Inscription',
       width: '120px',
-      render: (row) => <span className="text-white/60 text-sm">{formatDate(row.createdAt)}</span>,
+      render: (row) => <span className="text-txt-60 text-sm">{formatDate(row.createdAt)}</span>,
     },
     {
       key: 'actions',
@@ -226,7 +226,7 @@ export default function AdminUsersPage() {
         <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
           <button
             onClick={() => router.push(`/admin/users/${row.id}`)}
-            className="p-1.5 rounded-lg bg-[#3E3666] hover:bg-[#4E4676] text-white/70 hover:text-white transition-colors"
+            className="p-1.5 rounded-lg bg-surface-2 hover:bg-surface-2 text-txt-60 hover:text-txt transition-colors"
             title="Voir le détail"
           >
             <Eye size={14} />
@@ -235,7 +235,7 @@ export default function AdminUsersPage() {
           <div className="relative">
             <button
               onClick={() => setRoleOpenId(roleOpenId === row.id ? null : row.id)}
-              className="p-1.5 rounded-lg bg-[#3E3666] hover:bg-[#4E4676] text-white/70 hover:text-white transition-colors flex items-center gap-1"
+              className="p-1.5 rounded-lg bg-surface-2 hover:bg-surface-2 text-txt-60 hover:text-txt transition-colors flex items-center gap-1"
               title="Changer le rôle"
             >
               <ShieldCheck size={14} />
@@ -247,7 +247,7 @@ export default function AdminUsersPage() {
                   className="fixed inset-0 z-10"
                   onClick={() => setRoleOpenId(null)}
                 />
-                <div className="absolute right-0 top-full mt-1 z-20 w-40 bg-[#342D5B] border border-[#3E3666] rounded-xl shadow-xl overflow-hidden">
+                <div className="absolute right-0 top-full mt-1 z-20 w-40 bg-surface border border-line rounded-xl shadow-xl overflow-hidden">
                   {ALL_ROLES.map((r) => {
                     const m = roleMeta[r];
                     const Icon = m.icon;
@@ -261,8 +261,8 @@ export default function AdminUsersPage() {
                         }}
                         className={`w-full flex items-center gap-2 px-3 py-2 text-left text-sm transition-colors ${
                           row.role === r
-                            ? 'text-white/30 cursor-default'
-                            : 'text-white hover:bg-[#3E3666]'
+                            ? 'text-txt/30 cursor-default'
+                            : 'text-txt hover:bg-surface-2'
                         }`}
                       >
                         <Icon size={14} color={row.role === r ? '#FFFFFF30' : m.color} />
@@ -317,11 +317,11 @@ export default function AdminUsersPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-white text-2xl font-bold flex items-center gap-2">
+          <h1 className="text-txt text-2xl font-bold flex items-center gap-2">
             <Users size={24} color="#9B59B6" />
             Utilisateurs
           </h1>
-          <p className="text-white/50 text-sm mt-1">
+          <p className="text-txt-60 text-sm mt-1">
             {data?.totalElements ?? 0} utilisateur{data?.totalElements !== 1 ? 's' : ''} au total
           </p>
         </div>

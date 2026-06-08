@@ -9,11 +9,11 @@ interface BadgeProps {
 }
 
 const variantStyles: Record<BadgeVariant, string> = {
-  default: 'bg-[#3E3666] text-white',
-  success: 'bg-[#00D39720] text-[#00D397] border border-[#00D39740]',
-  error: 'bg-[#D5442F20] text-[#D5442F] border border-[#D5442F40]',
-  warning: 'bg-[#FFD70020] text-[#FFD700] border border-[#FFD70040]',
-  info: 'bg-[#00D39720] text-[#00D397] border border-[#00D39740]',
+  default: 'bg-surface-2 text-txt',
+  success: 'bg-accent/15 text-accent border border-accent/30',
+  error: 'bg-buzz/15 text-buzz border border-buzz/30',
+  warning: 'bg-energy/15 text-energy border border-energy/30',
+  info: 'bg-accent/15 text-accent border border-accent/30',
 };
 
 export function Badge({ children, variant = 'default', className = '' }: BadgeProps) {
@@ -28,10 +28,10 @@ export function StatusBadge({ isOnline, className = '' }: { isOnline: boolean; c
   return (
     <div className={`flex flex-row items-center ${className}`}>
       <span
-        className={`w-2 h-2 rounded-full mr-1.5 ${isOnline ? 'bg-[#00D397]' : 'bg-[#3E3666]'}`}
+        className={`w-2 h-2 rounded-full mr-1.5 ${isOnline ? 'bg-accent' : 'bg-surface-2'}`}
         style={isOnline ? { boxShadow: '0 0 4px 1px #00D397cc' } : {}}
       />
-      <span className={`text-xs ${isOnline ? 'text-[#00D397]' : 'text-white/50'}`}>
+      <span className={`text-xs ${isOnline ? 'text-accent' : 'text-txt-40'}`}>
         {isOnline ? 'En ligne' : 'Hors ligne'}
       </span>
     </div>

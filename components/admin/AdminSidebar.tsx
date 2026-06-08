@@ -37,15 +37,15 @@ export function AdminSidebar() {
     <>
       {/* ─── Desktop Sidebar ─── */}
       <aside
-        className={`hidden lg:flex flex-col h-screen bg-[#1E1A40] border-r border-[#3E3666] transition-all duration-300 sticky top-0 ${
+        className={`hidden lg:flex flex-col h-screen bg-bg-deep border-r border-line transition-all duration-300 sticky top-0 ${
           collapsed ? 'w-20' : 'w-64'
         }`}
       >
         {/* Logo */}
-        <div className="flex items-center gap-3 px-5 h-16 border-b border-[#3E3666]">
+        <div className="flex items-center gap-3 px-5 h-16 border-b border-line">
           <Crown size={24} color="#FFD700" />
           {!collapsed && (
-            <span className="text-white font-bold text-lg whitespace-nowrap">Admin</span>
+            <span className="text-txt font-bold text-lg whitespace-nowrap">Admin</span>
           )}
         </div>
 
@@ -61,7 +61,7 @@ export function AdminSidebar() {
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors ${
                   isActive
                     ? 'bg-[#9B59B6] text-white'
-                    : 'text-white/60 hover:bg-[#3E3666] hover:text-white'
+                    : 'text-txt-60 hover:bg-surface-2 hover:text-txt'
                 }`}
                 title={collapsed ? item.label : undefined}
               >
@@ -73,10 +73,10 @@ export function AdminSidebar() {
         </nav>
 
         {/* Bottom */}
-        <div className="p-3 border-t border-[#3E3666]">
+        <div className="p-3 border-t border-line">
           <button
             onClick={() => setCollapsed(!collapsed)}
-            className="flex items-center justify-center w-full py-2 rounded-xl text-white/40 hover:bg-[#3E3666] hover:text-white transition-colors"
+            className="flex items-center justify-center w-full py-2 rounded-xl text-txt-40 hover:bg-surface-2 hover:text-txt transition-colors"
           >
             {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
             {!collapsed && <span className="ml-2 text-sm">Réduire</span>}
@@ -85,14 +85,14 @@ export function AdminSidebar() {
       </aside>
 
       {/* ─── Mobile Header (hamburger + logo) ─── */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-[#1E1A40] border-b border-[#3E3666] h-14 flex items-center justify-between px-4">
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-bg-deep border-b border-line h-14 flex items-center justify-between px-4">
         <div className="flex items-center gap-2">
           <Crown size={20} color="#FFD700" />
-          <span className="text-white font-bold">Admin</span>
+          <span className="text-txt font-bold">Admin</span>
         </div>
         <button
           onClick={() => setMobileOpen(!mobileOpen)}
-          className="w-10 h-10 rounded-xl bg-[#3E3666] flex items-center justify-center text-white"
+          className="w-10 h-10 rounded-xl bg-surface-2 flex items-center justify-center text-txt"
         >
           {mobileOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
@@ -102,7 +102,7 @@ export function AdminSidebar() {
       {mobileOpen && (
         <div className="lg:hidden fixed inset-0 z-40">
           <div className="absolute inset-0 bg-black/60" onClick={() => setMobileOpen(false)} />
-          <aside className="absolute top-14 left-0 right-0 bg-[#1E1A40] border-b border-[#3E3666] p-4 space-y-1">
+          <aside className="absolute top-14 left-0 right-0 bg-bg-deep border-b border-line p-4 space-y-1">
             {NAV_ITEMS.map((item) => {
               const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
               const Icon = item.icon;
@@ -114,7 +114,7 @@ export function AdminSidebar() {
                   className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${
                     isActive
                       ? 'bg-[#9B59B6] text-white'
-                      : 'text-white/60 hover:bg-[#3E3666] hover:text-white'
+                      : 'text-txt-60 hover:bg-surface-2 hover:text-txt'
                   }`}
                 >
                   <Icon size={20} />
@@ -127,7 +127,7 @@ export function AdminSidebar() {
       )}
 
       {/* ─── Mobile Bottom Tab Bar ─── */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#1E1A40] border-t border-[#3E3666] px-2 pb-safe">
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-bg-deep border-t border-line px-2 pb-safe">
         <div className="flex items-center justify-around h-16">
           {NAV_ITEMS.slice(0, 5).map((item) => {
             const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
@@ -137,7 +137,7 @@ export function AdminSidebar() {
                 key={item.href}
                 href={item.href}
                 className={`flex flex-col items-center justify-center gap-1 min-w-[56px] py-1 rounded-xl transition-colors ${
-                  isActive ? 'text-[#9B59B6]' : 'text-white/40'
+                  isActive ? 'text-[#9B59B6]' : 'text-txt-40'
                 }`}
               >
                 <Icon size={20} />

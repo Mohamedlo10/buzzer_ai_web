@@ -84,20 +84,20 @@ export default function AdminDashboardPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-white text-2xl font-bold">Dashboard</h1>
-          <p className="text-white/50 text-sm">Vue d'ensemble de la plateforme</p>
+          <h1 className="text-txt text-2xl font-bold">Dashboard</h1>
+          <p className="text-txt-60 text-sm">Vue d'ensemble de la plateforme</p>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={() => refetchStats()}
-            className="flex items-center gap-2 px-4 py-2 bg-[#3E3666] rounded-xl text-white/70 hover:text-white hover:bg-[#4E4676] transition-colors text-sm"
+            className="flex items-center gap-2 px-4 py-2 bg-surface-2 rounded-xl text-txt-60 hover:text-txt hover:bg-surface-2 transition-colors text-sm"
           >
             <RefreshCw size={16} />
             Actualiser
           </button>
           <button
             onClick={async () => { await logout(); router.replace('/'); }}
-            className="flex items-center gap-2 px-4 py-2 bg-[#3E3666] rounded-xl text-red-400 hover:text-red-300 hover:bg-[#4E4676] transition-colors text-sm"
+            className="flex items-center gap-2 px-4 py-2 bg-surface-2 rounded-xl text-red-400 hover:text-red-300 hover:bg-surface-2 transition-colors text-sm"
             title="Déconnexion"
           >
             <LogOut size={16} />
@@ -166,9 +166,9 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* Main Chart */}
-      <div className="bg-[#342D5B] rounded-2xl border border-[#3E3666] p-5">
+      <div className="bg-surface rounded-2xl border border-line p-5">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-          <h2 className="text-white font-bold text-lg">Évolution temporelle</h2>
+          <h2 className="text-txt font-bold text-lg">Évolution temporelle</h2>
           <div className="flex items-center gap-2">
             {PERIOD_TABS.map((t) => (
               <button
@@ -177,7 +177,7 @@ export default function AdminDashboardPage() {
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                   period === t.value
                     ? 'bg-[#9B59B6] text-white'
-                    : 'bg-[#3E3666] text-white/60 hover:text-white'
+                    : 'bg-surface-2 text-txt-60 hover:text-txt'
                 }`}
               >
                 {t.label}
@@ -193,8 +193,8 @@ export default function AdminDashboardPage() {
               onClick={() => setChartTab(t.key)}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5 ${
                 chartTab === t.key
-                  ? 'bg-[#292349] text-white'
-                  : 'text-white/40 hover:text-white/70'
+                  ? 'bg-bg text-txt'
+                  : 'text-txt-40 hover:text-txt-60'
               }`}
             >
               <span className="w-2 h-2 rounded-full" style={{ backgroundColor: t.color }} />
@@ -205,7 +205,7 @@ export default function AdminDashboardPage() {
 
         <div className="h-60 lg:h-72">
           {timelineLoading ? (
-            <div className="h-full flex items-center justify-center text-white/50">Chargement...</div>
+            <div className="h-full flex items-center justify-center text-txt-60">Chargement...</div>
           ) : (
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={chartData}>
@@ -215,15 +215,15 @@ export default function AdminDashboardPage() {
                     <stop offset="95%" stopColor={chartConfig?.color} stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#3E3666" />
-                <XAxis dataKey="date" stroke="#FFFFFF40" fontSize={12} />
-                <YAxis stroke="#FFFFFF40" fontSize={12} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" />
+                <XAxis dataKey="date" stroke="var(--txt-40)" fontSize={12} />
+                <YAxis stroke="var(--txt-40)" fontSize={12} />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: '#1E1A40',
-                    border: '1px solid #3E3666',
+                    backgroundColor: "var(--surface)",
+                    border: "1px solid var(--line)",
                     borderRadius: '12px',
-                    color: '#fff',
+                    color: "var(--txt)",
                   }}
                 />
                 <Area
@@ -242,26 +242,26 @@ export default function AdminDashboardPage() {
       {/* Bottom row : Top stats + Active sessions */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
         {/* Top Players */}
-        <div className="bg-[#342D5B] rounded-2xl border border-[#3E3666] p-5">
+        <div className="bg-surface rounded-2xl border border-line p-5">
           <div className="flex items-center gap-2 mb-4">
             <Trophy size={18} color="#FFD700" />
-            <h3 className="text-white font-bold">Top Joueurs</h3>
+            <h3 className="text-txt font-bold">Top Joueurs</h3>
           </div>
           {topLoading ? (
-            <div className="text-white/50 text-sm">Chargement...</div>
+            <div className="text-txt-60 text-sm">Chargement...</div>
           ) : (
             <div className="space-y-3">
               {topStats?.topPlayers.slice(0, 5).map((p, i) => (
                 <div key={p.userId} className="flex items-center gap-3">
                   <span className={`w-6 text-center font-bold text-sm ${
-                    i === 0 ? 'text-[#FFD700]' : i === 1 ? 'text-[#C0C0C0]' : i === 2 ? 'text-[#CD7F32]' : 'text-white/40'
+                    i === 0 ? 'text-[#FFD700]' : i === 1 ? 'text-[#C0C0C0]' : i === 2 ? 'text-[#CD7F32]' : 'text-txt-40'
                   }`}>
                     {i + 1}
                   </span>
-                  <img src={p.avatarUrl} alt="" className="w-8 h-8 rounded-full bg-[#292349]" />
+                  <img src={p.avatarUrl} alt="" className="w-8 h-8 rounded-full bg-bg" />
                   <div className="flex-1 min-w-0">
-                    <p className="text-white text-sm font-medium truncate">{p.username}</p>
-                    <p className="text-white/40 text-xs">{p.totalWins} victoires</p>
+                    <p className="text-txt text-sm font-medium truncate">{p.username}</p>
+                    <p className="text-txt-40 text-xs">{p.totalWins} victoires</p>
                   </div>
                   <span className="text-[#9B59B6] font-bold text-sm">{p.glickoRating?.toFixed(0)}</span>
                 </div>
@@ -271,28 +271,28 @@ export default function AdminDashboardPage() {
         </div>
 
         {/* Top Categories */}
-        <div className="bg-[#342D5B] rounded-2xl border border-[#3E3666] p-5">
+        <div className="bg-surface rounded-2xl border border-line p-5">
           <div className="flex items-center gap-2 mb-4">
             <Flame size={18} color="#F97316" />
-            <h3 className="text-white font-bold">Top Catégories</h3>
+            <h3 className="text-txt font-bold">Top Catégories</h3>
           </div>
           {topLoading ? (
-            <div className="text-white/50 text-sm">Chargement...</div>
+            <div className="text-txt-60 text-sm">Chargement...</div>
           ) : (
             <div className="space-y-3">
               {topStats?.topCategories.slice(0, 5).map((c, i) => (
                 <div key={c.category} className="flex items-center gap-3">
-                  <span className="w-6 text-center text-white/40 text-sm font-bold">{i + 1}</span>
+                  <span className="w-6 text-center text-txt-40 text-sm font-bold">{i + 1}</span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-white text-sm font-medium truncate">{c.category}</p>
-                    <div className="w-full h-1.5 bg-[#292349] rounded-full mt-1">
+                    <p className="text-txt text-sm font-medium truncate">{c.category}</p>
+                    <div className="w-full h-1.5 bg-bg rounded-full mt-1">
                       <div
                         className="h-full rounded-full bg-orange-500"
                         style={{ width: `${Math.min(100, (c.questionCount / (topStats.topCategories[0]?.questionCount || 1)) * 100)}%` }}
                       />
                     </div>
                   </div>
-                  <span className="text-white/60 text-xs">{c.questionCount}</span>
+                  <span className="text-txt-60 text-xs">{c.questionCount}</span>
                 </div>
               ))}
             </div>
@@ -300,25 +300,25 @@ export default function AdminDashboardPage() {
         </div>
 
         {/* Active Sessions */}
-        <div className="bg-[#342D5B] rounded-2xl border border-[#3E3666] p-5">
+        <div className="bg-surface rounded-2xl border border-line p-5">
           <div className="flex items-center gap-2 mb-4">
             <Activity size={18} color="#00D397" />
-            <h3 className="text-white font-bold">Sessions en cours</h3>
+            <h3 className="text-txt font-bold">Sessions en cours</h3>
             <span className="ml-auto px-2 py-0.5 bg-[#00D39720] text-[#00D397] text-xs rounded-full font-semibold">
               {activeSessions?.length ?? 0} live
             </span>
           </div>
           {activeLoading ? (
-            <div className="text-white/50 text-sm">Chargement...</div>
+            <div className="text-txt-60 text-sm">Chargement...</div>
           ) : activeSessions?.length === 0 ? (
-            <div className="text-white/40 text-sm text-center py-6">Aucune session active</div>
+            <div className="text-txt-40 text-sm text-center py-6">Aucune session active</div>
           ) : (
             <div className="space-y-3 max-h-80 overflow-y-auto">
               {activeSessions?.slice(0, 6).map((s) => (
                 <Link
                   key={s.id}
                   href={`/admin/sessions/${s.id}`}
-                  className="flex items-center gap-3 p-3 rounded-xl bg-[#292349] hover:bg-[#3E3666] transition-colors"
+                  className="flex items-center gap-3 p-3 rounded-xl bg-bg hover:bg-surface-2 transition-colors"
                 >
                   <div className={`w-2.5 h-2.5 rounded-full ${
                     s.status === 'PLAYING' ? 'bg-green-500 animate-pulse' :
@@ -326,10 +326,10 @@ export default function AdminDashboardPage() {
                     s.status === 'LOBBY' ? 'bg-blue-500' : 'bg-purple-500'
                   }`} />
                   <div className="flex-1 min-w-0">
-                    <p className="text-white text-sm font-medium truncate">#{s.code}</p>
-                    <p className="text-white/40 text-xs">{s.playerCount}/{s.maxPlayers} joueurs • Q{s.currentQuestionIndex}/{s.totalQuestions}</p>
+                    <p className="text-txt text-sm font-medium truncate">#{s.code}</p>
+                    <p className="text-txt-40 text-xs">{s.playerCount}/{s.maxPlayers} joueurs • Q{s.currentQuestionIndex}/{s.totalQuestions}</p>
                   </div>
-                  <span className="text-white/30 text-xs">{formatDuration(s.secondsElapsed)}</span>
+                  <span className="text-txt/30 text-xs">{formatDuration(s.secondsElapsed)}</span>
                 </Link>
               ))}
             </div>

@@ -7,7 +7,7 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
 export function Card({ children, className = '', ...props }: CardProps) {
   return (
     <div
-      className={`bg-[#342D5B] rounded-2xl border border-[#3E3666] shadow-lg p-4 ${className}`}
+      className={`bg-surface rounded-2xl border border-line shadow-lg p-4 ${className}`}
       {...props}
     >
       {children}
@@ -25,7 +25,7 @@ export function CardHeader({ children, className = '' }: { children: React.React
 
 export function CardTitle({ children, className = '' }: { children: React.ReactNode; className?: string }) {
   return (
-    <h3 className={`text-white font-bold text-lg ${className}`}>
+    <h3 className={`text-txt font-bold text-lg ${className}`}>
       {children}
     </h3>
   );

@@ -2,11 +2,55 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --font-display: 'Space Grotesk', system-ui, sans-serif;
+  --font-ui: 'Hanken Grotesk', system-ui, sans-serif;
+
+  /* surfaces — DARK (default) */
+  --bg:        #292349;
+  --bg-deep:   #211C3D;
+  --surface:   #342D5B;
+  --surface-2: #3E3666;
+  --line:      #3E3666;
+  --txt:       #FFFFFF;
+  --txt-60:    rgba(255,255,255,0.62);
+  --txt-40:    rgba(255,255,255,0.40);
+  --txt-25:    rgba(255,255,255,0.25);
+  --scrim:     rgba(8,7,16,0.66);
+
+  /* ambient glow intensity — softer in light theme to stay subtle */
+  --glow-1: 19.2%;
+  --glow-2: 9.6%;
+}
+
+[data-theme='light'] {
+  --bg:        #EFEDF8;
+  --bg-deep:   #E5E2F2;
+  --surface:   #FFFFFF;
+  --surface-2: #F2F0FA;
+  --line:      #E3DFF1;
+  --txt:       #211C3D;
+  --txt-60:    rgba(33,28,61,0.60);
+  --txt-40:    rgba(33,28,61,0.42);
+  --txt-25:    rgba(33,28,61,0.28);
+  --scrim:     rgba(33,28,61,0.34);
+
+  --glow-1: 8.32%;
+  --glow-2: 5.12%;
+}
+
 @layer base {
+  html,
   body {
-    background-color: #292349;
-    color: #FFFFFF;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-image:
+      radial-gradient(115% 75% at 50% -8%, color-mix(in oklab, #00D397 var(--glow-1), transparent) 0%, transparent 52%),
+      radial-gradient(95% 60% at 50% 112%, color-mix(in oklab, #8B5CF6 var(--glow-2), transparent) 0%, transparent 50%),
+      linear-gradient(180deg, var(--bg) 0%, var(--bg-deep) 100%);
+    background-attachment: fixed;
+    background-color: var(--bg);
+    color: var(--txt);
+    font-family: var(--font-ui), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    transition: background-color .35s ease, color .35s ease;
   }
 
   * {
@@ -19,11 +63,11 @@
   }
 
   ::-webkit-scrollbar-track {
-    background: #292349;
+    background: var(--bg);
   }
 
   ::-webkit-scrollbar-thumb {
-    background: #3E3666;
+    background: var(--surface-2);
     border-radius: 3px;
   }
 }
@@ -45,4 +89,38 @@
   .safe-bottom {
     padding-bottom: env(safe-area-inset-bottom);
   }
+
+  .bg-header-glass {
+    background-color: color-mix(in srgb, var(--bg) 90%, transparent);
+  }
 }
+
+@keyframes pop   { 0% { transform: scale(.7); opacity: 0 } 60% { transform: scale(1.05) } 100% { transform: scale(1); opacity: 1 } }
+@keyframes rise  { 0% { transform: translateY(14px); opacity: 0 } 100% { transform: translateY(0); opacity: 1 } }
+@keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
+@keyframes blink { 0%, 100% { opacity: 0.25; } 50% { opacity: 1; } }
+@keyframes flash { 0% { opacity: 0.85; } 100% { opacity: 0; } }
+@keyframes growx { 0% { transform: scaleX(0); } 100% { transform: scaleX(1); } }
+@keyframes shake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-4px); } 40%, 80% { transform: translateX(4px); } }
+@keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+
+.dotpulse {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent, #00D397);
+  animation: blink 1.4s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+.animate-flash { animation: flash 0.85s ease-out forwards; }
+.animate-blink-cursor { animation: blink 1s steps(1) infinite; }
+@keyframes sheetup   { from { transform: translateY(100%); } to { transform: translateY(0); } }
+@keyframes sheetdown { from { transform: translateY(0); } to { transform: translateY(100%); } }
+@keyframes scrimin   { from { opacity: 0; } to { opacity: 1; } }
+@keyframes scrimout  { from { opacity: 1; } to { opacity: 0; } }
+
+.animate-sheetup   { animation: sheetup .32s cubic-bezier(.2,.8,.2,1) both; }
+.animate-sheetdown { animation: sheetdown .24s cubic-bezier(.4,0,1,1) both; }
+.animate-scrimin   { animation: scrimin .2s ease-out both; }
+.animate-scrimout  { animation: scrimout .2s ease-in both; }

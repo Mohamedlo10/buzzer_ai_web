@@ -43,20 +43,13 @@ export function BuzzerButton({
     return (
       <div className="flex flex-col items-center py-6">
         <div
-          className="flex flex-col items-center justify-center rounded-full border-[3px] border-[#6A6A6A] opacity-60"
-          style={{
-            width: 192,
-            height: 192,
-            background: 'linear-gradient(135deg, #5A5A5A, #4A4A4A)',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-          }}
+          className="flex flex-col items-center justify-center rounded-full border-[3px] border-line opacity-60 bg-gradient-to-br from-surface-2 to-bg"
+          style={{ width: 192, height: 192 }}
         >
-          <Zap size={36} color="#FFFFFF60" strokeWidth={2} />
-          <span className="text-white/50 font-bold text-2xl mt-1 tracking-wide">
-            #{queuePosition}
-          </span>
+          <Zap size={36} className="text-txt-40" strokeWidth={2} />
+          <span className="text-txt-60 font-bold text-2xl mt-1 tracking-wide">#{queuePosition}</span>
         </div>
-        <p className="text-white/40 mt-4 text-sm font-medium">En file d'attente</p>
+        <p className="text-txt-40 mt-4 text-sm font-medium">En file d&apos;attente</p>
       </div>
     );
   }
@@ -66,28 +59,16 @@ export function BuzzerButton({
     return (
       <div className="flex flex-col items-center py-6">
         <div
-          className="relative flex items-center justify-center rounded-full border-[3px] border-[#5A5A5A] opacity-60 overflow-hidden"
-          style={{
-            width: 192,
-            height: 192,
-            background: 'linear-gradient(135deg, #4A4A4A, #3E3666)',
-            boxShadow: '0 6px 16px rgba(0,0,0,0.2)',
-          }}
+          className="relative flex items-center justify-center rounded-full border-[3px] border-line opacity-60 overflow-hidden bg-gradient-to-br from-surface-2 to-bg"
+          style={{ width: 192, height: 192 }}
         >
-          {/* Subtle top highlight */}
-          <div
-            className="absolute top-0 left-0 right-0 rounded-t-full pointer-events-none"
-            style={{
-              height: 80,
-              background: 'linear-gradient(to bottom, rgba(255,255,255,0.1), transparent)',
-            }}
-          />
+          <div className="absolute top-0 left-0 right-0 h-20 rounded-t-full pointer-events-none bg-gradient-to-b from-white/10 to-transparent" />
           <div className="flex flex-col items-center">
-            <Zap size={56} color="#FFFFFF40" strokeWidth={2} />
-            <span className="text-white/30 font-bold text-xl mt-2 tracking-wide">BUZZ</span>
+            <Zap size={56} className="text-txt-40" strokeWidth={2} />
+            <span className="text-txt-40 font-bold text-xl mt-2 tracking-wide">BUZZ</span>
           </div>
         </div>
-        <p className="text-white/40 mt-4 text-sm">
+        <p className="text-txt-40 mt-4 text-sm">
           {teamBuzzed ? 'Votre équipe a déjà buzzé' : 'Buzzer désactivé'}
         </p>
       </div>
@@ -132,7 +113,7 @@ export function BuzzerButton({
         </div>
       </button>
 
-      <p className="text-white/60 mt-4 text-sm">Cliquer ou appuyer sur Espace / Entrée</p>
+      <p className="text-txt-60 mt-4 text-sm">Cliquer ou appuyer sur Espace / Entrée</p>
     </div>
   );
 }

@@ -39,19 +39,19 @@ export default function AdminSettingsPage() {
   });
 
   return (
-    <div className="min-h-screen bg-[#292349] flex flex-col">
+    <div className="min-h-screen bg-bg flex flex-col">
       {/* Header */}
-      <div className="bg-[#292349] pt-6 pb-4 px-4 border-b border-[#3E3666]">
+      <div className="bg-bg pt-6 pb-4 px-4 border-b border-line">
         <div className="flex items-center">
           <button
             onClick={() => router.back()}
-            className="w-10 h-10 rounded-full bg-[#342D5B] flex items-center justify-center mr-3 hover:bg-[#3E3666] transition-colors"
+            className="w-10 h-10 rounded-full bg-surface flex items-center justify-center mr-3 hover:bg-surface-2 transition-colors"
           >
             <ArrowLeft size={20} color="#FFFFFF" />
           </button>
           <div className="flex-1">
-            <p className="text-white font-bold text-xl">Paramètres</p>
-            <p className="text-white/60 text-xs">Maintenance et statistiques</p>
+            <p className="text-txt font-bold text-xl">Paramètres</p>
+            <p className="text-txt-60 text-xs">Maintenance et statistiques</p>
           </div>
         </div>
       </div>
@@ -59,15 +59,15 @@ export default function AdminSettingsPage() {
       <div className="flex-1 overflow-y-auto px-4 py-6 space-y-6">
         {/* Maintenance */}
         <div>
-          <h2 className="text-white font-bold text-lg mb-4 flex items-center gap-2">
+          <h2 className="text-txt font-bold text-lg mb-4 flex items-center gap-2">
             <RefreshCw size={20} color="#9B59B6" />
             Maintenance
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Card className="flex flex-col gap-3">
               <div>
-                <p className="text-white font-semibold">Recalcul global</p>
-                <p className="text-white/50 text-xs mt-1">
+                <p className="text-txt font-semibold">Recalcul global</p>
+                <p className="text-txt-60 text-xs mt-1">
                   Recalcule tous les classements globaux des joueurs.
                 </p>
               </div>
@@ -83,8 +83,8 @@ export default function AdminSettingsPage() {
 
             <Card className="flex flex-col gap-3">
               <div>
-                <p className="text-white font-semibold">Recalcul par salle</p>
-                <p className="text-white/50 text-xs mt-1">
+                <p className="text-txt font-semibold">Recalcul par salle</p>
+                <p className="text-txt-60 text-xs mt-1">
                   Recalcule les classements pour chaque salle.
                 </p>
               </div>
@@ -102,7 +102,7 @@ export default function AdminSettingsPage() {
 
         {/* Quick Stats */}
         <div>
-          <h2 className="text-white font-bold text-lg mb-4 flex items-center gap-2">
+          <h2 className="text-txt font-bold text-lg mb-4 flex items-center gap-2">
             <BarChart3 size={20} color="#00D397" />
             Statistiques rapides
           </h2>

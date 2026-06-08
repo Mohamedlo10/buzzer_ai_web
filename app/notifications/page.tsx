@@ -77,18 +77,18 @@ export default function NotificationsPage() {
   };
 
   return (
-    <SafeScreen className="bg-[#292349]">
+    <SafeScreen>
       {/* Header */}
       <div className="flex flex-row items-center px-4 pt-12 pb-4">
         <button
           onClick={() => router.back()}
-          className="w-10 h-10 rounded-full bg-[#342D5B] flex items-center justify-center mr-3 hover:opacity-80 transition-opacity cursor-pointer"
+          className="w-10 h-10 rounded-full bg-surface flex items-center justify-center mr-3 hover:opacity-80 transition-opacity cursor-pointer"
         >
           <ChevronLeft size={20} color="#FFFFFF" />
         </button>
-        <p className="text-white font-bold text-2xl">Notifications</p>
+        <p className="text-txt font-bold text-2xl">Notifications</p>
         {data && data.total > 0 && (
-          <span className="ml-3 bg-[#D5442F] text-white text-xs font-bold px-2 py-0.5 rounded-full">
+          <span className="ml-3 bg-[#D5442F] text-txt text-xs font-bold px-2 py-0.5 rounded-full">
             {data.total}
           </span>
         )}
@@ -100,8 +100,8 @@ export default function NotificationsPage() {
         ) : !data || data.total === 0 ? (
           <Card className="flex flex-col items-center py-16 mt-4">
             <Bell size={48} color="#FFFFFF40" className="mb-4" />
-            <p className="text-white/60 text-center font-medium">Aucune notification</p>
-            <p className="text-white/40 text-center text-sm mt-2 px-8">
+            <p className="text-txt-60 text-center font-medium">Aucune notification</p>
+            <p className="text-txt-40 text-center text-sm mt-2 px-8">
               Vos demandes d'amis, invitations de jeu et de salle apparaîtront ici
             </p>
           </Card>
@@ -110,20 +110,20 @@ export default function NotificationsPage() {
             {/* ── Friend Requests ── */}
             {data.friendRequests.length > 0 && (
               <div className="mb-6">
-                <p className="text-white/60 text-xs font-semibold uppercase tracking-wide mb-3 flex items-center gap-2">
+                <p className="text-txt-60 text-xs font-semibold uppercase tracking-wide mb-3 flex items-center gap-2">
                   <UserPlus size={14} />
                   Demandes d'amis ({data.friendRequests.length})
                 </p>
                 {data.friendRequests.map((req) => (
                   <Card key={req.id} className="mb-3">
                     <div className="flex flex-row items-center">
-                      <div className="w-11 h-11 rounded-full bg-[#3E3666] flex items-center justify-center mr-3 shrink-0">
+                      <div className="w-11 h-11 rounded-full bg-surface-2 flex items-center justify-center mr-3 shrink-0">
                         <UserPlus size={20} color="#FFFFFF" />
                       </div>
                       <div className="flex-1">
-                        <p className="text-white font-semibold">{req.requester.username}</p>
+                        <p className="text-txt font-semibold">{req.requester.username}</p>
                         <div className="flex items-center gap-2">
-                          <p className="text-white/50 text-sm">Veut vous ajouter</p>
+                          <p className="text-txt-60 text-sm">Veut vous ajouter</p>
                           {req.requester.globalRank != null && (
                             <span className="text-[#00D397] text-xs font-semibold">#{req.requester.globalRank}</span>
                           )}
@@ -134,7 +134,7 @@ export default function NotificationsPage() {
                           onClick={() => handleAcceptFriend(req.id)}
                           className="w-10 h-10 rounded-full bg-[#00D397] flex items-center justify-center hover:bg-[#00C085] transition-colors cursor-pointer"
                         >
-                          <Check size={18} color="#292349" />
+                          <Check size={18} className="text-btn-fg" />
                         </button>
                         <button
                           onClick={() => handleDeclineFriend(req.id)}
@@ -152,7 +152,7 @@ export default function NotificationsPage() {
             {/* ── Game Invitations ── */}
             {data.gameInvitations.length > 0 && (
               <div className="mb-6">
-                <p className="text-white/60 text-xs font-semibold uppercase tracking-wide mb-3 flex items-center gap-2">
+                <p className="text-txt-60 text-xs font-semibold uppercase tracking-wide mb-3 flex items-center gap-2">
                   <Gamepad2 size={14} />
                   Invitations de jeu ({data.gameInvitations.length})
                 </p>
@@ -163,9 +163,9 @@ export default function NotificationsPage() {
                         <Gamepad2 size={20} color="#00D397" />
                       </div>
                       <div className="flex-1">
-                        <p className="text-white font-semibold">{inv.senderName}</p>
-                        <p className="text-white/50 text-sm">
-                          Session <span className="text-white/70 font-mono">{inv.sessionCode}</span>
+                        <p className="text-txt font-semibold">{inv.senderName}</p>
+                        <p className="text-txt-60 text-sm">
+                          Session <span className="text-txt-60 font-mono">{inv.sessionCode}</span>
                         </p>
                       </div>
                       <div className="flex flex-row gap-2">
@@ -173,11 +173,11 @@ export default function NotificationsPage() {
                           onClick={() => handleAcceptGame(inv.id, inv.sessionCode)}
                           className="w-10 h-10 rounded-full bg-[#00D397] flex items-center justify-center hover:bg-[#00C085] transition-colors cursor-pointer"
                         >
-                          <Check size={18} color="#292349" />
+                          <Check size={18} className="text-btn-fg" />
                         </button>
                         <button
                           onClick={() => handleDeclineGame(inv.id)}
-                          className="w-10 h-10 rounded-full bg-[#3E3666] flex items-center justify-center hover:opacity-80 transition-opacity cursor-pointer"
+                          className="w-10 h-10 rounded-full bg-surface-2 flex items-center justify-center hover:opacity-80 transition-opacity cursor-pointer"
                         >
                           <X size={18} color="#FFFFFF80" />
                         </button>
@@ -191,20 +191,20 @@ export default function NotificationsPage() {
             {/* ── Room Invitations ── */}
             {data.roomInvitations.length > 0 && (
               <div className="mb-6">
-                <p className="text-white/60 text-xs font-semibold uppercase tracking-wide mb-3 flex items-center gap-2">
+                <p className="text-txt-60 text-xs font-semibold uppercase tracking-wide mb-3 flex items-center gap-2">
                   <FolderOpen size={14} />
                   Invitations de salle ({data.roomInvitations.length})
                 </p>
                 {data.roomInvitations.map((inv) => (
                   <Card key={inv.id} className="mb-3">
                     <div className="flex flex-row items-center">
-                      <div className="w-11 h-11 rounded-full bg-[#342D5B] flex items-center justify-center mr-3 shrink-0">
+                      <div className="w-11 h-11 rounded-full bg-surface flex items-center justify-center mr-3 shrink-0">
                         <FolderOpen size={20} color="#FFFFFF" />
                       </div>
                       <div className="flex-1">
-                        <p className="text-white font-semibold">{inv.roomName}</p>
-                        <p className="text-white/50 text-sm">
-                          Invité par <span className="text-white/70">{inv.senderUsername}</span>
+                        <p className="text-txt font-semibold">{inv.roomName}</p>
+                        <p className="text-txt-60 text-sm">
+                          Invité par <span className="text-txt-60">{inv.senderUsername}</span>
                         </p>
                       </div>
                       {inv.alreadyMember ? (
@@ -216,8 +216,8 @@ export default function NotificationsPage() {
                           onClick={() => handleJoinRoom(inv.roomCode)}
                           className="flex items-center gap-1 px-3 py-2 rounded-lg bg-[#00D397] hover:opacity-90 transition-opacity cursor-pointer"
                         >
-                          <span className="text-[#292349] font-semibold text-sm">Rejoindre</span>
-                          <ArrowRight size={14} color="#292349" />
+                          <span className="text-btn-fg font-semibold text-sm">Rejoindre</span>
+                          <ArrowRight size={14} className="text-btn-fg" />
                         </button>
                       )}
                     </div>

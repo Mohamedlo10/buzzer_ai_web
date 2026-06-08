@@ -86,7 +86,7 @@ export default function AdminRoomDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#292349] flex items-center justify-center">
+      <div className="min-h-screen bg-bg flex items-center justify-center">
         <Spinner text="Chargement..." />
       </div>
     );
@@ -94,27 +94,27 @@ export default function AdminRoomDetailPage() {
 
   if (!room) {
     return (
-      <div className="min-h-screen bg-[#292349] flex items-center justify-center">
-        <p className="text-white/50">Salle introuvable</p>
+      <div className="min-h-screen bg-bg flex items-center justify-center">
+        <p className="text-txt-60">Salle introuvable</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#292349] flex flex-col">
+    <div className="min-h-screen bg-bg flex flex-col">
       {/* Header */}
-      <div className="bg-[#292349] pt-6 pb-4 px-4 border-b border-[#3E3666]">
+      <div className="bg-bg pt-6 pb-4 px-4 border-b border-line">
         <div className="flex items-center">
           <button
             onClick={() => router.back()}
-            className="w-10 h-10 rounded-full bg-[#342D5B] flex items-center justify-center mr-3 hover:bg-[#3E3666] transition-colors"
+            className="w-10 h-10 rounded-full bg-surface flex items-center justify-center mr-3 hover:bg-surface-2 transition-colors"
           >
             <ArrowLeft size={20} color="#FFFFFF" />
           </button>
           <div className="flex-1">
-            <p className="text-white font-bold text-xl">{room.name}</p>
+            <p className="text-txt font-bold text-xl">{room.name}</p>
             <div className="flex items-center gap-2 mt-0.5">
-              <span className="text-white/50 text-xs">Code: {room.code}</span>
+              <span className="text-txt-60 text-xs">Code: {room.code}</span>
               {!room.isActive && (
                 <span className="text-xs px-1.5 py-0.5 rounded bg-[#D5442F20] text-[#D5442F]">Inactive</span>
               )}
@@ -123,7 +123,7 @@ export default function AdminRoomDetailPage() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowTransferModal(true)}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#3E3666] hover:bg-[#4E4676] text-white/80 hover:text-white transition-colors text-xs font-medium"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-surface-2 hover:bg-surface-2 text-txt-60 hover:text-txt transition-colors text-xs font-medium"
             >
               <ArrowRightLeft size={14} />
               Transférer
@@ -141,13 +141,13 @@ export default function AdminRoomDetailPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-[#3E3666]">
+      <div className="flex border-b border-line">
         {(['info', 'members', 'sessions'] as const).map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
             className={`flex-1 py-3 text-sm font-medium transition-colors ${
-              activeTab === tab ? 'text-[#00D397] border-b-2 border-[#00D397]' : 'text-white/50 hover:text-white/80'
+              activeTab === tab ? 'text-[#00D397] border-b-2 border-[#00D397]' : 'text-txt-60 hover:text-txt-60'
             }`}
           >
             {tab === 'info' ? 'Infos' : tab === 'members' ? 'Membres' : 'Sessions'}
@@ -170,9 +170,9 @@ export default function AdminRoomDetailPage() {
                 ['Créée', formatDate(room.createdAt)],
                 ['Mise à jour', formatDate(room.updatedAt)],
               ].map(([label, value]) => (
-                <div key={String(label)} className="flex justify-between py-2 border-b border-[#3E3666] last:border-0">
-                  <span className="text-white/50 text-sm">{label}</span>
-                  <span className="text-white text-sm font-medium">{String(value)}</span>
+                <div key={String(label)} className="flex justify-between py-2 border-b border-line last:border-0">
+                  <span className="text-txt-60 text-sm">{label}</span>
+                  <span className="text-txt text-sm font-medium">{String(value)}</span>
                 </div>
               ))}
             </Card>
@@ -183,18 +183,18 @@ export default function AdminRoomDetailPage() {
           <>
             {room.members.length === 0 ? (
               <Card className="flex items-center justify-center py-10">
-                <p className="text-white/50">Aucun membre</p>
+                <p className="text-txt-60">Aucun membre</p>
               </Card>
             ) : (
               room.members.map((member) => (
                 <Card key={member.userId} className="mb-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-[#3E3666] flex items-center justify-center shrink-0">
+                    <div className="w-10 h-10 rounded-full bg-surface-2 flex items-center justify-center shrink-0">
                       <Users size={18} color="#FFFFFF80" />
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
-                        <span className="text-white font-semibold">{member.username}</span>
+                        <span className="text-txt font-semibold">{member.username}</span>
                         {member.isOwner && (
                           <span className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-[#FFD70020] text-[#FFD700] font-medium">
                             <Crown size={12} />
@@ -202,7 +202,7 @@ export default function AdminRoomDetailPage() {
                           </span>
                         )}
                       </div>
-                      <span className="text-white/40 text-xs">Rejoint {formatDate(member.joinedAt)}</span>
+                      <span className="text-txt-40 text-xs">Rejoint {formatDate(member.joinedAt)}</span>
                     </div>
                   </div>
                 </Card>
@@ -215,7 +215,7 @@ export default function AdminRoomDetailPage() {
           <>
             {room.sessions.length === 0 ? (
               <Card className="flex items-center justify-center py-10">
-                <p className="text-white/50">Aucune session</p>
+                <p className="text-txt-60">Aucune session</p>
               </Card>
             ) : (
               room.sessions.map((s) => {
@@ -228,7 +228,7 @@ export default function AdminRoomDetailPage() {
                   >
                     <Card>
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-white font-bold tracking-widest">{s.code}</span>
+                        <span className="text-txt font-bold tracking-widest">{s.code}</span>
                         <span
                           className="text-xs font-semibold px-2 py-0.5 rounded-full"
                           style={{ backgroundColor: `${cfg.color}20`, color: cfg.color }}
@@ -238,20 +238,20 @@ export default function AdminRoomDetailPage() {
                       </div>
                       <div className="flex flex-col gap-1">
                         <div className="flex justify-between">
-                          <span className="text-white/50 text-xs">Manager</span>
-                          <span className="text-white text-xs">{s.managerUsername}</span>
+                          <span className="text-txt-60 text-xs">Manager</span>
+                          <span className="text-txt text-xs">{s.managerUsername}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-white/50 text-xs">Joueurs</span>
-                          <span className="text-white text-xs">{s.playerCount}</span>
+                          <span className="text-txt-60 text-xs">Joueurs</span>
+                          <span className="text-txt text-xs">{s.playerCount}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-white/50 text-xs">Questions</span>
-                          <span className="text-white text-xs">{s.totalQuestions}</span>
+                          <span className="text-txt-60 text-xs">Questions</span>
+                          <span className="text-txt text-xs">{s.totalQuestions}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-white/50 text-xs">Créée</span>
-                          <span className="text-white text-xs">{formatDate(s.createdAt)}</span>
+                          <span className="text-txt-60 text-xs">Créée</span>
+                          <span className="text-txt text-xs">{formatDate(s.createdAt)}</span>
                         </div>
                       </div>
                     </Card>
@@ -267,24 +267,24 @@ export default function AdminRoomDetailPage() {
       {showTransferModal && (
         <div className="fixed inset-0 bg-black/60 flex items-end sm:items-center justify-center z-50 px-4">
           <div className="absolute inset-0" onClick={() => setShowTransferModal(false)} />
-          <div className="relative bg-[#342D5B] rounded-2xl border border-[#3E3666] p-6 w-full max-w-md">
+          <div className="relative bg-surface rounded-2xl border border-line p-6 w-full max-w-md">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-white font-bold">Transférer la propriété</h3>
-              <button onClick={() => setShowTransferModal(false)} className="p-1 text-white/50 hover:text-white">
+              <h3 className="text-txt font-bold">Transférer la propriété</h3>
+              <button onClick={() => setShowTransferModal(false)} className="p-1 text-txt-60 hover:text-txt">
                 <X size={18} />
               </button>
             </div>
-            <label className="text-white/60 text-sm block mb-2">Nouveau propriétaire (userId)</label>
+            <label className="text-txt-60 text-sm block mb-2">Nouveau propriétaire (userId)</label>
             <input
               value={newOwnerId}
               onChange={(e) => setNewOwnerId(e.target.value)}
               placeholder="ID utilisateur..."
-              className="w-full bg-[#292349] text-white px-4 py-3 rounded-xl border border-[#3E3666] focus:border-[#9B59B6] focus:outline-none text-sm mb-4"
+              className="w-full bg-bg text-txt px-4 py-3 rounded-xl border border-line focus:border-[#9B59B6] focus:outline-none text-sm mb-4"
             />
             <div className="flex gap-3">
               <button
                 onClick={() => setShowTransferModal(false)}
-                className="flex-1 py-3 rounded-xl bg-[#3E3666] text-white text-sm font-medium hover:bg-[#4E4676] transition-colors"
+                className="flex-1 py-3 rounded-xl bg-surface-2 text-txt text-sm font-medium hover:bg-surface-2 transition-colors"
               >
                 Annuler
               </button>

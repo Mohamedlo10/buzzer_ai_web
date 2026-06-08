@@ -44,13 +44,13 @@ function RoomCodeCard({
 }) {
   return (
     <div className="px-4 pt-4">
-      <div className="bg-[#342D5B] rounded-3xl border border-[#3E3666] p-6 flex flex-col items-center">
+      <div className="bg-surface rounded-3xl border border-line p-6 flex flex-col items-center">
         {/* QR Code */}
         <div className="mb-5">
           {qrLoading ? (
-            <div className="w-52 h-52 rounded-2xl bg-[#292349] flex flex-col items-center justify-center">
+            <div className="w-52 h-52 rounded-2xl bg-bg flex flex-col items-center justify-center">
               <div className="w-8 h-8 border-2 border-[#00D397] border-t-transparent rounded-full animate-spin" />
-              <p className="text-white/40 text-xs mt-3">Chargement...</p>
+              <p className="text-txt-40 text-xs mt-3">Chargement...</p>
             </div>
           ) : qrImage ? (
             <div className="bg-white p-3 rounded-2xl shadow-lg">
@@ -58,9 +58,9 @@ function RoomCodeCard({
               <img src={qrImage} alt="QR Code" className="w-52 h-52 object-contain" />
             </div>
           ) : (
-            <div className="w-52 h-52 rounded-2xl bg-[#292349] flex flex-col items-center justify-center border border-dashed border-[#3E3666]">
+            <div className="w-52 h-52 rounded-2xl bg-bg flex flex-col items-center justify-center border border-dashed border-line">
               <QrCode size={40} color="#FFFFFF20" />
-              <p className="text-white/30 text-xs mt-2">Indisponible</p>
+              <p className="text-txt-40 text-xs mt-2">Indisponible</p>
             </div>
           )}
         </div>
@@ -68,14 +68,14 @@ function RoomCodeCard({
         {/* Code below QR */}
         <div className="flex items-center gap-2 mb-1">
           <Hash size={14} color="#00D397" />
-          <span className="text-white/50 text-xs font-medium uppercase tracking-wider">
+          <span className="text-txt-60 text-xs font-medium uppercase tracking-wider">
             Code de la salle
           </span>
         </div>
-        <p className="text-white text-4xl font-bold text-center tracking-[6px] mb-1 select-all">
+        <p className="text-txt text-4xl font-bold text-center tracking-[6px] mb-1 select-all">
           {code}
         </p>
-        <p className="text-white/30 text-xs mb-5">Scannez ou partagez le code</p>
+        <p className="text-txt-40 text-xs mb-5">Scannez ou partagez le code</p>
 
         {/* Actions */}
         <div className="flex gap-3 w-full">
@@ -88,10 +88,10 @@ function RoomCodeCard({
           </button>
           <button
             onClick={onShare}
-            className="flex-1 flex items-center justify-center bg-[#3E3666] px-4 py-3 rounded-2xl hover:bg-[#4E4676] transition-colors"
+            className="flex-1 flex items-center justify-center bg-surface-2 px-4 py-3 rounded-2xl hover:bg-surface-2 transition-colors"
           >
             <UserPlus size={17} color="#FFFFFF" />
-            <span className="text-white font-semibold ml-2">Partager</span>
+            <span className="text-txt font-semibold ml-2">Partager</span>
           </button>
         </div>
       </div>
@@ -128,7 +128,7 @@ function ActiveSessionCard({
   return (
     <div className="mb-3">
       <div
-        className="bg-[#342D5B] rounded-3xl border overflow-hidden cursor-pointer"
+        className="bg-surface rounded-3xl border overflow-hidden cursor-pointer"
         style={{ borderColor: config.color + '40' }}
         onClick={onPress}
       >
@@ -146,8 +146,8 @@ function ActiveSessionCard({
                 <StatusIcon size={24} color={config.color} />
               </div>
               <div>
-                <p className="text-white font-bold text-xl tracking-wider">{session.code}</p>
-                <p className="text-white/50 text-xs">par {session.managerName}</p>
+                <p className="text-txt font-bold text-xl tracking-wider">{session.code}</p>
+                <p className="text-txt-60 text-xs">par {session.managerName}</p>
               </div>
             </div>
             <div
@@ -164,13 +164,13 @@ function ActiveSessionCard({
         <div className="px-5 pb-4 flex items-center gap-6">
           <div className="flex items-center">
             <Users size={16} color="#FFFFFF60" />
-            <span className="text-white/60 text-sm ml-1.5">
+            <span className="text-txt-60 text-sm ml-1.5">
               {session.playerCount}/{session.maxPlayers} joueurs
             </span>
           </div>
           <div className="flex items-center">
             <Target size={16} color="#FFFFFF60" />
-            <span className="text-white/60 text-sm ml-1.5">{session.maxPlayers} max</span>
+            <span className="text-txt-60 text-sm ml-1.5">{session.maxPlayers} max</span>
           </div>
         </div>
 
@@ -180,8 +180,8 @@ function ActiveSessionCard({
           style={{ backgroundColor: config.color }}
         >
           <div className="flex items-center">
-            <Play size={18} color="#292349" fill="#292349" />
-            <span className="text-[#292349] font-bold text-base ml-2">
+            <Play size={18} className="text-btn-fg" fill="currentColor" />
+            <span className="text-btn-fg font-bold text-base ml-2">
               {getButtonLabel(session.status)}
             </span>
           </div>
@@ -230,9 +230,9 @@ function MembersWithStats({
   const rankColors = ['#FFD700', '#C0C0C0', '#CD7F32'];
 
   return (
-    <div className="bg-[#342D5B] rounded-3xl border border-[#3E3666] overflow-hidden">
-      <div className="flex items-center justify-between px-4 py-3 border-b border-[#3E3666]">
-        <p className="text-white/40 text-[10px] font-bold tracking-widest uppercase">Membres</p>
+    <div className="bg-surface rounded-3xl border border-line overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-line">
+        <p className="text-txt-40 text-[10px] font-bold tracking-widest uppercase">Membres</p>
         <div className="bg-[#00D39720] px-3 py-1 rounded-full">
           <span className="text-[#00D397] text-xs font-bold">{members.length} Joueur{members.length !== 1 ? 's' : ''}</span>
         </div>
@@ -246,7 +246,7 @@ function MembersWithStats({
         return (
           <div
             key={member.id}
-            className={`flex items-center py-3 px-4 border-b border-[#3E3666] last:border-b-0 ${isCurrentUser ? 'bg-[#00D39708]' : ''}`}
+            className={`flex items-center py-3 px-4 border-b border-line last:border-b-0 ${isCurrentUser ? 'bg-[#00D39708]' : ''}`}
           >
             {/* Rank badge */}
             <div className="w-8 flex items-center justify-center mr-2 shrink-0">
@@ -254,27 +254,27 @@ function MembersWithStats({
               {index === 1 && hasPlayed && <Medal size={16} color="#C0C0C0" />}
               {index === 2 && hasPlayed && <Medal size={16} color="#CD7F32" />}
               {(!hasPlayed || index > 2) && (
-                <span className="text-white/30 text-xs font-bold">{index + 1}</span>
+                <span className="text-txt-40 text-xs font-bold">{index + 1}</span>
               )}
             </div>
 
             {/* Avatar */}
             <div className="relative mr-3 shrink-0">
-              <div className="w-11 h-11 rounded-full bg-[#3E3666] flex items-center justify-center overflow-hidden">
+              <div className="w-11 h-11 rounded-full bg-surface-2 flex items-center justify-center overflow-hidden">
                 {member.avatarUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={member.avatarUrl} className="w-11 h-11 rounded-full object-cover" alt={member.username} />
                 ) : (
-                  <span className="text-white font-bold">{member.username.charAt(0).toUpperCase()}</span>
+                  <span className="text-txt font-bold">{member.username.charAt(0).toUpperCase()}</span>
                 )}
               </div>
-              <div className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-[#342D5B] ${member.isOnline ? 'bg-[#00D397]' : 'bg-[#6B7280]'}`} />
+              <div className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-surface ${member.isOnline ? 'bg-[#00D397]' : 'bg-[#6B7280]'}`} />
             </div>
 
             {/* Name */}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5 flex-wrap">
-                <span className={`font-semibold text-sm ${isCurrentUser ? 'text-[#00D397]' : 'text-white'}`}>
+                <span className={`font-semibold text-sm ${isCurrentUser ? 'text-[#00D397]' : 'text-txt'}`}>
                   {member.username}
                 </span>
                 {member.isOwner && (
@@ -284,7 +284,7 @@ function MembersWithStats({
                   </div>
                 )}
               </div>
-              <span className="text-white/30 text-xs">
+              <span className="text-txt-40 text-xs">
                 {member.isOnline ? 'En ligne' : 'Hors ligne'}
                 {hasPlayed ? ` • ${rank!.gamesPlayed} partie${rank!.gamesPlayed > 1 ? 's' : ''}` : ''}
               </span>
@@ -293,8 +293,8 @@ function MembersWithStats({
             {/* Stats */}
             {hasPlayed && (
               <div className="text-right mr-3 shrink-0">
-                <p className="font-bold text-sm" style={{ color }}>{Math.round(ratio)} <span className="text-white/30 text-[10px] font-normal">moy</span></p>
-                <p className="text-white/30 text-[10px]">{rank!.gamesWon} 🏆</p>
+                <p className="font-bold text-sm" style={{ color }}>{Math.round(ratio)} <span className="text-txt-40 text-[10px] font-normal">moy</span></p>
+                <p className="text-txt-40 text-[10px]">{rank!.gamesWon} 🏆</p>
               </div>
             )}
 
@@ -334,13 +334,13 @@ function HistoryModal({
   return (
     <div className="fixed inset-0 bg-black/60 flex items-end justify-center z-50">
       <div className="absolute inset-0" onClick={onClose} />
-      <div className="relative bg-[#292349] pb-20 rounded-t-3xl w-full max-w-2xl max-h-[80vh] flex flex-col">
-        <div className="flex items-center justify-between pt-6 pb-4 px-4 border-b border-[#3E3666] shrink-0">
+      <div className="relative bg-bg pb-20 rounded-t-3xl w-full max-w-2xl max-h-[80vh] flex flex-col">
+        <div className="flex items-center justify-between pt-6 pb-4 px-4 border-b border-line shrink-0">
           <div>
-            <p className="text-white font-bold text-xl">Historique des parties</p>
-            <p className="text-white/50 text-xs mt-0.5">{sessions.length} partie{sessions.length !== 1 ? 's' : ''} jouée{sessions.length !== 1 ? 's' : ''}</p>
+            <p className="text-txt font-bold text-xl">Historique des parties</p>
+            <p className="text-txt-60 text-xs mt-0.5">{sessions.length} partie{sessions.length !== 1 ? 's' : ''} jouée{sessions.length !== 1 ? 's' : ''}</p>
           </div>
-          <button onClick={onClose} className="w-10 h-10 rounded-full bg-[#342D5B] flex items-center justify-center">
+          <button onClick={onClose} className="w-10 h-10 rounded-full bg-surface flex items-center justify-center">
             <X size={20} color="#FFFFFF" />
           </button>
         </div>
@@ -349,21 +349,21 @@ function HistoryModal({
           {sessions.length === 0 ? (
             <div className="flex flex-col items-center py-16">
               <History size={40} color="#FFFFFF20" />
-              <p className="text-white/40 text-center mt-3">Aucune partie terminée</p>
+              <p className="text-txt-40 text-center mt-3">Aucune partie terminée</p>
             </div>
           ) : (
             sessions.map((session) => (
               <button
                 key={session.id}
                 onClick={() => { onNavigate(session); onClose(); }}
-                className="flex items-center px-4 py-4 border-b border-[#3E3666] last:border-b-0 hover:bg-white/5 w-full text-left transition-colors"
+                className="flex items-center px-4 py-4 border-b border-line last:border-b-0 hover:bg-white/5 w-full text-left transition-colors"
               >
                 <div className="w-10 h-10 rounded-xl bg-[#C0C0C020] flex items-center justify-center mr-3 shrink-0">
                   <Trophy size={18} color="#C0C0C0" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-white font-semibold">Partie #{session.code}</p>
-                  <p className="text-white/40 text-xs mt-0.5">
+                  <p className="text-txt font-semibold">Partie #{session.code}</p>
+                  <p className="text-txt-40 text-xs mt-0.5">
                     {formatDate(session.createdAt)} • {session.playerCount} joueurs
                   </p>
                 </div>
@@ -431,18 +431,18 @@ function InviteFriendsModal({
   return (
     <div className="fixed inset-0 bg-black/60  flex items-end justify-center z-50">
       <div className="absolute inset-0" onClick={onClose} />
-      <div className="relative bg-[#292349] pb-20 rounded-t-3xl w-full max-w-2xl max-h-[80vh] flex flex-col">
+      <div className="relative bg-bg pb-20 rounded-t-3xl w-full max-w-2xl max-h-[80vh] flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between pt-6 pb-4 px-4 border-b border-[#3E3666] shrink-0">
+        <div className="flex items-center justify-between pt-6 pb-4 px-4 border-b border-line shrink-0">
           <div>
-            <p className="text-white font-bold text-xl">Inviter des amis</p>
-            <p className="text-white/50 text-xs mt-0.5">
+            <p className="text-txt font-bold text-xl">Inviter des amis</p>
+            <p className="text-txt-60 text-xs mt-0.5">
               {selected.size > 0 ? `${selected.size} sélectionné${selected.size > 1 ? 's' : ''}` : 'Sélectionne des amis'}
             </p>
           </div>
           <button
             onClick={onClose}
-            className="w-10 h-10 rounded-full bg-[#342D5B] flex items-center justify-center hover:bg-[#3E3666] transition-colors cursor-pointer"
+            className="w-10 h-10 rounded-full bg-surface flex items-center justify-center hover:bg-surface-2 transition-colors cursor-pointer"
           >
             <X size={20} color="#FFFFFF" />
           </button>
@@ -457,10 +457,10 @@ function InviteFriendsModal({
           ) : friends.length === 0 ? (
             <div className="flex flex-col items-center py-12 px-6">
               <UserPlus size={40} color="#FFFFFF30" />
-              <p className="text-white/50 text-center mt-3">
+              <p className="text-txt-60 text-center mt-3">
                 Aucun ami disponible à inviter
               </p>
-              <p className="text-white/30 text-sm text-center mt-1">
+              <p className="text-txt-40 text-sm text-center mt-1">
                 Tous vos amis sont déjà membres de cette salle
               </p>
             </div>
@@ -479,13 +479,13 @@ function InviteFriendsModal({
                 >
                   {/* Avatar */}
                   <div className="relative shrink-0 mr-3">
-                    <div className="w-12 h-12 rounded-full bg-[#3E3666] flex items-center justify-center">
-                      <span className="text-white font-bold text-lg">
+                    <div className="w-12 h-12 rounded-full bg-surface-2 flex items-center justify-center">
+                      <span className="text-txt font-bold text-lg">
                         {friend.username.charAt(0).toUpperCase()}
                       </span>
                     </div>
                     <span
-                      className={`absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full border-2 border-[#292349] ${
+                      className={`absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full border-2 border-bg ${
                         friend.isOnline ? 'bg-[#00D397]' : 'bg-[#6B7280]'
                       }`}
                     />
@@ -493,8 +493,8 @@ function InviteFriendsModal({
 
                   {/* Info */}
                   <div className="flex-1 text-left">
-                    <p className="text-white font-semibold">{friend.username}</p>
-                    <p className="text-white/40 text-xs">
+                    <p className="text-txt font-semibold">{friend.username}</p>
+                    <p className="text-txt-40 text-xs">
                       {alreadyInvited
                         ? 'Invitation déjà envoyée'
                         : `${friend.isOnline ? 'En ligne' : 'Hors ligne'}${friend.globalRank != null ? ` · #${friend.globalRank}` : ''}`
@@ -504,20 +504,20 @@ function InviteFriendsModal({
 
                   {/* Checkbox ou badge */}
                   {alreadyInvited ? (
-                    <div className="px-2 py-1 rounded-lg bg-[#3E3666]">
-                      <span className="text-white/40 text-xs">En attente</span>
+                    <div className="px-2 py-1 rounded-lg bg-surface-2">
+                      <span className="text-txt-40 text-xs">En attente</span>
                     </div>
                   ) : (
                     <div
                       className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
                         isSelected
                           ? 'bg-[#00D397] border-[#00D397]'
-                          : 'border-[#3E3666] bg-transparent'
+                          : 'border-line bg-transparent'
                       }`}
                     >
                       {isSelected && (
                         <svg width="12" height="9" viewBox="0 0 12 9" fill="none">
-                          <path d="M1 4L4.5 7.5L11 1" stroke="#292349" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                          <path d="M1 4L4.5 7.5L11 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
                       )}
                     </div>
@@ -530,7 +530,7 @@ function InviteFriendsModal({
 
         {/* Send button */}
         {friends.length > 0 && (
-          <div className="px-4 py-4 border-t border-[#3E3666] shrink-0">
+          <div className="px-4 py-4 border-t border-line shrink-0">
             <button
               onClick={handleSend}
               disabled={selected.size === 0 || isSending || sent}
@@ -538,16 +538,16 @@ function InviteFriendsModal({
                 sent
                   ? 'bg-[#00D39740] cursor-default'
                   : selected.size === 0 || isSending
-                  ? 'bg-[#3E3666] cursor-not-allowed'
+                  ? 'bg-surface-2 cursor-not-allowed'
                   : 'bg-[#00D397] hover:opacity-90 cursor-pointer'
               }`}
             >
               {sent ? (
                 <span className="text-[#00D397]">Invitations envoyées ✓</span>
               ) : isSending ? (
-                <span className="text-white/60">Envoi en cours...</span>
+                <span className="text-txt-60">Envoi en cours...</span>
               ) : (
-                <span className={selected.size > 0 ? 'text-[#292349]' : 'text-white/40'}>
+                <span className={selected.size > 0 ? 'text-btn-fg' : 'text-txt-40'}>
                   {selected.size > 0
                     ? `Inviter ${selected.size} ami${selected.size > 1 ? 's' : ''}`
                     : 'Sélectionne des amis'}
@@ -748,12 +748,12 @@ export default function RoomDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#292349] flex items-center justify-center">
+      <div className="min-h-screen bg-bg flex items-center justify-center">
         <div className="flex flex-col items-center">
           <div className="w-20 h-20 rounded-full bg-[#00D39720] flex items-center justify-center mb-4">
             <Sparkles size={40} color="#00D397" />
           </div>
-          <p className="text-white font-semibold">Chargement...</p>
+          <p className="text-txt font-semibold">Chargement...</p>
         </div>
       </div>
     );
@@ -761,17 +761,17 @@ export default function RoomDetailPage() {
 
   if (!room) {
     return (
-      <div className="min-h-screen bg-[#292349] flex items-center justify-center px-4">
+      <div className="min-h-screen bg-bg flex items-center justify-center px-4">
         <div className="flex flex-col items-center">
-          <div className="w-24 h-24 rounded-full bg-[#342D5B] flex items-center justify-center mb-4">
+          <div className="w-24 h-24 rounded-full bg-surface flex items-center justify-center mb-4">
             <Eye size={48} color="#6B7280" />
           </div>
-          <p className="text-white/60 text-center mb-4">Salle introuvable</p>
+          <p className="text-txt-60 text-center mb-4">Salle introuvable</p>
           <button
             onClick={() => router.back()}
             className="bg-[#00D397] px-8 py-4 rounded-2xl hover:bg-[#00B377] transition-colors"
           >
-            <span className="text-[#292349] font-bold">Retour</span>
+            <span className="text-btn-fg font-bold">Retour</span>
           </button>
         </div>
       </div>
@@ -779,20 +779,20 @@ export default function RoomDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#292349] flex flex-col">
+    <div className="min-h-screen bg-bg flex flex-col">
       {/* ── Header ── */}
       <div className="flex items-center px-4 pt-6 pb-4 gap-3 shrink-0">
         <button
           onClick={() => router.back()}
-          className="w-10 h-10 rounded-full bg-[#342D5B] flex items-center justify-center shrink-0"
+          className="w-10 h-10 rounded-full bg-surface flex items-center justify-center shrink-0"
         >
           <ChevronRight size={20} color="#00D397" className="rotate-180" />
         </button>
-        <p className="text-white font-bold text-xl flex-1">Room #{room.name}</p>
+        <p className="text-txt font-bold text-xl flex-1">Room #{room.name}</p>
         {isOwner && (
           <button
             onClick={() => router.push(`/room/${roomId}/edit`)}
-            className="w-10 h-10 rounded-full bg-[#342D5B] flex items-center justify-center"
+            className="w-10 h-10 rounded-full bg-surface flex items-center justify-center"
           >
             <Settings size={20} color="#FFFFFF80" />
           </button>
@@ -803,9 +803,9 @@ export default function RoomDetailPage() {
       <div className={`flex-1 overflow-y-auto pb-[140px] px-4 flex flex-col gap-4${showConfigModal ? ' overflow-hidden' : ''}`}>
 
         {/* QR + Code */}
-        <div className="bg-[#342D5B] rounded-3xl border border-[#3E3666] p-5 flex flex-col items-center">
+        <div className="bg-surface rounded-3xl border border-line p-5 flex flex-col items-center">
           {qrLoading ? (
-            <div className="w-36 h-36 rounded-2xl bg-[#292349] flex items-center justify-center mb-4">
+            <div className="w-36 h-36 rounded-2xl bg-bg flex items-center justify-center mb-4">
               <div className="w-6 h-6 border-2 border-[#00D397] border-t-transparent rounded-full animate-spin" />
             </div>
           ) : qrImage ? (
@@ -814,11 +814,11 @@ export default function RoomDetailPage() {
               <img src={qrImage} alt="QR Code" className="w-36 h-36 object-contain" />
             </div>
           ) : (
-            <div className="w-36 h-36 rounded-2xl bg-[#292349] flex flex-col items-center justify-center border border-dashed border-[#3E3666] mb-4">
+            <div className="w-36 h-36 rounded-2xl bg-bg flex flex-col items-center justify-center border border-dashed border-line mb-4">
               <QrCode size={32} color="#FFFFFF20" />
             </div>
           )}
-          <p className="text-white/40 text-[10px] font-bold tracking-widest uppercase mb-1">Code de la salle</p>
+          <p className="text-txt-40 text-[10px] font-bold tracking-widest uppercase mb-1">Code de la salle</p>
           <p className="text-[#00D397] text-3xl font-bold tracking-[6px] select-all">{room.code}</p>
         </div>
 
@@ -827,14 +827,14 @@ export default function RoomDetailPage() {
           onClick={() => setShowInviteModal(true)}
           className="w-full py-4 rounded-2xl flex items-center justify-center bg-[#00D397] hover:opacity-90 transition-opacity"
         >
-          <UserPlus size={20} color="#292349" />
-          <span className="text-[#292349] font-bold text-base ml-2">Inviter des amis</span>
+          <UserPlus size={20} className="text-btn-fg" />
+          <span className="text-btn-fg font-bold text-base ml-2">Inviter des amis</span>
         </button>
 
         {/* Active Sessions */}
         {activeSessions.length > 0 && (
           <div>
-            <p className="text-white/40 text-[10px] font-bold tracking-widest uppercase mb-2">Session active</p>
+            <p className="text-txt-40 text-[10px] font-bold tracking-widest uppercase mb-2">Session active</p>
             {activeSessions.map((session) => (
               <ActiveSessionCard
                 key={session.id}
@@ -856,7 +856,7 @@ export default function RoomDetailPage() {
         />
 
         {/* Danger zone */}
-        <div className="bg-[#342D5B] rounded-3xl border border-[#3E3666] overflow-hidden">
+        <div className="bg-surface rounded-3xl border border-line overflow-hidden">
           {!isOwner ? (
             <button
               onClick={handleLeaveRoom}
@@ -878,14 +878,14 @@ export default function RoomDetailPage() {
       </div>
 
       {/* ── Bottom action bar (above tab nav) ── */}
-      <div className="fixed bottom-[70px] left-0 right-0 bg-[#292349] border-t border-[#3E3666] px-4 py-3 flex items-center justify-between gap-3 z-40">
+      <div className="fixed bottom-[70px] left-0 right-0 bg-bg border-t border-line px-4 py-3 flex items-center justify-between gap-3 z-40">
         {/* Invite */}
         <button
           onClick={() => setShowInviteModal(true)}
           className="flex flex-col items-center gap-1 flex-1"
         >
           <UserPlus size={22} color="#FFFFFF80" />
-          <span className="text-white/50 text-[10px] font-medium uppercase tracking-wider">Invite</span>
+          <span className="text-txt-60 text-[10px] font-medium uppercase tracking-wider">Invite</span>
         </button>
 
         {/* Start Game — center pill */}
@@ -894,8 +894,8 @@ export default function RoomDetailPage() {
           className="flex items-center gap-2 px-8 py-3.5 rounded-full"
           style={{ background: 'linear-gradient(135deg, #00D397, #00B383)' }}
         >
-          <Play size={18} color="#292349" fill="#292349" />
-          <span className="text-[#292349] font-bold text-sm tracking-wider uppercase">
+          <Play size={18} className="text-btn-fg" fill="currentColor" />
+          <span className="text-btn-fg font-bold text-sm tracking-wider uppercase">
             {hasActiveSession ? 'Rejoindre' : 'Start Game'}
           </span>
         </button>
@@ -906,7 +906,7 @@ export default function RoomDetailPage() {
           className="flex flex-col items-center gap-1 flex-1"
         >
           <History size={22} color="#FFFFFF80" />
-          <span className="text-white/50 text-[10px] font-medium uppercase tracking-wider">Historique</span>
+          <span className="text-txt-60 text-[10px] font-medium uppercase tracking-wider">Historique</span>
         </button>
       </div>
 
@@ -936,15 +936,15 @@ export default function RoomDetailPage() {
             className="absolute inset-0"
             onClick={() => setShowConfigModal(false)}
           />
-          <div className="relative bg-[#292349] rounded-t-3xl w-full max-w-2xl h-full overflow-y-auto overscroll-y-contain" onTouchMove={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between pt-6 pb-4 px-4 border-b border-[#3E3666]">
+          <div className="relative bg-bg rounded-t-3xl w-full max-w-2xl h-full overflow-y-auto overscroll-y-contain" onTouchMove={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between pt-6 pb-4 px-4 border-b border-line">
               <div>
-                <p className="text-white font-bold text-xl">Nouvelle Session</p>
-                <p className="text-white/60 text-xs mt-0.5">Configure ta partie</p>
+                <p className="text-txt font-bold text-xl">Nouvelle Session</p>
+                <p className="text-txt-60 text-xs mt-0.5">Configure ta partie</p>
               </div>
               <button
                 onClick={() => setShowConfigModal(false)}
-                className="w-10 h-10 rounded-full bg-[#342D5B] flex items-center justify-center hover:bg-[#3E3666] transition-colors"
+                className="w-10 h-10 rounded-full bg-surface flex items-center justify-center hover:bg-surface-2 transition-colors"
               >
                 <X size={20} color="#FFFFFF" />
               </button>

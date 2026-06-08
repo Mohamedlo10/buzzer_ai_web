@@ -98,14 +98,14 @@ export default function OnboardingPage() {
   return (
     <div
       className="min-h-screen flex flex-col relative overflow-hidden"
-      style={{ background: 'linear-gradient(to bottom, #292349, #1a1633)' }}
+      style={{ background: 'linear-gradient(to bottom, var(--btn-fg), #1a1633)' }}
     >
       {/* Logo Header */}
       <div className="pt-10 flex justify-center">
         <div className="flex flex-row items-center">
           <Sparkles size={20} color="#FFD700" />
           <span
-            className="text-white text-xl font-bold ml-2"
+            className="text-txt text-xl font-bold ml-2"
             style={{ textShadow: '1px 1px 10px rgba(213,68,47,0.5)' }}
           >
             Quiz By Mouha_Dev
@@ -136,7 +136,7 @@ export default function OnboardingPage() {
           </div>
 
           <h2
-            className="text-white text-4xl font-bold text-center mb-2"
+            className="text-txt text-4xl font-bold text-center mb-2"
             style={{ textShadow: `0 0 20px ${currentSlide.accentColor}` }}
           >
             {currentSlide.title}
@@ -149,7 +149,7 @@ export default function OnboardingPage() {
             {currentSlide.subtitle}
           </p>
 
-          <p className="text-white/70 text-center text-lg leading-7 px-4">
+          <p className="text-txt-60 text-center text-lg leading-7 px-4">
             {currentSlide.description}
           </p>
         </div>
@@ -203,7 +203,7 @@ export default function OnboardingPage() {
               boxShadow: `0 0 20px ${currentSlide.accentColor}80`,
             }}
           >
-            <span className="text-white font-bold text-lg mr-2">S&apos;inscrire</span>
+            <span className="text-txt font-bold text-lg mr-2">S&apos;inscrire</span>
             <ArrowRight size={20} color="#FFFFFF" />
           </button>
 
@@ -217,7 +217,7 @@ export default function OnboardingPage() {
               border: '1px solid rgba(255,255,255,0.15)',
             }}
           >
-            <span className="text-white font-semibold text-lg">Se connecter</span>
+            <span className="text-txt font-semibold text-lg">Se connecter</span>
           </button>
         </div>
       </div>

@@ -106,7 +106,7 @@ export default function AdminSessionDetailPage() {
   if (!session) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
-        <p className="text-white/50">Session introuvable</p>
+        <p className="text-txt-60">Session introuvable</p>
       </div>
     );
   }
@@ -128,7 +128,7 @@ export default function AdminSessionDetailPage() {
           row.rank === 1 ? 'text-[#FFD700]' :
           row.rank === 2 ? 'text-[#C0C0C0]' :
           row.rank === 3 ? 'text-[#CD7F32]' :
-          'text-white/60'
+          'text-txt-60'
         }`}>
           #{row.rank}
         </span>
@@ -139,12 +139,12 @@ export default function AdminSessionDetailPage() {
       header: 'Joueur',
       render: (row) => (
         <div className="flex items-center gap-2">
-          <span className="text-white font-medium">{row.username}</span>
+          <span className="text-txt font-medium">{row.username}</span>
           {row.isManager && (
             <span className="text-xs px-1.5 py-0.5 rounded bg-[#FFD70020] text-[#FFD700]">Manager</span>
           )}
           {row.isSpectator && (
-            <span className="text-xs px-1.5 py-0.5 rounded bg-[#FFFFFF10] text-white/50">Spectateur</span>
+            <span className="text-xs px-1.5 py-0.5 rounded bg-[#FFFFFF10] text-txt-60">Spectateur</span>
           )}
         </div>
       ),
@@ -159,7 +159,7 @@ export default function AdminSessionDetailPage() {
       key: 'joinedAt',
       header: 'Rejoint',
       width: '130px',
-      render: (row) => <span className="text-white/50 text-xs">{formatDate(row.joinedAt)}</span>,
+      render: (row) => <span className="text-txt-60 text-xs">{formatDate(row.joinedAt)}</span>,
     },
   ];
 
@@ -168,14 +168,14 @@ export default function AdminSessionDetailPage() {
       key: 'orderIndex',
       header: '#',
       width: '50px',
-      render: (row) => <span className="text-white/60 text-xs">#{row.orderIndex + 1}</span>,
+      render: (row) => <span className="text-txt-60 text-xs">#{row.orderIndex + 1}</span>,
     },
     {
       key: 'category',
       header: 'Catégorie',
       width: '120px',
       render: (row) => (
-        <span className="text-xs px-2 py-0.5 rounded bg-[#3E3666] text-white/70">{row.category}</span>
+        <span className="text-xs px-2 py-0.5 rounded bg-surface-2 text-txt-60">{row.category}</span>
       ),
     },
     {
@@ -198,7 +198,7 @@ export default function AdminSessionDetailPage() {
       key: 'text',
       header: 'Question',
       render: (row) => (
-        <span className="text-white text-sm line-clamp-2">{row.text}</span>
+        <span className="text-txt text-sm line-clamp-2">{row.text}</span>
       ),
     },
     {
@@ -225,7 +225,7 @@ export default function AdminSessionDetailPage() {
         ) : row.isSkipped ? (
           <span className="text-[#F39C12] text-xs">Passée</span>
         ) : (
-          <span className="text-white/30 text-xs">—</span>
+          <span className="text-txt/30 text-xs">—</span>
         ),
     },
   ];
@@ -237,13 +237,13 @@ export default function AdminSessionDetailPage() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => router.push('/admin/sessions')}
-            className="w-10 h-10 rounded-full bg-[#342D5B] flex items-center justify-center hover:bg-[#3E3666] transition-colors"
+            className="w-10 h-10 rounded-full bg-surface flex items-center justify-center hover:bg-surface-2 transition-colors"
           >
             <ArrowLeft size={20} color="#FFFFFF" />
           </button>
           <div>
             <div className="flex items-center gap-3 flex-wrap">
-              <h1 className="text-white text-2xl font-bold tracking-wider">#{session.code}</h1>
+              <h1 className="text-txt text-2xl font-bold tracking-wider">#{session.code}</h1>
               <span
                 className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold"
                 style={{ backgroundColor: cfg.bg, color: cfg.color }}
@@ -255,11 +255,11 @@ export default function AdminSessionDetailPage() {
                 <span className="text-xs px-2 py-0.5 rounded-full bg-[#4A90D920] text-[#4A90D9]">Équipes</span>
               )}
               {session.isPrivate && (
-                <span className="text-xs px-2 py-0.5 rounded-full bg-[#FFFFFF10] text-white/50">Privée</span>
+                <span className="text-xs px-2 py-0.5 rounded-full bg-[#FFFFFF10] text-txt-60">Privée</span>
               )}
             </div>
-            <p className="text-white/50 text-sm mt-0.5">
-              Manager : <span className="text-white/80">{session.managerUsername}</span>
+            <p className="text-txt-60 text-sm mt-0.5">
+              Manager : <span className="text-txt-60">{session.managerUsername}</span>
               {' · '}
               Créée : {formatDate(session.createdAt)}
             </p>
@@ -280,7 +280,7 @@ export default function AdminSessionDetailPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-[#3E3666]">
+      <div className="flex border-b border-line">
         {([
           ['info', 'Infos', Info],
           ['players', `Joueurs (${session.players.length})`, Users],
@@ -292,7 +292,7 @@ export default function AdminSessionDetailPage() {
             className={`flex items-center gap-2 px-5 py-3 text-sm font-medium transition-colors ${
               activeTab === tab
                 ? 'text-[#00D397] border-b-2 border-[#00D397]'
-                : 'text-white/50 hover:text-white/80'
+                : 'text-txt-60 hover:text-txt-60'
             }`}
           >
             <Icon size={16} />
@@ -378,12 +378,12 @@ export default function AdminSessionDetailPage() {
 function InfoCard({ title, rows }: { title: string; rows: [string, string][] }) {
   return (
     <Card>
-      <h3 className="text-white font-bold mb-3">{title}</h3>
+      <h3 className="text-txt font-bold mb-3">{title}</h3>
       <div className="space-y-2">
         {rows.map(([label, value]) => (
           <div key={label} className="flex justify-between text-sm">
-            <span className="text-white/50">{label}</span>
-            <span className="text-white font-medium">{value}</span>
+            <span className="text-txt-60">{label}</span>
+            <span className="text-txt font-medium">{value}</span>
           </div>
         ))}
       </div>

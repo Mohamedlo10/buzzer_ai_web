@@ -8,39 +8,37 @@ interface CategoryPodiumCardProps {
   categories: CategoryPodium[];
 }
 
-const MEDAL_CONFIG = [
-  { emoji: '🥇', bgColor: 'bg-[#FFD70015]', borderColor: 'border-[#FFD70030]', textColor: 'text-[#FFD700]' },
-  { emoji: '🥈', bgColor: 'bg-[#C0C0C015]', borderColor: 'border-[#C0C0C030]', textColor: 'text-[#C0C0C0]' },
-  { emoji: '🥉', bgColor: 'bg-[#CD7F3215]', borderColor: 'border-[#CD7F3230]', textColor: 'text-[#CD7F32]' },
+const MEDALS = [
+  { emoji: '🥇', color: 'var(--energy)' },
+  { emoji: '🥈', color: 'var(--silver)' },
+  { emoji: '🥉', color: 'var(--bronze)' },
 ];
 
 function CategoryItem({ category, index }: { category: CategoryPodium; index: number }) {
-  const medal = MEDAL_CONFIG[index] || MEDAL_CONFIG[2];
+  const medal = MEDALS[index] || MEDALS[2];
 
   return (
-    <div className={`flex-1 ${medal.bgColor} border ${medal.borderColor} rounded-2xl sm:px-3 px-1 sm:py-3 py-2 flex flex-col items-center`}>
-      {/* Medal */}
-      <span className="text-2xl mb-2">{medal.emoji}</span>
-
-      {/* Category name */}
-      <p className="text-white font-bold text-sm text-center truncate w-full">
-        {category.category.length > 9 ? category.category.slice(0, 9) + '...' : category.category}
+    <div
+      className="flex-1 rounded-2xl px-1.5 py-3.5 flex flex-col items-center gap-0.5"
+      style={{
+        background: `color-mix(in oklab, ${medal.color} 12%, var(--surface))`,
+      }}
+    >
+      <span className="text-2xl mb-0.5">{medal.emoji}</span>
+      <p className="text-txt font-bold text-[12.5px] text-center truncate w-full px-1">
+        {category.category}
       </p>
-
-      {/* Score */}
-      <p className={`${medal.textColor} font-bold text-lg mt-1`}>{category.totalScore}</p>
-      <p className="text-white/40 text-xs">pts</p>
-
-      {/* Win rate */}
-      <div className="flex flex-row items-center mt-2 bg-[#292349] px-2 py-1 rounded-full">
-        <Crosshair size={10} color="#00D397" />
-        <span className="text-[#00D397] text-xs font-semibold ml-1">
+      <p className="font-display font-semibold text-[17px]" style={{ color: medal.color }}>
+        {category.totalScore.toLocaleString('fr-FR')}
+      </p>
+      <p className="text-txt-40 text-[10px]">pts</p>
+      <div className="flex flex-row items-center gap-1 mt-1 bg-bg px-2.5 py-[3px] rounded-full">
+        <Crosshair size={10} className="text-accent" />
+        <span className="text-accent text-[11px] font-semibold">
           {category.winRate.toFixed(0)}%
         </span>
       </div>
-
-      {/* Games played */}
-      <p className="text-white/30 text-xs mt-1.5">{category.gamesPlayed} parties</p>
+      <p className="text-txt-40 text-[10px] mt-1">{category.gamesPlayed} parties</p>
     </div>
   );
 }
@@ -48,15 +46,15 @@ function CategoryItem({ category, index }: { category: CategoryPodium; index: nu
 export function CategoryPodiumCard({ categories }: CategoryPodiumCardProps) {
   if (categories.length === 0) {
     return (
-      <div className="bg-[#342D5B] rounded-2xl border border-[#3E3666] p-6 flex flex-col items-center">
+      <div className="bg-surface border border-line rounded-2xl p-6 flex flex-col items-center">
         <div className="flex flex-row items-center mb-3">
-          <Trophy size={18} color="#FFFFFF" />
-          <p className="text-white font-bold text-base ml-2">Mes meilleures catégories</p>
+          <Trophy size={18} className="text-txt" />
+          <p className="text-txt font-bold text-base ml-2">Mes meilleures catégories</p>
         </div>
-        <div className="w-14 h-14 rounded-full bg-[#3E3666] flex items-center justify-center mb-3">
+        <div className="w-14 h-14 rounded-full bg-surface-2 flex items-center justify-center mb-3">
           <span className="text-2xl">🎯</span>
         </div>
-        <p className="text-white/50 text-sm text-center">
+        <p className="text-txt-60 text-sm text-center">
           Jouez votre première partie pour voir vos catégories favorites !
         </p>
       </div>
@@ -64,15 +62,15 @@ export function CategoryPodiumCard({ categories }: CategoryPodiumCardProps) {
   }
 
   return (
-    <div className="bg-[#342D5B] rounded-2xl border border-[#3E3666] p-4">
+    <div className="bg-surface border border-line rounded-2xl p-4">
       {/* Header */}
       <div className="flex flex-row items-center mb-4">
-        <Trophy size={18} color="#FFD700" />
-        <p className="text-white font-bold text-base ml-2">Mes meilleures catégories</p>
+        <Trophy size={18} className="text-energy" />
+        <p className="text-txt font-bold text-base ml-2">Mes meilleures catégories</p>
       </div>
 
       {/* Podium */}
-      <div className="flex flex-row gap-2">
+      <div className="flex flex-row gap-[9px]">
         {categories.map((cat, index) => (
           <CategoryItem key={cat.category} category={cat} index={index} />
         ))}
@@ -81,10 +79,10 @@ export function CategoryPodiumCard({ categories }: CategoryPodiumCardProps) {
           Array.from({ length: 3 - categories.length }).map((_, i) => (
             <div
               key={`empty-${i}`}
-              className="flex-1 bg-[#3E366620] border border-dashed border-[#3E366640] rounded-2xl p-3 flex flex-col items-center justify-center"
+              className="flex-1 bg-surface-2/20 border border-dashed border-surface-2/50 rounded-2xl p-3 flex flex-col items-center justify-center"
             >
-              <span className="text-white/20 text-2xl mb-1">?</span>
-              <span className="text-white/20 text-xs text-center">À découvrir</span>
+              <span className="text-txt-25 text-2xl mb-1">?</span>
+              <span className="text-txt-25 text-xs text-center">À découvrir</span>
             </div>
           ))}
       </div>

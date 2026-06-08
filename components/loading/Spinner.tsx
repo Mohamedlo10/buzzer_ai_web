@@ -12,11 +12,9 @@ export function Spinner({ size = 'small', text, className = '' }: SpinnerProps) 
   return (
     <div className={`flex flex-row items-center justify-center ${className}`}>
       <div
-        className={`${spinnerSize} border-[#00D397] border-t-transparent rounded-full animate-spin ${text ? 'mr-2' : ''}`}
+        className={`${spinnerSize} border-accent border-t-transparent rounded-full animate-spin ${text ? 'mr-2' : ''}`}
       />
-      {text && (
-        <span className="text-white/80 text-sm font-medium ml-2">{text}</span>
-      )}
+      {text && <span className="text-txt-60 text-sm font-medium ml-2">{text}</span>}
     </div>
   );
 }
@@ -27,14 +25,11 @@ interface FullScreenLoaderProps {
 
 export function FullScreenLoader({ text = 'Chargement...' }: FullScreenLoaderProps) {
   return (
-    <div className="flex-1 min-h-screen bg-[#292349] flex items-center justify-center flex-col">
-      <div
-        className="w-24 h-24 rounded-full flex items-center justify-center mb-4"
-        style={{ background: 'linear-gradient(135deg, #00D39720, #D5442F20)' }}
-      >
-        <div className="w-10 h-10 border-4 border-[#00D397] border-t-transparent rounded-full animate-spin" />
+    <div className="flex-1 min-h-screen bg-bg flex items-center justify-center flex-col">
+      <div className="w-24 h-24 rounded-full flex items-center justify-center mb-4 bg-gradient-to-br from-accent/20 to-buzz/20">
+        <div className="w-10 h-10 border-4 border-accent border-t-transparent rounded-full animate-spin" />
       </div>
-      <p className="text-white font-semibold text-lg">{text}</p>
+      <p className="text-txt font-semibold text-lg">{text}</p>
     </div>
   );
 }

@@ -32,7 +32,7 @@ export function AdminHeader() {
   const crumbs = getBreadcrumbs(pathname);
 
   return (
-    <header className="flex items-center justify-between h-16 px-6 bg-[#1E1A40] border-b border-[#3E3666]">
+    <header className="flex items-center justify-between h-16 px-6 bg-bg-deep border-b border-line">
       {/* Breadcrumb */}
       <nav className="flex items-center gap-2 text-sm">
         {crumbs.map((crumb, i) => (
@@ -40,7 +40,7 @@ export function AdminHeader() {
             {i > 0 && <ChevronRight size={14} color="#FFFFFF40" />}
             <Link
               href={crumb.href}
-              className={`${i === crumbs.length - 1 ? 'text-white font-semibold' : 'text-white/50 hover:text-white'} transition-colors`}
+              className={`${i === crumbs.length - 1 ? 'text-txt font-semibold' : 'text-txt-60 hover:text-txt'} transition-colors`}
             >
               {crumb.label}
             </Link>
@@ -50,7 +50,7 @@ export function AdminHeader() {
 
       {/* Right */}
       <div className="flex items-center gap-4">
-        <button className="relative text-white/50 hover:text-white transition-colors">
+        <button className="relative text-txt-60 hover:text-txt transition-colors">
           <Bell size={20} />
           <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full" />
         </button>

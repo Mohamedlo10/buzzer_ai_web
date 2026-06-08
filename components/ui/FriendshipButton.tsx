@@ -25,8 +25,8 @@ export function FriendshipButton({
   // Already friends - show checkmark
   if (status === 'ACCEPTED') {
     return (
-      <div className={`${buttonSize} rounded-full bg-[#00D39720] flex items-center justify-center`}>
-        <UserCheck size={iconSize} color="#00D397" />
+      <div className={`${buttonSize} rounded-full bg-accent/15 flex items-center justify-center`}>
+        <UserCheck size={iconSize} className="text-accent" />
       </div>
     );
   }
@@ -34,8 +34,8 @@ export function FriendshipButton({
   // Pending request - show clock
   if (status === 'PENDING') {
     return (
-      <div className={`${buttonSize} rounded-full bg-[#F39C1220] flex items-center justify-center`}>
-        <Clock size={iconSize} color="#F39C12" />
+      <div className={`${buttonSize} rounded-full bg-warn/15 flex items-center justify-center`}>
+        <Clock size={iconSize} className="text-warn" />
       </div>
     );
   }
@@ -43,8 +43,8 @@ export function FriendshipButton({
   // Declined or Blocked - show disabled state
   if (status === 'DECLINED' || status === 'BLOCKED') {
     return (
-      <div className={`${buttonSize} rounded-full bg-[#3E3666] flex items-center justify-center`}>
-        <UserX size={iconSize} color="#FFFFFF40" />
+      <div className={`${buttonSize} rounded-full bg-surface-2 flex items-center justify-center`}>
+        <UserX size={iconSize} className="text-txt-40" />
       </div>
     );
   }
@@ -53,9 +53,9 @@ export function FriendshipButton({
   return (
     <button
       onClick={onAddFriend}
-      className={`${buttonSize} rounded-full bg-[#00D397] flex items-center justify-center hover:bg-[#00D39730] transition-colors cursor-pointer`}
+      className={`${buttonSize} rounded-full bg-accent flex items-center justify-center hover:opacity-90 transition-opacity cursor-pointer`}
     >
-      <UserPlus size={iconSize} color="#00412e" />
+      <UserPlus size={iconSize} className="text-btn-fg" />
     </button>
   );
 }

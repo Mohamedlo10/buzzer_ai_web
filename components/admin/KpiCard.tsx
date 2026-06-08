@@ -16,7 +16,7 @@ interface KpiCardProps {
 export function KpiCard({ title, value, icon: Icon, iconColor, iconBg, change, changeLabel }: KpiCardProps) {
   const isPositive = change != null && change >= 0;
   return (
-    <div className="bg-[#342D5B] rounded-2xl p-5 border border-[#3E3666]">
+    <div className="bg-surface rounded-2xl p-5 border border-line">
       <div className="flex items-start justify-between mb-4">
         <div
           className="w-11 h-11 rounded-xl flex items-center justify-center"
@@ -31,9 +31,9 @@ export function KpiCard({ title, value, icon: Icon, iconColor, iconBg, change, c
           </div>
         )}
       </div>
-      <p className="text-white text-2xl font-bold">{value}</p>
-      <p className="text-white/50 text-sm mt-1">{title}</p>
-      {changeLabel && <p className="text-white/30 text-xs mt-0.5">{changeLabel}</p>}
+      <p className="text-txt text-2xl font-bold">{value}</p>
+      <p className="text-txt-60 text-sm mt-1">{title}</p>
+      {changeLabel && <p className="text-txt/30 text-xs mt-0.5">{changeLabel}</p>}
     </div>
   );
 }

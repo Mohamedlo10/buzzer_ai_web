@@ -29,122 +29,46 @@ export function ConfirmModal({
 
   return (
     <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        background: 'rgba(9,6,28,0.88)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 100,
-        padding: 24,
-      }}
+      className="fixed inset-0 bg-scrim flex items-center justify-center z-[100] p-6 backdrop-blur-sm"
       onClick={onCancel}
     >
       <div
-        style={{
-          width: '100%',
-          maxWidth: 340,
-          borderRadius: 24,
-          background: '#342D5B',
-          border: '1px solid #4E4676',
-          overflow: 'hidden',
-          boxShadow: '0 24px 64px rgba(0,0,0,0.5)',
-        }}
+        className="w-full max-w-[340px] rounded-3xl bg-surface border border-line overflow-hidden shadow-2xl animate-[pop_.3s_ease-out_both]"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Icon + Title */}
-        <div
-          style={{
-            padding: '22px 22px 16px',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            textAlign: 'center',
-            borderBottom: '1px solid #3E3666',
-          }}
-        >
+        <div className="px-[22px] pt-[22px] pb-4 flex flex-col items-center text-center border-b border-line">
           {icon && (
             <div
+              className="w-[54px] h-[54px] rounded-2xl flex items-center justify-center mb-3.5"
               style={{
-                width: 54,
-                height: 54,
-                borderRadius: 16,
                 background: `${confirmColor}18`,
                 border: `1px solid ${confirmColor}30`,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginBottom: 14,
               }}
             >
               {icon}
             </div>
           )}
-          <p
-            style={{
-              color: '#E8E8F0',
-              fontWeight: 700,
-              fontSize: 17,
-              margin: 0,
-              letterSpacing: 0.3,
-            }}
-          >
-            {title}
-          </p>
+          <p className="text-txt font-bold text-[17px] tracking-wide">{title}</p>
         </div>
 
-        {/* Message */}
-        <div style={{ padding: '16px 22px 20px' }}>
-          <p
-            style={{
-              color: '#E8E8F080',
-              fontSize: 14,
-              lineHeight: 1.55,
-              margin: 0,
-              textAlign: 'center',
-            }}
-          >
-            {message}
-          </p>
+        <div className="px-[22px] py-4 pb-5">
+          <p className="text-txt-60 text-sm leading-relaxed text-center">{message}</p>
         </div>
 
-        {/* Actions */}
-        <div
-          style={{
-            display: 'flex',
-            gap: 10,
-            padding: '0 18px 18px',
-          }}
-        >
+        <div className="flex gap-2.5 px-[18px] pb-[18px]">
           <button
             onClick={onCancel}
-            style={{
-              flex: 1,
-              padding: '13px 0',
-              borderRadius: 14,
-              background: '#3E3666',
-              border: '1px solid #4E4676',
-              color: '#e8e8f0d2',
-              fontWeight: 600,
-              fontSize: 14,
-              cursor: 'pointer',
-            }}
+            className="flex-1 py-3 rounded-[14px] bg-surface-2 border border-line text-txt-60 font-semibold text-sm hover:bg-surface-2/80 transition-colors cursor-pointer"
           >
             {cancelLabel}
           </button>
           <button
             onClick={onConfirm}
+            className="flex-1 py-3 rounded-[14px] font-bold text-sm transition-colors cursor-pointer"
             style={{
-              flex: 1,
-              padding: '13px 0',
-              borderRadius: 14,
               background: `${confirmColor}18`,
               border: `1px solid ${confirmColor}60`,
               color: confirmColor,
-              fontWeight: 700,
-              fontSize: 14,
-              cursor: 'pointer',
             }}
           >
             {confirmLabel}

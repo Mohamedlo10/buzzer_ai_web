@@ -123,16 +123,16 @@ export default function FriendsPage() {
     <>
       {friends.length === 0 ? (
         <Card className="flex flex-col items-center py-12">
-          <Users size={48} color="#FFFFFF40" className="mb-4" />
-          <p className="text-white/60 text-center mb-2">Aucun ami</p>
-          <p className="text-white/40 text-center text-sm px-8 mb-4">
+          <Users size={48} className="text-txt-40 mb-4" />
+          <p className="text-txt-60 text-center mb-2">Aucun ami</p>
+          <p className="text-txt-40 text-center text-sm px-8 mb-4">
             Ajoutez des amis pour jouer ensemble et suivre leurs activités
           </p>
           <button
             onClick={() => setActiveTab('search')}
-            className="bg-[#00D397] px-6 py-3 rounded-xl hover:opacity-90 transition-opacity cursor-pointer"
+            className="bg-accent px-6 py-3 rounded-xl hover:opacity-90 transition-opacity cursor-pointer"
           >
-            <span className="text-[#292349] font-bold">Rechercher des amis</span>
+            <span className="text-btn-fg font-bold">Rechercher des amis</span>
           </button>
         </Card>
       ) : (
@@ -147,7 +147,7 @@ export default function FriendsPage() {
     <>
       {pendingRequests.length > 0 && (
         <div className="mb-4">
-          <p className="text-white/60 text-sm font-medium mb-3 uppercase tracking-wide">
+          <p className="text-txt-60 text-sm font-medium mb-3 uppercase tracking-wide">
             Demandes reçues ({pendingRequests.length})
           </p>
           {pendingRequests.map((request) => (
@@ -164,7 +164,7 @@ export default function FriendsPage() {
 
       {storeSentRequests.length > 0 && (
         <div>
-          <p className="text-white/60 text-sm font-medium mb-3 uppercase tracking-wide">
+          <p className="text-txt-60 text-sm font-medium mb-3 uppercase tracking-wide">
             Demandes envoyées ({storeSentRequests.length})
           </p>
           {storeSentRequests.map((request) => (
@@ -180,8 +180,8 @@ export default function FriendsPage() {
 
       {pendingRequests.length === 0 && storeSentRequests.length === 0 && (
         <Card className="flex flex-col items-center py-12">
-          <UserPlus size={48} color="#FFFFFF40" className="mb-4" />
-          <p className="text-white/60 text-center">Aucune demande en attente</p>
+          <UserPlus size={48} className="text-txt-40 mb-4" />
+          <p className="text-txt-60 text-center">Aucune demande en attente</p>
         </Card>
       )}
     </>
@@ -191,22 +191,22 @@ export default function FriendsPage() {
     <>
       <Card className="mb-4">
         <div className="flex flex-row items-center">
-          <Search size={20} color="#FFFFFF60" className="mr-3 shrink-0" />
+          <Search size={20} className="text-txt-60 mr-3 shrink-0" />
           <input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Rechercher un utilisateur..."
-            className="flex-1 bg-transparent text-white py-3 focus:outline-none placeholder-white/40"
+            className="flex-1 bg-transparent text-txt py-3 focus:outline-none placeholder:text-txt-40"
           />
           {isSearching && (
-            <div className="w-4 h-4 border-2 border-[#00D397] border-t-transparent rounded-full animate-spin mr-2" />
+            <div className="w-4 h-4 border-2 border-accent border-t-transparent rounded-full animate-spin mr-2" />
           )}
           {searchQuery.length > 0 && !isSearching && (
             <button
               onClick={() => setSearchQuery('')}
               className="ml-2 hover:opacity-70 transition-opacity cursor-pointer"
             >
-              <X size={18} color="#FFFFFF60" />
+              <X size={18} className="text-txt-60" />
             </button>
           )}
         </div>
@@ -214,7 +214,7 @@ export default function FriendsPage() {
 
       {searchResults.length > 0 && (
         <div>
-          <p className="text-white/60 text-sm font-medium mb-3 uppercase tracking-wide">
+          <p className="text-txt-60 text-sm font-medium mb-3 uppercase tracking-wide">
             Résultats ({searchResults.length})
           </p>
           {searchResults.map((user) => {
@@ -231,25 +231,25 @@ export default function FriendsPage() {
                     <Avatar avatarUrl={user.avatarUrl} username={user.username} size={48} />
                   </div>
                   <div className="flex-1">
-                    <p className="text-white font-semibold">{user.username}</p>
-                    <p className="text-white/50 text-sm">
+                    <p className="text-txt font-semibold">{user.username}</p>
+                    <p className="text-txt-60 text-sm">
                       {isFriend ? 'Déjà ami' : hasPendingRequest ? 'Demande reçue' : isSent ? 'Demande envoyée' : ''}
                     </p>
                   </div>
                   {isFriend ? (
-                    <div className="px-3 py-1.5 rounded-lg bg-[#00D39720]">
-                      <span className="text-[#00D397] text-sm">Ami</span>
+                    <div className="px-3 py-1.5 rounded-lg bg-accent/15">
+                      <span className="text-accent text-sm">Ami</span>
                     </div>
                   ) : isSent || hasPendingRequest ? (
-                    <div className="px-3 py-1.5 rounded-lg bg-[#3E3666]">
-                      <span className="text-white/60 text-sm">En attente</span>
+                    <div className="px-3 py-1.5 rounded-lg bg-surface-2">
+                      <span className="text-txt-60 text-sm">En attente</span>
                     </div>
                   ) : (
                     <button
                       onClick={() => handleSendRequest(user.id)}
-                      className="px-4 py-2 rounded-lg bg-[#00D397] hover:opacity-90 transition-opacity cursor-pointer"
+                      className="px-4 py-2 rounded-lg bg-accent hover:opacity-90 transition-opacity cursor-pointer"
                     >
-                      <span className="text-[#292349] font-medium">Ajouter</span>
+                      <span className="text-btn-fg font-medium">Ajouter</span>
                     </button>
                   )}
                 </div>
@@ -261,7 +261,7 @@ export default function FriendsPage() {
 
       {searchResults.length === 0 && searchQuery.length > 0 && !isSearching && (
         <Card className="flex flex-col items-center py-8">
-          <p className="text-white/50 text-center">
+          <p className="text-txt-60 text-center">
             Aucun utilisateur trouvé pour &ldquo;{searchQuery}&rdquo;
           </p>
         </Card>
@@ -270,26 +270,26 @@ export default function FriendsPage() {
   );
 
   return (
-    <SafeScreen className="bg-[#292349]">
+    <SafeScreen>
       {/* Header */}
       <div className="px-4 pt-4 pb-4">
         <div className="flex flex-row items-center justify-between mb-4">
-          <p className="text-white font-bold text-2xl">Amis</p>
+          <p className="text-txt font-bold text-2xl font-display">Amis</p>
         </div>
 
         {/* Tabs */}
-        <div className="flex flex-row bg-[#342D5B] rounded-xl p-1">
+        <div className="flex flex-row bg-surface rounded-xl p-1">
           {(['friends', 'requests', 'search'] as TabType[]).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={`flex-1 py-2 rounded-lg flex items-center justify-center transition-colors cursor-pointer ${
-                activeTab === tab ? 'bg-[#00D397]' : 'hover:bg-white/5'
+                activeTab === tab ? 'bg-accent' : 'hover:bg-surface-2'
               }`}
             >
               <span
                 className={`font-medium text-sm ${
-                  activeTab === tab ? 'text-[#292349]' : 'text-white/60'
+                  activeTab === tab ? 'text-btn-fg' : 'text-txt-60'
                 }`}
               >
                 {tab === 'friends' && 'Amis'}

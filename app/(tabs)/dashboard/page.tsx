@@ -37,26 +37,31 @@ function QuickActionButton({
   label,
   sublabel,
   onClick,
-  bgColor,
+  background,
+  textColor = '#FFFFFF',
 }: {
   icon: React.ComponentType<{ size: number; color: string }>;
   label: string;
   sublabel?: string;
   onClick: () => void;
-  bgColor: string;
+  background: string;
+  textColor?: string;
 }) {
   return (
     <button
       onClick={onClick}
-      className="flex-1 sm:rounded-2xl rounded-lg overflow-hidden hover:opacity-90 active:opacity-80 transition-opacity cursor-pointer"
+      className="flex-1 rounded-2xl overflow-hidden hover:opacity-90 active:opacity-80 transition-opacity cursor-pointer"
     >
-      <div className={`p-1 py-3 ${bgColor}`}>
-        <div className="sm:w-11 w-9 h-9 sm:h-11 rounded-xl bg-white/20 flex items-center justify-center ml-2 mb-3">
-          <Icon size={20} color="#FFFFFF" />
+      <div className="px-3 pt-3 pb-3.5 h-full" style={{ background }}>
+        <div
+          className="w-[38px] h-[38px] rounded-[11px] bg-white/20 flex items-center justify-center mb-3"
+          style={{ color: textColor }}
+        >
+          <Icon size={20} color={textColor} />
         </div>
-        <p className="text-white font-bold text-xs sm:text-sm">{label}</p>
+        <p className="font-bold text-sm" style={{ color: textColor }}>{label}</p>
         {sublabel && (
-          <p className="text-white/70 text-xs mt-0.5">{sublabel}</p>
+          <p className="text-xs mt-0.5" style={{ color: textColor, opacity: 0.72 }}>{sublabel}</p>
         )}
       </div>
     </button>
@@ -70,8 +75,8 @@ function QuickActionButton({
 function SectionHeader({ title, emoji }: { title: string; emoji?: string }) {
   return (
     <div className="flex flex-row items-center mb-3">
-      {emoji && <span className="text-lg mr-2">{emoji}</span>}
-      <p className="text-white font-bold text-lg">{title}</p>
+      {emoji && <span className="text-[17px] mr-2">{emoji}</span>}
+      <p className="text-txt font-display font-semibold text-[17px] tracking-[-0.01em]">{title}</p>
     </div>
   );
 }
@@ -94,18 +99,19 @@ function EmptyState({
   onAction?: () => void;
 }) {
   return (
-    <div className="bg-[#342D5B] rounded-2xl border border-[#3E3666] p-6 flex flex-col items-center">
-      <div className="w-16 h-16 rounded-full bg-[#3E3666] flex items-center justify-center mb-3">
+    <div className="bg-surface border border-line rounded-2xl p-6 flex flex-col items-center">
+      <div className="w-16 h-16 rounded-full bg-surface-2 flex items-center justify-center mb-3">
         <span className="text-3xl">{emoji}</span>
       </div>
-      <p className="text-white font-semibold text-base mb-1">{title}</p>
-      <p className="text-white/50 text-sm text-center mb-4 px-4">{subtitle}</p>
+      <p className="text-txt font-semibold text-base mb-1">{title}</p>
+      <p className="text-txt-60 text-sm text-center mb-4 px-4">{subtitle}</p>
       {actionLabel && onAction && (
         <button
           onClick={onAction}
-          className="bg-[#00D397] px-6 py-3 rounded-xl hover:opacity-90 transition-opacity cursor-pointer"
+          className="px-6 py-3 rounded-xl hover:opacity-90 transition-opacity cursor-pointer"
+          style={{ background: 'linear-gradient(135deg, #00D397, #00B383)' }}
         >
-          <span className="text-[#292349] font-bold text-sm">{actionLabel}</span>
+          <span className="text-btn-fg font-bold text-sm">{actionLabel}</span>
         </button>
       )}
     </div>
@@ -143,7 +149,11 @@ function JoinModal({
   const handleJoin = async () => {
     const trimmedCode = code.trim().toUpperCase();
     if (!trimmedCode) {
-      setError('Le code est requis');
+      setError('Le code est requis pour rejoindre.');
+      return;
+    }
+    if (trimmedCode.replace(/[^A-Z0-9]/g, '').length < 4) {
+      setError('Code trop court — vérifie les caractères saisis.');
       return;
     }
 
@@ -291,45 +301,47 @@ function JoinModal({
         onScan={handleQRScan}
       />
     <div
-      className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-5"
+      className="fixed inset-0 bg-scrim backdrop-blur-sm flex items-center justify-center z-50 p-5 animate-[fadein_.2s_ease-out_both]"
       onClick={handleClose}
       style={{ display: visible && !showScanner ? undefined : 'none' }}
     >
       <div
-        className="w-full max-w-sm bg-[#342D5B] rounded-3xl border border-[#3E3666] overflow-hidden"
+        className="w-full max-w-[340px] bg-surface border border-line rounded-3xl overflow-hidden animate-[pop_.3s_ease-out_both]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex flex-row items-center justify-between px-5 pt-5 pb-3">
-          <p className="text-white font-bold text-xl">Rejoindre</p>
+        <div className="flex flex-row items-center justify-between px-[18px] pt-[18px] pb-2.5">
+          <p className="text-txt font-display font-semibold text-xl">Rejoindre</p>
           <button
             onClick={handleClose}
-            className="w-9 h-9 rounded-full bg-[#292349] flex items-center justify-center hover:opacity-80 transition-opacity cursor-pointer"
+            className="w-[34px] h-[34px] rounded-full bg-bg flex items-center justify-center text-txt-60 hover:bg-surface-2 transition-colors cursor-pointer"
           >
-            <X size={18} color="#FFFFFF80" />
+            <X size={17} />
           </button>
         </div>
 
-        {/* Info text */}
-        <div className="px-5 mb-4">
-          <div className="bg-[#292349] rounded-xl p-3">
-            <p className="text-white/50 text-xs text-center leading-4">
-              Entrez le code de la partie (6 chiffres) ou de la salle permanente pour la rejoindre.
+        {/* Info text — guidage */}
+        <div className="px-[18px] pb-3.5">
+          <div className="bg-bg rounded-xl px-3 py-2.5">
+            <p className="text-txt-60 text-[11.5px] text-center leading-[1.5]">
+              Entre le code de la partie (6 chiffres) ou de la salle permanente pour la rejoindre.
             </p>
           </div>
         </div>
 
         {/* Code Input */}
-        <div className="px-5 mb-3">
-          <p className="text-white font-medium mb-2">Code secret</p>
+        <div className="px-[18px] pb-1.5">
+          <p className="text-txt font-semibold text-[13px] mb-2">Code secret</p>
           <input
             value={code}
             onChange={(e) => {
-              setCode(e.target.value.toUpperCase());
+              setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, ''));
               setError(null);
             }}
             placeholder="Ex: ABC123"
-            className="w-full bg-[#292349] rounded-xl px-4 py-3.5 text-white text-center text-xl font-bold tracking-widest border border-[#3E3666] focus:border-[#00D397] focus:outline-none"
+            className={`w-full bg-bg rounded-[14px] px-4 py-3.5 text-txt text-center font-display font-semibold text-[22px] tracking-[0.16em] border-[1.5px] outline-none transition-colors focus:border-accent ${
+              error ? 'border-buzz' : 'border-line'
+            }`}
             maxLength={20}
             autoCapitalize="characters"
             autoComplete="off"
@@ -338,47 +350,47 @@ function JoinModal({
           />
         </div>
 
-        {/* Error */}
+        {/* Error — qualité du message + piste de correction (B&S) */}
         {error && (
-          <div className="px-5 mb-3">
-            <div className="p-3 bg-[#D5442F20] rounded-xl border border-[#D5442F40]">
-              <p className="text-[#D5442F] text-center text-sm font-medium">{error}</p>
+          <div className="px-[18px] pt-2.5">
+            <div className="flex items-start gap-2 px-3 py-2.5 rounded-xl bg-buzz/10 border border-buzz/30">
+              <X size={14} className="text-buzz shrink-0 mt-0.5" />
+              <p className="text-buzz-h text-[12.5px] font-semibold leading-[1.4]">{error}</p>
             </div>
           </div>
         )}
 
         {/* Submit Button */}
-        <div className="px-5 pb-3 pt-1">
+        <div className="px-[18px] pt-3.5 pb-2">
           <button
             onClick={handleJoin}
             disabled={isJoining || !code.trim()}
-            className={`w-full py-4 rounded-2xl flex items-center justify-center transition-opacity cursor-pointer ${
+            className="w-full py-4 rounded-2xl flex items-center justify-center gap-2 font-bold text-base transition-opacity cursor-pointer disabled:cursor-not-allowed"
+            style={
               isJoining || !code.trim()
-                ? 'bg-[#3E3666] cursor-not-allowed'
-                : 'bg-[#D5442F] hover:bg-[#B53A28]'
-            }`}
+                ? { background: 'var(--surface-2)', color: 'var(--txt-40)' }
+                : { background: 'linear-gradient(135deg, #FF5C44, #D5442F)', color: '#FFFFFF' }
+            }
           >
             {isJoining ? (
-              <Spinner text="Connexion..." />
+              <Spinner text="Connexion…" />
             ) : (
-              <span className="font-bold text-lg text-white">Rejoindre</span>
+              'Rejoindre'
             )}
           </button>
         </div>
 
-          {/* QR Scanner Button */}
-        <div className="px-5 pb-5">
+        {/* QR Scanner Button */}
+        <div className="px-[18px] pb-[18px]">
           <button
             onClick={() => setShowScanner(true)}
             disabled={isJoining}
-            className="w-full py-3.5 rounded-2xl flex items-center justify-center gap-2 bg-[#292349] border border-[#3E3666] hover:bg-[#3E3666] transition-colors cursor-pointer"
+            className="w-full py-3.5 rounded-2xl flex items-center justify-center gap-2 bg-surface border border-line hover:bg-surface-2 transition-colors cursor-pointer"
           >
-            <QrCode size={18} color="#00D397" />
-            <span className="text-white/80 font-medium">Scanner un QR code</span>
+            <QrCode size={18} className="text-accent" />
+            <span className="text-accent font-medium text-sm">Scanner un QR code</span>
           </button>
         </div>
-
-      
       </div>
     </div>
     </>
@@ -403,7 +415,7 @@ export default function DashboardPage() {
 
   if (isLoading) {
     return (
-      <SafeScreen className="bg-[#292349] flex items-center justify-center">
+      <SafeScreen className="bg-bg flex items-center justify-center">
         <Spinner size="large" text="Chargement du dashboard..." />
       </SafeScreen>
     );
@@ -411,18 +423,19 @@ export default function DashboardPage() {
 
   if (isError || !data) {
     return (
-      <SafeScreen className="bg-[#292349]">
+      <SafeScreen className="bg-bg">
         <div className="flex flex-col flex-1 items-center justify-center px-4 min-h-screen">
-          <div className="w-16 h-16 rounded-full bg-[#3E3666] flex items-center justify-center mb-4">
+          <div className="w-16 h-16 rounded-full bg-surface-2 flex items-center justify-center mb-4">
             <span className="text-3xl">😵</span>
           </div>
-          <p className="text-[#D5442F] text-lg font-semibold mb-2">Erreur de chargement</p>
-          <p className="text-white/60 text-center mb-4">Impossible de charger le dashboard</p>
+          <p className="text-buzz text-lg font-semibold mb-2">Erreur de chargement</p>
+          <p className="text-txt-60 text-center mb-4">Impossible de charger le dashboard</p>
           <button
             onClick={() => refetch()}
-            className="bg-[#00D397] px-6 py-3 rounded-xl hover:opacity-90 transition-opacity cursor-pointer"
+            className="px-6 py-3 rounded-xl hover:opacity-90 transition-opacity cursor-pointer"
+            style={{ background: 'linear-gradient(135deg, #00D397, #00B383)' }}
           >
-            <span className="text-[#292349] font-bold">Réessayer</span>
+            <span className="text-btn-fg font-bold">Réessayer</span>
           </button>
         </div>
       </SafeScreen>
@@ -432,35 +445,36 @@ export default function DashboardPage() {
   const pendingTotal = (data.pendingInvitations || 0) + (data.pendingFriendRequests || 0);
 
   return (
-    <SafeScreen className="bg-[#292349]">
+    <SafeScreen className="bg-bg">
       <DashboardHeader notificationCount={pendingTotal} />
 
       <div className="overflow-y-auto">
         <WelcomeSection />
 
-        {/* ── Quick Actions ── */}
+        {/* ── Quick Actions — contrôle explicite, signifiance (B&S) ── */}
         <div className="px-4 mb-5">
           <div className="flex flex-row gap-3">
             <QuickActionButton
               icon={Plus}
               label="Créer"
-              sublabel="Créer une salle"
+              sublabel="Une salle"
               onClick={() => router.push('/room/create')}
-              bgColor="bg-[#00D397]"
+              background="linear-gradient(140deg, #00D397, #00B383)"
             />
             <QuickActionButton
               icon={LogIn}
               label="Rejoindre"
-              sublabel="Entrer un code"
+              sublabel="Un code"
               onClick={() => setShowJoinModal(true)}
-              bgColor="bg-[#D5442F]"
+              background="linear-gradient(140deg, #FF5C44, #D5442F)"
             />
             <QuickActionButton
               icon={FolderOpen}
               label="Salles"
-              sublabel="Voir mes salles"
+              sublabel="Mes salles"
               onClick={() => router.push('/rooms')}
-              bgColor="bg-[#342D5B]"
+              background="var(--surface)"
+              textColor="var(--txt)"
             />
           </div>
         </div>

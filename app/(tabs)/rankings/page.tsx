@@ -41,18 +41,18 @@ function RankingInfoModal({ onClose }: { onClose: () => void }) {
       onClick={onClose}
     >
       <div
-        className="bg-[#1E1A40] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg max-h-[90vh] overflow-y-auto pb-12 border border-[#3E3666]"
+        className="bg-bg-deep rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg max-h-[90vh] overflow-y-auto pb-12 border border-line"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal header */}
-        <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-[#3E3666]">
+        <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-line">
           <div className="flex items-center gap-2">
             <Trophy size={20} color="#FFD700" />
-            <span className="text-white font-bold text-base">Comment fonctionne le classement ?</span>
+            <span className="text-txt font-bold text-base">Comment fonctionne le classement ?</span>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-[#3E3666] flex items-center justify-center hover:bg-[#4E4676] transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-full bg-surface-2 flex items-center justify-center hover:bg-surface-2 transition-colors cursor-pointer"
           >
             <X size={16} color="#FFFFFF" />
           </button>
@@ -60,7 +60,7 @@ function RankingInfoModal({ onClose }: { onClose: () => void }) {
 
         {/* Modal body */}
         <div className="px-5 py-4 space-y-4">
-          <p className="text-white/70 text-sm leading-relaxed">
+          <p className="text-txt-60 text-sm leading-relaxed">
             Le classement utilise le système <span className="text-[#9B59B6] font-semibold">Glicko-2</span>, un algorithme
             de classement relatif (comme aux échecs). Il évalue ta force par rapport à tes adversaires,
             pas par rapport à un barème de points fixe.
@@ -69,34 +69,34 @@ function RankingInfoModal({ onClose }: { onClose: () => void }) {
           {/* Comment ça marche */}
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <div className="h-px flex-1 bg-[#3E3666]" />
-              <span className="text-white/50 text-xs font-medium uppercase tracking-wider">Comment ça marche</span>
-              <div className="h-px flex-1 bg-[#3E3666]" />
+              <div className="h-px flex-1 bg-surface-2" />
+              <span className="text-txt-60 text-xs font-medium uppercase tracking-wider">Comment ça marche</span>
+              <div className="h-px flex-1 bg-surface-2" />
             </div>
 
             <div className="space-y-3">
-              <div className="bg-[#342D5B] rounded-xl p-4">
+              <div className="bg-surface rounded-xl p-4">
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-lg">🎯</span>
-                  <span className="text-white font-semibold text-sm">Rating (1500 = moyenne)</span>
+                  <span className="text-txt font-semibold text-sm">Rating (1500 = moyenne)</span>
                 </div>
-                <p className="text-white/50 text-xs ml-7">Ton score principal. Il monte quand tu bats des joueurs forts, baisse quand tu perds contre des joueurs faibles.</p>
+                <p className="text-txt-60 text-xs ml-7">Ton score principal. Il monte quand tu bats des joueurs forts, baisse quand tu perds contre des joueurs faibles.</p>
               </div>
 
-              <div className="bg-[#342D5B] rounded-xl p-4">
+              <div className="bg-surface rounded-xl p-4">
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-lg">📊</span>
-                  <span className="text-white font-semibold text-sm">Deviation (incertitude)</span>
+                  <span className="text-txt font-semibold text-sm">Deviation (incertitude)</span>
                 </div>
-                <p className="text-white/50 text-xs ml-7">Élevée au début (~350), elle diminue au fil des parties. Un joueur bien établi bouge moins vite qu&apos;un nouveau.</p>
+                <p className="text-txt-60 text-xs ml-7">Élevée au début (~350), elle diminue au fil des parties. Un joueur bien établi bouge moins vite qu&apos;un nouveau.</p>
               </div>
 
-              <div className="bg-[#342D5B] rounded-xl p-4">
+              <div className="bg-surface rounded-xl p-4">
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-lg">⚡</span>
-                  <span className="text-white font-semibold text-sm">Volatilité</span>
+                  <span className="text-txt font-semibold text-sm">Volatilité</span>
                 </div>
-                <p className="text-white/50 text-xs ml-7">Capacité à changer de niveau rapidement. Un joueur en progression verra son rating monter plus vite.</p>
+                <p className="text-txt-60 text-xs ml-7">Capacité à changer de niveau rapidement. Un joueur en progression verra son rating monter plus vite.</p>
               </div>
             </div>
           </div>
@@ -104,16 +104,16 @@ function RankingInfoModal({ onClose }: { onClose: () => void }) {
           {/* Bonus activité */}
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <div className="h-px flex-1 bg-[#3E3666]" />
-              <span className="text-white/50 text-xs font-medium uppercase tracking-wider">Bonus activité</span>
-              <div className="h-px flex-1 bg-[#3E3666]" />
+              <div className="h-px flex-1 bg-surface-2" />
+              <span className="text-txt-60 text-xs font-medium uppercase tracking-wider">Bonus activité</span>
+              <div className="h-px flex-1 bg-surface-2" />
             </div>
-            <div className="bg-[#342D5B] rounded-xl p-4">
+            <div className="bg-surface rounded-xl p-4">
               <div className="flex items-center gap-2 mb-2">
                 <span className="text-lg">🎮</span>
-                <span className="text-white font-semibold text-sm">Plus tu joues, mieux tu es classé</span>
+                <span className="text-txt font-semibold text-sm">Plus tu joues, mieux tu es classé</span>
               </div>
-              <p className="text-white/50 text-xs ml-7 mb-3">
+              <p className="text-txt-60 text-xs ml-7 mb-3">
                 Le score final qui détermine ta position intègre un bonus lié au nombre de parties jouées.
               </p>
               <div className="grid grid-cols-2 gap-2 text-center">
@@ -123,14 +123,14 @@ function RankingInfoModal({ onClose }: { onClose: () => void }) {
                   { games: 60, bonus: '+116' },
                   { games: 100, bonus: '+150' },
                 ].map(({ games, bonus }) => (
-                  <div key={games} className="bg-[#292349] rounded-lg px-3 py-2">
+                  <div key={games} className="bg-bg rounded-lg px-3 py-2">
                     <span className="text-[#00D397] font-bold text-sm">{bonus}</span>
-                    <span className="text-white/40 text-xs"> pts</span>
-                    <p className="text-white/40 text-xs">{games} parties</p>
+                    <span className="text-txt-40 text-xs"> pts</span>
+                    <p className="text-txt-40 text-xs">{games} parties</p>
                   </div>
                 ))}
               </div>
-              <p className="text-white/30 text-[10px] mt-2 text-center">
+              <p className="text-txt/30 text-[10px] mt-2 text-center">
                 Formule : rating − déviation + √(parties) × 15
               </p>
             </div>
@@ -139,34 +139,34 @@ function RankingInfoModal({ onClose }: { onClose: () => void }) {
           {/* Règles importantes */}
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <div className="h-px flex-1 bg-[#3E3666]" />
-              <span className="text-white/50 text-xs font-medium uppercase tracking-wider">Règles importantes</span>
-              <div className="h-px flex-1 bg-[#3E3666]" />
+              <div className="h-px flex-1 bg-surface-2" />
+              <span className="text-txt-60 text-xs font-medium uppercase tracking-wider">Règles importantes</span>
+              <div className="h-px flex-1 bg-surface-2" />
             </div>
 
-            <div className="bg-[#342D5B] rounded-xl p-4 space-y-2">
+            <div className="bg-surface rounded-xl p-4 space-y-2">
               <div className="flex items-start gap-2">
-                <span className="text-white/70 text-xs mt-0.5">•</span>
-                <p className="text-white/70 text-xs leading-relaxed">
-                  <span className="text-white font-semibold">Battre un fort</span> rapporte beaucoup de points. Battre un faible en rapporte peu.
+                <span className="text-txt-60 text-xs mt-0.5">•</span>
+                <p className="text-txt-60 text-xs leading-relaxed">
+                  <span className="text-txt font-semibold">Battre un fort</span> rapporte beaucoup de points. Battre un faible en rapporte peu.
                 </p>
               </div>
               <div className="flex items-start gap-2">
-                <span className="text-white/70 text-xs mt-0.5">•</span>
-                <p className="text-white/70 text-xs leading-relaxed">
-                  <span className="text-white font-semibold">Perdre contre un faible</span> fait perdre beaucoup de points. Perdre contre un fort en fait perdre peu.
+                <span className="text-txt-60 text-xs mt-0.5">•</span>
+                <p className="text-txt-60 text-xs leading-relaxed">
+                  <span className="text-txt font-semibold">Perdre contre un faible</span> fait perdre beaucoup de points. Perdre contre un fort en fait perdre peu.
                 </p>
               </div>
               <div className="flex items-start gap-2">
-                <span className="text-white/70 text-xs mt-0.5">•</span>
-                <p className="text-white/70 text-xs leading-relaxed">
+                <span className="text-txt-60 text-xs mt-0.5">•</span>
+                <p className="text-txt-60 text-xs leading-relaxed">
                   Le classement dans chaque partie compte : 1er bat tous les autres, 2ème bat ceux derrière, etc.
                 </p>
               </div>
               <div className="flex items-start gap-2">
-                <span className="text-white/70 text-xs mt-0.5">•</span>
-                <p className="text-white/70 text-xs leading-relaxed">
-                  <span className="text-white font-semibold">Moins de 10 parties</span> → classement provisoire affiché en fin de liste.
+                <span className="text-txt-60 text-xs mt-0.5">•</span>
+                <p className="text-txt-60 text-xs leading-relaxed">
+                  <span className="text-txt font-semibold">Moins de 10 parties</span> → classement provisoire affiché en fin de liste.
                 </p>
               </div>
             </div>
@@ -175,7 +175,7 @@ function RankingInfoModal({ onClose }: { onClose: () => void }) {
           {/* Note */}
           <div className="flex items-start gap-2 bg-[#ffffff08] rounded-xl p-3">
             <Info size={14} color="#FFFFFF60" className="mt-0.5 shrink-0" />
-            <p className="text-white/50 text-xs leading-relaxed">
+            <p className="text-txt-60 text-xs leading-relaxed">
               Le score brut (points) et les stats de précision sont affichés pour information mais n&apos;influencent plus directement le rang global.
             </p>
           </div>
@@ -208,11 +208,11 @@ function Podium({ rankings, currentPage }: { rankings: GlobalRanking[]; currentP
         <div className="mb-2">
           <Avatar avatarUrl={top3[1].avatarUrl} username={top3[1].username || '?'} size={64} borderColor="#C0C0C0" />
         </div>
-        <div className="w-20 h-24 bg-[#342D5B] rounded-t-xl flex flex-col items-center justify-end pb-2 border-t-2 border-x-2 border-[#C0C0C0]">
+        <div className="w-20 h-24 bg-surface rounded-t-xl flex flex-col items-center justify-end pb-2 border-t-2 border-x-2 border-[#C0C0C0]">
           <Medal size={24} color="#C0C0C0" />
           <span className="text-[#C0C0C0] font-bold mt-1">2</span>
         </div>
-        <span className="text-white text-xs mt-1 w-20 text-center truncate">
+        <span className="text-txt text-xs mt-1 w-20 text-center truncate">
           {top3[1].username || 'Inconnu'}
         </span>
         <span className="text-[#00D397] text-xs">{perf(top3[1])} score</span>
@@ -230,7 +230,7 @@ function Podium({ rankings, currentPage }: { rankings: GlobalRanking[]; currentP
           <Crown size={28} color="#FFD700" />
           <span className="text-[#FFD700] font-bold mt-1 text-lg">1</span>
         </div>
-        <span className="text-white text-sm font-semibold mt-1 w-24 text-center truncate">
+        <span className="text-txt text-sm font-semibold mt-1 w-24 text-center truncate">
           {top3[0].username || 'Inconnu'}
         </span>
         <span className="text-[#00D397] text-sm font-bold">{perf(top3[0])} score</span>
@@ -241,11 +241,11 @@ function Podium({ rankings, currentPage }: { rankings: GlobalRanking[]; currentP
         <div className="mb-2">
           <Avatar avatarUrl={top3[2].avatarUrl} username={top3[2].username || '?'} size={64} borderColor="#CD7F32" />
         </div>
-        <div className="w-20 h-16 bg-[#342D5B] rounded-t-xl flex flex-col items-center justify-end pb-2 border-t-2 border-x-2 border-[#CD7F32]">
+        <div className="w-20 h-16 bg-surface rounded-t-xl flex flex-col items-center justify-end pb-2 border-t-2 border-x-2 border-[#CD7F32]">
           <Medal size={24} color="#CD7F32" />
           <span className="text-[#CD7F32] font-bold mt-1">3</span>
         </div>
-        <span className="text-white text-xs mt-1 w-20 text-center truncate">
+        <span className="text-txt text-xs mt-1 w-20 text-center truncate">
           {top3[2].username || 'Inconnu'}
         </span>
         <span className="text-[#00D397] text-xs">{perf(top3[2])} score</span>
@@ -274,14 +274,14 @@ function RankingRow({
     if (r === 1) return <Crown size={20} color="#FFD700" />;
     if (r === 2) return <Medal size={20} color="#C0C0C0" />;
     if (r === 3) return <Medal size={20} color="#CD7F32" />;
-    return <span className="text-white/40 font-bold w-6 text-center">{r}</span>;
+    return <span className="text-txt-40 font-bold w-6 text-center">{r}</span>;
   };
 
   const getRankColor = (r: number) => {
     if (r === 1) return 'text-[#FFD700]';
     if (r === 2) return 'text-[#C0C0C0]';
     if (r === 3) return 'text-[#CD7F32]';
-    return 'text-white';
+    return 'text-txt';
   };
 
   const getFriendshipButton = () => {
@@ -304,7 +304,7 @@ function RankingRow({
     }
     if (status === 'DECLINED' || status === 'BLOCKED') {
       return (
-        <div className="w-10 h-10 rounded-full bg-[#3E3666] flex items-center justify-center">
+        <div className="w-10 h-10 rounded-full bg-surface-2 flex items-center justify-center">
           <UserX size={18} color="#FFFFFF40" />
         </div>
       );
@@ -341,7 +341,7 @@ function RankingRow({
       role="button"
       tabIndex={0}
       onKeyDown={(e) => e.key === 'Enter' && router.push(`/profile/${entry.userId}`)}
-      className={`w-full flex flex-row items-start py-3 border-b border-[#3E3666] text-left hover:bg-[#3E366630] active:bg-[#3E366650] transition-colors cursor-pointer ${
+      className={`w-full flex flex-row items-start py-3 border-b border-line text-left hover:bg-surface-2/30 active:bg-surface-2/50 transition-colors cursor-pointer ${
         isCurrentUser ? 'bg-[#00D39710] -mx-4 px-4 w-[calc(100%+32px)]' : ''
       }`}
     >
@@ -376,7 +376,7 @@ function RankingRow({
                 <span className="text-[#F59E0B] text-[10px] font-semibold leading-tight">
                   10 parties
                 </span>
-                <span className="text-white/30 text-[9px]">{entry.totalGames}/10 jouées</span>
+                <span className="text-txt/30 text-[9px]">{entry.totalGames}/10 jouées</span>
               </div>
             ) : glickoRating != null ? (
               <>
@@ -384,13 +384,13 @@ function RankingRow({
                   {glickoRating.toFixed(0)}
                 </span>
                 {glickoDeviation != null && (
-                  <span className="text-white/25 text-[10px]">±{glickoDeviation.toFixed(0)}</span>
+                  <span className="text-txt-25 text-[10px]">±{glickoDeviation.toFixed(0)}</span>
                 )}
               </>
             ) : (
               <>
-                <span className="text-white/50 font-bold text-sm leading-none">{entry.totalScore}</span>
-                <span className="text-white/30 text-[10px]">pts</span>
+                <span className="text-txt-60 font-bold text-sm leading-none">{entry.totalScore}</span>
+                <span className="text-txt/30 text-[10px]">pts</span>
               </>
             )}
           </div>
@@ -398,7 +398,7 @@ function RankingRow({
 
         {/* Progress bar */}
         {perfIndex != null && (
-          <div className="w-full h-1 bg-[#3E3666] rounded-full mt-1 mb-1 overflow-hidden">
+          <div className="w-full h-1 bg-surface-2 rounded-full mt-1 mb-1 overflow-hidden">
             <div
               className="h-full bg-[#9B59B6] rounded-full"
               style={{ width: `${Math.min(100, Math.max(0, perfIndex))}%` }}
@@ -411,25 +411,25 @@ function RankingRow({
           {correctAnswers != null && questionsPlayed != null && (
             <div className="flex items-center gap-1">
               <Star size={11} color="#FFFFFF40" />
-              <span className="text-white/50 text-xs">{correctAnswers}/{questionsPlayed} questions</span>
+              <span className="text-txt-60 text-xs">{correctAnswers}/{questionsPlayed} questions</span>
             </div>
           )}
           {/* {accuracy != null && (
-            <span className="text-white/50 text-xs">Précision {accuracy}%</span>
+            <span className="text-txt-60 text-xs">Précision {accuracy}%</span>
           )} */}
         </div>
 
         {/* Stats row 2: wins + games + win rate + avg */}
         <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-0.5">
           {entry.totalWins != null && entry.totalWins > 0 && (
-            <span className="text-white/40 text-xs">🏆 {entry.totalWins} victoires</span>
+            <span className="text-txt-40 text-xs">🏆 {entry.totalWins} victoires</span>
           )}
-          <span className="text-white/40 text-xs">{entry.totalGames} parties</span>
+          <span className="text-txt-40 text-xs">{entry.totalGames} parties</span>
           {winRatePct != null && (
-            <span className="text-white/40 text-xs">Victoires {winRatePct}%</span>
+            <span className="text-txt-40 text-xs">Victoires {winRatePct}%</span>
           )}
           {avgCorrect != null && (
-            <span className="text-white/40 text-xs">Moy. {avgCorrect} rép./partie</span>
+            <span className="text-txt-40 text-xs">Moy. {avgCorrect} rép./partie</span>
           )}
         </div>
       </div>
@@ -481,22 +481,22 @@ function Pagination({
       <button
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 0}
-        className="w-9 h-9 rounded-lg bg-[#3E3666] flex items-center justify-center disabled:opacity-30 hover:bg-[#4E4676] transition-colors cursor-pointer disabled:cursor-default"
+        className="w-9 h-9 rounded-lg bg-surface-2 flex items-center justify-center disabled:opacity-30 hover:bg-surface-2 transition-colors cursor-pointer disabled:cursor-default"
       >
         <ChevronLeft size={16} color="#FFFFFF" />
       </button>
 
       {getPages().map((p, i) =>
         p === '...' ? (
-          <span key={`ellipsis-${i}`} className="text-white/40 text-sm px-1">…</span>
+          <span key={`ellipsis-${i}`} className="text-txt-40 text-sm px-1">…</span>
         ) : (
           <button
             key={p}
             onClick={() => onPageChange(p as number)}
             className={`w-9 h-9 rounded-lg text-sm font-semibold transition-colors cursor-pointer ${
               p === currentPage
-                ? 'bg-[#9B59B6] text-white'
-                : 'bg-[#3E3666] text-white/60 hover:bg-[#4E4676]'
+                ? 'bg-[#9B59B6] text-txt'
+                : 'bg-surface-2 text-txt-60 hover:bg-surface-2'
             }`}
           >
             {(p as number) + 1}
@@ -507,7 +507,7 @@ function Pagination({
       <button
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === totalPages - 1}
-        className="w-9 h-9 rounded-lg bg-[#3E3666] flex items-center justify-center disabled:opacity-30 hover:bg-[#4E4676] transition-colors cursor-pointer disabled:cursor-default"
+        className="w-9 h-9 rounded-lg bg-surface-2 flex items-center justify-center disabled:opacity-30 hover:bg-surface-2 transition-colors cursor-pointer disabled:cursor-default"
       >
         <ChevronRight size={16} color="#FFFFFF" />
       </button>
@@ -592,27 +592,27 @@ export default function RankingsPage() {
 
   if (isLoading) {
     return (
-      <SafeScreen className="bg-[#292349] flex items-center justify-center">
+      <SafeScreen className="flex items-center justify-center">
         <Spinner text="Chargement du classement..." />
       </SafeScreen>
     );
   }
 
   return (
-    <SafeScreen className="bg-[#292349]">
+    <SafeScreen>
       {showInfoModal && <RankingInfoModal onClose={() => setShowInfoModal(false)} />}
 
       {/* Header */}
       <div className="px-4 pt-4 pb-4 flex items-start justify-between">
         <div>
-          <p className="text-white font-bold text-2xl">Classement</p>
-          <p className="text-white/60 text-sm">
+          <p className="text-txt font-bold text-2xl">Classement</p>
+          <p className="text-txt-60 text-sm">
             {totalElements > 0 ? `${totalElements} joueurs classés` : 'Classement global'}
           </p>
         </div>
         <button
           onClick={() => setShowInfoModal(true)}
-          className="mt-1 w-9 h-9 rounded-full bg-[#3E3666] flex items-center justify-center hover:bg-[#4E4676] transition-colors cursor-pointer"
+          className="mt-1 w-9 h-9 rounded-full bg-surface-2 flex items-center justify-center hover:bg-surface-2 transition-colors cursor-pointer"
           aria-label="Comment fonctionne le classement ?"
         >
           <Info size={18} color="#FFFFFF80" />
@@ -627,13 +627,13 @@ export default function RankingsPage() {
 
         {/* Search */}
         <div className="mb-4">
-          <div className="flex flex-row items-center bg-[#342D5B] rounded-xl border border-[#3E3666] px-4">
+          <div className="flex flex-row items-center bg-surface rounded-xl border border-line px-4">
             <Search size={20} color="#FFFFFF60" />
             <input
               value={searchUsername}
               onChange={(e) => handleSearchChange(e.target.value)}
               placeholder="Rechercher un joueur..."
-              className="flex-1 py-3 px-3 bg-transparent text-white focus:outline-none placeholder-white/40"
+              className="flex-1 py-3 px-3 bg-transparent text-txt focus:outline-none placeholder-white/40"
               autoCapitalize="none"
               autoComplete="off"
             />
@@ -657,15 +657,15 @@ export default function RankingsPage() {
             <div className="flex flex-row justify-around">
               <div className="flex flex-col items-center">
                 <Users size={20} color="#00D397" />
-                <span className="text-white font-bold text-lg mt-1">{totalElements}</span>
-                <span className="text-white/50 text-xs">Joueurs</span>
+                <span className="text-txt font-bold text-lg mt-1">{totalElements}</span>
+                <span className="text-txt-60 text-xs">Joueurs</span>
               </div>
               <div className="flex flex-col items-center">
                 <Trophy size={20} color="#9B59B6" />
-                <span className="text-white font-bold text-lg mt-1">
+                <span className="text-txt font-bold text-lg mt-1">
                   {currentUserRank ?? 'N/A'}
                 </span>
-                <span className="text-white/50 text-xs">Votre rang</span>
+                <span className="text-txt-60 text-xs">Votre rang</span>
               </div>
             </div>
           </Card>
@@ -674,11 +674,11 @@ export default function RankingsPage() {
         {/* Ranking List */}
         <Card>
           <div className="flex flex-row items-center justify-between mb-4">
-            <p className="text-white font-bold text-lg">
+            <p className="text-txt font-bold text-lg">
               {searchUsername ? `Résultats pour "${searchUsername}"` : 'Classement complet'}
             </p>
             {totalPages > 1 && (
-              <span className="text-white/40 text-xs">
+              <span className="text-txt-40 text-xs">
                 Page {currentPage + 1}/{totalPages}
               </span>
             )}
@@ -702,7 +702,7 @@ export default function RankingsPage() {
               />
             </>
           ) : (
-            <p className="text-white/50 text-center py-8">
+            <p className="text-txt-60 text-center py-8">
               {searchUsername
                 ? 'Aucun joueur trouvé avec ce nom'
                 : 'Aucun classement disponible'}

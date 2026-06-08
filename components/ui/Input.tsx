@@ -30,7 +30,7 @@ export function Input({
   return (
     <div className={`w-full ${className}`}>
       {label && (
-        <label className="block text-white/80 text-sm font-medium mb-2">
+        <label className="block text-txt-60 text-sm font-medium mb-2">
           {label}
         </label>
       )}
@@ -42,17 +42,17 @@ export function Input({
           autoCapitalize="none"
           className={`
             w-full px-4 py-3.5 rounded-xl
-            bg-dark-card text-white text-base
-            border ${error ? 'border-danger' : 'border-dark-hover'}
-            placeholder:text-[hsl(215,25%,45%)]
-            outline-none focus:border-[#00D397] transition-colors
+            bg-surface text-txt text-base
+            border ${error ? 'border-danger' : 'border-line'}
+            placeholder:text-txt-40
+            outline-none focus:border-accent transition-colors
           `}
         />
         {isPassword && (
           <button
             type="button"
             onClick={() => setShowPassword((prev) => !prev)}
-            className="absolute right-3 top-0 bottom-0 flex items-center justify-center text-[hsl(215,25%,55%)] hover:text-white transition-colors"
+            className="absolute right-3 top-0 bottom-0 flex items-center justify-center text-txt-40 hover:text-txt transition-colors"
           >
             {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
           </button>

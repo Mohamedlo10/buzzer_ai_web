@@ -65,10 +65,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <div
-      className="min-h-screen flex flex-col"
-      style={{ background: 'linear-gradient(to bottom, #292349, #1a1633)' }}
-    >
+    <div className="min-h-screen flex flex-col bg-bg">
       <div className="flex-1 flex flex-col items-center justify-center px-6 py-12">
         {/* Logo / Branding */}
         <div className="flex flex-col items-center mb-8">
@@ -97,7 +94,7 @@ export default function RegisterPage() {
                 className="w-full h-full flex items-center justify-center overflow-hidden relative"
                 style={{
                   borderRadius: 57,
-                  backgroundColor: '#292349',
+                  backgroundColor: "var(--bg)",
                 }}
               >
                 {/* Background subtle gradient */}
@@ -135,7 +132,7 @@ export default function RegisterPage() {
 
           {/* Title */}
           <h1
-            className="text-white text-3xl font-bold mb-1"
+            className="text-txt text-3xl font-bold mb-1"
             style={{
               textShadow: '0 0 12px #D5442F',
               letterSpacing: 1,
@@ -161,14 +158,14 @@ export default function RegisterPage() {
 
         {/* Form Card */}
         <div
-          className="w-full max-w-md bg-[#342D5B] rounded-3xl p-8 border border-[#3E3666]"
+          className="w-full max-w-md bg-surface rounded-3xl p-8 border border-line"
           style={{ boxShadow: '0 8px 20px rgba(0,0,0,0.4)' }}
         >
-          <h2 className="text-white text-2xl font-bold mb-8 text-center">Créer un compte</h2>
+          <h2 className="text-txt text-2xl font-bold mb-8 text-center">Créer un compte</h2>
 
           {/* Username Input */}
           <div className="mb-5">
-            <label className="block text-white/80 text-sm font-medium mb-2">
+            <label className="block text-txt-60 text-sm font-medium mb-2">
               Nom d&apos;utilisateur
             </label>
             <div className="relative">
@@ -177,10 +174,9 @@ export default function RegisterPage() {
               </div>
               <input
                 type="text"
-                className="w-full pl-12 pr-4 py-3.5 rounded-2xl bg-[#292349] text-white text-base outline-none focus:ring-2 focus:ring-[#00D397]/50 placeholder:text-white/25"
-                style={{
-                  border: `1px solid ${errors.username ? '#D5442F' : '#3E3666'}`,
-                }}
+                className={`w-full pl-12 pr-4 py-3.5 rounded-2xl bg-bg text-txt text-base outline-none focus:ring-2 focus:ring-accent/50 placeholder:text-txt-25 border ${
+                  errors.username ? 'border-buzz' : 'border-line'
+                }`}
                 placeholder="Choisissez un pseudo"
                 value={username}
                 autoComplete="username"
@@ -198,17 +194,16 @@ export default function RegisterPage() {
 
           {/* Password Input */}
           <div className="mb-5">
-            <label className="block text-white/80 text-sm font-medium mb-2">Mot de passe</label>
+            <label className="block text-txt-60 text-sm font-medium mb-2">Mot de passe</label>
             <div className="relative">
               <div className="absolute left-4 top-0 bottom-0 flex items-center z-10">
                 <Lock size={20} color="rgba(255,255,255,0.502)" />
               </div>
               <input
                 type={showPassword ? 'text' : 'password'}
-                className="w-full pl-12 pr-16 py-3.5 rounded-2xl bg-[#292349] text-white text-base outline-none focus:ring-2 focus:ring-[#00D397]/50 placeholder:text-white/25"
-                style={{
-                  border: `1px solid ${errors.password ? '#D5442F' : '#3E3666'}`,
-                }}
+                className={`w-full pl-12 pr-16 py-3.5 rounded-2xl bg-bg text-txt text-base outline-none focus:ring-2 focus:ring-accent/50 placeholder:text-txt-25 border ${
+                  errors.password ? 'border-buzz' : 'border-line'
+                }`}
                 placeholder="Minimum 8 caractères"
                 value={password}
                 autoComplete="new-password"
@@ -236,7 +231,7 @@ export default function RegisterPage() {
 
           {/* Confirm Password Input */}
           <div className="mb-8">
-            <label className="block text-white/80 text-sm font-medium mb-2">
+            <label className="block text-txt-60 text-sm font-medium mb-2">
               Confirmer le mot de passe
             </label>
             <div className="relative">
@@ -245,10 +240,9 @@ export default function RegisterPage() {
               </div>
               <input
                 type={showConfirmPassword ? 'text' : 'password'}
-                className="w-full pl-12 pr-16 py-3.5 rounded-2xl bg-[#292349] text-white text-base outline-none focus:ring-2 focus:ring-[#00D397]/50 placeholder:text-white/25"
-                style={{
-                  border: `1px solid ${errors.confirmPassword ? '#D5442F' : '#3E3666'}`,
-                }}
+                className={`w-full pl-12 pr-16 py-3.5 rounded-2xl bg-bg text-txt text-base outline-none focus:ring-2 focus:ring-accent/50 placeholder:text-txt-25 border ${
+                  errors.confirmPassword ? 'border-buzz' : 'border-line'
+                }`}
                 placeholder="Confirmez votre mot de passe"
                 value={confirmPassword}
                 autoComplete="new-password"
@@ -281,17 +275,14 @@ export default function RegisterPage() {
             type="button"
             onClick={handleRegister}
             disabled={isLoading}
-            className="w-full py-4 rounded-2xl flex items-center justify-center transition-opacity"
-            style={{
-              backgroundColor: isLoading ? '#3E3666' : '#D5442F',
-              boxShadow: isLoading ? 'none' : '0 0 15px rgba(213,68,47,0.5)',
-              opacity: isLoading ? 0.7 : 1,
-            }}
+            className={`w-full py-4 rounded-2xl flex items-center justify-center transition-opacity text-white font-bold text-lg ${
+              isLoading ? 'bg-surface-2 opacity-70' : 'bg-buzz shadow-[0_0_15px_rgba(213,68,47,0.5)]'
+            }`}
           >
             {isLoading ? (
               <div className="flex flex-row items-center gap-2">
                 <svg
-                  className="animate-spin h-5 w-5 text-white"
+                  className="animate-spin h-5 w-5 text-txt"
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
@@ -310,17 +301,17 @@ export default function RegisterPage() {
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
                   />
                 </svg>
-                <span className="text-white font-bold text-lg">Création...</span>
+                <span className="text-txt font-bold text-lg">Création...</span>
               </div>
             ) : (
               <div className="flex flex-row items-center gap-2">
-                <span className="text-white font-bold text-lg">Créer mon compte</span>
+                <span className="text-txt font-bold text-lg">Créer mon compte</span>
                 <ArrowRight size={20} color="#FFFFFF" />
               </div>
             )}
           </button>
           <div className="flex flex-row justify-center mt-6 items-center">
-          <span className="text-white/60 text-base">Déjà un compte ? </span>
+          <span className="text-txt-60 text-base">Déjà un compte ? </span>
           <button
             type="button"
             onClick={() => router.push('/login')}

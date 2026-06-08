@@ -37,11 +37,11 @@ export function Avatar({ avatarUrl, username, size = 40, borderColor, className 
 
   return (
     <div
-      style={{ ...baseStyle, backgroundColor: '#3E3666' }}
+      style={{ ...baseStyle, backgroundColor: 'var(--surface-2)' }}
       className={className}
     >
       <span
-        style={{ color: '#FFFFFF', fontWeight: 700, fontSize: size * 0.38, lineHeight: 1 }}
+        style={{ color: 'var(--txt)', fontWeight: 700, fontSize: size * 0.38, lineHeight: 1 }}
       >
         {initial}
       </span>

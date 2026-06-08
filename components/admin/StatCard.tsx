@@ -16,7 +16,7 @@ export function StatCard({ title, value, change, icon: Icon, color }: StatCardPr
 
   return (
     <div
-      className="bg-[#342D5B] rounded-2xl p-4 border border-[#3E3666]"
+      className="bg-surface rounded-2xl p-4 border border-line"
       style={{ boxShadow: `0 2px 8px 0 ${color}1a` }}
     >
       <div className="flex flex-row items-center justify-between mb-3">
@@ -29,14 +29,14 @@ export function StatCard({ title, value, change, icon: Icon, color }: StatCardPr
         {change !== undefined && (
           <div
             className={`flex flex-row items-center gap-1 px-2 py-1 rounded-full ${
-              isPositive ? 'bg-[#00D39720]' : isNegative ? 'bg-[#D5442F20]' : 'bg-[#3E3666]'
+              isPositive ? 'bg-[#00D39720]' : isNegative ? 'bg-[#D5442F20]' : 'bg-surface-2'
             }`}
           >
             {isPositive && <TrendingUp size={12} color="#00D397" />}
             {isNegative && <TrendingDown size={12} color="#D5442F" />}
             <span
               className={`text-xs font-medium ${
-                isPositive ? 'text-[#00D397]' : isNegative ? 'text-[#D5442F]' : 'text-white/60'
+                isPositive ? 'text-[#00D397]' : isNegative ? 'text-[#D5442F]' : 'text-txt-60'
               }`}
             >
               {isPositive ? '+' : ''}{change}%
@@ -44,8 +44,8 @@ export function StatCard({ title, value, change, icon: Icon, color }: StatCardPr
           </div>
         )}
       </div>
-      <p className="text-white/60 text-sm mb-1">{title}</p>
-      <p className="text-white text-2xl font-bold">{value}</p>
+      <p className="text-txt-60 text-sm mb-1">{title}</p>
+      <p className="text-txt text-2xl font-bold">{value}</p>
     </div>
   );
 }

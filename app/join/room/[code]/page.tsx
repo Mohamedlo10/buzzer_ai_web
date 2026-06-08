@@ -18,13 +18,13 @@ export default function JoinRoomByCodePage() {
   }, [code, router]);
 
   return (
-    <SafeScreen className="bg-[#292349]">
+    <SafeScreen>
       <div className="flex-1 flex flex-col justify-center items-center min-h-screen">
         <div className="flex flex-col items-center">
           <div className="w-20 h-20 rounded-full bg-[#00D39720] flex items-center justify-center mb-4">
-            <Sparkles size={40} color="#00D397" />
+            <Sparkles size={40} className="text-accent" />
           </div>
-          <p className="text-white font-semibold">Connexion en cours...</p>
+          <p className="text-txt font-semibold">Connexion en cours...</p>
         </div>
       </div>
     </SafeScreen>

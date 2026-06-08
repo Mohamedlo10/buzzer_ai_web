@@ -8,7 +8,7 @@ interface SafeScreenProps extends React.HTMLAttributes<HTMLDivElement> {
 export function SafeScreen({ children, className = '', ...props }: SafeScreenProps) {
   return (
     <div
-      className={`min-h-screen bg-dark-bg ${className}`}
+      className={`min-h-screen bg-bg ${className}`}
       {...props}
     >
       {children}

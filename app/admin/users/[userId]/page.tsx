@@ -143,7 +143,7 @@ export default function AdminUserDetailPage({ params }: PageProps) {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <button
           onClick={() => router.back()}
-          className="inline-flex items-center gap-2 text-white/60 hover:text-white transition-colors text-sm w-fit"
+          className="inline-flex items-center gap-2 text-txt-60 hover:text-txt transition-colors text-sm w-fit"
         >
           <ArrowLeft size={16} />
           Retour à la liste
@@ -156,7 +156,7 @@ export default function AdminUserDetailPage({ params }: PageProps) {
           <div className="relative shrink-0">
             <Avatar avatarUrl={user.avatarUrl} username={user.username} size={72} />
             <span
-              className={`absolute bottom-1 right-1 w-4 h-4 rounded-full border-2 border-[#342D5B] ${
+              className={`absolute bottom-1 right-1 w-4 h-4 rounded-full border-2 border-surface ${
                 user.isOnline ? 'bg-[#00D397]' : 'bg-[#6B7280]'
               }`}
             />
@@ -164,7 +164,7 @@ export default function AdminUserDetailPage({ params }: PageProps) {
 
           <div className="flex-1 min-w-0">
             <div className="flex flex-wrap items-center gap-3 mb-1">
-              <h1 className="text-white text-2xl font-bold">{user.username}</h1>
+              <h1 className="text-txt text-2xl font-bold">{user.username}</h1>
               <div
                 className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold"
                 style={{ backgroundColor: role.bg, color: role.color }}
@@ -180,7 +180,7 @@ export default function AdminUserDetailPage({ params }: PageProps) {
               )}
             </div>
 
-            <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-white/50 mt-2">
+            <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-txt-60 mt-2">
               {user.email && (
                 <span className="inline-flex items-center gap-1.5">
                   <Mail size={14} />
@@ -214,7 +214,7 @@ export default function AdminUserDetailPage({ params }: PageProps) {
             <div className="relative">
               <button
                 onClick={() => setRoleOpen(!roleOpen)}
-                className="flex items-center gap-2 px-3 py-2 rounded-xl bg-[#3E3666] hover:bg-[#4E4676] text-white text-sm transition-colors"
+                className="flex items-center gap-2 px-3 py-2 rounded-xl bg-surface-2 hover:bg-surface-2 text-txt text-sm transition-colors"
               >
                 <ShieldCheck size={16} />
                 Changer rôle
@@ -223,7 +223,7 @@ export default function AdminUserDetailPage({ params }: PageProps) {
               {roleOpen && (
                 <>
                   <div className="fixed inset-0 z-10" onClick={() => setRoleOpen(false)} />
-                  <div className="absolute right-0 top-full mt-1 z-20 w-44 bg-[#342D5B] border border-[#3E3666] rounded-xl shadow-xl overflow-hidden">
+                  <div className="absolute right-0 top-full mt-1 z-20 w-44 bg-surface border border-line rounded-xl shadow-xl overflow-hidden">
                     {ALL_ROLES.map((r) => {
                       const m = roleMeta[r];
                       const Icon = m.icon;
@@ -234,8 +234,8 @@ export default function AdminUserDetailPage({ params }: PageProps) {
                           onClick={() => updateRoleMutation.mutate(r)}
                           className={`w-full flex items-center gap-2 px-3 py-2.5 text-left text-sm transition-colors ${
                             user.role === r
-                              ? 'text-white/30 cursor-default'
-                              : 'text-white hover:bg-[#3E3666]'
+                              ? 'text-txt/30 cursor-default'
+                              : 'text-txt hover:bg-surface-2'
                           }`}
                         >
                           <Icon size={14} color={user.role === r ? '#FFFFFF30' : m.color} />
@@ -366,7 +366,7 @@ export default function AdminUserDetailPage({ params }: PageProps) {
                     cy="50"
                     r="42"
                     fill="none"
-                    stroke="#3E3666"
+                    stroke="var(--line)"
                     strokeWidth="10"
                   />
                   <circle
@@ -381,21 +381,21 @@ export default function AdminUserDetailPage({ params }: PageProps) {
                   />
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-white text-2xl font-bold">
+                  <span className="text-txt text-2xl font-bold">
                     {((user.globalAccuracyRate || 0) * 100).toFixed(0)}%
                   </span>
-                  <span className="text-white/40 text-xs">précision globale</span>
+                  <span className="text-txt-40 text-xs">précision globale</span>
                 </div>
               </div>
             </div>
             <div className="space-y-2 mt-2">
               <div className="flex justify-between text-sm">
-                <span className="text-white/50">Bonnes réponses</span>
-                <span className="text-white font-medium">{user.totalCorrectAnswers}</span>
+                <span className="text-txt-60">Bonnes réponses</span>
+                <span className="text-txt font-medium">{user.totalCorrectAnswers}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-white/50">Mauvais buzz</span>
-                <span className="text-white font-medium">{user.totalWrongBuzzes}</span>
+                <span className="text-txt-60">Mauvais buzz</span>
+                <span className="text-txt font-medium">{user.totalWrongBuzzes}</span>
               </div>
             </div>
           </CardContent>
@@ -411,11 +411,11 @@ export default function AdminUserDetailPage({ params }: PageProps) {
                 <Zap size={40} color="#F59E0B" />
               </div>
               <div className="flex-1">
-                <p className="text-white text-4xl font-bold">{user.glickoRating.toFixed(0)}</p>
-                <p className="text-white/50 text-sm mt-1">
+                <p className="text-txt text-4xl font-bold">{user.glickoRating.toFixed(0)}</p>
+                <p className="text-txt-60 text-sm mt-1">
                   Déviation ±{user.glickoDeviation.toFixed(0)}
                 </p>
-                <div className="w-full h-2 bg-[#3E3666] rounded-full mt-3">
+                <div className="w-full h-2 bg-surface-2 rounded-full mt-3">
                   <div
                     className="h-full rounded-full bg-[#F59E0B]"
                     style={{
@@ -423,10 +423,10 @@ export default function AdminUserDetailPage({ params }: PageProps) {
                     }}
                   />
                 </div>
-                <p className="text-white/30 text-xs mt-1">0 — 2500</p>
+                <p className="text-txt/30 text-xs mt-1">0 — 2500</p>
               </div>
             </div>
-            <p className="text-white/40 text-sm mt-4">
+            <p className="text-txt-40 text-sm mt-4">
               Le rating Glicko-2 estime le niveau de compétence du joueur. Une déviation faible
               indique une estimation fiable.
             </p>
@@ -444,26 +444,26 @@ export default function AdminUserDetailPage({ params }: PageProps) {
         </CardHeader>
         <CardContent>
           {user.recentSessions.length === 0 ? (
-            <p className="text-white/50 text-sm text-center py-6">Aucune session récente</p>
+            <p className="text-txt-60 text-sm text-center py-6">Aucune session récente</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
-                  <tr className="border-b border-[#3E3666]">
-                    <th className="px-3 py-2 text-xs font-semibold text-white/60 uppercase tracking-wider">Code</th>
-                    <th className="px-3 py-2 text-xs font-semibold text-white/60 uppercase tracking-wider">Statut</th>
-                    <th className="px-3 py-2 text-xs font-semibold text-white/60 uppercase tracking-wider">Score</th>
-                    <th className="px-3 py-2 text-xs font-semibold text-white/60 uppercase tracking-wider">Rang</th>
-                    <th className="px-3 py-2 text-xs font-semibold text-white/60 uppercase tracking-wider">Joueurs</th>
-                    <th className="px-3 py-2 text-xs font-semibold text-white/60 uppercase tracking-wider">Date</th>
+                  <tr className="border-b border-line">
+                    <th className="px-3 py-2 text-xs font-semibold text-txt-60 uppercase tracking-wider">Code</th>
+                    <th className="px-3 py-2 text-xs font-semibold text-txt-60 uppercase tracking-wider">Statut</th>
+                    <th className="px-3 py-2 text-xs font-semibold text-txt-60 uppercase tracking-wider">Score</th>
+                    <th className="px-3 py-2 text-xs font-semibold text-txt-60 uppercase tracking-wider">Rang</th>
+                    <th className="px-3 py-2 text-xs font-semibold text-txt-60 uppercase tracking-wider">Joueurs</th>
+                    <th className="px-3 py-2 text-xs font-semibold text-txt-60 uppercase tracking-wider">Date</th>
                   </tr>
                 </thead>
                 <tbody>
                   {user.recentSessions.map((s) => (
-                    <tr key={s.sessionId} className="border-b border-[#3E3666] last:border-b-0">
-                      <td className="px-3 py-2.5 text-sm text-white font-medium">#{s.code}</td>
+                    <tr key={s.sessionId} className="border-b border-line last:border-b-0">
+                      <td className="px-3 py-2.5 text-sm text-txt font-medium">#{s.code}</td>
                       <td className="px-3 py-2.5 text-sm">
-                        <span className="inline-flex items-center gap-1.5 text-xs font-medium text-white/60">
+                        <span className="inline-flex items-center gap-1.5 text-xs font-medium text-txt-60">
                           <span className={`w-2 h-2 rounded-full ${
                             s.status === 'RESULTS' ? 'bg-[#00D397]' :
                             s.status === 'PLAYING' ? 'bg-[#3B82F6]' :
@@ -473,10 +473,10 @@ export default function AdminUserDetailPage({ params }: PageProps) {
                           {s.status}
                         </span>
                       </td>
-                      <td className="px-3 py-2.5 text-sm text-white">{s.score ?? '—'}</td>
-                      <td className="px-3 py-2.5 text-sm text-white">{s.rank ? `${s.rank}/${s.totalPlayers}` : '—'}</td>
-                      <td className="px-3 py-2.5 text-sm text-white/60">{s.totalPlayers}</td>
-                      <td className="px-3 py-2.5 text-sm text-white/60">{formatDate(s.endedAt)}</td>
+                      <td className="px-3 py-2.5 text-sm text-txt">{s.score ?? '—'}</td>
+                      <td className="px-3 py-2.5 text-sm text-txt">{s.rank ? `${s.rank}/${s.totalPlayers}` : '—'}</td>
+                      <td className="px-3 py-2.5 text-sm text-txt-60">{s.totalPlayers}</td>
+                      <td className="px-3 py-2.5 text-sm text-txt-60">{formatDate(s.endedAt)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -497,17 +497,17 @@ export default function AdminUserDetailPage({ params }: PageProps) {
           </CardHeader>
           <CardContent>
             {user.friends.length === 0 ? (
-              <p className="text-white/50 text-sm text-center py-6">Aucun ami</p>
+              <p className="text-txt-60 text-sm text-center py-6">Aucun ami</p>
             ) : (
               <div className="space-y-3">
                 {user.friends.map((f) => (
                   <div
                     key={f.userId}
-                    className="flex items-center gap-3 p-2 rounded-xl hover:bg-[#3E366630] transition-colors cursor-pointer"
+                    className="flex items-center gap-3 p-2 rounded-xl hover:bg-surface-2/30 transition-colors cursor-pointer"
                     onClick={() => router.push(`/admin/users/${f.userId}`)}
                   >
                     <Avatar avatarUrl={f.avatarUrl} username={f.username} size={36} />
-                    <span className="text-white text-sm font-medium">{f.username}</span>
+                    <span className="text-txt text-sm font-medium">{f.username}</span>
                   </div>
                 ))}
               </div>
@@ -524,18 +524,18 @@ export default function AdminUserDetailPage({ params }: PageProps) {
           </CardHeader>
           <CardContent>
             {user.rooms.length === 0 ? (
-              <p className="text-white/50 text-sm text-center py-6">Aucune salle</p>
+              <p className="text-txt-60 text-sm text-center py-6">Aucune salle</p>
             ) : (
               <div className="space-y-3">
                 {user.rooms.map((r) => (
                   <div
                     key={r.roomId}
-                    className="flex items-center justify-between p-3 rounded-xl bg-[#292349] hover:bg-[#3E3666] transition-colors cursor-pointer"
+                    className="flex items-center justify-between p-3 rounded-xl bg-bg hover:bg-surface-2 transition-colors cursor-pointer"
                     onClick={() => router.push(`/admin/rooms/${r.roomId}`)}
                   >
                     <div className="min-w-0">
-                      <p className="text-white text-sm font-medium truncate">{r.name}</p>
-                      <p className="text-white/40 text-xs">Code : {r.code}</p>
+                      <p className="text-txt text-sm font-medium truncate">{r.name}</p>
+                      <p className="text-txt-40 text-xs">Code : {r.code}</p>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
                       {r.isOwner && (
@@ -543,7 +543,7 @@ export default function AdminUserDetailPage({ params }: PageProps) {
                           Propriétaire
                         </span>
                       )}
-                      <span className="text-white/30 text-xs">{formatDate(r.joinedAt)}</span>
+                      <span className="text-txt/30 text-xs">{formatDate(r.joinedAt)}</span>
                     </div>
                   </div>
                 ))}

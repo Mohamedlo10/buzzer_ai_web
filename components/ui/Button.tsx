@@ -17,8 +17,8 @@ const variantStyles: Record<ButtonVariant, { container: string; text: string }> 
     text: 'text-dark-bg',
   },
   secondary: {
-    container: 'bg-dark-card border border-dark-hover',
-    text: 'text-white',
+    container: 'bg-surface border border-line',
+    text: 'text-txt',
   },
   danger: {
     container: 'bg-danger',

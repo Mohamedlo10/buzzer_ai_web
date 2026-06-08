@@ -1,8 +1,6 @@
 'use client';
 
 import { useEffect } from 'react';
-import { CheckCircle, XCircle } from 'lucide-react';
-
 interface AnswerRevealOverlayProps {
   correctAnswer: string;
   winnerId: string | null;
@@ -27,34 +25,29 @@ export function AnswerRevealOverlay({
   }, [autoDismissMs, onDismiss]);
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center animate-in fade-in duration-200"
-      style={{ backgroundColor: isWinner ? '#00D397ee' : '#D5442Fee' }}
-    >
-      <div className="flex flex-col items-center gap-5 px-8">
-        {isWinner ? (
-          <CheckCircle size={64} className="text-white" />
-        ) : (
-          <XCircle size={64} className="text-white" />
-        )}
+    <div className="fixed inset-0 z-50 flex flex-col bg-scrim/90 backdrop-blur-sm animate-[fadein_0.2s_both]">
+      <div className="flex-1 flex flex-col items-center justify-center px-6 text-center animate-[pop_0.5s_both]">
+        <div className="text-[54px] leading-none mb-3">{isWinner ? '🎉' : '😬'}</div>
+        <h2 className={`text-[30px] font-bold ${isWinner ? 'text-accent' : 'text-buzz'}`}>
+          {isWinner ? 'Bonne réponse !' : 'Raté…'}
+        </h2>
+        <p className="text-txt-60 text-sm mt-1.5 max-w-xs">
+          {isWinner
+            ? `${winnerName ?? 'Un joueur'} a trouvé la bonne réponse`
+            : 'Personne n\'a trouvé — voici la solution'}
+        </p>
 
-        {isWinner ? (
-          <p className="text-white text-xl font-bold text-center">
-            🎉 {winnerName} a trouvé !
-          </p>
-        ) : (
-          <p className="text-white text-lg font-semibold text-center opacity-90">
-            Personne n'a trouvé
-          </p>
-        )}
-
-        <div className="bg-white/20 rounded-2xl px-6 py-4 w-full text-center">
-          <p className="text-white/70 text-xs font-bold tracking-widest uppercase mb-1">
+        <div className="bg-surface rounded-2xl border border-line px-6 py-4 mt-6 w-full max-w-sm">
+          <p className="text-txt-40 text-[10px] font-bold tracking-widest uppercase mb-1">
             {isWinner ? 'Bonne réponse' : 'La bonne réponse était'}
           </p>
-          <p className="text-white text-2xl font-bold">{correctAnswer}</p>
+          <p className="text-txt text-2xl font-bold">{correctAnswer}</p>
         </div>
+      </div>
 
-        <p className="text-white/60 text-sm">Prochaine question dans 3s...</p>
+      <div className="pb-10 flex items-center justify-center gap-2 text-txt-60 text-[12.5px]">
+        <span className="dotpulse" />
+        Question suivante…
       </div>
     </div>
   );

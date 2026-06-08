@@ -126,14 +126,14 @@ export function QRScannerModal({ visible, onClose, onScan }: QRScannerModalProps
       {/* Header */}
       <div className="flex items-center justify-between px-4 pt-10 pb-4 bg-black/80">
         <div className="flex items-center gap-3">
-          <QrCode size={22} color="#00D397" />
+          <QrCode size={22} className="text-accent" />
           <span className="text-white font-bold text-lg">Scanner un QR code</span>
         </div>
         <button
           onClick={() => { stopCamera(); onClose(); }}
           className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"
         >
-          <X size={20} color="#FFFFFF" />
+          <X size={20} className="text-white" />
         </button>
       </div>
 
@@ -147,9 +147,9 @@ export function QRScannerModal({ visible, onClose, onScan }: QRScannerModalProps
             <p className="text-white text-center font-medium">{error}</p>
             <button
               onClick={() => onClose()}
-              className="mt-6 px-8 py-3 bg-[#3E3666] rounded-2xl hover:bg-[#4E4676] transition-colors"
+              className="mt-6 px-8 py-3 bg-white/10 rounded-2xl hover:bg-white/20 transition-colors text-white font-semibold"
             >
-              <span className="text-white font-semibold">Fermer</span>
+              Fermer
             </button>
           </div>
         ) : (

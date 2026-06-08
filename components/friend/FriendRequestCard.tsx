@@ -31,17 +31,17 @@ export function FriendRequestCard(props: FriendRequestCardProps) {
             <Avatar avatarUrl={request.receiver.avatarUrl} username={request.receiver.username} size={48} />
           </div>
           <div className="flex-1">
-            <p className="text-white font-semibold">{request.receiver.username}</p>
+            <p className="text-txt font-semibold">{request.receiver.username}</p>
             <div className="flex flex-row items-center gap-1 mt-0.5">
-              <Clock size={12} color="#FFFFFF60" />
-              <p className="text-white/50 text-sm">Demande envoyée</p>
+              <Clock size={12} className="text-txt-60" />
+              <p className="text-txt-60 text-sm">Demande envoyée</p>
             </div>
           </div>
           <button
             onClick={onCancel}
-            className="w-10 h-10 rounded-full bg-[#3E3666] flex items-center justify-center hover:bg-[#D5442F30] transition-colors cursor-pointer"
+            className="w-10 h-10 rounded-full bg-surface-2 flex items-center justify-center hover:bg-buzz/20 transition-colors cursor-pointer"
           >
-            <X size={18} color="#FFFFFF80" />
+            <X size={18} className="text-txt-60" />
           </button>
         </div>
       </Card>
@@ -56,21 +56,21 @@ export function FriendRequestCard(props: FriendRequestCardProps) {
           <Avatar avatarUrl={request.requester.avatarUrl} username={request.requester.username} size={48} />
         </div>
         <div className="flex-1">
-          <p className="text-white font-semibold">{request.requester.username}</p>
-          <p className="text-white/50 text-sm">Vous a envoyé une demande</p>
+          <p className="text-txt font-semibold">{request.requester.username}</p>
+          <p className="text-txt-60 text-sm">Vous a envoyé une demande</p>
         </div>
         <div className="flex flex-row">
           <button
             onClick={onAccept}
-            className="w-10 h-10 rounded-full bg-[#00D397] flex items-center justify-center mr-2 hover:bg-[#00C085] transition-colors cursor-pointer"
+            className="w-10 h-10 rounded-full bg-accent flex items-center justify-center mr-2 hover:opacity-90 transition-opacity cursor-pointer"
           >
-            <Check size={20} color="#292349" />
+            <Check size={20} className="text-btn-fg" />
           </button>
           <button
             onClick={onDecline}
-            className="w-10 h-10 rounded-full bg-[#D5442F] flex items-center justify-center hover:bg-[#C03020] transition-colors cursor-pointer"
+            className="w-10 h-10 rounded-full bg-buzz flex items-center justify-center hover:opacity-90 transition-opacity cursor-pointer"
           >
-            <X size={20} color="#FFFFFF" />
+            <X size={20} className="text-txt" />
           </button>
         </div>
       </div>

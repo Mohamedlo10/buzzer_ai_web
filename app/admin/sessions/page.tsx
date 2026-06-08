@@ -144,7 +144,7 @@ export default function AdminSessionsPage() {
       header: 'Code',
       width: '100px',
       render: (row) => (
-        <span className="font-bold text-white tracking-wider">{row.code}</span>
+        <span className="font-bold text-txt tracking-wider">{row.code}</span>
       ),
     },
     {
@@ -204,7 +204,7 @@ export default function AdminSessionsPage() {
       header: 'Dates',
       width: '150px',
       render: (row) => (
-        <div className="flex flex-col text-xs text-white/60">
+        <div className="flex flex-col text-xs text-txt-60">
           <span>C: {formatShortDate(row.createdAt)}</span>
           {row.startedAt && <span>D: {formatShortDate(row.startedAt)}</span>}
           {row.endedAt && <span>F: {formatShortDate(row.endedAt)}</span>}
@@ -222,7 +222,7 @@ export default function AdminSessionsPage() {
               e.stopPropagation();
               router.push(`/admin/sessions/${row.id}`);
             }}
-            className="p-1.5 rounded-lg bg-[#3E3666] hover:bg-[#4E4676] transition-colors"
+            className="p-1.5 rounded-lg bg-surface-2 hover:bg-surface-2 transition-colors"
             title="Voir détail"
           >
             <Eye size={14} color="#FFFFFF" />
@@ -250,8 +250,8 @@ export default function AdminSessionsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-white text-2xl font-bold">Sessions</h1>
-          <p className="text-white/50 text-sm">Gestion des sessions de jeu</p>
+          <h1 className="text-txt text-2xl font-bold">Sessions</h1>
+          <p className="text-txt-60 text-sm">Gestion des sessions de jeu</p>
         </div>
       </div>
 
@@ -259,16 +259,16 @@ export default function AdminSessionsPage() {
       <div>
         <div className="flex items-center gap-2 mb-3">
           <Activity size={18} color="#00D397" />
-          <h2 className="text-white font-bold">Sessions actives</h2>
+          <h2 className="text-txt font-bold">Sessions actives</h2>
           <span className="ml-auto px-2 py-0.5 bg-[#00D39720] text-[#00D397] text-xs rounded-full font-semibold">
             {activeSessions?.length ?? 0} live
           </span>
         </div>
         {activeLoading ? (
-          <div className="text-white/50 text-sm">Chargement...</div>
+          <div className="text-txt-60 text-sm">Chargement...</div>
         ) : activeSessions?.length === 0 ? (
           <Card className="flex items-center justify-center py-8">
-            <p className="text-white/40 text-sm">Aucune session active</p>
+            <p className="text-txt-40 text-sm">Aucune session active</p>
           </Card>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -284,7 +284,7 @@ export default function AdminSessionsPage() {
       </div>
 
       {/* Filters */}
-      <div className="bg-[#342D5B] rounded-2xl border border-[#3E3666] p-4">
+      <div className="bg-surface rounded-2xl border border-line p-4">
         <div className="flex flex-col lg:flex-row gap-3">
           <div className="flex items-center gap-2 flex-1 min-w-0">
             <Search size={16} color="#FFFFFF60" />
@@ -293,10 +293,10 @@ export default function AdminSessionsPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Rechercher par code, manager, salle..."
-              className="flex-1 bg-transparent text-white text-sm focus:outline-none placeholder-white/40 min-w-0"
+              className="flex-1 bg-transparent text-txt text-sm focus:outline-none placeholder-white/40 min-w-0"
             />
           </div>
-          <div className="h-px lg:h-auto lg:w-px bg-[#3E3666]" />
+          <div className="h-px lg:h-auto lg:w-px bg-surface-2" />
           <div className="flex flex-col sm:flex-row gap-2">
             <div className="flex items-center gap-2">
               <Filter size={16} color="#FFFFFF60" />
@@ -306,7 +306,7 @@ export default function AdminSessionsPage() {
                   setStatusFilter(e.target.value);
                   setPage(0);
                 }}
-                className="bg-[#292349] text-white text-sm rounded-xl px-3 py-2 border border-[#3E3666] focus:outline-none focus:border-[#9B59B6] w-full sm:w-auto"
+                className="bg-bg text-txt text-sm rounded-xl px-3 py-2 border border-line focus:outline-none focus:border-[#9B59B6] w-full sm:w-auto"
               >
                 {STATUS_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>
@@ -324,9 +324,9 @@ export default function AdminSessionsPage() {
                   setFromDate(e.target.value);
                   setPage(0);
                 }}
-                className="bg-[#292349] text-white text-sm rounded-xl px-3 py-2 border border-[#3E3666] focus:outline-none focus:border-[#9B59B6] flex-1"
+                className="bg-bg text-txt text-sm rounded-xl px-3 py-2 border border-line focus:outline-none focus:border-[#9B59B6] flex-1"
               />
-              <span className="text-white/40 text-sm hidden sm:inline">à</span>
+              <span className="text-txt-40 text-sm hidden sm:inline">à</span>
               <input
                 type="date"
                 value={toDate}
@@ -334,7 +334,7 @@ export default function AdminSessionsPage() {
                   setToDate(e.target.value);
                   setPage(0);
                 }}
-                className="bg-[#292349] text-white text-sm rounded-xl px-3 py-2 border border-[#3E3666] focus:outline-none focus:border-[#9B59B6] flex-1"
+                className="bg-bg text-txt text-sm rounded-xl px-3 py-2 border border-line focus:outline-none focus:border-[#9B59B6] flex-1"
               />
             </div>
           </div>
@@ -353,7 +353,7 @@ export default function AdminSessionsPage() {
         onRowClick={(row) => router.push(`/admin/sessions/${row.id}`)}
       />
 
-      <div className="text-white/40 text-xs">
+      <div className="text-txt-40 text-xs">
         Total : {sessionsData?.totalElements ?? 0} session{sessionsData?.totalElements !== 1 ? 's' : ''}
       </div>
     </div>
@@ -379,7 +379,7 @@ function ActiveSessionCard({
   return (
     <Card
       onClick={onClick}
-      className="cursor-pointer hover:bg-[#3E366630] transition-colors group"
+      className="cursor-pointer hover:bg-surface-2/30 transition-colors group"
     >
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
@@ -387,40 +387,40 @@ function ActiveSessionCard({
             className="w-2.5 h-2.5 rounded-full animate-pulse"
             style={{ backgroundColor: statusColor }}
           />
-          <span className="text-white font-bold tracking-wider">#{session.code}</span>
+          <span className="text-txt font-bold tracking-wider">#{session.code}</span>
         </div>
         <ChevronRight
           size={16}
           color="#FFFFFF40"
-          className="group-hover:text-white transition-colors"
+          className="group-hover:text-txt transition-colors"
         />
       </div>
       <div className="flex flex-col gap-1 text-sm">
         <div className="flex justify-between">
-          <span className="text-white/50">Manager</span>
-          <span className="text-white">{session.managerUsername}</span>
+          <span className="text-txt-60">Manager</span>
+          <span className="text-txt">{session.managerUsername}</span>
         </div>
         {session.roomName && (
           <div className="flex justify-between">
-            <span className="text-white/50">Salle</span>
-            <span className="text-white">{session.roomName}</span>
+            <span className="text-txt-60">Salle</span>
+            <span className="text-txt">{session.roomName}</span>
           </div>
         )}
         <div className="flex justify-between">
-          <span className="text-white/50">Mode</span>
+          <span className="text-txt-60">Mode</span>
           <span className={`text-xs font-semibold ${session.sessionMode === 'WITHOUT_MODERATOR' ? 'text-[#3B82F6]' : 'text-[#F59E0B]'}`}>
             {session.sessionMode === 'WITHOUT_MODERATOR' ? 'Sans modérateur' : 'Avec modérateur'}
           </span>
         </div>
         <div className="flex justify-between">
-          <span className="text-white/50">Joueurs</span>
-          <span className="text-white">
+          <span className="text-txt-60">Joueurs</span>
+          <span className="text-txt">
             {session.playerCount} / {session.maxPlayers} ({session.connectedPlayers} connectés)
           </span>
         </div>
         <div className="flex justify-between">
-          <span className="text-white/50">Questions</span>
-          <span className="text-white">
+          <span className="text-txt-60">Questions</span>
+          <span className="text-txt">
             {session.currentQuestionIndex} / {session.totalQuestions}
           </span>
         </div>

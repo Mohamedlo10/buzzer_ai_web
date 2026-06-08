@@ -14,6 +14,8 @@ import {
 import { SafeScreen } from '~/components/layout/SafeScreen';
 import { Avatar } from '~/components/ui/Avatar';
 import { FriendshipButton } from '~/components/ui/FriendshipButton';
+import { PlayerProfileModal } from '~/components/ui/PlayerProfileModal';
+import { Podium } from '~/components/results/Podium';
 import { useAuthStore } from '~/stores/useAuthStore';
 import { useBuzzStore } from '~/stores/useBuzzStore';
 import * as rankingsApi from '~/lib/api/rankings';
@@ -64,13 +66,13 @@ function TeamRankingsCard({ teamRankings }: { teamRankings: TeamEntry[] }) {
   const rankColors = ['#FFD700', '#C0C0C0', '#CD7F32'];
 
   return (
-    <div className="bg-[#342D5B] rounded-2xl border border-[#3E3666] overflow-hidden">
-      <div className="flex items-center justify-between px-4 py-3 border-b border-[#3E3666]">
+    <div className="bg-surface rounded-2xl border border-line overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-line">
         <div className="flex items-center gap-2">
           <Trophy size={16} color="#F59E0B" />
-          <p className="text-white/60 font-bold text-xs tracking-widest uppercase">Classement par équipe</p>
+          <p className="text-txt-60 font-bold text-xs tracking-widest uppercase">Classement par équipe</p>
         </div>
-        <p className="text-white/30 text-xs font-semibold tracking-wider uppercase">Points équipe</p>
+        <p className="text-txt-40 text-xs font-semibold tracking-wider uppercase">Points équipe</p>
       </div>
 
       {teamRankings.map((team, index) => {
@@ -78,23 +80,23 @@ function TeamRankingsCard({ teamRankings }: { teamRankings: TeamEntry[] }) {
         return (
           <div
             key={team.id}
-            className={`px-4 py-3 ${index < teamRankings.length - 1 ? 'border-b border-[#3E3666]' : ''}`}
+            className={`px-4 py-3 ${index < teamRankings.length - 1 ? 'border-b border-line' : ''}`}
             style={{ borderLeft: `3px solid ${team.color}` }}
           >
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 {index === 0 && <Crown size={14} color="#FFD700" />}
                 <span className="font-bold text-base" style={{ color: team.color }}>{team.name}</span>
-                <span className="text-white/30 text-xs">{team.players.length} joueur{team.players.length > 1 ? 's' : ''}</span>
+                <span className="text-txt-40 text-xs">{team.players.length} joueur{team.players.length > 1 ? 's' : ''}</span>
               </div>
               <div className="flex items-baseline gap-1">
                 <span className="font-bold text-lg" style={{ color: scoreColor }}>{team.score}</span>
-                <span className="text-white/30 text-xs">pts</span>
+                <span className="text-txt-40 text-xs">pts</span>
               </div>
             </div>
             <div className="flex flex-wrap gap-1">
               {team.players.map((p) => (
-                <span key={p.player.id} className="text-xs bg-[#292349] rounded-full px-2 py-0.5 text-white/60">
+                <span key={p.player.id} className="text-xs bg-bg rounded-full px-2 py-0.5 text-txt-60">
                   {p.player.name}
                 </span>
               ))}
@@ -118,7 +120,7 @@ function CategoryRankingsCard({
 
   return (
     <div className="mb-4">
-      <p className="text-white/50 text-xs font-bold tracking-widest uppercase px-4 mb-3">
+      <p className="text-txt-60 text-xs font-bold tracking-widest uppercase px-4 mb-3">
         Détails par catégorie
       </p>
 
@@ -132,7 +134,7 @@ function CategoryRankingsCard({
           return (
             <div
               key={cat.name}
-              className="flex-shrink-0 bg-[#342D5B] rounded-2xl border border-[#3E3666] p-4"
+              className="flex-shrink-0 bg-surface rounded-2xl border border-line p-4"
               style={{ width: 160 }}
             >
               {/* Icon */}
@@ -194,6 +196,7 @@ export default function ResultsPage() {
   const [categoryRankings, setCategoryRankings] = useState<CategoryRankingResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [storedSessionId, setStoredSessionId] = useState<string | null>(null);
+  const [profileUserId, setProfileUserId] = useState<string | null>(null);
 
   const user = useAuthStore((state) => state.user);
   const storeSession = useBuzzStore((state) => state.session);
@@ -246,12 +249,12 @@ export default function ResultsPage() {
   // ── Loading ──
   if (isLoading) {
     return (
-      <SafeScreen className="bg-[#292349]">
+      <SafeScreen>
         <div className="flex-1 flex flex-col justify-center items-center min-h-screen">
           <div className="w-20 h-20 rounded-full bg-[#00D39720] flex items-center justify-center mb-4">
             <Trophy size={40} color="#00D397" />
           </div>
-          <p className="text-white font-semibold">Chargement des résultats...</p>
+          <p className="text-txt font-semibold">Chargement des résultats…</p>
         </div>
       </SafeScreen>
     );
@@ -259,14 +262,14 @@ export default function ResultsPage() {
 
   if (!rankings || rankings.length === 0) {
     return (
-      <SafeScreen className="bg-[#292349]">
+      <SafeScreen>
         <div className="flex-1 flex flex-col items-center justify-center px-4 min-h-screen">
-          <div className="w-24 h-24 rounded-full bg-[#342D5B] flex items-center justify-center mb-4">
+          <div className="w-24 h-24 rounded-full bg-surface flex items-center justify-center mb-4">
             <BarChart3 size={48} color="#6B7280" />
           </div>
-          <p className="text-white/60 text-center mb-4">Aucun résultat disponible</p>
-          <button onClick={handleBack} className="bg-[#00D397] px-8 py-4 rounded-2xl">
-            <span className="text-[#292349] font-bold">Retour</span>
+          <p className="text-txt-60 text-center mb-4">Aucun résultat disponible</p>
+          <button onClick={handleBack} className="bg-accent px-8 py-4 rounded-2xl hover:bg-accent-d transition-colors">
+            <span className="text-btn-fg font-bold">Retour</span>
           </button>
         </div>
       </SafeScreen>
@@ -322,19 +325,19 @@ export default function ResultsPage() {
     );
 
   return (
-    <SafeScreen className="bg-[#292349]">
+    <SafeScreen>
       {/* ── Header ── */}
       <div className="flex flex-row items-center px-4 pt-6 pb-4 gap-3">
         <button
           onClick={handleBack}
-          className="w-10 h-10 rounded-full bg-[#342D5B] flex items-center justify-center shrink-0"
+          className="w-10 h-10 rounded-full bg-surface flex items-center justify-center shrink-0"
         >
           <ArrowLeft size={20} color="#FFFFFF" />
         </button>
 
         <div className="flex-1">
-          <p className="text-white font-bold text-2xl leading-tight">Résultats</p>
-          <p className="text-white/40 text-xs">Partie #{code}</p>
+          <p className="text-txt font-bold text-2xl leading-tight">Résultats</p>
+          <p className="text-txt-40 text-xs">Partie #{code}</p>
         </div>
 
         {resolvedRoomId && (
@@ -343,7 +346,7 @@ export default function ResultsPage() {
             className="px-4 py-2 rounded-full shrink-0"
             style={{ background: 'linear-gradient(135deg, #00D397, #00B383)' }}
           >
-            <span className="text-[#292349] font-bold text-sm">Retourner à la salle</span>
+            <span className="text-btn-fg font-bold text-sm">Retourner à la salle</span>
           </button>
         )}
 
@@ -353,30 +356,40 @@ export default function ResultsPage() {
       </div>
 
       {/* ── Scrollable content ── */}
-      <div className="overflow-y-auto pb-10 flex flex-col gap-4 px-4">
+      <div className="overflow-y-auto pb-10 flex flex-col gap-3.5 px-4">
 
-        {/* ── Performance Globale & Détails ── */}
-        <div className="bg-[#342D5B] rounded-2xl border border-[#3E3666] p-4">
-          <div className="flex items-center gap-2 mb-4">
-            <Zap size={16} color="#F59E0B" />
-            <p className="text-white/60 text-xs font-bold tracking-widest uppercase">
-              Performance Globale &amp; Détails
+        {/* ── Podium ── */}
+        <Podium
+          rankings={rankings}
+          currentUserId={user?.id}
+          onPlayerTap={(entry) => {
+            const uid = entry.player.userId ?? entry.player.id;
+            if (uid) setProfileUserId(uid);
+          }}
+        />
+
+        {/* ── Performance globale ── */}
+        <div className="bg-surface rounded-2xl border border-line p-3.5">
+          <div className="flex items-center gap-1.5 mb-3">
+            <Zap size={15} className="text-warn" />
+            <p className="text-warn text-[10px] font-bold tracking-widest uppercase">
+              Performance globale
             </p>
           </div>
 
-          <div className="grid grid-cols-4 md:grid-cols-7 gap-4">
+          <div className="grid grid-cols-4 md:grid-cols-7 gap-2">
             {[
-              { label: 'JOUEURS', value: rankings.length, color: '#FFFFFF' },
-              { label: 'MAX', value: rankings[0]?.finalScore ?? 0, color: '#F59E0B' },
-              { label: 'POS.', value: currentUserRanking ? `${currentUserRanking.rank}er` : '—', color: '#00D397' },
-              { label: 'BASE', value: currentUserRanking?.score ?? '—', color: '#FFFFFF' },
-              { label: 'CORR.', value: correctionTotal !== 0 ? (correctionTotal > 0 ? `+${correctionTotal}` : correctionTotal) : '0', color: '#FFFFFF' },
-              { label: 'DETTES', value: netDebt !== 0 ? (netDebt > 0 ? `+${netDebt}` : `${netDebt}`) : '0', color: netDebt < 0 ? '#EF4444' : netDebt > 0 ? '#00D397' : '#FFFFFF' },
+              { label: 'JOUEURS', value: rankings.length, color: 'var(--txt)' },
+              { label: 'MAX', value: rankings[0]?.finalScore ?? 0, color: '#FFD700' },
+              { label: 'POS.', value: currentUserRanking ? `${currentUserRanking.rank}${currentUserRanking.rank === 1 ? 'er' : 'e'}` : '—', color: '#00D397' },
+              { label: 'BASE', value: currentUserRanking?.score ?? '—', color: 'var(--txt)' },
+              { label: 'CORR.', value: correctionTotal !== 0 ? (correctionTotal > 0 ? `+${correctionTotal}` : correctionTotal) : '0', color: 'var(--txt)' },
+              { label: 'DETTES', value: netDebt !== 0 ? (netDebt > 0 ? `+${netDebt}` : `${netDebt}`) : '0', color: netDebt < 0 ? '#D5442F' : netDebt > 0 ? '#00D397' : 'var(--txt)' },
               { label: 'FINAL', value: currentUserRanking?.finalScore ?? '—', color: '#00D397' },
             ].map(({ label, value, color }) => (
-              <div key={label} className="flex flex-col items-center">
-                <p className="text-white/40 text-[10px] font-bold tracking-wider mb-1">{label}</p>
-                <p className="font-bold md:text-base text-sm" style={{ color }}>{value}</p>
+              <div key={label} className="flex flex-col items-center text-center">
+                <p className="text-txt-40 text-[8.5px] font-bold tracking-wide mb-1">{label}</p>
+                <p className="font-display font-semibold text-sm" style={{ color }}>{value}</p>
               </div>
             ))}
           </div>
@@ -388,28 +401,31 @@ export default function ResultsPage() {
         )}
 
         {/* ── Classement individuel ── */}
-        <div className="bg-[#342D5B] rounded-2xl border border-[#3E3666] overflow-hidden">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-[#3E3666]">
+        <div className="bg-surface rounded-2xl border border-line overflow-hidden">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-line">
             <div className="flex items-center gap-2">
-              <BarChart3 size={16} color="#00D397" />
-              <p className="text-white/60 font-bold text-xs tracking-widest uppercase">
+              <BarChart3 size={16} className="text-accent" />
+              <p className="text-accent text-[10px] font-bold tracking-widest uppercase">
                 {isTeamMode ? 'Classement individuel' : 'Classement'}
               </p>
             </div>
-            <p className="text-white/30 text-xs font-semibold tracking-wider uppercase">Total points</p>
+            <p className="text-txt-40 text-[9.5px] font-bold tracking-widest uppercase">Total points</p>
           </div>
 
           {rankings.map((entry, index) => {
             const isCurrentUser = (entry.player.userId ?? entry.player.id) === user?.id;
             const rankColors = ['#FFD700', '#C0C0C0', '#CD7F32'];
-            const scoreColor = index < 3 ? rankColors[index] : '#FFFFFF';
+            const scoreColor = index < 3 ? rankColors[index] : 'var(--txt)';
+            const playerUserId = entry.player.userId ?? entry.player.id;
 
             return (
-              <div
+              <button
                 key={entry.player.id}
-                className={`flex flex-row items-center px-4 py-3 ${
-                  index < rankings.length - 1 ? 'border-b border-[#3E3666]' : ''
-                } ${isCurrentUser ? 'bg-[#00D39710]' : ''}`}
+                type="button"
+                onClick={() => playerUserId && setProfileUserId(playerUserId)}
+                className={`w-full flex flex-row items-center px-4 py-2.5 text-left transition-colors ${
+                  index < rankings.length - 1 ? 'border-b border-line' : ''
+                } ${isCurrentUser ? 'bg-accent/9' : 'hover:bg-surface-2/40'}`}
               >
                 {/* Avatar with rank badge */}
                 <div className="relative mr-3">
@@ -421,28 +437,28 @@ export default function ResultsPage() {
                   />
                   {index === 0 && (
                     <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-[#FFD700] flex items-center justify-center">
-                      <Crown size={10} color="#292349" />
+                      <Crown size={10} className="text-btn-fg" />
                     </div>
                   )}
                   {index === 1 && (
                     <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-[#C0C0C0] flex items-center justify-center">
-                      <Medal size={10} color="#292349" />
+                      <Medal size={10} className="text-btn-fg" />
                     </div>
                   )}
                   {index === 2 && (
                     <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-[#CD7F32] flex items-center justify-center">
-                      <Medal size={10} color="#292349" />
+                      <Medal size={10} className="text-btn-fg" />
                     </div>
                   )}
                 </div>
 
                 {/* Name & label */}
                 <div className="flex-1 min-w-0">
-                  <p className={`font-bold md:text-base text-sm truncate ${isCurrentUser ? 'text-[#00D397]' : 'text-white'}`}>
+                  <p className={`font-bold text-sm truncate ${isCurrentUser ? 'text-accent' : 'text-txt'}`}>
                     {entry.player.name}
                     {isCurrentUser && <span className="text-xs font-normal opacity-60"> (Vous)</span>}
                   </p>
-                  <p className="text-white/30 text-xs font-semibold tracking-wider">
+                  <p className="text-txt-40 text-[9.5px] font-bold tracking-wider">
                     {rankLabel(index)}
                   </p>
                 </div>
@@ -457,12 +473,12 @@ export default function ResultsPage() {
 
                 {/* Score */}
                 <div className="flex items-baseline gap-1 ml-3">
-                  <span className="font-bold text-base md:text-xl" style={{ color: scoreColor }}>
+                  <span className="font-display font-semibold text-lg" style={{ color: scoreColor }}>
                     {entry.finalScore}
                   </span>
-                  <span className="text-white/30 text-xs">pts</span>
+                  <span className="text-txt-40 text-[10px]">pts</span>
                 </div>
-              </div>
+              </button>
             );
           })}
         </div>
@@ -476,49 +492,50 @@ export default function ResultsPage() {
 
         {/* ── Dettes ── */}
         {allDebts.length > 0 && (
-          <div className="bg-[#342D5B] rounded-2xl border border-[#3E3666] overflow-hidden">
-            <div className="flex items-center gap-2 px-4 py-3 border-b border-[#3E3666]">
-              <Zap size={16} color="#F59E0B" />
-              <p className="text-white font-bold text-sm tracking-widest uppercase flex-1">Dettes</p>
-              <div className="w-6 h-6 rounded-full bg-[#F59E0B] flex items-center justify-center">
-                <span className="text-[#292349] text-xs font-bold">{allDebts.length}</span>
+          <div className="bg-surface rounded-2xl border border-line overflow-hidden">
+            <div className="flex items-center gap-2 px-4 py-3 border-b border-line">
+              <Zap size={16} className="text-warn" />
+              <p className="text-txt font-bold text-xs tracking-widest uppercase flex-1">Dettes</p>
+              <div className="w-[22px] h-[22px] rounded-full bg-warn flex items-center justify-center">
+                <span className="text-[#11112a] text-[11px] font-bold">{allDebts.length}</span>
               </div>
             </div>
 
             {allDebts.map((debt, i) => {
               const iOwe = debt.debtorId === user?.id;
               const owedToMe = debt.creditorName === user?.username;
-              const accentColor = iOwe ? '#EF4444' : owedToMe ? '#00D397' : '#4A90D9';
-              const amountStr = iOwe
-                ? `-${debt.amount} pts`
-                : owedToMe
-                ? `+${debt.amount} pts`
-                : `-${debt.amount} pts`;
-              const amountColor = iOwe ? '#EF4444' : owedToMe ? '#00D397' : '#FFFFFF80';
+              const accentColor = iOwe ? '#D5442F' : owedToMe ? '#00D397' : '#4A90D9';
 
               return (
                 <div
                   key={i}
-                  className={`flex items-center px-4 py-3 gap-3 ${
-                    i < allDebts.length - 1 ? 'border-b border-[#3E3666]' : ''
+                  className={`flex items-center px-4 py-2.5 gap-2.5 ${
+                    i < allDebts.length - 1 ? 'border-b border-line' : ''
                   }`}
                   style={{ borderLeft: `3px solid ${accentColor}` }}
                 >
                   <Avatar
                     avatarUrl={debt.debtorAvatarUrl ?? null}
                     username={debt.debtorName}
-                    size={36}
+                    size={34}
                   />
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold">
-                      <span style={{ color: iOwe ? '#EF4444' : '#FFFFFF' }}>{debt.debtorName}</span>
-                      <span className="text-white/40"> doit à </span>
-                      <span style={{ color: owedToMe ? '#00D397' : '#FFFFFF' }}>{debt.creditorName}</span>
+                    <p className="text-[13px] font-semibold">
+                      <span className={iOwe ? 'text-buzz' : 'text-txt'}>
+                        {debt.debtorId === user?.id ? 'Toi' : debt.debtorName}
+                      </span>
+                      <span className="text-txt-60"> doit à </span>
+                      <span className={owedToMe ? 'text-accent' : 'text-txt'}>
+                        {owedToMe ? 'toi' : debt.creditorName}
+                      </span>
                     </p>
-                    <p className="text-white/30 text-xs uppercase tracking-wider">{debt.category}</p>
+                    <p className="text-txt-40 text-[10px] uppercase tracking-wider">{debt.category}</p>
                   </div>
-                  <span className="font-bold text-sm shrink-0" style={{ color: amountColor }}>
-                    {amountStr}
+                  <span
+                    className="font-display font-semibold text-sm shrink-0"
+                    style={{ color: iOwe ? '#D5442F' : owedToMe ? '#00D397' : 'var(--txt-60)' }}
+                  >
+                    {iOwe ? '-' : owedToMe ? '+' : '-'}{debt.amount} pts
                   </span>
                 </div>
               );
@@ -526,17 +543,28 @@ export default function ResultsPage() {
           </div>
         )}
 
-        {/* ── Back to dashboard ── */}
-        {!resolvedRoomId && (
+        {/* ── Footer actions ── */}
+        <div className="flex gap-2.5 mt-1">
           <button
+            type="button"
             onClick={handleBack}
-            className="w-full py-4 rounded-2xl flex items-center justify-center mt-2"
-            style={{ background: 'linear-gradient(135deg, #00D397, #00B383)' }}
+            className="flex-1 py-3.5 rounded-2xl bg-surface border border-line text-txt font-bold text-sm hover:bg-surface-2 transition-colors"
           >
-            <span className="text-[#292349] font-bold text-lg">Retour à l'accueil</span>
+            {resolvedRoomId ? 'Retour à la salle' : 'Quitter'}
           </button>
-        )}
+          {resolvedRoomId && (
+            <button
+              type="button"
+              onClick={() => router.replace(`/session/create?roomId=${resolvedRoomId}`)}
+              className="flex-[1.5] py-3.5 rounded-2xl bg-accent text-btn-fg font-bold text-sm hover:bg-accent-d transition-colors"
+            >
+              Rejouer 🔁
+            </button>
+          )}
+        </div>
       </div>
+
+      <PlayerProfileModal userId={profileUserId} onClose={() => setProfileUserId(null)} />
     </SafeScreen>
   );
 }

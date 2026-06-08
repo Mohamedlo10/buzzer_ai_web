@@ -71,51 +71,51 @@ export function QRCodeModal({ visible, onClose, type, id, code, title }: QRCodeM
 
   return (
     <div
-      className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 px-6"
+      className="fixed inset-0 bg-scrim flex items-center justify-center z-50 px-6 backdrop-blur-sm"
       onClick={onClose}
     >
       <div
-        className="bg-[#342D5B] w-full max-w-sm rounded-3xl border border-[#3E3666] overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+        className="bg-surface w-full max-w-sm rounded-3xl border border-line overflow-hidden animate-in fade-in zoom-in-95 duration-200"
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex flex-row items-center justify-between px-5 py-4 border-b border-[#3E3666]">
+        <div className="flex flex-row items-center justify-between px-5 py-4 border-b border-line">
           <div className="flex flex-row items-center">
             <div className="w-10 h-10 rounded-xl bg-[#00D39720] flex items-center justify-center mr-3">
               <QrCode size={20} color="#00D397" />
             </div>
             <div>
-              <p className="text-white font-bold text-lg">
+              <p className="text-txt font-bold text-lg">
                 {type === 'session' ? 'QR Code Session' : 'QR Code Salle'}
               </p>
               {title && (
-                <p className="text-white/60 text-sm">{title}</p>
+                <p className="text-txt-60 text-sm">{title}</p>
               )}
             </div>
           </div>
           <button
             onClick={onClose}
-            className="w-10 h-10 rounded-full bg-[#3E3666] flex items-center justify-center hover:bg-[#4E4676] transition-colors"
+            className="w-10 h-10 rounded-full bg-surface-2 flex items-center justify-center hover:bg-surface-2/80 transition-colors text-txt"
           >
-            <X size={20} color="#FFFFFF" />
+            <X size={20} />
           </button>
         </div>
 
         {/* Content */}
         <div className="p-6 flex flex-col items-center">
           {isLoading ? (
-            <div className="w-64 h-64 rounded-2xl bg-[#292349] flex flex-col items-center justify-center">
+            <div className="w-64 h-64 rounded-2xl bg-bg flex flex-col items-center justify-center">
               <div className="w-10 h-10 border-2 border-[#00D397] border-t-transparent rounded-full animate-spin" />
-              <p className="text-white/60 mt-4">Chargement...</p>
+              <p className="text-txt-60 mt-4">Chargement...</p>
             </div>
           ) : error ? (
-            <div className="w-64 h-64 rounded-2xl bg-[#292349] flex flex-col items-center justify-center px-6">
+            <div className="w-64 h-64 rounded-2xl bg-bg flex flex-col items-center justify-center px-6">
               <p className="text-red-400 text-center">{error}</p>
               <button
                 onClick={loadQRCode}
                 className="mt-4 px-6 py-3 bg-[#00D397] rounded-xl hover:bg-[#00B377] transition-colors"
               >
-                <span className="text-[#292349] font-bold">Réessayer</span>
+                <span className="text-btn-fg font-bold">Réessayer</span>
               </button>
             </div>
           ) : qrImage ? (
@@ -128,7 +128,7 @@ export function QRCodeModal({ visible, onClose, type, id, code, title }: QRCodeM
                   className="w-56 h-56 object-contain"
                 />
               </div>
-              <p className="text-white/60 text-center mt-4 text-sm">
+              <p className="text-txt-60 text-center mt-4 text-sm">
                 Scannez pour rejoindre
               </p>
             </div>
@@ -136,8 +136,8 @@ export function QRCodeModal({ visible, onClose, type, id, code, title }: QRCodeM
 
           {/* Code display */}
           {code && (
-            <div className="mt-6 bg-[#292349] rounded-2xl px-6 py-4 border border-[#3E3666] w-full">
-              <p className="text-white/60 text-sm mb-1">Code</p>
+            <div className="mt-6 bg-bg rounded-2xl px-6 py-4 border border-line w-full">
+              <p className="text-txt-60 text-sm mb-1">Code</p>
               <p className="text-[#00D397] font-bold text-2xl tracking-wider">{code}</p>
             </div>
           )}
@@ -146,17 +146,17 @@ export function QRCodeModal({ visible, onClose, type, id, code, title }: QRCodeM
           {code && (
             <button
               onClick={handleShare}
-              className="mt-4 flex flex-row items-center gap-2 px-6 py-3 bg-[#3E3666] rounded-xl hover:bg-[#4E4676] transition-colors"
+              className="mt-4 flex flex-row items-center gap-2 px-6 py-3 bg-surface-2 rounded-xl hover:bg-surface-2/80 transition-colors text-txt"
             >
-              <Share2 size={18} color="#FFFFFF" />
-              <span className="text-white font-medium">Partager</span>
+              <Share2 size={18} />
+              <span className="font-medium">Partager</span>
             </button>
           )}
         </div>
 
         {/* Instructions */}
-        <div className="px-5 py-4 bg-[#292349] border-t border-[#3E3666]">
-          <p className="text-white/50 text-sm text-center">
+        <div className="px-5 py-4 bg-bg border-t border-line">
+          <p className="text-txt-60 text-sm text-center">
             Scannez ce QR code avec votre appareil photo pour rejoindre automatiquement
           </p>
         </div>

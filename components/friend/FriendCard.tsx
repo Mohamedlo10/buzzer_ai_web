@@ -1,10 +1,11 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { ChevronRight } from 'lucide-react';
 
 import { Badge } from '~/components/ui/Badge';
 import { Avatar } from '~/components/ui/Avatar';
+import { PlayerProfileModal } from '~/components/ui/PlayerProfileModal';
 import type { FriendResponse } from '~/types/api';
 
 interface FriendCardProps {
@@ -12,52 +13,58 @@ interface FriendCardProps {
 }
 
 export function FriendCard({ friend }: FriendCardProps) {
-  const router = useRouter();
+  const [showProfile, setShowProfile] = useState(false);
 
   const timeSinceLastSeen = friend.lastSeenAt
     ? formatTimeSince(new Date(friend.lastSeenAt))
     : null;
 
   return (
-    <button
-      onClick={() => router.push(`/profile/${friend.id}`)}
-      className="w-full text-left bg-[#342D5B] rounded-xl p-4 border border-[#3E3666] mb-3 hover:opacity-90 active:opacity-80 transition-opacity cursor-pointer"
-    >
-      <div className="flex flex-row items-center">
-        {/* Avatar */}
-        <div className="relative shrink-0">
-          <Avatar avatarUrl={friend.avatarUrl} username={friend.username} size={48} />
-          {/* Online status dot */}
-          <span
-            className={`absolute bottom-0 right-0 w-4 h-4 rounded-full border-2 border-[#342D5B] ${
-              friend.isOnline ? 'bg-[#00D397]' : 'bg-[#6B7280]'
-            }`}
-          />
-        </div>
-
-        {/* Info */}
-        <div className="flex-1 ml-3">
-          <p className="text-white font-semibold text-lg">{friend.username}</p>
-          <div className="flex flex-row items-center gap-2">
-            {friend.isOnline ? (
-              <Badge variant="success">En ligne</Badge>
-            ) : timeSinceLastSeen ? (
-              <span className="text-white/40 text-sm">Vu {timeSinceLastSeen}</span>
-            ) : (
-              <span className="text-white/40 text-sm">Hors ligne</span>
-            )}
-            {friend.globalRank != null && (
-              <span className="text-[#00D397] text-xs font-semibold">
-                #{friend.globalRank}
-              </span>
-            )}
+    <>
+      <button
+        onClick={() => setShowProfile(true)}
+        className="w-full text-left bg-surface rounded-xl p-4 border border-line mb-3 hover:opacity-90 active:opacity-80 transition-opacity cursor-pointer"
+      >
+        <div className="flex flex-row items-center">
+          {/* Avatar */}
+          <div className="relative shrink-0">
+            <Avatar avatarUrl={friend.avatarUrl} username={friend.username} size={48} />
+            {/* Online status dot */}
+            <span
+              className={`absolute bottom-0 right-0 w-4 h-4 rounded-full border-2 border-surface ${
+                friend.isOnline ? 'bg-accent' : 'bg-txt-40'
+              }`}
+            />
           </div>
-        </div>
 
-        {/* Arrow */}
-        <ChevronRight size={20} color="#FFFFFF60" />
-      </div>
-    </button>
+          {/* Info */}
+          <div className="flex-1 ml-3">
+            <p className="text-txt font-semibold text-lg">{friend.username}</p>
+            <div className="flex flex-row items-center gap-2">
+              {friend.isOnline ? (
+                <Badge variant="success">En ligne</Badge>
+              ) : timeSinceLastSeen ? (
+                <span className="text-txt-40 text-sm">Vu {timeSinceLastSeen}</span>
+              ) : (
+                <span className="text-txt-40 text-sm">Hors ligne</span>
+              )}
+              {friend.globalRank != null && (
+                <span className="text-accent text-xs font-semibold">
+                  #{friend.globalRank}
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Arrow */}
+          <ChevronRight size={20} className="text-txt-40" />
+        </div>
+      </button>
+
+      {showProfile && (
+        <PlayerProfileModal userId={friend.id} onClose={() => setShowProfile(false)} />
+      )}
+    </>
   );
 }
 
