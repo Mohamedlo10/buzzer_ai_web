@@ -54,7 +54,7 @@ interface BuzzState {
   globalTimerRemaining: number;
   globalTimerTotal: number;
   globalTimerPaused: boolean;
-  answerReveal: { correctAnswer: string; winnerId: string | null; winnerName: string | null } | null;
+  answerReveal: { correctAnswer: string; winnerId: string | null; winnerName: string | null; allAnswersWrong?: boolean } | null;
 
   // Loading states
   isCreating: boolean;

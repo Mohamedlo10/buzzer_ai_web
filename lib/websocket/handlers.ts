@@ -313,17 +313,21 @@ export function handleWSEvent(event: WSEvent, currentUserId?: string): void {
     }
 
     case 'answer_reveal': {
+      const isAllWrong = !!(event as any).allAnswersWrong;
       useBuzzStore.setState({
         answerReveal: {
           correctAnswer: event.correctAnswer,
           winnerId: event.winnerId,
           winnerName: event.winnerName,
+          allAnswersWrong: isAllWrong,
         },
       });
-      // Auto-clear après 4s (l'overlay se ferme après 3s côté UI)
-      setTimeout(() => {
-        useBuzzStore.setState({ answerReveal: null });
-      }, 4000);
+      // Auto-clear après 4s seulement si pas le cas "tous faux" (celui-ci attend le manager)
+      if (!isAllWrong) {
+        setTimeout(() => {
+          useBuzzStore.setState({ answerReveal: null });
+        }, 4000);
+      }
       break;
     }
 

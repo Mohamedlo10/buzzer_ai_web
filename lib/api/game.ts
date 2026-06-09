@@ -39,6 +39,10 @@ export async function resetBuzzer(sessionId: string): Promise<void> {
   await apiClientFast.post(`/api/games/${sessionId}/reset-buzzer`);
 }
 
+export async function advanceAfterAllWrong(sessionId: string): Promise<void> {
+  await apiClientFast.post(`/api/games/${sessionId}/advance-after-all-wrong`);
+}
+
 export async function scoreCorrection(
   sessionId: string,
   data: ScoreCorrectionRequest,

@@ -615,6 +615,16 @@ export default function GamePage() {
     }
   }, [session?.id, isSkipping]);
 
+  const handleAdvanceAfterAllWrong = useCallback(async () => {
+    if (!session?.id) return;
+    try {
+      await gameApi.advanceAfterAllWrong(session.id);
+      useBuzzStore.setState({ answerReveal: null });
+    } catch (err: any) {
+      window.alert(err?.message || 'Action impossible');
+    }
+  }, [session?.id]);
+
   const handleResetBuzzer = useCallback(async () => {
     if (!session?.id || isResettingBuzzer) return;
 
@@ -1498,7 +1508,10 @@ export default function GamePage() {
           correctAnswer={answerReveal.correctAnswer}
           winnerId={answerReveal.winnerId}
           winnerName={answerReveal.winnerName}
+          allAnswersWrong={answerReveal.allAnswersWrong}
+          isManager={isManager}
           onDismiss={() => useBuzzStore.setState({ answerReveal: null })}
+          onAdvance={handleAdvanceAfterAllWrong}
         />
       )}
 
