@@ -975,7 +975,7 @@ export function SessionConfigForm({ onSuccess, onClose, roomId, initialMaxPlayer
       </div>
 
       {/* Fixed Footer */}
-      <div className="bg-bg border-t border-line px-4 py-4 sticky bottom-0 z-10 flex gap-3 items-center shrink-0">
+      <div className="bg-bg border-t border-line px-4 py-4 sticky bottom-16 z-10 flex gap-3 items-center shrink-0">
         {currentStep > 0 && (
           <button
             type="button"
