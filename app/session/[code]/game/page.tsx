@@ -164,7 +164,6 @@ export default function GamePage() {
     globalTimerTotal,
     globalTimerPaused,
     answerReveal,
-    setDisplayWordIndex,
     setQuestionFullyDisplayed,
     setDisplayRunning,
     clearAnswerChoices,
@@ -495,13 +494,12 @@ export default function GamePage() {
     stopCountdown();
   }, [currentQuestion?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Reset display state when question changes (mode sans modérateur)
+  // Side-effects when question changes — display state is already reset atomically
+  // inside setCurrentQuestion (store). Do NOT reset displayWordIndex/displayRunning here:
+  // word_advance events from the server may have already advanced the index by the time
+  // this effect fires (React commit phase), which would cause a visible restart.
   useEffect(() => {
     if (currentQuestion) {
-      setDisplayWordIndex(0);
-      setDisplayRunning(true);
-      // Pour les questions IDENTIFICATION, l'image s'affiche immédiatement
-      // → considérée comme entièrement affichée dès le départ
       setQuestionFullyDisplayed(currentQuestion.questionType === 'IDENTIFICATION');
       setAnswerSubmitResult(null);
     }

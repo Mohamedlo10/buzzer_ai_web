@@ -299,6 +299,7 @@ function mapTopicMessageToWSEvent(
         sessionId,
         wordIndex: payload.wordIndex ?? 0,
         fullyDisplayed: payload.fullyDisplayed ?? false,
+        questionId: payload.questionId ?? null,
       } as any;
 
     case 'question-timer':

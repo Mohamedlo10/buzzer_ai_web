@@ -284,6 +284,12 @@ export function handleWSEvent(event: WSEvent, currentUserId?: string): void {
 
     // ─── Sans Modérateur ─────────────────────
     case 'word_advance': {
+      // Discard stale events from a previous question's display scheduler
+      const eventQuestionId = (event as any).questionId;
+      if (eventQuestionId) {
+        const currentId = useBuzzStore.getState().currentQuestion?.id;
+        if (currentId && eventQuestionId !== currentId) break;
+      }
       useBuzzStore.setState({
         displayWordIndex: event.wordIndex,
         displayRunning: !event.fullyDisplayed,
