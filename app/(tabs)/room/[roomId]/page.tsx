@@ -936,20 +936,13 @@ export default function RoomDetailPage() {
             className="absolute inset-0"
             onClick={() => setShowConfigModal(false)}
           />
-          <div className="relative bg-bg rounded-t-3xl w-full max-w-2xl h-full overflow-y-auto overscroll-y-contain" onTouchMove={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between pt-6 pb-4 px-4 border-b border-line">
-              <div>
-                <p className="text-txt font-bold text-xl">Nouvelle Session</p>
-                <p className="text-txt-60 text-xs mt-0.5">Configure ta partie</p>
-              </div>
-              <button
-                onClick={() => setShowConfigModal(false)}
-                className="w-10 h-10 rounded-full bg-surface flex items-center justify-center hover:bg-surface-2 transition-colors"
-              >
-                <X size={20} color="#FFFFFF" />
-              </button>
-            </div>
-            <SessionConfigForm roomId={roomId} onSuccess={handleSessionCreated} initialMaxPlayers={members.length || undefined} />
+          <div className="relative bg-bg rounded-t-3xl w-full max-w-2xl h-[90vh] flex flex-col overflow-hidden" onTouchMove={(e) => e.stopPropagation()}>
+            <SessionConfigForm
+              roomId={roomId}
+              onSuccess={handleSessionCreated}
+              onClose={() => setShowConfigModal(false)}
+              initialMaxPlayers={members.length || undefined}
+            />
           </div>
         </div>
       )}
