@@ -16,6 +16,7 @@ import { Avatar } from '~/components/ui/Avatar';
 import { FriendshipButton } from '~/components/ui/FriendshipButton';
 import { PlayerProfileModal } from '~/components/ui/PlayerProfileModal';
 import { Podium } from '~/components/results/Podium';
+import { TeamLeaderboard } from '~/components/game/TeamLeaderboard';
 import { useAuthStore } from '~/stores/useAuthStore';
 import { useBuzzStore } from '~/stores/useBuzzStore';
 import * as rankingsApi from '~/lib/api/rankings';
@@ -397,7 +398,28 @@ export default function ResultsPage() {
 
         {/* ── Classement par équipe ── */}
         {isTeamMode && teamRankings.length > 0 && (
-          <TeamRankingsCard teamRankings={teamRankings} />
+          <TeamLeaderboard
+            teams={teamRankings.map((t) => ({
+              id: t.id,
+              name: t.name,
+              color: t.color,
+              score: t.score,
+              members: [],
+            }))}
+            players={rankings.map((r) => ({
+              id: r.player.id,
+              userId: r.player.userId,
+              name: r.player.name,
+              avatarUrl: r.player.avatarUrl,
+              score: r.finalScore,
+              isManager: false,
+              isSpectator: false,
+              teamId: r.teamId ?? null,
+              categoryScores: {},
+              selectedCategories: [],
+            }))}
+            currentUserId={user?.id}
+          />
         )}
 
         {/* ── Classement individuel ── */}

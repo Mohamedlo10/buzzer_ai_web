@@ -64,8 +64,14 @@ export function BuzzerButton({
         >
           <div className="absolute top-0 left-0 right-0 h-20 rounded-t-full pointer-events-none bg-gradient-to-b from-white/10 to-transparent" />
           <div className="flex flex-col items-center">
-            <Zap size={56} className="text-txt-40" strokeWidth={2} />
-            <span className="text-txt-40 font-bold text-xl mt-2 tracking-wide">BUZZ</span>
+            {teamBuzzed ? (
+              <span className="text-5xl mb-1 select-none">🔒</span>
+            ) : (
+              <Zap size={56} className="text-txt-40" strokeWidth={2} />
+            )}
+            <span className="text-txt-40 font-bold text-xl mt-2 tracking-wide">
+              {teamBuzzed ? 'LOCK' : 'BUZZ'}
+            </span>
           </div>
         </div>
         <p className="text-txt-40 mt-4 text-sm">

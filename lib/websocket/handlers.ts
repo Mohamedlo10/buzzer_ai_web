@@ -368,6 +368,26 @@ export function handleWSEvent(event: WSEvent, currentUserId?: string): void {
           const total = sync.session?.totalQuestions ?? useBuzzStore.getState().totalQuestions;
           useBuzzStore.getState().setCurrentQuestion(sync.currentQuestion, idx, total);
           useGameStore.getState().setCurrentQuestion(sync.currentQuestion, idx, total);
+        } else {
+          // Question is the same, sync displayWordIndex if available
+          const serverDisplayWordIndex = (sync as any).displayWordIndex;
+          if (serverDisplayWordIndex != null && serverDisplayWordIndex >= 0) {
+            const q = sync.currentQuestion;
+            const totalWords = q.text ? q.text.split(' ').length : 1;
+            const currentLocalWordIndex = useBuzzStore.getState().displayWordIndex;
+            if (
+              serverDisplayWordIndex > currentLocalWordIndex ||
+              (serverDisplayWordIndex === 0 &&
+                !useBuzzStore.getState().displayRunning &&
+                !useBuzzStore.getState().questionFullyDisplayed)
+            ) {
+              useBuzzStore.setState({
+                displayWordIndex: serverDisplayWordIndex,
+                displayRunning: serverDisplayWordIndex < totalWords - 1,
+                ...(serverDisplayWordIndex >= totalWords - 1 ? { questionFullyDisplayed: true } : {}),
+              });
+            }
+          }
         }
       }
 

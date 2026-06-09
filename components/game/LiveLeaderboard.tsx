@@ -10,9 +10,10 @@ interface LiveLeaderboardProps {
   players: PlayerResponse[];
   currentUserId?: string;
   onPlayerTap?: (player: PlayerResponse) => void;
+  onCorrectClick?: () => void;
 }
 
-export function LiveLeaderboard({ players, currentUserId, onPlayerTap }: LiveLeaderboardProps) {
+export function LiveLeaderboard({ players, currentUserId, onPlayerTap, onCorrectClick }: LiveLeaderboardProps) {
   const sorted = [...players].sort((a, b) => b.score - a.score);
   const top3 = sorted.slice(0, 3);
   const rest = sorted.slice(3);
@@ -24,7 +25,17 @@ export function LiveLeaderboard({ players, currentUserId, onPlayerTap }: LiveLea
           <Trophy size={15} color="#FFD700" />
           <span className="text-txt font-bold text-sm">Classement</span>
         </div>
-        <span className="text-txt-40 text-xs">{players.length} joueurs</span>
+        {onCorrectClick ? (
+          <button
+            onClick={onCorrectClick}
+            type="button"
+            className="px-2.5 py-1 rounded-lg bg-energy/10 border border-energy/30 text-energy text-xs font-semibold cursor-pointer hover:bg-energy/20 transition-colors flex items-center gap-1"
+          >
+            <span>✎</span> Corriger
+          </button>
+        ) : (
+          <span className="text-txt-40 text-xs">{players.length} joueurs</span>
+        )}
       </div>
 
       {top3.length > 0 && (

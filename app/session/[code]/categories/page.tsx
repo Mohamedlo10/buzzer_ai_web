@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 
 import { SafeScreen } from '~/components/layout/SafeScreen';
+import { Avatar } from '~/components/ui/Avatar';
 import { useBuzzStore } from '~/stores/useBuzzStore';
 import { useAuthStore } from '~/stores/useAuthStore';
 import * as sessionsApi from '~/lib/api/sessions';
@@ -303,13 +304,18 @@ export default function CategorySelectionPage() {
   };
 
   const handleSubmit = async () => {
-    if (selectedCategories.length === 0) {
+    if (!isManualMode && selectedCategories.length === 0) {
       setError('Sélectionnez au moins une catégorie');
       return;
     }
 
     if (!actualSessionId) {
       setError('Erreur: ID de session manquant. Veuillez recommencer.');
+      return;
+    }
+
+    if (isTeamMode && currentStep === 'categories' && !isEditMode) {
+      setCurrentStep('team');
       return;
     }
 
@@ -337,43 +343,6 @@ export default function CategorySelectionPage() {
     }
   };
 
-  const handleTeamSelected = async (teamId: string) => {
-    setSelectedTeamId(teamId);
-
-    if (isManualMode && actualSessionId) {
-      setIsSubmitting(true);
-      try {
-        await sessionsApi.joinSession(actualSessionId, {
-          categories: [],
-          isSpectator: false,
-          teamId,
-        });
-        const updated = await sessionsApi.getSession(actualSessionId);
-        await appStorage.setActiveSession({ sessionId: updated.session.id, code: updated.session.code });
-        useBuzzStore.setState({
-          session: updated.session,
-          players: updated.players || [],
-          questions: updated.questions || [],
-          teams: updated.teams || [],
-          sessionCode: updated.session.code,
-        });
-        router.replace(`/session/${code}/lobby`);
-      } catch (err: any) {
-        if (err?.response?.status === 409) {
-          router.replace(`/session/${code}/lobby`);
-          return;
-        }
-        setError(err?.response?.data?.message || 'Erreur lors de la connexion');
-        setCurrentStep('team');
-      } finally {
-        setIsSubmitting(false);
-      }
-      return;
-    }
-
-    setCurrentStep('categories');
-  };
-
   if (isCheckingJoined) {
     return (
       <SafeScreen>
@@ -391,87 +360,144 @@ export default function CategorySelectionPage() {
 
   // Team picker step
   if (currentStep === 'team') {
+    const sortedTeams = [...sessionTeams].sort((a, b) => b.score - a.score);
     return (
       <SafeScreen>
         {/* Header */}
         <div className="bg-bg pt-6 pb-4 px-4 border-b border-line sticky top-0 z-10">
-          <div className="flex flex-row items-center">
+          <div className="flex flex-row items-center gap-3">
             <button
-              onClick={() => router.back()}
-              className="w-10 h-10 rounded-full bg-surface flex items-center justify-center mr-3 hover:bg-surface-2 transition-colors"
+              onClick={() => {
+                if (isManualMode) {
+                  router.back();
+                } else {
+                  setCurrentStep('categories');
+                }
+              }}
+              className="w-10 h-10 rounded-full bg-surface flex items-center justify-center hover:bg-surface-2 transition-colors shrink-0"
             >
-              <ArrowLeft size={20} color="#FFFFFF" />
+              <ArrowLeft size={20} className="text-txt" />
             </button>
-            <div className="flex-1">
-              <p className="text-txt font-bold text-xl">Choisir ton équipe</p>
-              <p className="text-txt-60 text-xs mt-0.5">Sélectionne l'équipe que tu veux rejoindre</p>
+            <div className="flex-1 min-w-0">
+              <p className="text-txt font-bold text-lg">Choisis ton équipe</p>
+              <p className="text-txt-60 text-xs mt-0.5">Mode équipes · le buzz est partagé entre coéquipiers</p>
             </div>
           </div>
         </div>
 
-        <div className="overflow-y-auto p-4 pt-6 flex flex-col gap-4">
-          {sessionTeams.length === 0 ? (
+        <div className="overflow-y-auto p-4 pt-6 flex flex-col gap-4 flex-1">
+          {sortedTeams.length === 0 ? (
             <div className="flex flex-col items-center py-12">
               <p className="text-txt-60">Aucune équipe disponible</p>
             </div>
           ) : (
-            sessionTeams.map((team) => (
-              <button
-                key={team.id}
-                onClick={() => handleTeamSelected(team.id)}
-                disabled={isSubmitting}
-                className="mb-4 rounded-3xl overflow-hidden hover:opacity-80 transition-opacity text-left"
-              >
-                <div
-                  className="bg-surface border border-line rounded-3xl overflow-hidden"
-                  style={{ borderColor: team.color ? `40` : "var(--line)" }}
+            sortedTeams.map((team) => {
+              const isSelected = selectedTeamId === team.id;
+              const teamColor = team.color ?? '#4A90D9';
+              return (
+                <button
+                  key={team.id}
+                  type="button"
+                  onClick={() => setSelectedTeamId(team.id)}
+                  disabled={isSubmitting}
+                  className="rounded-[20px] overflow-hidden transition-all text-left w-full border-[1.5px] p-4 cursor-pointer"
+                  style={{
+                    backgroundColor: isSelected
+                      ? `color-mix(in oklab, ${teamColor} 12%, var(--surface))`
+                      : 'var(--surface)',
+                    borderColor: isSelected ? teamColor : 'var(--line)',
+                  }}
                 >
-                  <div
-                    className="h-2 w-full"
-                    style={{ backgroundColor: team.color ?? "var(--surface-2)" }}
-                  />
-                  <div className="p-5 flex flex-row items-center justify-between">
-                    <div className="flex flex-row items-center flex-1">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center flex-1">
+                      {/* Round team badge */}
                       <div
-                        className="w-12 h-12 rounded-2xl flex items-center justify-center mr-4"
-                        style={{ backgroundColor: team.color ? `25` : "var(--surface-2)" }}
+                        className="w-[46px] h-[46px] rounded-2xl flex items-center justify-center mr-3 shrink-0"
+                        style={{
+                          backgroundColor: `color-mix(in oklab, ${teamColor} 22%, transparent)`,
+                          border: `1.5px solid ${teamColor}`,
+                        }}
                       >
-                        <Target size={22} color={team.color ?? '#FFFFFF'} />
+                        <div
+                          className="w-5 h-5 rounded-full"
+                          style={{ backgroundColor: teamColor }}
+                        />
                       </div>
                       <div>
-                        <p className="text-txt font-bold text-lg">{team.name}</p>
-                        <p className="text-txt-60 text-sm">
-                          {team.members.length} membre{team.members.length !== 1 ? 's' : ''}
+                        <p className="text-txt font-bold text-base">{team.name}</p>
+                        <p className="text-txt-60 text-xs">
+                          {team.members.length} joueur{team.members.length !== 1 ? 's' : ''}
                         </p>
                       </div>
                     </div>
-                    <div
-                      className="px-4 py-2 rounded-xl"
-                      style={{ backgroundColor: team.color ? `20` : "var(--surface-2)" }}
-                    >
-                      <span className="font-bold text-sm" style={{ color: team.color ?? '#FFFFFF' }}>
+
+                    {/* Selection badge */}
+                    {isSelected ? (
+                      <div
+                        className="px-3 py-1.5 rounded-full text-xs font-bold text-white shrink-0"
+                        style={{ backgroundColor: teamColor }}
+                      >
+                        ✓ Mon équipe
+                      </div>
+                    ) : (
+                      <div className="px-3 py-1.5 rounded-full text-xs font-semibold bg-surface-2 border border-line text-txt-60 shrink-0">
                         Rejoindre
-                      </span>
-                    </div>
+                      </div>
+                    )}
                   </div>
-                </div>
-              </button>
-            ))
+
+                  {/* Team Members Avatars */}
+                  {team.members.length > 0 && (
+                    <div className="flex items-center gap-2 pt-2 border-t border-line/40">
+                      <span className="text-txt-40 text-[10px] uppercase font-bold tracking-wider mr-1">Membres :</span>
+                      <div className="flex items-center -space-x-2.5">
+                        {team.members.map((member) => (
+                          <div key={member.id} className="relative rounded-full bg-surface">
+                            <Avatar
+                              avatarUrl={member.avatarUrl}
+                              username={member.name}
+                              size={28}
+                              borderColor={teamColor}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </button>
+              );
+            })
           )}
 
           {error && (
-            <div className="bg-red-500/10 rounded-2xl p-4 border border-red-500/30 flex flex-row items-center mt-2">
-              <AlertCircle size={18} color="#EF4444" />
-              <p className="text-red-400 flex-1 ml-3">{error}</p>
+            <div className="bg-buzz/10 rounded-2xl p-3.5 border border-buzz/30 flex flex-row items-center gap-3">
+              <AlertCircle size={18} className="text-buzz shrink-0" />
+              <p className="text-buzz-h text-sm flex-1 font-medium">{error}</p>
             </div>
           )}
+        </div>
 
-          {isSubmitting && (
-            <div className="flex flex-col items-center py-6">
-              <div className="w-8 h-8 border-4 border-[#00D397] border-t-transparent rounded-full animate-spin" />
-              <p className="text-txt-60 text-sm mt-2">Connexion...</p>
-            </div>
-          )}
+        {/* Footer selector button */}
+        <div className="p-4 border-t border-line bg-bg shrink-0">
+          <button
+            type="button"
+            onClick={handleSubmit}
+            disabled={!selectedTeamId || isSubmitting}
+            className={`w-full rounded-2xl py-4 px-6 flex flex-row items-center justify-center gap-2 transition-colors ${
+              !selectedTeamId || isSubmitting
+                ? 'bg-surface-2 cursor-not-allowed text-txt-40'
+                : 'bg-accent text-btn-fg hover:bg-accent-d shadow-glow-success'
+            }`}
+          >
+            {isSubmitting ? (
+              <div className="w-5 h-5 border-2 border-btn-fg border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <>
+                <span className="font-bold text-lg text-btn-fg">Continuer vers le salon</span>
+                <ChevronRight size={22} className="text-btn-fg" strokeWidth={2.5} />
+              </>
+            )}
+          </button>
         </div>
       </SafeScreen>
     );

@@ -205,6 +205,7 @@ export default function LobbyPage() {
   const [avatarMap, setAvatarMap] = useState<Record<string, string | null>>({});
   const [showStartConfirm, setShowStartConfirm] = useState(false);
   const [profileUserId, setProfileUserId] = useState<string | null>(null);
+  const [selectedLobbyPlayer, setSelectedLobbyPlayer] = useState<PlayerResponse | null>(null);
   const [reqOpen, setReqOpen] = useState(false);
   const [reqText, setReqText] = useState('');
   const [reqSent, setReqSent] = useState(false);
@@ -758,7 +759,7 @@ export default function LobbyPage() {
                   <button
                     key={player.id}
                     type="button"
-                    onClick={() => player.userId && setProfileUserId(player.userId)}
+                    onClick={() => setSelectedLobbyPlayer(player)}
                     className="flex flex-col items-center gap-1.5 p-0 bg-transparent border-0 cursor-pointer animate-[pop_0.35s_both]"
                   >
                     <div className="relative">
@@ -1026,6 +1027,137 @@ export default function LobbyPage() {
       )}
 
       {/* ── Start Confirm Modal ── */}
+      {/* ── Lobby Player Details Bottom Sheet ── */}
+      {selectedLobbyPlayer && (
+        <div className="fixed inset-0 bg-scrim flex items-end justify-center z-50 backdrop-blur-sm">
+          {/* Scrim click closes modal */}
+          <div className="absolute inset-0" onClick={() => setSelectedLobbyPlayer(null)} />
+          
+          <div className="relative rounded-t-3xl w-full max-w-[480px] bg-surface border-t border-line animate-[sheetup_.3s_ease-out_both] p-5 pb-8 z-10">
+            {/* Handle bar */}
+            <div className="flex justify-center mb-3">
+              <div className="w-10 h-1.5 rounded-full bg-surface-2" />
+            </div>
+
+            {/* Close button */}
+            <button
+              onClick={() => setSelectedLobbyPlayer(null)}
+              className="absolute right-4 top-4 w-8 h-8 rounded-full bg-surface-2 flex items-center justify-center hover:opacity-80 transition-opacity cursor-pointer text-txt-60"
+            >
+              <X size={16} />
+            </button>
+
+            {/* Profile Info */}
+            <div className="flex flex-col items-center mb-6">
+              <Avatar
+                avatarUrl={selectedLobbyPlayer.userId ? (avatarMap[selectedLobbyPlayer.userId] ?? selectedLobbyPlayer.avatarUrl) : selectedLobbyPlayer.avatarUrl}
+                username={selectedLobbyPlayer.name}
+                size={72}
+                borderColor={selectedLobbyPlayer.isManager ? '#FFD700' : selectedLobbyPlayer.userId === user?.id ? '#00D397' : undefined}
+              />
+              <h3 className="text-txt text-lg font-bold mt-3">{selectedLobbyPlayer.name}</h3>
+              <div className="flex items-center gap-1.5 mt-1.5">
+                {selectedLobbyPlayer.isSpectator ? (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-energy/12 text-energy text-[10px] font-bold">
+                    <Eye size={10} />
+                    SPECTATEUR
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-accent/12 text-accent text-[10px] font-bold">
+                    JOUEUR
+                  </span>
+                )}
+                {selectedLobbyPlayer.isManager && (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-energy/12 text-energy text-[10px] font-bold">
+                    <Crown size={10} fill="#FFD700" color="#FFD700" />
+                    HOST
+                  </span>
+                )}
+                {selectedLobbyPlayer.teamId && (() => {
+                  const team = teams.find(t => t.id === selectedLobbyPlayer.teamId);
+                  if (!team) return null;
+                  return (
+                    <span
+                      className="text-[10px] font-bold px-2.5 py-0.5 rounded-full"
+                      style={{ backgroundColor: (team.color ?? '#4A90D9') + '20', color: team.color ?? '#4A90D9' }}
+                    >
+                      {team.name}
+                    </span>
+                  );
+                })()}
+              </div>
+            </div>
+
+            {/* Selected Categories */}
+            {!selectedLobbyPlayer.isSpectator && session.questionMode !== 'MANUAL' && (
+              <div className="mb-6">
+                <p className="text-txt-40 text-[10px] font-bold tracking-widest uppercase mb-3 text-center">
+                  Catégories choisies pour cette partie
+                </p>
+                <div className="flex flex-wrap gap-2 justify-center">
+                  {(selectedLobbyPlayer.selectedCategories ?? []).map((cat) => (
+                    <span
+                      key={cat}
+                      className="px-3 py-1.5 rounded-full bg-surface-2 border border-line text-txt text-sm font-medium flex items-center gap-1.5"
+                    >
+                      <span>{CATEGORY_EMOJI[cat] ?? '💡'}</span>
+                      <span>{cat}</span>
+                    </span>
+                  ))}
+                  {(selectedLobbyPlayer.selectedCategories ?? []).length === 0 && (
+                    <p className="text-txt-40 text-sm italic py-2">Aucune catégorie sélectionnée</p>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Actions */}
+            <div className="flex flex-col gap-2">
+              {selectedLobbyPlayer.userId && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setProfileUserId(selectedLobbyPlayer.userId);
+                    setSelectedLobbyPlayer(null);
+                  }}
+                  className="w-full py-3 rounded-xl bg-surface-2 border border-line text-txt font-semibold text-sm hover:opacity-90 transition-opacity"
+                >
+                  Voir les statistiques globales
+                </button>
+              )}
+              
+              {/* Manager Actions on other players */}
+              {isManager && selectedLobbyPlayer.userId !== user?.id && (
+                <div className="flex gap-2 mt-2 pt-2 border-t border-line">
+                  {session.questionMode !== 'MANUAL' && session.sessionMode === 'WITH_MODERATOR' && !selectedLobbyPlayer.isManager && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        handleEditCategories(selectedLobbyPlayer);
+                        setSelectedLobbyPlayer(null);
+                      }}
+                      className="flex-1 py-3 rounded-xl bg-host/12 text-host font-semibold text-sm border border-host/20"
+                    >
+                      Modifier catégories
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleKickPlayer(selectedLobbyPlayer.id, selectedLobbyPlayer.name);
+                      setSelectedLobbyPlayer(null);
+                    }}
+                    className="flex-1 py-3 rounded-xl bg-buzz/10 border border-buzz/30 text-buzz font-semibold text-sm"
+                  >
+                    Exclure du salon
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       <PlayerProfileModal userId={profileUserId} onClose={() => setProfileUserId(null)} />
 
       <ConfirmModal

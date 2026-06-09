@@ -359,6 +359,7 @@ export class WebSocketManager {
   private heartbeatTimer: ReturnType<typeof setInterval> | null = null;
   private negotiatedHeartbeatMs = 0; // 0 = disabled
   private presenceHeartbeatTimer: ReturnType<typeof setInterval> | null = null;
+  private disconnectTimer: ReturnType<typeof setTimeout> | null = null;
 
   // ─── STOMP session topics ───────────────
   private static readonly SESSION_TOPICS = [
@@ -387,6 +388,7 @@ export class WebSocketManager {
    * as soon as they enter the app.
    */
   async connectGlobal(userId?: string): Promise<void> {
+    this.clearDisconnectTimer();
     if (this.connectionMode === 'global' && !this.intentionallyClosed && this.stompConnected) {
       return; // already globally connected
     }
@@ -424,6 +426,7 @@ export class WebSocketManager {
 
   /** Connect to the game WebSocket for a given session */
   async connect(sessionId: string, userId?: string): Promise<void> {
+    this.clearDisconnectTimer();
     // Idempotent: if already managing this session (not intentionally closed), skip.
     // This prevents creating a duplicate WebSocket when multiple components (e.g. lobby
     // and game during navigation transition) call connect() for the same session.
@@ -462,6 +465,7 @@ export class WebSocketManager {
 
   /** Connect to the WebSocket for a room's presence channel */
   async connectForRoom(roomId: string, userId?: string): Promise<void> {
+    this.clearDisconnectTimer();
     if (this.roomId === roomId && this.connectionMode === 'room' && !this.intentionallyClosed && this.stompConnected) {
       if (userId && this.userId !== userId) {
         this.userId = userId;
@@ -505,7 +509,10 @@ export class WebSocketManager {
       return;
     }
 
-    this._doDisconnect();
+    this.clearDisconnectTimer();
+    this.disconnectTimer = setTimeout(() => {
+      this._doDisconnect();
+    }, 1500);
   }
 
   /** Force-disconnect regardless of active listeners (e.g. on logout) */
@@ -514,6 +521,7 @@ export class WebSocketManager {
   }
 
   private _doDisconnect(): void {
+    this.clearDisconnectTimer();
     this.intentionallyClosed = true;
     this.stompConnected = false;
     this.clearReconnect();
@@ -538,6 +546,13 @@ export class WebSocketManager {
     this.connectionMode = 'global';
     this.userId = null;
     this.wasConnectedBefore = false;
+  }
+
+  private clearDisconnectTimer(): void {
+    if (this.disconnectTimer) {
+      clearTimeout(this.disconnectTimer);
+      this.disconnectTimer = null;
+    }
   }
 
   /** Subscribe to all incoming WS events */

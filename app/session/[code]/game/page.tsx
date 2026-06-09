@@ -31,6 +31,9 @@ import { GlobalTimerBar } from '~/components/game/GlobalTimerBar';
 import { AnswerRevealOverlay } from '~/components/game/AnswerRevealOverlay';
 import { IdentificationQuestionDisplay } from '~/components/game/IdentificationQuestionDisplay';
 import { LiveLeaderboard } from '~/components/game/LiveLeaderboard';
+import { TeamLeaderboard } from '~/components/game/TeamLeaderboard';
+import { FocusModePanel } from '~/components/game/FocusModePanel';
+import { ScoreCorrectionSheet } from '~/components/game/ScoreCorrectionSheet';
 import { PlayerProfileModal } from '~/components/ui/PlayerProfileModal';
 import { useBuzzStore } from '~/stores/useBuzzStore';
 import { useAuthStore } from '~/stores/useAuthStore';
@@ -128,6 +131,7 @@ export default function GamePage() {
   const [manualQuestions, setManualQuestions] = useState<ManualQuestion[]>([]);
   const [showAnswer, setShowAnswer] = useState(true);
   const [profileUserId, setProfileUserId] = useState<string | null>(null);
+  const [showCorrection, setShowCorrection] = useState(false);
   const [showBuzzFlash, setShowBuzzFlash] = useState(false);
 
   // Buzz countdown state
@@ -273,14 +277,22 @@ export default function GamePage() {
 
       // Restore word index from server state on reconnect
       const serverDisplayWordIndex = (gameState as any).displayWordIndex;
-      if (serverDisplayWordIndex != null && serverDisplayWordIndex > 0) {
+      if (serverDisplayWordIndex != null && serverDisplayWordIndex >= 0) {
         const q = gameState.currentQuestion;
         const totalWords = q?.text ? q.text.split(' ').length : 1;
-        useBuzzStore.setState({
-          displayWordIndex: serverDisplayWordIndex,
-          displayRunning: serverDisplayWordIndex < totalWords - 1,
-          ...(serverDisplayWordIndex >= totalWords - 1 ? { questionFullyDisplayed: true } : {}),
-        });
+        const currentLocalWordIndex = useBuzzStore.getState().displayWordIndex;
+        if (
+          serverDisplayWordIndex > currentLocalWordIndex ||
+          (serverDisplayWordIndex === 0 &&
+            !useBuzzStore.getState().displayRunning &&
+            !useBuzzStore.getState().questionFullyDisplayed)
+        ) {
+          useBuzzStore.setState({
+            displayWordIndex: serverDisplayWordIndex,
+            displayRunning: serverDisplayWordIndex < totalWords - 1,
+            ...(serverDisplayWordIndex >= totalWords - 1 ? { questionFullyDisplayed: true } : {}),
+          });
+        }
       }
 
       if (gameState.currentQuestion) {
@@ -645,6 +657,20 @@ export default function GamePage() {
     );
   }
 
+  if (answerPanelVisible && myAnswerChoices && currentQuestion) {
+    return (
+      <FocusModePanel
+        questionText={currentQuestion.text}
+        category={currentQuestion.category}
+        choices={myAnswerChoices}
+        answerTimeSeconds={answerTimeSeconds}
+        onSubmit={handleSubmitAnswer}
+        isSubmitting={isSubmittingAnswer}
+        result={answerSubmitResult}
+      />
+    );
+  }
+
   // playerId dans buzzQueue = Player entity ID (pas User entity ID)
   const queuePosition = buzzQueue.findIndex((item) => item.playerId === currentPlayer?.id);
   const actualHasBuzzed = hasBuzzed || queuePosition >= 0;
@@ -717,6 +743,23 @@ export default function GamePage() {
               Équipes
             </span>
           )}
+          {isTeamMode && currentPlayer?.teamId && (() => {
+            const myTeam = teams.find(t => t.id === currentPlayer.teamId);
+            if (!myTeam) return null;
+            return (
+              <span
+                className="px-2 py-1 rounded-full text-[11px] font-bold border flex items-center gap-1"
+                style={{
+                  backgroundColor: `color-mix(in oklab, ${myTeam.color ?? '#4A90D9'} 12%, transparent)`,
+                  borderColor: `color-mix(in oklab, ${myTeam.color ?? '#4A90D9'} 35%, transparent)`,
+                  color: myTeam.color ?? '#4A90D9',
+                }}
+              >
+                <Users size={11} />
+                {myTeam.name}
+              </span>
+            );
+          })()}
         </div>
       </div>
 
@@ -805,27 +848,39 @@ export default function GamePage() {
               <div className="px-4 py-3 bg-black/30">
                 <p className="text-txt font-semibold text-center">File d'attente</p>
               </div>
-              {buzzQueue.slice(0, 3).map((item, index) => (
-                <div
-                  key={item.playerId}
-                  className={`flex flex-row items-center px-4 py-3 border-b border-white/10 ${index === 0 ? 'bg-white/15' : ''}`}
-                >
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center mr-3 ${index === 0 ? 'bg-white' : 'bg-white/30'}`}>
-                    <span className={`font-bold ${index === 0 ? 'text-[#D5442F]' : 'text-txt'}`}>
-                      {index + 1}
-                    </span>
-                  </div>
-                  <div className="flex-1 flex flex-row items-center gap-2 flex-wrap">
-                    <span className={`font-medium ${item.playerId === currentPlayer?.id ? 'text-[#FFD700]' : 'text-txt'}`}>
-                      {item.playerName}
-                      {item.playerId === currentPlayer?.id ? ' (Vous)' : ''}
-                    </span>
-                    {isTeamMode && item.teamName && (() => {
-                      const teamColor = teams.find((t) => t.id === item.teamId)?.color ?? '#FFFFFF40';
+              {buzzQueue.slice(0, 3).map((item, index) => {
+                const qPlayer = players.find((p) => p.id === item.playerId);
+                return (
+                  <div
+                    key={item.playerId}
+                    className={`flex flex-row items-center px-4 py-3 border-b border-white/10 ${index === 0 ? 'bg-white/15' : ''}`}
+                  >
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center mr-2 shrink-0 ${index === 0 ? 'bg-white' : 'bg-white/30'}`}>
+                      <span className={`font-bold text-xs ${index === 0 ? 'text-[#D5442F]' : 'text-txt'}`}>
+                        {index + 1}
+                      </span>
+                    </div>
+                    <div className="mr-2 shrink-0">
+                      <Avatar
+                        avatarUrl={qPlayer?.avatarUrl}
+                        username={item.playerName}
+                        size={30}
+                      />
+                    </div>
+                    <div className="flex-1 flex flex-row items-center gap-2 flex-wrap">
+                      <span className={`font-medium ${item.playerId === currentPlayer?.id ? 'text-[#FFD700]' : 'text-txt'}`}>
+                        {item.playerName}
+                        {item.playerId === currentPlayer?.id ? ' (Vous)' : ''}
+                      </span>
+                      {isTeamMode && item.teamName && (() => {
+                        const teamColor = teams.find((t) => t.id === item.teamId)?.color ?? '#4A90D9';
                       return (
                         <span
-                          className="text-xs font-semibold px-2 py-0.5 rounded-full"
-                          style={{ backgroundColor: teamColor + '50', color: '#fff' }}
+                          className="text-[11px] font-bold px-2 py-0.5 rounded-full"
+                          style={{
+                            backgroundColor: `color-mix(in oklab, ${teamColor} 22%, transparent)`,
+                            color: teamColor,
+                          }}
                         >
                           {item.teamName}
                         </span>
@@ -838,7 +893,7 @@ export default function GamePage() {
                       : `${(item.timeDiffMs / 1000).toFixed(1)}s`}
                   </span>
                 </div>
-              ))}
+              );})}
               {buzzQueue.length > 3 && (
                 <div className="px-4 py-2 bg-black/20">
                   <p className="text-txt-40 text-center text-sm">
@@ -1083,7 +1138,7 @@ export default function GamePage() {
         {/* Buzzer — Players + manager in without-moderator mode */}
         {/* Caché si le joueur a ses choix affichés (l'AnswerChoicesPanel les remplace) */}
         {!isSpectator && (!isManager || isWithoutModerator) && !answerPanelVisible && (
-          <div className="px-4 py-3 flex justify-center">
+          <div className="px-4 py-3 flex flex-col items-center">
             <BuzzerButton
               onBuzz={handleBuzz}
               disabled={isSubmitting || isPaused || actualHasBuzzed || answeredWrongThisQuestion}
@@ -1091,6 +1146,33 @@ export default function GamePage() {
               queuePosition={queuePosition >= 0 ? queuePosition + 1 : null}
               teamBuzzed={teamBuzzed}
             />
+            {teamBuzzed && firstBuzzer && (() => {
+              const teamColor = teams.find((t) => t.id === firstBuzzer.teamId)?.color ?? '#4A90D9';
+              return (
+                <div
+                  className="mt-2 w-full max-w-sm rounded-2xl p-4 border flex items-center gap-3 animate-[rise_0.25s_both]"
+                  style={{
+                    backgroundColor: `color-mix(in oklab, ${teamColor} 10%, var(--surface))`,
+                    borderColor: teamColor,
+                  }}
+                >
+                  <div
+                    className="w-[30px] h-[30px] rounded-full flex items-center justify-center shrink-0"
+                    style={{ backgroundColor: `color-mix(in oklab, ${teamColor} 20%, transparent)` }}
+                  >
+                    <Users size={14} style={{ color: teamColor }} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-txt font-bold text-[13.5px] leading-tight">
+                      Votre équipe a déjà buzzé
+                    </p>
+                    <p className="text-txt-60 text-xs mt-0.5 truncate">
+                      <strong>{firstBuzzer.playerName}</strong> répond pour {firstBuzzer.teamName || 'votre équipe'}
+                    </p>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         )}
 
@@ -1133,11 +1215,14 @@ export default function GamePage() {
                           {buzzQueue[0].playerName}
                         </p>
                         {isTeamMode && buzzQueue[0].teamName && (() => {
-                          const teamColor = teams.find((t) => t.id === buzzQueue[0].teamId)?.color ?? '#FFFFFF40';
+                          const teamColor = teams.find((t) => t.id === buzzQueue[0].teamId)?.color ?? '#4A90D9';
                           return (
                             <span
-                              className="text-xs font-semibold px-2 py-0.5 rounded-full"
-                              style={{ backgroundColor: teamColor + '30', color: teamColor }}
+                              className="text-[11px] font-bold px-2 py-0.5 rounded-full"
+                              style={{
+                                backgroundColor: `color-mix(in oklab, ${teamColor} 22%, transparent)`,
+                                color: teamColor,
+                              }}
                             >
                               {buzzQueue[0].teamName}
                             </span>
@@ -1226,25 +1311,37 @@ export default function GamePage() {
                 </div>
 
                 {/* Other buzzers */}
-                {buzzQueue.slice(1).map((item, index) => (
-                  <div
-                    key={item.playerId}
-                    className="flex flex-row items-center px-4 py-2.5 border-b border-line last:border-b-0"
-                  >
-                    <div className="w-8 h-8 rounded-full bg-surface-2 flex items-center justify-center mr-3">
-                      <span className="font-bold text-txt text-sm">{index + 2}</span>
-                    </div>
-                    <div className="flex-1 flex flex-row items-center gap-2 flex-wrap">
-                      <span className={`font-medium ${item.playerId === currentPlayer?.id ? 'text-[#00D397]' : 'text-txt-60'}`}>
-                        {item.playerName}
-                        {item.playerId === currentPlayer?.id && ' (Vous)'}
-                      </span>
-                      {isTeamMode && item.teamName && (() => {
-                        const teamColor = teams.find((t) => t.id === item.teamId)?.color ?? '#FFFFFF40';
+                {buzzQueue.slice(1).map((item, index) => {
+                  const qPlayer = players.find((p) => p.id === item.playerId);
+                  return (
+                    <div
+                      key={item.playerId}
+                      className="flex flex-row items-center px-4 py-2.5 border-b border-line last:border-b-0"
+                    >
+                      <div className="w-8 h-8 rounded-full bg-surface-2 flex items-center justify-center mr-2 shrink-0">
+                        <span className="font-bold text-txt text-xs">{index + 2}</span>
+                      </div>
+                      <div className="mr-2 shrink-0">
+                        <Avatar
+                          avatarUrl={qPlayer?.avatarUrl}
+                          username={item.playerName}
+                          size={30}
+                        />
+                      </div>
+                      <div className="flex-1 flex flex-row items-center gap-2 flex-wrap">
+                        <span className={`font-medium ${item.playerId === currentPlayer?.id ? 'text-[#00D397]' : 'text-txt-60'}`}>
+                          {item.playerName}
+                          {item.playerId === currentPlayer?.id && ' (Vous)'}
+                        </span>
+                        {isTeamMode && item.teamName && (() => {
+                          const teamColor = teams.find((t) => t.id === item.teamId)?.color ?? '#4A90D9';
                         return (
                           <span
-                            className="text-xs font-semibold px-2 py-0.5 rounded-full"
-                            style={{ backgroundColor: teamColor + '30', color: teamColor }}
+                            className="text-[11px] font-bold px-2 py-0.5 rounded-full"
+                            style={{
+                              backgroundColor: `color-mix(in oklab, ${teamColor} 22%, transparent)`,
+                              color: teamColor,
+                            }}
                           >
                             {item.teamName}
                           </span>
@@ -1257,7 +1354,7 @@ export default function GamePage() {
                         : `${(item.timeDiffMs / 1000).toFixed(1)}s`}
                     </span>
                   </div>
-                ))}
+                );})}
               </div>
             ) : (
               <div className="px-5 py-6 flex flex-col items-center">
@@ -1338,40 +1435,18 @@ export default function GamePage() {
         {/* Live Leaderboard */}
         <div className="px-4 pt-3 pb-12">
           {isTeamMode ? (
-            <div className="bg-surface rounded-2xl border border-team/25 overflow-hidden">
-              <div className="px-4 py-3 border-b border-line bg-team/5">
-                <div className="flex flex-row items-center justify-between">
-                  <div className="flex flex-row items-center gap-2">
-                    <Users size={16} className="text-team" />
-                    <p className="text-txt font-bold text-sm">Classement Équipes</p>
-                  </div>
-                  <span className="text-txt-40 text-xs">{teamLeaderboard.length} équipes</span>
-                </div>
-              </div>
-              {teamLeaderboard.map((team, index) => {
-                const isMyTeam = team.members.some((m) => m.userId === user?.id);
-                const teamColor = team.teamColor || '#4A90D9';
-                return (
-                  <div key={team.teamId} className="border-b border-line last:border-b-0">
-                    <div
-                      className="px-4 py-3 flex flex-row items-center"
-                      style={{ background: isMyTeam ? `${teamColor}10` : undefined }}
-                    >
-                      <span className="w-7 h-7 rounded-full flex items-center justify-center mr-2 text-sm font-bold" style={{ backgroundColor: `${teamColor}30`, color: teamColor }}>
-                        {index + 1}
-                      </span>
-                      <p className={`flex-1 font-bold text-sm ${isMyTeam ? 'text-team' : 'text-txt'}`}>{team.teamName}</p>
-                      <span className="font-bold text-sm text-txt">{team.totalScore} pts</span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+            <TeamLeaderboard
+              teams={teams}
+              players={players}
+              currentUserId={user?.id}
+              onCorrectClick={isManager ? () => setShowCorrection(true) : undefined}
+            />
           ) : (
             <LiveLeaderboard
               players={players}
               currentUserId={user?.id}
               onPlayerTap={(p) => p.userId && setProfileUserId(p.userId)}
+              onCorrectClick={isManager ? () => setShowCorrection(true) : undefined}
             />
           )}
         </div>
@@ -1382,6 +1457,13 @@ export default function GamePage() {
       )}
 
       <PlayerProfileModal userId={profileUserId} onClose={() => setProfileUserId(null)} />
+      <ScoreCorrectionSheet
+        isOpen={showCorrection}
+        onClose={() => setShowCorrection(false)}
+        players={players}
+        sessionId={session?.id || ''}
+        currentUserId={user?.id}
+      />
 
       {/* Answer Reveal Overlay — mode sans modérateur */}
       {answerReveal && (
