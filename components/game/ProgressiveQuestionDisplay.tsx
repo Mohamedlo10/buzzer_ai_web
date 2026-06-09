@@ -1,4 +1,4 @@
-'use client';
+import { useState, useEffect } from 'react';
 
 interface ProgressiveQuestionDisplayProps {
   text: string;
@@ -14,8 +14,34 @@ export function ProgressiveQuestionDisplay({
   showRiskBadge = true,
 }: ProgressiveQuestionDisplayProps) {
   const words = text.split(' ');
+  const currentWord = words[wordIndex] || '';
+  const [typedCharCount, setTypedCharCount] = useState(0);
+
+  // Reset typed character count and animate typing when the active word changes
+  useEffect(() => {
+    setTypedCharCount(0);
+    if (!currentWord) return;
+
+    let charIndex = 0;
+    const interval = setInterval(() => {
+      charIndex += 1;
+      setTypedCharCount(charIndex);
+      if (charIndex >= currentWord.length) {
+        clearInterval(interval);
+      }
+    }, 25); // 25ms per character creates a very smooth and reactive typing feel
+
+    return () => clearInterval(interval);
+  }, [wordIndex, currentWord]);
+
   const isFullyRevealed = wordIndex >= words.length - 1;
-  const revealedText = words.slice(0, wordIndex + 1).join(' ');
+  
+  // Assemble revealed text: all completed words fully visible + current word character-by-character
+  const previousText = words.slice(0, wordIndex).join(' ');
+  const currentTypedWord = currentWord.slice(0, typedCharCount);
+  const revealedText = previousText
+    ? `${previousText} ${currentTypedWord}`
+    : currentTypedWord;
 
   return (
     <div className="bg-surface rounded-2xl border border-line p-[18px]">
