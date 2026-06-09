@@ -181,7 +181,8 @@ export default function GamePage() {
   const isWithoutModerator = sessionMode === 'WITHOUT_MODERATOR';
   const amIFirstInQueue = buzzQueue.length > 0 && buzzQueue[0].playerId === currentPlayer?.id;
   const someoneIsAnswering = isWithoutModerator && buzzQueue.length > 0;
-  const answerPanelVisible = isWithoutModerator && amIFirstInQueue && !!myAnswerChoices;
+  // game_choices arrive via queue privée → le serveur ne l'envoie qu'au premier de la file
+  const answerPanelVisible = isWithoutModerator && !!myAnswerChoices;
 
   // Team leaderboard computed from players (since GameStateResponse doesn't include teams)
   const teamLeaderboard = isTeamMode
@@ -505,6 +506,24 @@ export default function GamePage() {
       setAnswerSubmitResult(null);
     }
   }, [currentQuestion?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fallback word-advance au rythme du serveur (600ms/mot) quand WS est déconnecté
+  useEffect(() => {
+    if (!isWithoutModerator || !displayRunning || isConnected) return;
+    if (!currentQuestion) return;
+    const totalWords = currentQuestion.text.split(' ').length;
+    const interval = setInterval(() => {
+      const current = useBuzzStore.getState().displayWordIndex;
+      const next = current + 1;
+      if (next >= totalWords - 1) {
+        useBuzzStore.setState({ displayWordIndex: totalWords - 1, displayRunning: false, questionFullyDisplayed: true });
+        clearInterval(interval);
+      } else {
+        useBuzzStore.setState({ displayWordIndex: next });
+      }
+    }, 600);
+    return () => clearInterval(interval);
+  }, [isWithoutModerator, displayRunning, isConnected, currentQuestion?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Compteur local du timer global entre les événements WebSocket
   useEffect(() => {
