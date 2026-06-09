@@ -35,12 +35,10 @@ export default function EditProfilePage() {
   const [selectedStyle, setSelectedStyle] = useState(initialStyle);
   const [selectedSeed,  setSelectedSeed]  = useState(initialSeed);
   const [username, setUsername] = useState(user?.username || '');
-  const [email,    setEmail]    = useState(user?.email || '');
 
   const previewUrl = getAvatarUrl(selectedStyle, selectedSeed);
   const hasChanges =
     username.trim() !== (user?.username || '') ||
-    email.trim()    !== (user?.email    || '') ||
     selectedStyle   !== initialStyle ||
     selectedSeed    !== initialSeed;
 
@@ -48,7 +46,6 @@ export default function EditProfilePage() {
     mutationFn: async () => {
       const updated = await usersApi.updateProfile({
         username: username.trim(),
-        email: email.trim() || undefined,
       });
       if (user?.id) {
         const withAvatar = await usersApi.updateAvatar(user.id, selectedStyle, selectedSeed);
@@ -191,15 +188,8 @@ export default function EditProfilePage() {
                 />
               </div>
               <div className="px-4 pt-3 pb-4">
-                <p className="text-txt-60 text-xs mb-1.5">Email</p>
-                <input
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  type="email"
-                  className="w-full bg-transparent text-txt text-base font-medium focus:outline-none placeholder:text-txt-40"
-                  placeholder="votre@email.com"
-                  autoCapitalize="none"
-                />
+                <p className="text-txt-60 text-xs mb-1.5">Email (non modifiable ici)</p>
+                <p className="text-txt-40 text-base font-medium select-all">{user.email || 'Non défini'}</p>
               </div>
             </div>
           </div>

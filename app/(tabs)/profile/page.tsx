@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   LogOut,
@@ -21,7 +21,9 @@ import {
   ChevronRight,
   BarChart3,
   Star,
+  Check,
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { useAuthStore } from '~/stores/useAuthStore';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import * as usersApi from '~/lib/api/users';
@@ -101,6 +103,45 @@ export default function ProfilePage() {
   const [emailBannerSent, setEmailBannerSent] = useState(false);
   const [categoryRankingsData, setCategoryRankingsData] = useState<CategoryRankingResponse | null>(null);
   const [isCategoryFetching, setIsCategoryFetching] = useState(false);
+
+  // Direct Email Editing
+  const [isEditingEmail, setIsEditingEmail] = useState(false);
+  const [emailVal, setEmailVal] = useState(user?.email || '');
+  const [isSavingEmail, setIsSavingEmail] = useState(false);
+
+  useEffect(() => {
+    if (user?.email) {
+      setEmailVal(user.email);
+    }
+  }, [user?.email]);
+
+  const handleSaveEmail = async () => {
+    const trimmed = emailVal.trim();
+    if (!trimmed || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+      toast.error("Format d'adresse email invalide");
+      return;
+    }
+    setIsSavingEmail(true);
+    try {
+      const updated = await usersApi.updateProfile({ email: trimmed });
+      setUser(updated);
+      setIsEditingEmail(false);
+      toast.success("Adresse email mise à jour !");
+      
+      try {
+        await usersApi.resendVerificationEmail();
+        toast.success("Email de confirmation envoyé !", {
+          description: "Veuillez vérifier votre boîte de réception pour confirmer."
+        });
+      } catch {
+        // ignore silently
+      }
+    } catch (err) {
+      toast.error("Impossible de modifier l'adresse email");
+    } finally {
+      setIsSavingEmail(false);
+    }
+  };
 
   // Change password form
   const [currentPassword, setCurrentPassword] = useState('');
@@ -462,9 +503,63 @@ export default function ProfilePage() {
               <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center mr-4 shrink-0">
                 <Mail size={20} color="#3B82F6" />
               </div>
-              <div className="flex-1">
-                <p className="text-txt-60 text-xs mb-1">Email</p>
-                <p className="text-txt text-base font-medium">{user.email || 'Non défini'}</p>
+              <div className="flex-grow flex flex-row items-center justify-between min-w-0">
+                {isEditingEmail ? (
+                  <div className="flex-grow flex flex-row items-center gap-2">
+                    <div className="flex-1">
+                      <p className="text-txt-60 text-xs mb-1">Email</p>
+                      <input
+                        type="email"
+                        value={emailVal}
+                        onChange={(e) => setEmailVal(e.target.value)}
+                        placeholder="votre@email.com"
+                        className="w-full bg-transparent text-txt text-base font-medium border-b border-accent focus:outline-none placeholder:text-txt-25 py-0.5"
+                        autoFocus
+                      />
+                    </div>
+                    <div className="flex flex-row items-center gap-1.5 shrink-0">
+                      <button
+                        onClick={handleSaveEmail}
+                        disabled={isSavingEmail}
+                        className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center hover:bg-accent/30 transition-colors text-accent cursor-pointer"
+                      >
+                        {isSavingEmail ? (
+                          <div className="w-4 h-4 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+                        ) : (
+                          <Check size={16} />
+                        )}
+                      </button>
+                      <button
+                        onClick={() => {
+                          setEmailVal(user.email || '');
+                          setIsEditingEmail(false);
+                        }}
+                        disabled={isSavingEmail}
+                        className="w-8 h-8 rounded-full bg-surface-2 flex items-center justify-center hover:opacity-80 transition-opacity text-txt-60 cursor-pointer"
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex-grow min-w-0">
+                      <p className="text-txt-60 text-xs mb-1">Email</p>
+                      <p className="text-txt text-base font-medium truncate pr-2">
+                        {user.email || 'Non défini'}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setEmailVal(user.email || '');
+                        setIsEditingEmail(true);
+                      }}
+                      className="w-8 h-8 rounded-full bg-surface-2 flex items-center justify-center hover:bg-line transition-colors text-txt-60 cursor-pointer"
+                    >
+                      <Edit3 size={14} />
+                    </button>
+                  </>
+                )}
               </div>
             </div>
 
