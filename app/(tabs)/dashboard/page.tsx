@@ -479,6 +479,44 @@ export default function DashboardPage() {
           </div>
         </div>
 
+        {/* ── Solo Mode Banner ── */}
+        <div className="px-4 mb-6 animate-[rise_0.4s_both]">
+          <button
+            onClick={() => router.push('/solo')}
+            className="w-full relative overflow-hidden bg-gradient-to-r from-surface to-surface-2 border-[1.5px] border-accent/40 rounded-[20px] p-[18px] flex flex-row items-center justify-between hover:border-accent active:scale-[0.99] transition-all duration-150 cursor-pointer text-left"
+            style={{
+              boxShadow: '0 0 25px rgba(0, 211, 151, 0.12)',
+            }}
+          >
+            {/* Ambient glow accent backgrounds */}
+            <div className="absolute -right-10 -top-10 w-32 h-32 bg-accent/20 rounded-full blur-2xl pointer-events-none" />
+            <div className="absolute -left-10 -bottom-10 w-32 h-32 bg-host/15 rounded-full blur-2xl pointer-events-none" />
+            
+            <div className="flex flex-row items-center gap-4 relative z-10 min-w-0 flex-1 pr-3">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-accent to-accent-d flex items-center justify-center text-btn-fg shrink-0 shadow-lg">
+                <Gamepad2 size={24} className="animate-[float_3s_ease-in-out_infinite]" />
+              </div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3 className="text-txt font-display font-bold text-[15px] tracking-tight">
+                    Entraînement & Carrière Solo
+                  </h3>
+                  <span className="bg-energy text-btn-fg text-[9px] font-extrabold px-1.5 py-0.5 rounded-md uppercase tracking-wider animate-pulse">
+                    Nouveau 🧠
+                  </span>
+                </div>
+                <p className="text-txt-60 text-xs mt-1 leading-normal max-w-[240px]">
+                  Défiez l'IA, progressez sur 12 niveaux de carrière et gagnez des points !
+                </p>
+              </div>
+            </div>
+            
+            <div className="px-4 py-2.5 rounded-xl bg-accent text-btn-fg font-bold text-xs shrink-0 shadow-soft hover:opacity-90 transition-opacity relative z-10">
+              Jouer
+            </div>
+          </button>
+        </div>
+
         {/* ── Notifications ── */}
         {pendingTotal > 0 && (
           <div className="px-4 mb-5">
