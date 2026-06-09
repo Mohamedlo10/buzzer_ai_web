@@ -145,7 +145,7 @@ export default function CareerDetailPage() {
         {/* Level Action Bottom Sheet Modal */}
         {selectedLevel && (
           <div
-            className="fixed inset-0 z-50 bg-scrim/80 flex items-end justify-center animate-scrimin"
+            className="fixed bottom-16 inset-0 z-50 bg-scrim/80 flex items-end justify-center animate-scrimin"
             onClick={() => setSelectedLevel(null)}
           >
             <div
