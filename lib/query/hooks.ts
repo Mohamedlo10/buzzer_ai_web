@@ -202,7 +202,11 @@ export function useAcceptInvitation() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (invitationId: string) => invitationsApi.acceptInvitation(invitationId),
-    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.pendingInvitations }),
+    onSuccess: () => Promise.all([
+      qc.invalidateQueries({ queryKey: queryKeys.pendingInvitations }),
+      qc.invalidateQueries({ queryKey: queryKeys.notifications }),
+      qc.invalidateQueries({ queryKey: queryKeys.dashboardV2 }),
+    ]),
   });
 }
 
@@ -210,7 +214,11 @@ export function useDeclineInvitation() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (invitationId: string) => invitationsApi.declineInvitation(invitationId),
-    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.pendingInvitations }),
+    onSuccess: () => Promise.all([
+      qc.invalidateQueries({ queryKey: queryKeys.pendingInvitations }),
+      qc.invalidateQueries({ queryKey: queryKeys.notifications }),
+      qc.invalidateQueries({ queryKey: queryKeys.dashboardV2 }),
+    ]),
   });
 }
 

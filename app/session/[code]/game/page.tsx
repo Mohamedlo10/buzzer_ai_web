@@ -133,6 +133,7 @@ export default function GamePage() {
   const [profileUserId, setProfileUserId] = useState<string | null>(null);
   const [showCorrection, setShowCorrection] = useState(false);
   const [showBuzzFlash, setShowBuzzFlash] = useState(false);
+  const [sessionFetched, setSessionFetched] = useState(false);
 
   // Buzz countdown state
   const [countdown, setCountdown] = useState<{ playerId: string; seconds: number } | null>(null);
@@ -402,6 +403,7 @@ export default function GamePage() {
 
   // Load session from storage
   useEffect(() => {
+    setSessionFetched(false);
     if (!code) return;
     if (session && session.code === code) return;
 
@@ -415,6 +417,7 @@ export default function GamePage() {
 
         if (activeSession?.sessionId && activeSession?.code === code) {
           await fetchSession(activeSession.sessionId);
+          setSessionFetched(true);
           return;
         }
 
@@ -434,6 +437,7 @@ export default function GamePage() {
     const loadGameState = async () => {
       try {
         await fetchSession(session.id);
+        setSessionFetched(true);
       } catch {
         // ignore
       }
@@ -472,8 +476,9 @@ export default function GamePage() {
     return () => clearInterval(interval);
   }, [session?.id, syncGameState, isConnected]);
 
-  // Redirect if not in playing state
+  // Redirect if not in playing state — wait for a fresh fetch before acting on status
   useEffect(() => {
+    if (!sessionFetched) return;
     if (session?.status === 'LOBBY') {
       router.replace(`/session/${code}/lobby`);
     } else if (session?.status === 'GENERATING') {
@@ -481,7 +486,7 @@ export default function GamePage() {
     } else if (session?.status === 'RESULTS') {
       router.replace(`/session/${code}/results`);
     }
-  }, [session?.status, code]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [session?.status, sessionFetched, code]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Reset buzz lock and countdown when question changes
   useEffect(() => {

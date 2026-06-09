@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Zap, Play, Trophy, Users, Clock, UserCheck, UserX } from 'lucide-react';
 
@@ -20,6 +21,7 @@ const STATUS_CONFIG: Record<string, { label: string; icon: string }> = {
 
 export function LastSessionCard({ session }: LastSessionCardProps) {
   const router = useRouter();
+  const [isNavigating, setIsNavigating] = useState(false);
   const isActive = ['LOBBY', 'GENERATING', 'PLAYING', 'PAUSED'].includes(session.status);
   const isResults = session.status === 'RESULTS';
   const config = STATUS_CONFIG[session.status] || STATUS_CONFIG.RESULTS;
@@ -39,25 +41,31 @@ export function LastSessionCard({ session }: LastSessionCardProps) {
   };
 
   const handlePress = async () => {
-    await appStorage.setActiveSession({
-      sessionId: session.id,
-      code: session.code,
-    });
+    if (isNavigating) return;
+    setIsNavigating(true);
+    try {
+      await appStorage.setActiveSession({
+        sessionId: session.id,
+        code: session.code,
+      });
 
-    switch (session.status) {
-      case 'LOBBY':
-        router.push(`/session/${session.code}/lobby`);
-        break;
-      case 'GENERATING':
-        router.push(`/session/${session.code}/loading`);
-        break;
-      case 'PLAYING':
-      case 'PAUSED':
-        router.push(`/session/${session.code}/game`);
-        break;
-      case 'RESULTS':
-      default:
-        router.push(`/session/${session.code}/results`);
+      switch (session.status) {
+        case 'LOBBY':
+          router.push(`/session/${session.code}/lobby`);
+          break;
+        case 'GENERATING':
+          router.push(`/session/${session.code}/loading`);
+          break;
+        case 'PLAYING':
+        case 'PAUSED':
+          router.push(`/session/${session.code}/game`);
+          break;
+        case 'RESULTS':
+        default:
+          router.push(`/session/${session.code}/results`);
+      }
+    } catch {
+      setIsNavigating(false);
     }
   };
 
@@ -66,7 +74,8 @@ export function LastSessionCard({ session }: LastSessionCardProps) {
   return (
     <button
       onClick={handlePress}
-      className="w-full text-left relative overflow-hidden bg-surface border border-line rounded-[20px] py-3.5 px-3.5 pl-[18px] hover:opacity-90 active:opacity-80 transition-opacity cursor-pointer"
+      disabled={isNavigating}
+      className="w-full text-left relative overflow-hidden bg-surface border border-line rounded-[20px] py-3.5 px-3.5 pl-[18px] hover:opacity-90 active:opacity-80 transition-opacity cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
     >
       {/* Gradient accent border */}
       <div
