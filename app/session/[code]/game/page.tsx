@@ -658,9 +658,12 @@ export default function GamePage() {
   }
 
   if (answerPanelVisible && myAnswerChoices && currentQuestion) {
+    const words = currentQuestion.text.split(' ');
+    const partialText = words.slice(0, displayWordIndex + 1).join(' ');
+
     return (
       <FocusModePanel
-        questionText={currentQuestion.text}
+        questionText={partialText}
         category={currentQuestion.category}
         choices={myAnswerChoices}
         answerTimeSeconds={answerTimeSeconds}

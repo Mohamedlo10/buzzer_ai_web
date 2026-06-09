@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Zap, Eye, EyeOff, User, Lock, ArrowRight, Sparkles, Crown } from 'lucide-react';
+import { Zap, Eye, EyeOff, User, Mail, Lock, ArrowRight, Sparkles, Crown } from 'lucide-react';
 import { useAuthStore } from '~/stores/useAuthStore';
 
 export default function LoginPage() {
@@ -10,6 +10,8 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<{ username?: string; password?: string }>({});
+
+  const isEmailInput = username.includes('@');
 
   // Refs to read DOM values directly — handles browser autofill which bypasses onChange
   const usernameRef = useRef<HTMLInputElement>(null);
@@ -152,14 +154,14 @@ export default function LoginPage() {
         >
           <h2 className="text-txt text-2xl font-bold mb-8 text-center">Connexion</h2>
 
-          {/* Username Input */}
+          {/* Username / Email Input */}
           <div className="mb-6">
             <label className="block text-txt-60 text-sm font-medium mb-2">
-              Nom d&apos;utilisateur
+              Nom d&apos;utilisateur ou email
             </label>
             <div className="relative">
               <div className="absolute left-4 top-0 bottom-0 flex items-center z-10 text-txt-40">
-                <User size={20} />
+                {isEmailInput ? <Mail size={20} /> : <User size={20} />}
               </div>
               <input
                 ref={usernameRef}
@@ -167,7 +169,7 @@ export default function LoginPage() {
                 className={`w-full pl-12 pr-4 py-4 rounded-2xl bg-bg text-txt text-lg outline-none focus:ring-2 focus:ring-accent/50 placeholder:text-txt-25 border ${
                   errors.username ? 'border-buzz' : 'border-line'
                 }`}
-                placeholder="Entrez votre pseudo"
+                placeholder={isEmailInput ? 'votre@email.com' : 'Entrez votre pseudo'}
                 value={username}
                 autoComplete="username"
                 autoCapitalize="none"
@@ -185,8 +187,17 @@ export default function LoginPage() {
           </div>
 
           {/* Password Input */}
-          <div className="mb-8">
-            <label className="block text-txt-60 text-sm font-medium mb-2">Mot de passe</label>
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-txt-60 text-sm font-medium">Mot de passe</label>
+              <button
+                type="button"
+                onClick={() => router.push('/forgot-password')}
+                className="text-accent text-xs font-semibold hover:underline cursor-pointer"
+              >
+                Mot de passe oublié ?
+              </button>
+            </div>
             <div className="relative">
               <div className="absolute left-4 top-0 bottom-0 flex items-center z-10 text-txt-40">
                 <Lock size={20} />

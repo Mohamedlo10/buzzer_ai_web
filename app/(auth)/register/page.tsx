@@ -2,17 +2,19 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Eye, EyeOff, User, Lock, ArrowRight, Sparkles, Crown } from 'lucide-react';
+import { Eye, EyeOff, User, Lock, Mail, ArrowRight, Sparkles, Crown } from 'lucide-react';
 import { useAuthStore } from '~/stores/useAuthStore';
 
 export default function RegisterPage() {
   const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState<{
     username?: string;
+    email?: string;
     password?: string;
     confirmPassword?: string;
   }>({});
@@ -28,6 +30,12 @@ export default function RegisterPage() {
       newErrors.username = "Nom d'utilisateur requis";
     } else if (username.trim().length < 3) {
       newErrors.username = 'Minimum 3 caractères';
+    }
+
+    if (!email.trim()) {
+      newErrors.email = 'Email requis';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      newErrors.email = 'Format d\'email invalide';
     }
 
     if (!password) {
@@ -49,8 +57,8 @@ export default function RegisterPage() {
     if (!validate()) return;
 
     try {
-      await register(username.trim(), null, password);
-      window.location.replace('/dashboard');
+      await register(username.trim(), email.trim(), password);
+      router.replace('/confirm-email');
     } catch (err: any) {
       const message =
         err?.response?.data?.message ?? "Échec de l'inscription. Veuillez réessayer.";
@@ -189,6 +197,33 @@ export default function RegisterPage() {
             </div>
             {errors.username && (
               <p className="text-[#D5442F] text-sm mt-2 ml-2">{errors.username}</p>
+            )}
+          </div>
+
+          {/* Email Input */}
+          <div className="mb-5">
+            <label className="block text-txt-60 text-sm font-medium mb-2">Email</label>
+            <div className="relative">
+              <div className="absolute left-4 top-0 bottom-0 flex items-center z-10">
+                <Mail size={20} color="rgba(255,255,255,0.502)" />
+              </div>
+              <input
+                type="email"
+                className={`w-full pl-12 pr-4 py-3.5 rounded-2xl bg-bg text-txt text-base outline-none focus:ring-2 focus:ring-accent/50 placeholder:text-txt-25 border ${
+                  errors.email ? 'border-buzz' : 'border-line'
+                }`}
+                placeholder="votre@email.com"
+                value={email}
+                autoComplete="email"
+                autoCapitalize="none"
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  clearFieldError('email');
+                }}
+              />
+            </div>
+            {errors.email && (
+              <p className="text-[#D5442F] text-sm mt-2 ml-2">{errors.email}</p>
             )}
           </div>
 

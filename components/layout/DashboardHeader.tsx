@@ -89,7 +89,7 @@ export function DashboardHeader({
         <button
           onClick={onProfilePress ?? (() => router.push('/profile'))}
           aria-label="Mon profil"
-          className="w-10 h-10 rounded-full bg-surface border border-line flex items-center justify-center overflow-hidden hover:border-accent transition-colors cursor-pointer"
+          className="relative w-10 h-10 rounded-full bg-surface border border-line flex items-center justify-center overflow-hidden hover:border-accent transition-colors cursor-pointer"
         >
           {user?.avatarUrl ? (
             <img
@@ -99,6 +99,9 @@ export function DashboardHeader({
             />
           ) : (
             <User size={18} className="text-txt" />
+          )}
+          {user && (!user.email || !user.emailVerified) && (
+            <span className="absolute -top-0.5 -right-0.5 w-[10px] h-[10px] bg-buzz rounded-full border-2 border-bg" />
           )}
         </button>
       </div>

@@ -30,6 +30,10 @@ export async function getUserProfile(userId: string): Promise<UserResponse> {
   return res.data;
 }
 
+export async function resendVerificationEmail(): Promise<void> {
+  await apiClient.post('/api/users/me/resend-verification-email');
+}
+
 export async function searchUsers(
   query: string,
   page = 0,

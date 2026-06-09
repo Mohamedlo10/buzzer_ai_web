@@ -4,8 +4,21 @@
 
 export interface RegisterRequest {
   username: string;
-  email: string | null;
+  email: string;
   password: string;
+}
+
+export interface VerifyEmailRequest {
+  token: string;
+}
+
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
+export interface ResetPasswordRequest {
+  token: string;
+  newPassword: string;
 }
 
 export interface LoginRequest {
@@ -37,6 +50,7 @@ export interface UserResponse {
   id: string;
   username: string;
   email: string | null;
+  emailVerified: boolean;
   avatarUrl: string | null;
   avatarStyle: string | null;
   avatarSeed: string | null;

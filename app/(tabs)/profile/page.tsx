@@ -10,6 +10,7 @@ import {
   Crown,
   Calendar,
   AlertCircle,
+  RefreshCw,
   X,
   Edit3,
   Lock,
@@ -93,6 +94,11 @@ export default function ProfilePage() {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
+
+  // Email verification banner
+  const [emailInput, setEmailInput] = useState('');
+  const [emailBannerLoading, setEmailBannerLoading] = useState(false);
+  const [emailBannerSent, setEmailBannerSent] = useState(false);
   const [categoryRankingsData, setCategoryRankingsData] = useState<CategoryRankingResponse | null>(null);
   const [isCategoryFetching, setIsCategoryFetching] = useState(false);
 
@@ -162,6 +168,33 @@ export default function ProfilePage() {
   function handleChangePassword() {
     if (!currentPassword || !newPassword || newPassword !== confirmPassword) return;
     changePasswordMutation.mutate({ currentPassword, newPassword });
+  }
+
+  async function handleSaveEmailAndSendVerification() {
+    const trimmed = emailInput.trim();
+    if (!trimmed || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) return;
+    setEmailBannerLoading(true);
+    try {
+      const updated = await usersApi.updateProfile({ email: trimmed });
+      setUser(updated);
+      setEmailBannerSent(true);
+    } catch {
+      // ignore
+    } finally {
+      setEmailBannerLoading(false);
+    }
+  }
+
+  async function handleResendVerification() {
+    setEmailBannerLoading(true);
+    try {
+      await usersApi.resendVerificationEmail();
+      setEmailBannerSent(true);
+    } catch {
+      // ignore
+    } finally {
+      setEmailBannerLoading(false);
+    }
   }
 
   if (!user) {
@@ -244,6 +277,65 @@ export default function ProfilePage() {
             </span>
           </div>
         </div>
+
+        {/* Email verification banner */}
+        {user && (!user.email || !user.emailVerified) && (
+          <div className="px-4 mb-4">
+            <div
+              className="rounded-2xl p-4 border"
+              style={{ background: 'rgba(213,68,47,0.08)', borderColor: 'rgba(213,68,47,0.3)' }}
+            >
+              <div className="flex items-center gap-2 mb-2">
+                <AlertCircle size={16} color="#D5442F" />
+                <p className="text-[#D5442F] font-semibold text-sm">
+                  {!user.email ? 'Ajoutez votre email' : 'Confirmez votre email'}
+                </p>
+              </div>
+              {!user.email ? (
+                emailBannerSent ? (
+                  <p className="text-accent text-sm font-semibold">Email ajouté ! Vérifiez votre boîte mail.</p>
+                ) : (
+                  <div className="flex gap-2 mt-2">
+                    <input
+                      type="email"
+                      value={emailInput}
+                      onChange={(e) => setEmailInput(e.target.value)}
+                      placeholder="votre@email.com"
+                      className="flex-1 px-3 py-2 rounded-xl bg-bg text-txt text-sm border border-line outline-none focus:border-accent placeholder:text-txt-25"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleSaveEmailAndSendVerification}
+                      disabled={emailBannerLoading || !emailInput.trim()}
+                      className="px-4 py-2 rounded-xl bg-buzz text-white text-sm font-bold disabled:opacity-50 cursor-pointer"
+                    >
+                      {emailBannerLoading ? '…' : 'Envoyer'}
+                    </button>
+                  </div>
+                )
+              ) : (
+                emailBannerSent ? (
+                  <p className="text-accent text-sm font-semibold">Email de confirmation renvoyé !</p>
+                ) : (
+                  <div>
+                    <p className="text-txt-60 text-xs mb-2">
+                      Un email de confirmation a été envoyé à <span className="text-txt">{user.email}</span>.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={handleResendVerification}
+                      disabled={emailBannerLoading}
+                      className="flex items-center gap-1.5 text-accent text-sm font-semibold hover:underline disabled:opacity-50 cursor-pointer"
+                    >
+                      <RefreshCw size={13} className={emailBannerLoading ? 'animate-spin' : ''} />
+                      Renvoyer l&apos;email
+                    </button>
+                  </div>
+                )
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Stats Cards */}
         <div className="px-4 mb-6">
