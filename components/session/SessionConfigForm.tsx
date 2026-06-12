@@ -79,9 +79,8 @@ function ModeCard({
     <button
       type="button"
       onClick={onClick}
-      className={`flex-1 rounded-[18px] border-2 p-4 text-left transition-all duration-180 flex flex-col justify-between h-[125px] shrink-0 ${
-        active ? '' : 'border-line bg-surface'
-      }`}
+      className={`flex-1 rounded-[18px] border-2 p-4 text-left transition-all duration-180 flex flex-col justify-between h-[125px] shrink-0 ${active ? '' : 'border-line bg-surface'
+        }`}
       style={{
         borderColor: active ? accent : 'var(--line)',
         backgroundColor: active
@@ -206,9 +205,8 @@ function ToggleRow({
         }}
       >
         <span
-          className={`inline-block h-5 w-5 rounded-full bg-white shadow transition-transform duration-200 ${
-            checked ? 'translate-x-6' : 'translate-x-1'
-          }`}
+          className={`inline-block h-5 w-5 rounded-full bg-white shadow transition-transform duration-200 ${checked ? 'translate-x-6' : 'translate-x-1'
+            }`}
         />
       </button>
     </div>
@@ -379,9 +377,8 @@ function SummaryTable({ rows }: { rows: SummaryRow[] }) {
       {rows.map((row, i) => (
         <div
           key={i}
-          className={`flex items-center gap-3 px-4 py-3 ${
-            i < rows.length - 1 ? 'border-b border-line' : ''
-          }`}
+          className={`flex items-center gap-3 px-4 py-3 ${i < rows.length - 1 ? 'border-b border-line' : ''
+            }`}
         >
           <div
             className="w-8 h-8 rounded-[9px] flex items-center justify-center shrink-0"
@@ -639,7 +636,7 @@ export function SessionConfigForm({ onSuccess, onClose, roomId, initialMaxPlayer
                 onChange={setGlobalQuestionSeconds}
               />
             </div>
-            
+
             <ChoiceStrip
               label="Nombre de choix de réponse"
               value={answerChoicesCount}
@@ -922,7 +919,7 @@ export function SessionConfigForm({ onSuccess, onClose, roomId, initialMaxPlayer
           >
             {isFirstStep ? <X size={20} className="text-txt" /> : <ArrowLeft size={20} className="text-txt" />}
           </button>
-          
+
           <div className="flex-1 text-center px-2">
             <h1 className="text-txt font-bold text-base leading-tight">Créer une session</h1>
             <p className="text-txt-40 text-xs mt-0.5 font-medium leading-none">
@@ -950,7 +947,7 @@ export function SessionConfigForm({ onSuccess, onClose, roomId, initialMaxPlayer
       </div>
 
       {/* Scrollable Body */}
-      <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-6">
+      <div className="flex-1 overflow-y-auto px-4 pb-20 pt-4 flex flex-col gap-6">
         {renderStepContent()}
       </div>
 
@@ -965,20 +962,19 @@ export function SessionConfigForm({ onSuccess, onClose, roomId, initialMaxPlayer
             <ArrowLeft size={20} className="text-txt" />
           </button>
         )}
-        
+
         <button
           type="button"
           onClick={isLastStep ? handleCreate : handleNext}
           disabled={isLastStep ? (isCreating || (config.isTeamMode && teams.length < 2)) : false}
-          className={`flex-1 rounded-2xl py-3.5 flex items-center justify-center gap-2 transition-all active:scale-[0.98] ${
-            isLastStep
+          className={`flex-1 rounded-2xl py-3.5 flex items-center justify-center gap-2 transition-all active:scale-[0.98] ${isLastStep
               ? isCreating
                 ? 'bg-surface-2 cursor-not-allowed'
                 : (config.isTeamMode && teams.length < 2)
-                ? 'bg-surface-2 opacity-50 cursor-not-allowed text-txt-40'
-                : 'bg-gradient-to-br from-[#00D397] to-[#00B383] shadow-[0_4px_20px_rgba(0,211,151,0.25)] hover:opacity-95'
+                  ? 'bg-surface-2 opacity-50 cursor-not-allowed text-txt-40'
+                  : 'bg-gradient-to-br from-[#00D397] to-[#00B383] shadow-[0_4px_20px_rgba(0,211,151,0.25)] hover:opacity-95'
               : 'bg-gradient-to-br from-[#00D397] to-[#00B383] shadow-[0_4px_20px_rgba(0,211,151,0.25)] hover:opacity-95'
-          }`}
+            }`}
         >
           {isLastStep ? (
             isCreating ? (
