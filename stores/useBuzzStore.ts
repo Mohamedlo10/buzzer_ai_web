@@ -300,7 +300,9 @@ export const useBuzzStore = create<BuzzState & BuzzActions>((set, get) => ({
   },
 
   // ── Game State Updates (WebSocket) ──
-  setCurrentQuestion: (question, index, total) =>
+  setCurrentQuestion: (question, index, total) => {
+    const isWithoutMod = get().session?.sessionMode === 'WITHOUT_MODERATOR';
+    const totalWords = question.text ? question.text.split(' ').length : 1;
     set({
       currentQuestion: question,
       questionIndex: index,
@@ -310,14 +312,15 @@ export const useBuzzStore = create<BuzzState & BuzzActions>((set, get) => ({
       answeredWrongThisQuestion: false,
       myQueuePosition: null,
       buzzerEnabled: true,
-      displayWordIndex: 0,
+      displayWordIndex: isWithoutMod ? totalWords - 1 : 0,
       displayResumeWordIndex: null,
-      displayRunning: true,
-      questionFullyDisplayed: false,
+      displayRunning: !isWithoutMod,
+      questionFullyDisplayed: isWithoutMod,
       myAnswerChoices: null,
       myAnswerQuestionId: null,
       answerReveal: null,
-    }),
+    });
+  },
 
   addToBuzzQueue: (item) =>
     set((state) => {

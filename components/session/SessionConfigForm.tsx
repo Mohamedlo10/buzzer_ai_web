@@ -419,7 +419,7 @@ export function SessionConfigForm({ onSuccess, onClose, roomId, initialMaxPlayer
   const [answerChoicesCount, setAnswerChoicesCount] = useState<number | null>(null);
   const [teams, setTeams] = useState<TeamRequest[]>(DEFAULT_TEAMS);
   const [config, setConfig] = useState<CreateSessionRequest>({
-    debtAmount: 5,
+    debtAmount: 0,
     pointsPerCorrectAnswer: 5,
     questionsPerCategory: 5,
     maxPlayers: 20,
@@ -604,7 +604,7 @@ export function SessionConfigForm({ onSuccess, onClose, roomId, initialMaxPlayer
           >
             <Bot size={18} className="text-host shrink-0 mt-0.5" style={{ color: 'var(--host, #8B5CF6)' }} />
             <p className="text-txt text-xs leading-relaxed">
-              Questions affichées progressivement · réponses automatisées · buzz risqué avant lecture complète.
+              Questions affichées entièrement · réponses automatisées · buzz immédiat.
             </p>
           </div>
         )}
@@ -716,18 +716,6 @@ export function SessionConfigForm({ onSuccess, onClose, roomId, initialMaxPlayer
               onChange={(v) => setConfig((c) => ({ ...c, pointsPerCorrectAnswer: v }))}
             />
           </div>
-          
-          <div className="w-full">
-            <StepperField
-              label="Dettes (pts)"
-              value={config.debtAmount}
-              min={0}
-              max={50}
-              step={5}
-              onChange={(v) => setConfig((c) => ({ ...c, debtAmount: v }))}
-              accent={config.debtAmount > 0 ? '#FFD700' : 'var(--accent, #00D397)'}
-            />
-          </div>
         </div>
       </div>
     );
@@ -831,14 +819,6 @@ export function SessionConfigForm({ onSuccess, onClose, roomId, initialMaxPlayer
       icon: <Award size={16} />,
       iconColor: 'var(--txt)',
       valueColor: 'var(--txt)',
-    });
-
-    recapRows.push({
-      label: 'Dettes par catégorie',
-      value: config.debtAmount > 0 ? `${config.debtAmount} pts` : 'Désactivées',
-      icon: <Zap size={16} />,
-      iconColor: config.debtAmount > 0 ? '#FFD700' : 'var(--txt)',
-      valueColor: config.debtAmount > 0 ? '#FFD700' : 'var(--txt)',
     });
 
     recapRows.push({

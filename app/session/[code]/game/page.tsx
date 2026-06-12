@@ -282,6 +282,7 @@ export default function GamePage() {
         const q = gameState.currentQuestion;
         const totalWords = q?.text ? q.text.split(' ').length : 1;
         const currentLocalWordIndex = useBuzzStore.getState().displayWordIndex;
+        const isWithoutMod = serverSessionMode === 'WITHOUT_MODERATOR' || isWithoutModerator;
         if (
           serverDisplayWordIndex > currentLocalWordIndex ||
           (serverDisplayWordIndex === 0 &&
@@ -289,9 +290,9 @@ export default function GamePage() {
             !useBuzzStore.getState().questionFullyDisplayed)
         ) {
           useBuzzStore.setState({
-            displayWordIndex: serverDisplayWordIndex,
-            displayRunning: serverDisplayWordIndex < totalWords - 1,
-            ...(serverDisplayWordIndex >= totalWords - 1 ? { questionFullyDisplayed: true } : {}),
+            displayWordIndex: isWithoutMod ? totalWords - 1 : serverDisplayWordIndex,
+            displayRunning: isWithoutMod ? false : serverDisplayWordIndex < totalWords - 1,
+            ...(isWithoutMod || serverDisplayWordIndex >= totalWords - 1 ? { questionFullyDisplayed: true } : {}),
           });
         }
       }
@@ -500,10 +501,10 @@ export default function GamePage() {
   // this effect fires (React commit phase), which would cause a visible restart.
   useEffect(() => {
     if (currentQuestion) {
-      setQuestionFullyDisplayed(currentQuestion.questionType === 'IDENTIFICATION');
+      setQuestionFullyDisplayed(isWithoutModerator || currentQuestion.questionType === 'IDENTIFICATION');
       setAnswerSubmitResult(null);
     }
-  }, [currentQuestion?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [currentQuestion?.id, isWithoutModerator]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Fallback word-advance au rythme du serveur (600ms/mot) quand WS est déconnecté
   useEffect(() => {

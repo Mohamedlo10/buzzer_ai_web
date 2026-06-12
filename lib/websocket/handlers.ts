@@ -385,6 +385,7 @@ export function handleWSEvent(event: WSEvent, currentUserId?: string): void {
             const q = sync.currentQuestion;
             const totalWords = q.text ? q.text.split(' ').length : 1;
             const currentLocalWordIndex = useBuzzStore.getState().displayWordIndex;
+            const isWithoutMod = (sync.session as any)?.sessionMode === 'WITHOUT_MODERATOR' || useBuzzStore.getState().session?.sessionMode === 'WITHOUT_MODERATOR';
             if (
               serverDisplayWordIndex > currentLocalWordIndex ||
               (serverDisplayWordIndex === 0 &&
@@ -392,9 +393,9 @@ export function handleWSEvent(event: WSEvent, currentUserId?: string): void {
                 !useBuzzStore.getState().questionFullyDisplayed)
             ) {
               useBuzzStore.setState({
-                displayWordIndex: serverDisplayWordIndex,
-                displayRunning: serverDisplayWordIndex < totalWords - 1,
-                ...(serverDisplayWordIndex >= totalWords - 1 ? { questionFullyDisplayed: true } : {}),
+                displayWordIndex: isWithoutMod ? totalWords - 1 : serverDisplayWordIndex,
+                displayRunning: isWithoutMod ? false : serverDisplayWordIndex < totalWords - 1,
+                ...(isWithoutMod || serverDisplayWordIndex >= totalWords - 1 ? { questionFullyDisplayed: true } : {}),
               });
             }
           }
