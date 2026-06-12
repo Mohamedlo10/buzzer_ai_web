@@ -169,8 +169,10 @@ export default function CategorySelectionPage() {
           setSessionTeams(detail.teams || []);
           if (detail.session.questionMode === 'MANUAL') {
             setIsManualMode(true);
+            setCurrentStep('team');
+          } else {
+            setCurrentStep('categories');
           }
-          setCurrentStep('team');
           setIsCheckingJoined(false);
           return;
         }
