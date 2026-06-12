@@ -577,6 +577,17 @@ export default function GamePage() {
         setAnswerSubmitResult(result.isCorrect ? 'correct' : 'wrong');
       }
       clearAnswerChoices();
+
+      if (!result.isCorrect && result.correctAnswer) {
+        useBuzzStore.setState({
+          answerReveal: {
+            correctAnswer: result.correctAnswer,
+            winnerId: null,
+            winnerName: null,
+            allAnswersWrong: false,
+          },
+        });
+      }
     } catch {
       clearAnswerChoices();
     } finally {
