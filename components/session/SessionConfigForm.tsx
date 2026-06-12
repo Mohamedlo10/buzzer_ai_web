@@ -947,12 +947,12 @@ export function SessionConfigForm({ onSuccess, onClose, roomId, initialMaxPlayer
       </div>
 
       {/* Scrollable Body */}
-      <div className="flex-1 overflow-y-auto px-4 pb-20 pt-4 flex flex-col gap-6">
+      <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-6">
         {renderStepContent()}
       </div>
 
       {/* Fixed Footer */}
-      <div className="bg-bg border-t border-line px-4 py-4 sticky bottom-16 z-10 flex gap-3 items-center shrink-0">
+      <div className="bg-bg border-t border-line px-4 py-4 sticky bottom-0 z-10 flex gap-3 items-center shrink-0">
         {currentStep > 0 && (
           <button
             type="button"
@@ -968,12 +968,12 @@ export function SessionConfigForm({ onSuccess, onClose, roomId, initialMaxPlayer
           onClick={isLastStep ? handleCreate : handleNext}
           disabled={isLastStep ? (isCreating || (config.isTeamMode && teams.length < 2)) : false}
           className={`flex-1 rounded-2xl py-3.5 flex items-center justify-center gap-2 transition-all active:scale-[0.98] ${isLastStep
-              ? isCreating
-                ? 'bg-surface-2 cursor-not-allowed'
-                : (config.isTeamMode && teams.length < 2)
-                  ? 'bg-surface-2 opacity-50 cursor-not-allowed text-txt-40'
-                  : 'bg-gradient-to-br from-[#00D397] to-[#00B383] shadow-[0_4px_20px_rgba(0,211,151,0.25)] hover:opacity-95'
-              : 'bg-gradient-to-br from-[#00D397] to-[#00B383] shadow-[0_4px_20px_rgba(0,211,151,0.25)] hover:opacity-95'
+            ? isCreating
+              ? 'bg-surface-2 cursor-not-allowed'
+              : (config.isTeamMode && teams.length < 2)
+                ? 'bg-surface-2 opacity-50 cursor-not-allowed text-txt-40'
+                : 'bg-gradient-to-br from-[#00D397] to-[#00B383] shadow-[0_4px_20px_rgba(0,211,151,0.25)] hover:opacity-95'
+            : 'bg-gradient-to-br from-[#00D397] to-[#00B383] shadow-[0_4px_20px_rgba(0,211,151,0.25)] hover:opacity-95'
             }`}
         >
           {isLastStep ? (

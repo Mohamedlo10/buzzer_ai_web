@@ -931,12 +931,12 @@ export default function RoomDetailPage() {
 
       {/* Session Config Modal */}
       {showConfigModal && (
-        <div className="fixed inset-0 bg-black/60 flex items-end justify-center z-50" style={{ touchAction: 'none' }}>
+        <div className="fixed inset-0 bg-black/60 flex items-end justify-center z-[60]">
           <div
             className="absolute inset-0"
             onClick={() => setShowConfigModal(false)}
           />
-          <div className="relative bg-bg rounded-t-3xl w-full max-w-2xl h-[90vh] flex flex-col overflow-hidden" onTouchMove={(e) => e.stopPropagation()}>
+          <div className="relative bg-bg rounded-t-3xl w-full max-w-2xl h-[90vh] flex flex-col overflow-hidden">
             <SessionConfigForm
               roomId={roomId}
               onSuccess={handleSessionCreated}
