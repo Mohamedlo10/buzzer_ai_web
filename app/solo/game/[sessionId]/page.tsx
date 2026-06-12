@@ -184,6 +184,16 @@ export default function SoloGamePage() {
                 </div>
               </div>
 
+              {/* Question Text Display */}
+              <div className="bg-bg/40 border border-line/60 rounded-xl px-4 py-3">
+                <span className="text-[10px] font-bold text-txt-40 uppercase tracking-wider block mb-1">
+                  Question posée
+                </span>
+                <span className="text-txt font-medium text-sm leading-snug block">
+                  {currentQuestion.text}
+                </span>
+              </div>
+
               {/* Correct Answer Display */}
               <div className="bg-bg/60 border border-line rounded-xl px-4 py-3">
                 <span className="text-[10px] font-bold text-txt-40 uppercase tracking-wider block mb-1">
