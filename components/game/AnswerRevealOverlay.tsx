@@ -39,23 +39,27 @@ export function AnswerRevealOverlay({
         <h2 className={`text-[30px] font-bold ${isWinner ? 'text-accent' : 'text-buzz'}`}>
           {isWinner ? 'Bonne réponse !' : 'Raté…'}
         </h2>
-        <p className="text-txt-60 text-sm mt-1.5 max-w-xs">
+        <p className="text-txt-60 text-sm mt-1.5 max-w-xs leading-relaxed">
           {isWinner
             ? `${winnerName ?? 'Un joueur'} a trouvé la bonne réponse`
-            : 'Personne n\'a trouvé — voici la solution'}
+            : allAnswersWrong
+            ? 'Personne n\'a trouvé la bonne réponse'
+            : 'Votre réponse est incorrecte. En attente des autres joueurs...'}
         </p>
 
-        <div className="bg-surface rounded-2xl border border-line px-6 py-4 mt-6 w-full max-w-sm">
-          <p className="text-txt-40 text-[10px] font-bold tracking-widest uppercase mb-1">
-            {isWinner ? 'Bonne réponse' : 'La bonne réponse était'}
-          </p>
-          <p className="text-txt text-2xl font-bold">{correctAnswer}</p>
-        </div>
+        {(isWinner || allAnswersWrong) && (
+          <div className="bg-surface rounded-2xl border border-line px-6 py-4 mt-6 w-full max-w-sm">
+            <p className="text-txt-40 text-[10px] font-bold tracking-widest uppercase mb-1">
+              {isWinner ? 'Bonne réponse' : 'La bonne réponse était'}
+            </p>
+            <p className="text-txt text-2xl font-bold">{correctAnswer}</p>
+          </div>
+        )}
 
         {allAnswersWrong && isManager && (
           <button
             onClick={onAdvance}
-            className="mt-6 px-6 py-3 rounded-2xl bg-accent text-white font-semibold text-[15px] active:scale-95 transition-transform"
+            className="mt-6 px-6 py-3 rounded-2xl bg-accent text-white font-semibold text-[15px] active:scale-95 transition-transform cursor-pointer"
           >
             Question suivante →
           </button>
@@ -69,7 +73,7 @@ export function AnswerRevealOverlay({
       {!allAnswersWrong && (
         <div className="pb-10 flex items-center justify-center gap-2 text-txt-60 text-[12.5px]">
           <span className="dotpulse" />
-          Question suivante…
+          {isWinner ? 'Question suivante…' : 'Partie en cours…'}
         </div>
       )}
     </div>
