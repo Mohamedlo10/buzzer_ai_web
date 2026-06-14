@@ -11,6 +11,8 @@ import {
   QrCode,
   Bell,
   ChevronRight,
+  Sun,
+  Moon,
 } from 'lucide-react';
 
 import { SafeScreen } from '~/components/layout/SafeScreen';
@@ -18,6 +20,7 @@ import { Spinner } from '~/components/loading/Spinner';
 import { QRScannerModal } from '~/components/ui/QRScannerModal';
 import { useDashboardV2 } from '~/lib/query/hooks';
 import { NotificationsBanner } from '~/components/dashboard';
+import { useTheme } from '~/components/providers/ThemeProvider';
 import * as roomsApi from '~/lib/api/rooms';
 import * as sessionsApi from '~/lib/api/sessions';
 import { appStorage } from '~/lib/utils/storage';
@@ -362,6 +365,7 @@ export default function DashboardPage() {
   const { data, isLoading, isError, refetch } = useDashboardV2();
   const [showJoinModal, setShowJoinModal] = useState(false);
   const user = useAuthStore((s) => s.user);
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     if (user?.role === 'SUPER_ADMIN') {
@@ -424,17 +428,29 @@ export default function DashboardPage() {
           </span>
         </div>
         
-        {/* Notification Bell */}
-        <button
-          onClick={() => router.push('/notifications')}
-          className="relative w-10 h-10 flex items-center justify-center text-txt hover:text-accent transition-colors"
-          aria-label="Notifications"
-        >
-          <Bell size={20} />
-          {pendingTotal > 0 && (
-            <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-buzz rounded-full animate-pulse" />
-          )}
-        </button>
+        {/* Actions (Theme toggle + Bell notification) */}
+        <div className="flex flex-row items-center gap-2">
+          {/* Day/Night Theme Toggle */}
+          <button
+            onClick={toggleTheme}
+            className="w-10 h-10 rounded-full bg-surface border border-line flex items-center justify-center text-txt hover:text-accent transition-colors cursor-pointer"
+            aria-label={theme === 'dark' ? 'Mode clair' : 'Mode sombre'}
+          >
+            {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+          </button>
+
+          {/* Notification Bell */}
+          <button
+            onClick={() => router.push('/notifications')}
+            className="relative w-10 h-10 flex items-center justify-center text-txt hover:text-accent transition-colors cursor-pointer"
+            aria-label="Notifications"
+          >
+            <Bell size={20} />
+            {pendingTotal > 0 && (
+              <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-buzz rounded-full animate-pulse" />
+            )}
+          </button>
+        </div>
       </div>
 
       <div className="overflow-y-auto pb-24">
@@ -501,6 +517,31 @@ export default function DashboardPage() {
             </div>
           </div>
         )}
+
+        {/* ── Solo Mode Section ── */}
+        <div className="px-5 mb-6">
+          <div className="relative overflow-hidden bg-surface border border-line border-l-[4px] border-l-host rounded-3xl p-5 shadow-soft animate-[rise_0.4s_both]">
+            <div className="absolute -right-10 -bottom-10 w-28 h-28 bg-host/5 rounded-full blur-2xl pointer-events-none" />
+            
+            <div className="flex flex-col gap-1.5 relative z-10">
+              <span className="text-host text-[10px] font-bold uppercase tracking-wider">
+                • SOLO MODE
+              </span>
+              <h3 className="text-txt font-display font-bold text-xl leading-tight">
+                Entraînement & Carrière
+              </h3>
+              <p className="text-txt-60 text-xs mt-0.5 leading-normal">
+                Défiez l'IA, progressez sur 12 niveaux de carrière et gagnez des points !
+              </p>
+              <button
+                onClick={() => router.push('/solo')}
+                className="mt-4 w-full py-3.5 rounded-2xl bg-host text-white font-bold text-sm tracking-wide uppercase hover:opacity-90 active:scale-[0.99] transition-all cursor-pointer"
+              >
+                Jouer en Solo
+              </button>
+            </div>
+          </div>
+        </div>
 
         {/* ── Notifications Banner ── */}
         {pendingTotal > 0 && (
