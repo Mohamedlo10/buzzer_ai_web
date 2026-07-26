@@ -514,30 +514,37 @@ function RoomsContent() {
         <GlobalRankCard rank={rank} style={{ marginBottom: 22 }} />
 
         {/* Your rooms list */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 10 }}>
-          <div
-            style={{
-              fontFamily: 'var(--font-display)',
-              fontWeight: 'var(--font-display-weight)' as any,
-              fontSize: 18,
-              letterSpacing: '-0.015em',
-            }}
-          >
-            Tes salons ({recentRooms.length})
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+          <div>
+            <div
+              style={{
+                fontFamily: 'var(--font-display)',
+                fontWeight: 'var(--font-display-weight)' as any,
+                fontSize: 18.5,
+                letterSpacing: '-0.015em',
+              }}
+            >
+              Mes Salons ({recentRooms.length})
+            </div>
+            <div style={{ fontSize: 11.5, color: 'var(--color-ink-soft)', marginTop: 2 }}>
+              Rejoins et consulte les détails de tes salons
+            </div>
           </div>
           <button
             type="button"
             onClick={() => router.push('/rooms/all')}
             style={{
-              fontSize: 12.5,
+              fontSize: 12,
               fontWeight: 700,
               color: 'var(--color-primary)',
-              background: 'none',
+              background: 'rgba(232, 166, 48, 0.12)',
+              padding: '6px 12px',
+              borderRadius: 'var(--radius-pill)',
               border: 'none',
               cursor: 'pointer',
             }}
           >
-            Voir plus →
+            Tous les salons →
           </button>
         </div>
 
@@ -553,45 +560,52 @@ function RoomsContent() {
                   border: '1px solid var(--color-line)',
                   padding: 16,
                   cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
                 }}
+                className="hover:opacity-95"
               >
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 8 }}>
-                  <Avatar name={room.ownerName} size={36} />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <Avatar name={room.ownerName} size={36} />
+                    <div>
+                      <div
+                        style={{
+                          fontFamily: 'var(--font-display)',
+                          fontWeight: 'var(--font-display-weight)' as any,
+                          fontSize: 16,
+                          letterSpacing: '-0.01em',
+                        }}
+                      >
+                        {room.name}
+                      </div>
+                      <div style={{ fontSize: 11.5, color: 'var(--color-ink-soft)' }}>
+                        Hôte: {room.ownerName}
+                      </div>
+                    </div>
+                  </div>
                   <span
                     style={{
-                      fontSize: 10,
-                      letterSpacing: '0.1em',
+                      fontSize: 10.5,
+                      letterSpacing: '0.08em',
                       textTransform: 'uppercase',
-                      color: 'var(--color-ink-soft)',
+                      color: 'var(--color-accent)',
                       padding: '4px 10px',
                       borderRadius: 'var(--radius-pill)',
-                      background: 'var(--color-surface-2)',
+                      background: 'rgba(232, 166, 48, 0.12)',
                       fontWeight: 700,
                     }}
                   >
-                    Salon #{room.code}
+                    #{room.code}
                   </span>
                 </div>
-                <div
-                  style={{
-                    fontFamily: 'var(--font-display)',
-                    fontWeight: 'var(--font-display-weight)' as any,
-                    fontSize: 16,
-                    letterSpacing: '-0.01em',
-                    marginBottom: 2,
-                  }}
-                >
-                  {room.name}
-                </div>
-                <div style={{ fontSize: 12, color: 'var(--color-ink-soft)', marginBottom: 12 }}>
-                  Hôte: {room.ownerName}
-                </div>
-                <div style={{ height: 1, background: 'var(--color-line)', marginBottom: 10 }} />
+                <div style={{ height: 1, background: 'var(--color-line)', margin: '10px 0' }} />
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-ink-soft)' }}>
                     👥 {room.memberCount} membre{room.memberCount > 1 ? 's' : ''}
+                    {room.hasActiveSession ? ' · 🔴 Partie en cours' : ''}
                   </span>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-primary)' }}>Rejoindre →</span>
+                  <span style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--color-primary)' }}>Consulter →</span>
                 </div>
               </div>
             ))}

@@ -17,6 +17,7 @@ import * as qrcodeApi from '~/lib/api/qrcode';
 import * as roomsApi from '~/lib/api/rooms';
 import * as friendsApi from '~/lib/api/friends';
 import * as sessionsApi from '~/lib/api/sessions';
+import { Avatar } from '~/components/shared/Avatar';
 import type { FriendResponse, RoomDetailResponse, RoomSessionResponse, SessionStatus } from '~/types/api';
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; icon: React.ComponentType<{ size: number; color: string }> }> = {
@@ -260,14 +261,7 @@ function MembersWithStats({
 
             {/* Avatar */}
             <div className="relative mr-3 shrink-0">
-              <div className="w-11 h-11 rounded-full bg-surface-2 flex items-center justify-center overflow-hidden">
-                {member.avatarUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={member.avatarUrl} className="w-11 h-11 rounded-full object-cover" alt={member.username} />
-                ) : (
-                  <span className="text-txt font-bold">{member.username.charAt(0).toUpperCase()}</span>
-                )}
-              </div>
+              <Avatar name={member.username} avatarUrl={member.avatarUrl} size={36} />
               <div className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-surface ${member.isOnline ? 'bg-accent' : 'bg-txt-40'}`} />
             </div>
 
@@ -478,11 +472,7 @@ function InviteFriendsModal({
                 >
                   {/* Avatar */}
                   <div className="relative shrink-0 mr-3">
-                    <div className="w-12 h-12 rounded-full bg-surface-2 flex items-center justify-center">
-                      <span className="text-txt font-bold text-lg">
-                        {friend.username.charAt(0).toUpperCase()}
-                      </span>
-                    </div>
+                    <Avatar name={friend.username} avatarUrl={friend.avatarUrl} size={36} />
                     <span
                       className={`absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full border-2 border-bg ${friend.isOnline ? 'bg-accent' : 'bg-txt-40'
                         }`}
