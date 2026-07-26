@@ -43,9 +43,9 @@ const roleMeta: Record<
   UserRole,
   { label: string; color: string; bg: string; icon: React.ComponentType<{ size: number; color: string }> }
 > = {
-  USER:        { label: 'User',        color: '#00D397', bg: '#00D39720', icon: User },
-  ADMIN:       { label: 'Admin',       color: '#3B82F6', bg: '#3B82F620', icon: ShieldCheck },
-  SUPER_ADMIN: { label: 'Super Admin', color: '#FFD700', bg: '#FFD70020', icon: Crown },
+  USER:        { label: 'User',        color: 'var(--primary)', bg: 'rgb(var(--primary-rgb) / 0.125)', icon: User },
+  ADMIN:       { label: 'Admin',       color: 'var(--indigo)', bg: 'rgb(var(--indigo-rgb) / 0.125)', icon: ShieldCheck },
+  SUPER_ADMIN: { label: 'Super Admin', color: 'var(--gold)', bg: 'rgb(var(--gold-rgb) / 0.125)', icon: Crown },
 };
 
 function formatDate(iso: string): string {
@@ -146,7 +146,7 @@ export default function AdminUsersPage() {
             <Avatar avatarUrl={row.avatarUrl} username={row.username} size={36} />
             <span
               className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-surface ${
-                row.isOnline ? 'bg-[#00D397]' : 'bg-[#6B7280]'
+                row.isOnline ? 'bg-accent' : 'bg-txt-40'
               }`}
             />
           </div>
@@ -187,10 +187,10 @@ export default function AdminUsersPage() {
       render: (row) => (
         <span
           className={`inline-flex items-center gap-1.5 text-xs font-medium ${
-            row.isOnline ? 'text-[#00D397]' : 'text-txt-40'
+            row.isOnline ? 'text-accent' : 'text-txt-40'
           }`}
         >
-          <span className={`w-2 h-2 rounded-full ${row.isOnline ? 'bg-[#00D397]' : 'bg-white/30'}`} />
+          <span className={`w-2 h-2 rounded-full ${row.isOnline ? 'bg-accent' : 'bg-white/30'}`} />
           {row.isOnline ? 'En ligne' : 'Hors ligne'}
         </span>
       ),
@@ -201,7 +201,7 @@ export default function AdminUsersPage() {
       width: '90px',
       render: (row) =>
         row.banned ? (
-          <span className="inline-flex items-center gap-1 text-xs font-medium text-[#EF4444]">
+          <span className="inline-flex items-center gap-1 text-xs font-medium text-danger">
             <Ban size={12} />
             Oui
           </span>
@@ -279,7 +279,7 @@ export default function AdminUsersPage() {
             <button
               onClick={() => unbanMutation.mutate(row.id)}
               disabled={unbanMutation.isPending}
-              className="p-1.5 rounded-lg bg-[#00D39720] hover:bg-[#00D39730] text-[#00D397] transition-colors"
+              className="p-1.5 rounded-lg bg-accent/15 hover:bg-accent/20 text-accent transition-colors"
               title="Débannir"
             >
               <CheckCircle2 size={14} />
@@ -292,7 +292,7 @@ export default function AdminUsersPage() {
                 }
               }}
               disabled={banMutation.isPending}
-              className="p-1.5 rounded-lg bg-[#EF444420] hover:bg-[#EF444430] text-[#EF4444] transition-colors"
+              className="p-1.5 rounded-lg bg-danger/15 hover:bg-danger/20 text-danger transition-colors"
               title="Bannir"
             >
               <ShieldX size={14} />
@@ -302,7 +302,7 @@ export default function AdminUsersPage() {
           <button
             onClick={() => handleDelete(row)}
             disabled={deleteMutation.isPending}
-            className="p-1.5 rounded-lg bg-[#EF444420] hover:bg-[#EF444430] text-[#EF4444] transition-colors"
+            className="p-1.5 rounded-lg bg-danger/15 hover:bg-danger/20 text-danger transition-colors"
             title="Supprimer"
           >
             <Trash2 size={14} />
@@ -318,7 +318,7 @@ export default function AdminUsersPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-txt text-2xl font-bold flex items-center gap-2">
-            <Users size={24} color="#9B59B6" />
+            <Users size={24} color="var(--violet)" />
             Utilisateurs
           </h1>
           <p className="text-txt-60 text-sm mt-1">

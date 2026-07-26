@@ -73,7 +73,7 @@ export default function AdminAuditLogsPage() {
       key: 'action',
       header: 'Action',
       render: (row: AdminAuditLogResponse) => (
-        <span className="text-xs px-2 py-0.5 rounded-full bg-[#9B59B620] text-[#9B59B6] font-medium">
+        <span className="text-xs px-2 py-0.5 rounded-full bg-host/15 text-host font-medium">
           {row.action}
         </span>
       ),
@@ -127,7 +127,7 @@ export default function AdminAuditLogsPage() {
           <button
             onClick={() => refetch()}
             disabled={isLoading}
-            className="text-[#00D397] text-sm font-medium hover:opacity-80 disabled:opacity-40 transition-opacity"
+            className="text-accent text-sm font-medium hover:opacity-80 disabled:opacity-40 transition-opacity"
           >
             {isLoading ? 'Actualisation...' : 'Actualiser'}
           </button>
@@ -141,7 +141,7 @@ export default function AdminAuditLogsPage() {
             onClick={() => setShowFilters((v) => !v)}
             className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-medium transition-colors ${
               showFilters || hasActiveFilters
-                ? 'bg-[#9B59B6] border-[#9B59B6] text-white'
+                ? 'bg-host border-host text-white'
                 : 'bg-surface border-line text-txt-60 hover:text-txt'
             }`}
           >

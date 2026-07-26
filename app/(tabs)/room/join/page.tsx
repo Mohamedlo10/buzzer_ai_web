@@ -110,8 +110,8 @@ export default function JoinRoomPage() {
           <div className="px-4 pt-6">
             <Card className="mb-4">
               <div className="flex items-center justify-center mb-6">
-                <div className="w-16 h-16 rounded-full bg-[#00D39720] flex items-center justify-center">
-                  <DoorOpen size={28} color="#00D397" />
+                <div className="w-16 h-16 rounded-full bg-accent/15 flex items-center justify-center">
+                  <DoorOpen size={28} color="var(--primary)" />
                 </div>
               </div>
 
@@ -123,15 +123,15 @@ export default function JoinRoomPage() {
                   setError(null);
                 }}
                 placeholder="Ex: ROOM-ABC"
-                className="w-full bg-bg rounded-xl px-4 py-3 text-txt text-center text-xl font-bold tracking-widest border border-line focus:border-[#00D397] focus:outline-none uppercase placeholder:text-txt-25"
+                className="w-full bg-bg rounded-xl px-4 py-3 text-txt text-center text-xl font-bold tracking-widest border border-line focus:border-accent focus:outline-none uppercase placeholder:text-txt-25"
                 maxLength={20}
                 autoFocus
               />
             </Card>
 
             {error && (
-              <div className="mb-4 p-4 bg-[#D5442F20] rounded-xl border border-[#D5442F40]">
-                <p className="text-[#D5442F] text-center font-medium">{error}</p>
+              <div className="mb-4 p-4 bg-buzz/15 rounded-xl border border-buzz/25">
+                <p className="text-buzz text-center font-medium">{error}</p>
               </div>
             )}
 
@@ -141,9 +141,9 @@ export default function JoinRoomPage() {
               className={`w-full py-4 rounded-2xl flex items-center justify-center transition-colors mb-3 ${
                 isJoining
                   ? 'bg-surface-2 cursor-not-allowed'
-                  : 'bg-[#00D397] hover:bg-[#00B377]'
+                  : 'bg-accent hover:bg-accent-d'
               }`}
-              style={!isJoining ? { boxShadow: '0 0 12px rgba(0,211,151,0.4)' } : undefined}
+              style={!isJoining ? { boxShadow: '0 0 12px rgb(var(--primary-rgb) / 0.4)' } : undefined}
             >
               {isJoining ? (
                 <Spinner text="Connexion..." />
@@ -158,7 +158,7 @@ export default function JoinRoomPage() {
               disabled={isJoining}
               className="w-full py-4 rounded-2xl flex items-center justify-center gap-3 bg-surface border border-line hover:bg-surface-2 transition-colors"
             >
-              <QrCode size={20} color="#00D397" />
+              <QrCode size={20} color="var(--primary)" />
               <span className="text-txt font-semibold">Scanner un QR code</span>
             </button>
           </div>

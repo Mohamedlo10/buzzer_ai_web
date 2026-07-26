@@ -19,16 +19,18 @@ function applyTheme(theme: Theme) {
 }
 
 function getInitialTheme(): Theme {
-  if (typeof window === 'undefined') return 'dark';
+  if (typeof window === 'undefined') return 'light';
 
   const stored = window.localStorage.getItem(STORAGE_KEY);
   if (stored === 'dark' || stored === 'light') return stored;
 
-  return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>('dark');
+  // Xalaat est clair par défaut — doit rester aligné sur le script inline
+  // de app/layout.tsx pour éviter un flash au premier rendu.
+  const [theme, setThemeState] = useState<Theme>('light');
 
   useEffect(() => {
     const initial = getInitialTheme();

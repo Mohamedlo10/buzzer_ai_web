@@ -68,9 +68,9 @@ export function ManagerControls({
 
   return (
     <>
-      <Card className="mb-4 border border-[#FFD70040]">
+      <Card className="mb-4 border border-energy/25">
         <div className="flex flex-row items-center mb-4">
-          <AlertCircle size={18} color="#FFD700" className="mr-2" />
+          <AlertCircle size={18} color="var(--gold)" className="mr-2" />
           <p className="text-txt font-bold ml-2">Contrôles Manager</p>
         </div>
 
@@ -82,7 +82,7 @@ export function ManagerControls({
             disabled={!hasCurrentPlayer}
             className={`flex-1 py-4 rounded-xl flex flex-col items-center justify-center transition-colors ${
               hasCurrentPlayer
-                ? 'bg-[#00D397] hover:bg-[#00B377] active:bg-[#00B377]'
+                ? 'bg-accent hover:bg-accent-d active:bg-accent-d'
                 : 'bg-surface-2 opacity-50 cursor-not-allowed'
             }`}
           >
@@ -98,7 +98,7 @@ export function ManagerControls({
             disabled={!hasCurrentPlayer}
             className={`flex-1 py-4 rounded-xl flex flex-col items-center justify-center transition-colors ${
               hasCurrentPlayer
-                ? 'bg-[#D5442F] hover:bg-[#B53320] active:bg-[#B53320]'
+                ? 'bg-buzz hover:bg-accent-d active:bg-accent-d'
                 : 'bg-surface-2 opacity-50 cursor-not-allowed'
             }`}
           >
@@ -111,7 +111,7 @@ export function ManagerControls({
           {/* Skip - Amber */}
           <button
             onClick={handleSkip}
-            className="flex-1 py-4 rounded-xl flex flex-col items-center justify-center bg-[#FFD700] hover:bg-[#E5C100] active:bg-[#E5C100] transition-colors"
+            className="flex-1 py-4 rounded-xl flex flex-col items-center justify-center bg-energy hover:bg-warn active:bg-warn transition-colors"
           >
             <SkipForward size={28} className="text-btn-fg" />
             <span className="font-bold mt-1 text-sm text-btn-fg">Passer</span>
@@ -173,7 +173,7 @@ export function ManagerControls({
                   key={player.id}
                   onClick={() => setCorrectionPlayerId(player.id)}
                   className={`w-full text-left py-2 px-3 rounded-lg mb-1 transition-colors ${
-                    correctionPlayerId === player.id ? 'bg-[#00D397]' : 'hover:bg-surface-2'
+                    correctionPlayerId === player.id ? 'bg-accent' : 'hover:bg-surface-2'
                   }`}
                 >
                   <span className={correctionPlayerId === player.id ? 'text-btn-fg' : 'text-txt'}>
@@ -190,7 +190,7 @@ export function ManagerControls({
               value={correctionPoints}
               onChange={e => setCorrectionPoints(e.target.value)}
               placeholder="Ex: 5 ou -3"
-              className="w-full bg-surface rounded-xl px-4 py-3 text-txt mb-4 border border-line focus:outline-none focus:border-[#00D397] placeholder:text-txt-25"
+              className="w-full bg-surface rounded-xl px-4 py-3 text-txt mb-4 border border-line focus:outline-none focus:border-accent placeholder:text-txt-25"
             />
 
             {/* Reason Input */}
@@ -200,7 +200,7 @@ export function ManagerControls({
               value={correctionReason}
               onChange={e => setCorrectionReason(e.target.value)}
               placeholder="Pourquoi cette correction ?"
-              className="w-full bg-surface rounded-xl px-4 py-3 text-txt mb-6 border border-line focus:outline-none focus:border-[#00D397] placeholder:text-txt-25"
+              className="w-full bg-surface rounded-xl px-4 py-3 text-txt mb-6 border border-line focus:outline-none focus:border-accent placeholder:text-txt-25"
             />
 
             {/* Actions */}
@@ -216,7 +216,7 @@ export function ManagerControls({
                 disabled={!correctionPlayerId || !correctionPoints}
                 className={`flex-1 py-4 rounded-xl font-medium transition-colors ${
                   correctionPlayerId && correctionPoints
-                    ? 'bg-[#00D397] hover:bg-[#00B377] text-btn-fg'
+                    ? 'bg-accent hover:bg-accent-d text-btn-fg'
                     : 'bg-surface-2 text-txt-40 cursor-not-allowed'
                 }`}
               >

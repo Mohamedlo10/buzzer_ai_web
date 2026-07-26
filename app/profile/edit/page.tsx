@@ -96,7 +96,7 @@ export default function EditProfilePage() {
         <div className="overflow-y-auto flex-1">
           {/* Avatar preview */}
           <div className="flex flex-col items-center py-8">
-            <div className="w-28 h-28 rounded-full overflow-hidden border-4 border-[#6366F1] shadow-lg shadow-indigo-500/30 mb-2">
+            <div className="w-28 h-28 rounded-full overflow-hidden border-4 border-team shadow-lg shadow-indigo-500/30 mb-2">
               <img src={previewUrl} alt="Avatar preview" className="w-full h-full object-cover" />
             </div>
             <p className="text-txt-60 text-xs mt-1">{selectedStyle} · {selectedSeed}</p>
@@ -127,7 +127,7 @@ export default function EditProfilePage() {
                     </div>
                     <span
                       className={`text-[10px] font-semibold text-center leading-tight max-w-[64px] ${
-                        isActive ? 'text-[#6366F1]' : 'text-txt-60'
+                        isActive ? 'text-team' : 'text-txt-60'
                       }`}
                     >
                       {style.label}
@@ -150,8 +150,8 @@ export default function EditProfilePage() {
                     onClick={() => setSelectedSeed(seed)}
                     className={`relative rounded-2xl overflow-hidden border-2 transition-all ${
                       isSelected
-                        ? 'border-[#6366F1] shadow-md shadow-indigo-500/40'
-                        : 'border-line hover:border-[#6366F1]/50'
+                        ? 'border-team shadow-md shadow-indigo-500/40'
+                        : 'border-line hover:border-team/50'
                     }`}
                     style={{ aspectRatio: '1' }}
                   >
@@ -161,8 +161,8 @@ export default function EditProfilePage() {
                       className="w-full h-full object-cover"
                     />
                     {isSelected && (
-                      <div className="absolute inset-0 flex items-center justify-center bg-[#6366F140]">
-                        <div className="w-6 h-6 rounded-full bg-[#6366F1] flex items-center justify-center">
+                      <div className="absolute inset-0 flex items-center justify-center bg-team/25">
+                        <div className="w-6 h-6 rounded-full bg-team flex items-center justify-center">
                           <Check size={14} color="#fff" />
                         </div>
                       </div>

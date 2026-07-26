@@ -82,7 +82,7 @@ export function LastSessionCard({ session }: LastSessionCardProps) {
         className="absolute left-0 top-0 bottom-0 w-1"
         style={{
           background: isActive
-            ? 'linear-gradient(to bottom, #00D397, #00B383)'
+            ? 'linear-gradient(to bottom, var(--primary), var(--primary-d))'
             : 'linear-gradient(to bottom, var(--surface-2), var(--surface))',
         }}
       />
@@ -160,7 +160,7 @@ export function LastSessionCard({ session }: LastSessionCardProps) {
         </div>
 
         {/* CTA Button */}
-        <div className={`px-4 py-2.5 rounded-xl font-bold text-sm ${isActive ? 'text-btn-fg' : 'text-txt bg-surface-2'}`} style={isActive ? { background: 'linear-gradient(135deg, #00D397, #00B383)' } : undefined}>
+        <div className={`px-4 py-2.5 rounded-xl font-bold text-sm ${isActive ? 'text-btn-fg' : 'text-txt bg-surface-2'}`} style={isActive ? { background: 'linear-gradient(135deg, var(--primary), var(--primary-d))' } : undefined}>
           {isActive ? 'Rejoindre' : 'Voir'}
         </div>
       </div>

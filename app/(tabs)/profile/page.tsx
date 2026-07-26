@@ -36,20 +36,20 @@ import { Spinner } from '~/components/loading/Spinner';
 // Role configuration
 const ROLE_CONFIG = {
   USER: {
-    color: '#3B82F6',
-    bgColor: '#3B82F620',
+    color: 'var(--indigo)',
+    bgColor: 'rgb(var(--indigo-rgb) / 0.125)',
     icon: User,
     label: 'Joueur',
   },
   ADMIN: {
-    color: '#8B5CF6',
-    bgColor: '#8B5CF620',
+    color: 'var(--violet)',
+    bgColor: 'rgb(var(--violet-rgb) / 0.125)',
     icon: Shield,
     label: 'Admin',
   },
   SUPER_ADMIN: {
-    color: '#F59E0B',
-    bgColor: '#F59E0B20',
+    color: 'var(--warn)',
+    bgColor: 'rgb(var(--warn-rgb) / 0.125)',
     icon: Crown,
     label: 'Super Admin',
   },
@@ -242,7 +242,7 @@ export default function ProfilePage() {
     return (
       <SafeScreen>
         <div className="flex-1 flex justify-center items-center min-h-screen">
-          <div className="w-12 h-12 border-4 border-[#3B82F6] border-t-transparent rounded-full animate-spin" />
+          <div className="w-12 h-12 border-4 border-team border-t-transparent rounded-full animate-spin" />
         </div>
       </SafeScreen>
     );
@@ -282,7 +282,7 @@ export default function ProfilePage() {
               ) : (
                 <div
                   className="w-32 h-32 rounded-full flex items-center justify-center"
-                  style={{ background: 'linear-gradient(135deg, #3B82F6, #8B5CF6)' }}
+                  style={{ background: 'linear-gradient(135deg, var(--indigo), var(--violet))' }}
                 >
                   <span className="text-txt text-5xl font-bold">
                     {user.username.charAt(0).toUpperCase()}
@@ -300,7 +300,7 @@ export default function ProfilePage() {
               })()}
               className="absolute bottom-1 right-1 w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-md hover:opacity-90 transition-opacity cursor-pointer"
             >
-              <Edit3 size={18} color="#3B82F6" />
+              <Edit3 size={18} color="var(--indigo)" />
             </button>
           </div>
 
@@ -324,11 +324,11 @@ export default function ProfilePage() {
           <div className="px-4 mb-4">
             <div
               className="rounded-2xl p-4 border"
-              style={{ background: 'rgba(213,68,47,0.08)', borderColor: 'rgba(213,68,47,0.3)' }}
+              style={{ background: 'rgb(var(--bad-rgb) / 0.08)', borderColor: 'rgb(var(--bad-rgb) / 0.3)' }}
             >
               <div className="flex items-center gap-2 mb-2">
-                <AlertCircle size={16} color="#D5442F" />
-                <p className="text-[#D5442F] font-semibold text-sm">
+                <AlertCircle size={16} color="var(--bad)" />
+                <p className="text-buzz font-semibold text-sm">
                   {!user.email ? 'Ajoutez votre email' : 'Confirmez votre email'}
                 </p>
               </div>
@@ -385,7 +385,7 @@ export default function ProfilePage() {
             <div className="flex-1 min-w-[45%] bg-surface rounded-2xl p-4 border border-line">
               <div className="flex flex-row items-center justify-between mb-2">
                 <div className="w-10 h-10 rounded-xl bg-yellow-500/20 flex items-center justify-center">
-                  <Trophy size={20} color="#F59E0B" />
+                  <Trophy size={20} color="var(--warn)" />
                 </div>
                 {isRankLoading ? (
                   <div className="w-5 h-5 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin" />
@@ -401,13 +401,13 @@ export default function ProfilePage() {
             {/* Glicko Rating */}
             <div className="flex-1 min-w-[45%] bg-surface rounded-2xl p-4 border border-line">
               <div className="flex flex-row items-center justify-between mb-2">
-                <div className="w-10 h-10 rounded-xl bg-[#9B59B620] flex items-center justify-center">
-                  <BarChart3 size={20} color="#9B59B6" />
+                <div className="w-10 h-10 rounded-xl bg-host/15 flex items-center justify-center">
+                  <BarChart3 size={20} color="var(--violet)" />
                 </div>
                 {isRankLoading ? (
-                  <div className="w-5 h-5 border-2 border-[#9B59B6] border-t-transparent rounded-full animate-spin" />
+                  <div className="w-5 h-5 border-2 border-host border-t-transparent rounded-full animate-spin" />
                 ) : (
-                  <span className="text-[#9B59B6] text-2xl font-bold">
+                  <span className="text-host text-2xl font-bold">
                     {glickoRating != null ? glickoRating.toFixed(0) : '-'}
                   </span>
                 )}
@@ -419,7 +419,7 @@ export default function ProfilePage() {
               {perfIndex != null && (
                 <div className="mt-2 h-1.5 bg-bg rounded-full overflow-hidden">
                   <div
-                    className="h-full rounded-full bg-[#9B59B6]"
+                    className="h-full rounded-full bg-host"
                     style={{ width: `${Math.min(100, Math.max(0, perfIndex))}%` }}
                   />
                 </div>
@@ -430,7 +430,7 @@ export default function ProfilePage() {
             <div className="flex-1 min-w-[45%] bg-surface rounded-2xl p-4 border border-line">
               <div className="flex flex-row items-center justify-between mb-2">
                 <div className="w-10 h-10 rounded-xl bg-green-500/20 flex items-center justify-center">
-                  <Gamepad2 size={20} color="#10B981" />
+                  <Gamepad2 size={20} color="var(--good)" />
                 </div>
                 <span className="text-green-500 text-2xl font-bold">{totalGames}</span>
               </div>
@@ -441,7 +441,7 @@ export default function ProfilePage() {
             <div className="flex-1 min-w-[45%] bg-surface rounded-2xl p-4 border border-line">
               <div className="flex flex-row items-center justify-between mb-2">
                 <div className="w-10 h-10 rounded-xl bg-yellow-500/20 flex items-center justify-center">
-                  <Award size={20} color="#F59E0B" />
+                  <Award size={20} color="var(--warn)" />
                 </div>
                 <span className="text-yellow-500 text-2xl font-bold">
                   {totalWins != null ? totalWins : '-'}
@@ -460,8 +460,8 @@ export default function ProfilePage() {
           <div className="bg-surface rounded-2xl p-5 border border-line">
             <div className="flex flex-row items-center justify-between mb-3">
               <div className="flex flex-row items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-cyan-500/20 flex items-center justify-center">
-                  <Target size={24} color="#06B6D4" />
+                <div className="w-12 h-12 rounded-xl bg-accent/15 flex items-center justify-center">
+                  <Target size={24} color="var(--indigo)" />
                 </div>
                 <div>
                   <p className="text-txt text-xl font-bold">
@@ -480,7 +480,7 @@ export default function ProfilePage() {
             {accuracy != null && (
               <div className="h-2 bg-bg rounded-full overflow-hidden">
                 <div
-                  className="h-full rounded-full bg-cyan-500"
+                  className="h-full rounded-full bg-accent"
                   style={{ width: `${accuracy}%` }}
                 />
               </div>
@@ -501,7 +501,7 @@ export default function ProfilePage() {
             {/* Email */}
             <div className="flex flex-row items-center p-4 border-b border-line">
               <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center mr-4 shrink-0">
-                <Mail size={20} color="#3B82F6" />
+                <Mail size={20} color="var(--indigo)" />
               </div>
               <div className="flex-grow flex flex-row items-center justify-between min-w-0">
                 {isEditingEmail ? (
@@ -566,7 +566,7 @@ export default function ProfilePage() {
             {/* Member Since */}
             <div className="flex flex-row items-center p-4">
               <div className="w-12 h-12 rounded-xl bg-orange-500/20 flex items-center justify-center mr-4 shrink-0">
-                <Calendar size={20} color="#F97316" />
+                <Calendar size={20} color="var(--warn)" />
               </div>
               <div className="flex-1">
                 <p className="text-txt-60 text-xs mb-1">Membre depuis</p>
@@ -593,11 +593,11 @@ export default function ProfilePage() {
           >
             <div className="flex flex-row items-center gap-3">
               <div className="w-12 h-12 rounded-xl bg-indigo-500/20 flex items-center justify-center">
-                <Edit3 size={20} color="#6366F1" />
+                <Edit3 size={20} color="var(--indigo)" />
               </div>
               <p className="text-txt text-base font-medium">Modifier le profil</p>
             </div>
-            <ChevronRight size={20} color="#6B7280" />
+            <ChevronRight size={20} color="var(--txt-40)" />
           </button>
 
           {/* Change Password Button */}
@@ -607,11 +607,11 @@ export default function ProfilePage() {
           >
             <div className="flex flex-row items-center gap-3">
               <div className="w-12 h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center">
-                <Lock size={20} color="#10B981" />
+                <Lock size={20} color="var(--good)" />
               </div>
               <p className="text-txt text-base font-medium">Changer le mot de passe</p>
             </div>
-            <ChevronRight size={20} color="#6B7280" />
+            <ChevronRight size={20} color="var(--txt-40)" />
           </button>
         </div>
 
@@ -629,7 +629,7 @@ export default function ProfilePage() {
                   }`}
                 >
                   <div className="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center mr-4 shrink-0">
-                    <Trophy size={20} color="#8B5CF6" />
+                    <Trophy size={20} color="var(--violet)" />
                   </div>
                   <div className="flex-1">
                     <p className="text-txt text-base font-medium">
@@ -647,7 +647,7 @@ export default function ProfilePage() {
                     <span className="text-yellow-500 text-sm font-semibold">{session.winnerName}</span>
                     <span className="text-txt-40 text-xs">{session.winnerScore} pts</span>
                   </div>
-                  <ChevronRight size={16} color="#6B7280" className="ml-2" />
+                  <ChevronRight size={16} color="var(--txt-40)" className="ml-2" />
                 </button>
               ))}
             </div>
@@ -674,11 +674,11 @@ export default function ProfilePage() {
             disabled={isAuthLoading}
             className="w-full bg-surface rounded-2xl p-4 border border-red-500/30 flex flex-row items-center justify-center gap-3 hover:opacity-80 active:opacity-70 transition-opacity cursor-pointer"
           >
-            <LogOut size={20} color="#EF4444" />
+            <LogOut size={20} color="var(--bad)" />
             <span className="text-red-500 text-base font-semibold">Se déconnecter</span>
           </button>
 
-          <p className="text-txt/30 text-xs text-center mt-6">Quiz By Mouha_Dev v1.0.0</p>
+          <p className="text-txt/30 text-xs text-center mt-6">Xalaat · Quiz by MouhaDev · v1.0.0</p>
         </div>
       </div>
 
@@ -689,7 +689,7 @@ export default function ProfilePage() {
             <div className="flex flex-row items-center justify-between">
               <div className="flex flex-row items-center gap-3">
                 <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 flex items-center justify-center">
-                  <Lock size={24} color="#10B981" />
+                  <Lock size={24} color="var(--good)" />
                 </div>
                 <p className="text-txt text-xl font-bold">Mot de passe</p>
               </div>
@@ -697,7 +697,7 @@ export default function ProfilePage() {
                 onClick={() => setShowPasswordModal(false)}
                 className="w-10 h-10 rounded-xl bg-surface-2 flex items-center justify-center hover:opacity-80 cursor-pointer"
               >
-                <X size={20} color="#6B7280" />
+                <X size={20} color="var(--txt-40)" />
               </button>
             </div>
           </div>
@@ -710,7 +710,7 @@ export default function ProfilePage() {
                 onChange={(e) => setCurrentPassword(e.target.value)}
                 type="password"
                 placeholder="••••••••"
-                className="w-full bg-bg text-txt px-4 py-3 rounded-xl border border-line focus:border-[#10B981] focus:outline-none"
+                className="w-full bg-bg text-txt px-4 py-3 rounded-xl border border-line focus:border-success focus:outline-none"
               />
             </div>
             <div>
@@ -720,7 +720,7 @@ export default function ProfilePage() {
                 onChange={(e) => setNewPassword(e.target.value)}
                 type="password"
                 placeholder="••••••••"
-                className="w-full bg-bg text-txt px-4 py-3 rounded-xl border border-line focus:border-[#10B981] focus:outline-none"
+                className="w-full bg-bg text-txt px-4 py-3 rounded-xl border border-line focus:border-success focus:outline-none"
               />
             </div>
             <div>
@@ -733,7 +733,7 @@ export default function ProfilePage() {
                 className={`w-full bg-bg text-txt px-4 py-3 rounded-xl border focus:outline-none ${
                   confirmPassword && newPassword !== confirmPassword
                     ? 'border-red-500'
-                    : 'border-line focus:border-[#10B981]'
+                    : 'border-line focus:border-success'
                 }`}
               />
               {confirmPassword && newPassword !== confirmPassword && (
@@ -754,7 +754,7 @@ export default function ProfilePage() {
                 newPassword !== confirmPassword
               }
               className="w-full rounded-2xl py-4 flex items-center justify-center transition-opacity cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
-              style={{ background: 'linear-gradient(to right, #10B981, #059669)' }}
+              style={{ background: 'linear-gradient(to right, var(--good), var(--good))' }}
             >
               {changePasswordMutation.isPending ? (
                 <Spinner />
@@ -780,7 +780,7 @@ export default function ProfilePage() {
             <div className="flex flex-row items-center justify-between">
               <div className="flex flex-row items-center gap-3">
                 <div className="w-12 h-12 rounded-2xl bg-purple-500/20 flex items-center justify-center">
-                  <BarChart3 size={24} color="#8B5CF6" />
+                  <BarChart3 size={24} color="var(--violet)" />
                 </div>
                 <p className="text-txt text-xl font-bold">Par catégorie</p>
               </div>
@@ -788,7 +788,7 @@ export default function ProfilePage() {
                 onClick={closeCategoryModal}
                 className="w-10 h-10 rounded-xl bg-surface-2 flex items-center justify-center hover:opacity-80 cursor-pointer"
               >
-                <X size={20} color="#6B7280" />
+                <X size={20} color="var(--txt-40)" />
               </button>
             </div>
           </div>
@@ -796,7 +796,7 @@ export default function ProfilePage() {
           <div className="px-6 py-4 max-h-96 overflow-y-auto">
             {isCategoryFetching ? (
               <div className="flex flex-col items-center py-8">
-                <div className="w-10 h-10 border-4 border-[#8B5CF6] border-t-transparent rounded-full animate-spin" />
+                <div className="w-10 h-10 border-4 border-host border-t-transparent rounded-full animate-spin" />
                 <p className="text-txt-60 text-sm mt-3">Chargement...</p>
               </div>
             ) : categoryRankingsData && categoryRankingsData.categories.length > 0 ? (
@@ -813,7 +813,7 @@ export default function ProfilePage() {
                       <span
                         className={`w-7 font-bold ${
                           idx === 0
-                            ? 'text-[#FFD700]'
+                            ? 'text-energy'
                             : idx === 1
                             ? 'text-[#C0C0C0]'
                             : idx === 2
@@ -864,7 +864,7 @@ export default function ProfilePage() {
             <div className="flex flex-row items-center justify-between">
               <div className="flex flex-row items-center gap-3">
                 <div className="w-12 h-12 rounded-2xl bg-red-500/20 flex items-center justify-center">
-                  <AlertCircle size={24} color="#EF4444" />
+                  <AlertCircle size={24} color="var(--bad)" />
                 </div>
                 <p className="text-txt text-xl font-bold">Logout</p>
               </div>
@@ -872,7 +872,7 @@ export default function ProfilePage() {
                 onClick={() => setShowLogoutModal(false)}
                 className="w-10 h-10 rounded-xl bg-surface-2 flex items-center justify-center hover:opacity-80 cursor-pointer"
               >
-                <X size={20} color="#9CA3AF" />
+                <X size={20} color="var(--txt-40)" />
               </button>
             </div>
           </div>
@@ -890,7 +890,7 @@ export default function ProfilePage() {
               onClick={handleLogout}
               disabled={isAuthLoading}
               className="w-full rounded-2xl py-4 flex flex-row items-center justify-center gap-2 transition-opacity cursor-pointer disabled:opacity-60"
-              style={{ background: 'linear-gradient(to right, #EF4444, #F97316)' }}
+              style={{ background: 'linear-gradient(to right, var(--bad), var(--warn))' }}
             >
               {isAuthLoading ? (
                 <Spinner />

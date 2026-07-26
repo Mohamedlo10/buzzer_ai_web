@@ -29,11 +29,11 @@ const FRIENDSHIP_CONFIG: Record<
   { label: string; color: string; bgColor: string; icon: React.ComponentType<{ size: number; color: string }> }
 > = {
   SELF:     { label: 'Vous',           color: 'var(--txt-40)', bgColor: 'var(--surface-2)',                                  icon: User },
-  NONE:     { label: 'Ajouter',        color: '#00D397',       bgColor: 'color-mix(in oklab, #00D397 15%, transparent)',     icon: UserPlus },
-  PENDING:  { label: 'En attente',     color: '#F59E0B',       bgColor: 'color-mix(in oklab, #F59E0B 15%, transparent)',     icon: Clock },
-  ACCEPTED: { label: 'Ami',            color: '#00D397',       bgColor: 'color-mix(in oklab, #00D397 15%, transparent)',     icon: UserCheck },
+  NONE:     { label: 'Ajouter',        color: 'var(--primary)',       bgColor: 'color-mix(in oklab, var(--primary) 15%, transparent)',     icon: UserPlus },
+  PENDING:  { label: 'En attente',     color: 'var(--warn)',       bgColor: 'color-mix(in oklab, var(--warn) 15%, transparent)',     icon: Clock },
+  ACCEPTED: { label: 'Ami',            color: 'var(--primary)',       bgColor: 'color-mix(in oklab, var(--primary) 15%, transparent)',     icon: UserCheck },
   DECLINED: { label: 'Refusé',         color: 'var(--txt-40)', bgColor: 'var(--surface-2)',                                  icon: UserX },
-  BLOCKED:  { label: 'Bloqué',         color: '#D5442F',       bgColor: 'color-mix(in oklab, #D5442F 15%, transparent)',     icon: UserX },
+  BLOCKED:  { label: 'Bloqué',         color: 'var(--bad)',       bgColor: 'color-mix(in oklab, var(--bad) 15%, transparent)',     icon: UserX },
 };
 
 export default function FriendProfilePage() {
@@ -152,7 +152,7 @@ export default function FriendProfilePage() {
           {/* Avatar */}
           <div
             className="w-28 h-28 rounded-full overflow-hidden mb-4"
-            style={{ boxShadow: '0 0 20px rgba(139,92,246,0.5)' }}
+            style={{ boxShadow: '0 0 20px rgb(var(--violet-rgb) / 0.5)' }}
           >
             {profile.avatarUrl ? (
               <img
@@ -163,7 +163,7 @@ export default function FriendProfilePage() {
             ) : (
               <div
                 className="w-28 h-28 rounded-full flex items-center justify-center"
-                style={{ background: 'linear-gradient(135deg, #8B5CF6, #4A90D9)' }}
+                style={{ background: 'linear-gradient(135deg, var(--violet), var(--indigo))' }}
               >
                 <span className="text-txt text-4xl font-bold">
                   {profile.username.charAt(0).toUpperCase()}

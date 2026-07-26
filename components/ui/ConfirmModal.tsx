@@ -20,7 +20,7 @@ export function ConfirmModal({
   message,
   confirmLabel = 'Confirmer',
   cancelLabel = 'Annuler',
-  confirmColor = '#00D397',
+  confirmColor = 'var(--primary)',
   icon,
   onConfirm,
   onCancel,

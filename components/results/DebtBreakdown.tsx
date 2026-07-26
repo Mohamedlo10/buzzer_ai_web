@@ -20,14 +20,14 @@ export function DebtBreakdown({ debts }: DebtBreakdownProps) {
     <Card className="mb-4">
       <p className="text-txt font-bold text-lg mb-4">💸 Dettes par catégorie</p>
       <div>
-        <p className="text-[#D5442F] font-semibold mb-2">Tu dois :</p>
+        <p className="text-buzz font-semibold mb-2">Tu dois :</p>
         {debts.map((debt, i) => (
           <div
             key={i}
             className="flex flex-row justify-between py-2 border-b border-line last:border-b-0"
           >
             <span className="text-txt">{debt.owedTo}</span>
-            <span className="text-[#D5442F]">{debt.amount} pts en {debt.category}</span>
+            <span className="text-buzz">{debt.amount} pts en {debt.category}</span>
           </div>
         ))}
       </div>

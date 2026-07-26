@@ -2,8 +2,9 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Mail, ArrowLeft, CheckCircle, Zap } from 'lucide-react';
+import { Mail, ArrowLeft, CheckCircle } from 'lucide-react';
 import * as authApi from '~/lib/api/auth';
+import { XalaatLogo } from '~/components/ui/XalaatMark';
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
@@ -34,18 +35,7 @@ export default function ForgotPasswordPage() {
     <div className="min-h-screen flex flex-col bg-bg">
       <div className="flex-1 flex flex-col items-center justify-center px-6 py-12">
         {/* Logo */}
-        <div className="flex flex-row items-center mb-10">
-          <div
-            className="w-10 h-10 rounded-xl mr-3 flex items-center justify-center"
-            style={{ background: 'linear-gradient(135deg, #D5442F, #FF6B4A)' }}
-          >
-            <Zap size={20} color="#FFFFFF" fill="#FFFFFF" />
-          </div>
-          <div>
-            <p className="text-txt font-display font-semibold text-lg leading-tight">Quiz Buzzer AI</p>
-            <p className="text-accent text-[10px] font-bold uppercase tracking-[0.18em]">By Mouha_Dev</p>
-          </div>
-        </div>
+        <XalaatLogo size={40} className="mb-10" />
 
         <div
           className="w-full max-w-md bg-surface rounded-3xl p-8 border border-line"
@@ -65,9 +55,9 @@ export default function ForgotPasswordPage() {
             <>
               <div
                 className="w-14 h-14 rounded-2xl flex items-center justify-center mb-5"
-                style={{ background: 'rgba(0,211,151,0.12)', border: '1px solid rgba(0,211,151,0.3)' }}
+                style={{ background: 'rgb(var(--primary-rgb) / 0.12)', border: '1px solid rgb(var(--primary-rgb) / 0.3)' }}
               >
-                <Mail size={28} color="#00D397" />
+                <Mail size={28} color="var(--primary)" />
               </div>
 
               <h1 className="text-txt font-bold text-2xl mb-2">Mot de passe oublié ?</h1>
@@ -94,7 +84,7 @@ export default function ForgotPasswordPage() {
                     disabled={isLoading}
                   />
                 </div>
-                {error && <p className="text-[#D5442F] text-sm mt-2 ml-2">{error}</p>}
+                {error && <p className="text-buzz text-sm mt-2 ml-2">{error}</p>}
               </div>
 
               <button
@@ -102,7 +92,7 @@ export default function ForgotPasswordPage() {
                 onClick={handleSubmit}
                 disabled={isLoading}
                 className={`w-full py-4 rounded-2xl flex items-center justify-center font-bold text-lg text-white transition-opacity cursor-pointer ${
-                  isLoading ? 'bg-surface-2 opacity-70' : 'bg-buzz shadow-[0_0_15px_rgba(213,68,47,0.5)]'
+                  isLoading ? 'bg-surface-2 opacity-70' : 'bg-buzz shadow-[0_0_15px_rgb(var(--bad-rgb)_/_0.5)]'
                 }`}
               >
                 {isLoading ? (
@@ -122,9 +112,9 @@ export default function ForgotPasswordPage() {
             <>
               <div
                 className="w-14 h-14 rounded-2xl flex items-center justify-center mb-5"
-                style={{ background: 'rgba(0,211,151,0.12)', border: '1px solid rgba(0,211,151,0.3)' }}
+                style={{ background: 'rgb(var(--primary-rgb) / 0.12)', border: '1px solid rgb(var(--primary-rgb) / 0.3)' }}
               >
-                <CheckCircle size={28} color="#00D397" />
+                <CheckCircle size={28} color="var(--primary)" />
               </div>
               <h1 className="text-txt font-bold text-2xl mb-3">Email envoyé !</h1>
               <p className="text-txt-60 text-sm leading-relaxed mb-7">

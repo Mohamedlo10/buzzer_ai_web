@@ -25,8 +25,8 @@ export default function JoinSessionPage() {
 
       <div className="flex-1 flex flex-col items-center justify-center px-4 min-h-[60vh]">
         <div className="bg-surface rounded-3xl border border-line p-8 w-full max-w-sm flex flex-col items-center">
-          <div className="w-16 h-16 rounded-full bg-[#00D39720] flex items-center justify-center mb-4">
-            <FolderOpen size={28} color="#00D397" />
+          <div className="w-16 h-16 rounded-full bg-accent/15 flex items-center justify-center mb-4">
+            <FolderOpen size={28} color="var(--primary)" />
           </div>
           <p className="text-txt font-bold text-lg mb-2">Nouveau fonctionnement</p>
           <p className="text-txt-60 text-center text-sm px-6 mb-6">
@@ -34,7 +34,7 @@ export default function JoinSessionPage() {
           </p>
           <button
             onClick={() => router.replace('/rooms')}
-            className="bg-[#00D397] px-6 py-3 rounded-xl hover:bg-[#00B377] transition-colors"
+            className="bg-accent px-6 py-3 rounded-xl hover:bg-accent-d transition-colors"
           >
             <span className="text-btn-fg font-bold">Voir mes salles</span>
           </button>

@@ -88,7 +88,7 @@ export function ScoreCorrectionSheet({
   };
 
   const sortedPlayers = [...players].sort((a, b) => b.score - a.score);
-  const medalColors = ['#FFD700', '#C0C0C0', '#CD7F32'];
+  const medalColors = ['var(--gold)', '#C0C0C0', '#CD7F32'];
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center">
@@ -150,10 +150,10 @@ export function ScoreCorrectionSheet({
                       avatarUrl={player.avatarUrl}
                       username={player.name}
                       size={44}
-                      borderColor={medalColor || (isYou ? '#00D397' : undefined)}
+                      borderColor={medalColor || (isYou ? 'var(--primary)' : undefined)}
                     />
                     {isLeader && (
-                      <span className="absolute -top-1.5 -right-1.5 bg-energy text-[9px] w-4.5 h-4.5 rounded-full flex items-center justify-center shadow-md animate-bounce">
+                      <span className="absolute -top-1.5 -right-1.5 bg-gold-bright text-[9px] w-4.5 h-4.5 rounded-full flex items-center justify-center shadow-md animate-bounce">
                         👑
                       </span>
                     )}

@@ -66,11 +66,13 @@ export function AnswerChoicesPanel({
   };
 
   const pct = Math.round((remaining / answerTimeSeconds) * 100);
+  // Vert -> ambre -> rouge : la terracotta de marque ne convient pas ici,
+  // elle se lirait comme une alerte dès le début du chrono.
   const timerColor = remaining > answerTimeSeconds * 0.6
-    ? '#00D397'
+    ? 'var(--good)'
     : remaining > answerTimeSeconds * 0.3
-    ? '#F59E0B'
-    : '#D5442F';
+    ? 'var(--warn)'
+    : 'var(--bad)';
 
   return (
     <div className="flex flex-col gap-4 animate-[rise_0.4s_both]">
@@ -100,7 +102,7 @@ export function AnswerChoicesPanel({
               onClick={() => handleSelect(i, choice)}
               disabled={hasSubmittedRef.current || isSubmitting || !!result}
               className={`flex items-center gap-2.5 w-full rounded-[14px] border-[1.5px] p-3.5 min-h-[58px] text-left transition-all duration-150 active:scale-[0.98] disabled:cursor-default ${
-                showCorrect ? 'bg-accent/18 border-accent' :
+                showCorrect ? 'bg-success/20 border-success' :
                 showWrong ? 'bg-buzz/18 border-buzz animate-[shake_0.4s_ease]' :
                 isSelected ? 'bg-accent/18 border-accent' :
                 'bg-surface border-line'
@@ -110,7 +112,7 @@ export function AnswerChoicesPanel({
                 {CHOICE_LABELS[i]}
               </span>
               <span className="text-txt text-[14.5px] font-semibold leading-snug flex-1">{choice}</span>
-              {showCorrect && <CheckCircle size={18} className="text-accent shrink-0" />}
+              {showCorrect && <CheckCircle size={18} className="text-success shrink-0" />}
               {showWrong && <XCircle size={18} className="text-buzz shrink-0" />}
             </button>
           );

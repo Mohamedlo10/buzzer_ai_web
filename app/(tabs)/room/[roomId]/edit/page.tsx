@@ -99,8 +99,8 @@ export default function EditRoomPage() {
         <div className="px-4 pt-6">
           <Card className="mb-4">
             <div className="flex items-center justify-center mb-6">
-              <div className="w-16 h-16 rounded-full bg-[#00D39720] flex items-center justify-center">
-                <FolderOpen size={28} color="#00D397" />
+              <div className="w-16 h-16 rounded-full bg-accent/15 flex items-center justify-center">
+                <FolderOpen size={28} color="var(--primary)" />
               </div>
             </div>
 
@@ -112,14 +112,14 @@ export default function EditRoomPage() {
                 setError(null);
               }}
               placeholder="Ex: Soirée quiz, Les Champions..."
-              className="w-full bg-bg rounded-xl px-4 py-3 text-txt border border-line focus:border-[#00D397] focus:outline-none mb-4 placeholder:text-txt-25"
+              className="w-full bg-bg rounded-xl px-4 py-3 text-txt border border-line focus:border-accent focus:outline-none mb-4 placeholder:text-txt-25"
               maxLength={50}
             />
 
             <div className="flex items-center justify-between mb-2">
               <p className="text-txt font-medium">Nombre maximum de joueurs</p>
               <div className="flex items-center gap-2 bg-bg rounded-xl border border-line px-3 py-1.5">
-                <Users size={14} color="#00D397" />
+                <Users size={14} color="var(--primary)" />
                 <span className="text-txt font-bold text-sm w-8 text-center">{maxPlayers}</span>
               </div>
             </div>
@@ -129,7 +129,7 @@ export default function EditRoomPage() {
               max={250}
               value={maxPlayers}
               onChange={(e) => setMaxPlayers(Number(e.target.value))}
-              className="w-full accent-[#00D397] mb-1"
+              className="w-full accent-[var(--primary)] mb-1"
             />
             <div className="flex justify-between text-txt-40 text-xs mb-4">
               <span>2</span>
@@ -141,7 +141,7 @@ export default function EditRoomPage() {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Décrivez votre salle..."
-              className="w-full bg-bg rounded-xl px-4 py-3 text-txt border border-line focus:border-[#00D397] focus:outline-none resize-none placeholder:text-txt-25"
+              className="w-full bg-bg rounded-xl px-4 py-3 text-txt border border-line focus:border-accent focus:outline-none resize-none placeholder:text-txt-25"
               maxLength={200}
               rows={3}
               style={{ minHeight: 80 }}
@@ -149,9 +149,9 @@ export default function EditRoomPage() {
           </Card>
 
           {error && (
-            <div className="mb-4 p-4 bg-[#D5442F20] rounded-xl border border-[#D5442F40] flex items-center gap-3">
-              <AlertCircle size={18} color="#D5442F" />
-              <p className="text-[#D5442F] font-medium">{error}</p>
+            <div className="mb-4 p-4 bg-buzz/15 rounded-xl border border-buzz/25 flex items-center gap-3">
+              <AlertCircle size={18} color="var(--bad)" />
+              <p className="text-buzz font-medium">{error}</p>
             </div>
           )}
 
@@ -161,9 +161,9 @@ export default function EditRoomPage() {
             className={`w-full py-4 rounded-2xl flex items-center justify-center transition-colors ${
               isSaving
                 ? 'bg-surface-2 cursor-not-allowed'
-                : 'bg-[#00D397] hover:bg-[#00B377]'
+                : 'bg-accent hover:bg-accent-d'
             }`}
-            style={!isSaving ? { boxShadow: '0 0 12px rgba(0,211,151,0.4)' } : undefined}
+            style={!isSaving ? { boxShadow: '0 0 12px rgb(var(--primary-rgb) / 0.4)' } : undefined}
           >
             {isSaving ? (
               <Spinner text="Enregistrement..." />

@@ -2,50 +2,144 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ═══════════════════════════════════════════════════════════════════
+   XALAAT — design tokens
+   Palette "Teranga" : terracotta / or / crème, inspirée des textiles
+   tissés sénégalais. Le clair est le thème signature ; le sombre en est
+   la variante nuit (mêmes accents, surfaces inversées).
+
+   Chaque couleur est exposée en canaux RGB (`--x-rgb`) pour que les
+   modificateurs d'opacité Tailwind (`bg-surface/40`, `text-txt/30`…)
+   fonctionnent réellement, et en valeur prête à l'emploi (`--x`) pour
+   le CSS brut et les styles inline.
+   ═══════════════════════════════════════════════════════════════════ */
+
 :root {
-  --font-display: 'Space Grotesk', system-ui, sans-serif;
-  --font-ui: 'Hanken Grotesk', system-ui, sans-serif;
+  /* --font-display / --font-ui / --font-accent sont injectées par next/font
+     (voir app/layout.tsx) : Bricolage Grotesque, Manrope, Instrument Serif.
+     Ne pas les redéclarer ici — cela masquerait les familles générées. */
 
-  /* surfaces — DARK (default) */
-  --bg:        #292349;
-  --bg-deep:   #211C3D;
-  --surface:   #342D5B;
-  --surface-2: #3E3666;
-  --line:      #3E3666;
-  --txt:       #FFFFFF;
-  --txt-60:    rgba(255,255,255,0.62);
-  --txt-40:    rgba(255,255,255,0.40);
-  --txt-25:    rgba(255,255,255,0.25);
-  --scrim:     rgba(8,7,16,0.66);
+  /* ── surfaces — CLAIR (Teranga, thème par défaut) ── */
+  --bg-rgb: 241 229 201;
+  --bg-deep-rgb: 234 220 184;
+  --surface-rgb: 251 244 223;
+  --surface-2-rgb: 246 235 201;
+  --line-rgb: 218 207 183;
+  --txt-rgb: 26 20 16;
 
-  /* ambient glow intensity — softer in light theme to stay subtle */
-  --glow-1: 19.2%;
-  --glow-2: 9.6%;
+  --bg: rgb(var(--bg-rgb));
+  --bg-deep: rgb(var(--bg-deep-rgb));
+  --surface: rgb(var(--surface-rgb));
+  --surface-2: rgb(var(--surface-2-rgb));
+  --line: rgb(var(--line-rgb));
+  --txt: rgb(var(--txt-rgb));
+  --txt-60: rgb(var(--txt-rgb) / 0.66);
+  --txt-40: rgb(var(--txt-rgb) / 0.45);
+  --txt-25: rgb(var(--txt-rgb) / 0.28);
+  --scrim: rgb(26 20 16 / 0.42);
+
+  /* ── marque — CLAIR ── */
+  --primary-rgb: 184 70 42;        /* terracotta — CTA, identité */
+  --primary-d-rgb: 156 58 34;      /* terracotta pressé */
+  --primary-ink-rgb: 251 244 223;  /* crème — texte posé sur terracotta */
+  /* Deux ors. L'or du design (#E8A630) ne fait que 1,9:1 sur la crème : il
+     est superbe en aplat, illisible en texte. `gold` est donc l'or *encre*
+     (4,8:1), `gold-bright` l'or *décor* — pastilles, podium, marque. */
+  --gold-rgb: 143 100 20;          /* or foncé — texte, icônes, chiffres */
+  --gold-bright-rgb: 232 166 48;   /* or du design — aplats, médailles */
+  --indigo-rgb: 42 54 86;          /* indigo — équipes, cartes vedette */
+  --good-rgb: 45 133 89;           /* vert — bonne réponse */
+  --bad-rgb: 209 74 46;            /* rouge brique — buzz, erreur */
+  --bad-h-rgb: 232 102 63;         /* buzz survolé */
+  --violet-rgb: 122 79 184;        /* violet — animateur */
+  --warn-rgb: 201 135 31;          /* ambre — avertissement */
+
+  /* Formes prêtes à l'emploi pour le CSS brut et les styles inline.
+     Elles pointent sur les canaux ci-dessus : le bloc [data-theme='dark']
+     n'a donc que les `--*-rgb` à redéfinir. */
+  --primary: rgb(var(--primary-rgb));
+  --primary-d: rgb(var(--primary-d-rgb));
+  --primary-ink: rgb(var(--primary-ink-rgb));
+  --gold: rgb(var(--gold-rgb));
+  --gold-bright: rgb(var(--gold-bright-rgb));
+  --indigo: rgb(var(--indigo-rgb));
+  --good: rgb(var(--good-rgb));
+  --bad: rgb(var(--bad-rgb));
+  --bad-h: rgb(var(--bad-h-rgb));
+  --violet: rgb(var(--violet-rgb));
+  --warn: rgb(var(--warn-rgb));
+
+  /* Alias sous les anciens noms Tailwind, pour les `var(--accent)` &
+     compagnie déjà présents dans les styles inline. */
+  --accent: var(--primary);
+  --accent-d: var(--primary-d);
+  --btn-fg: var(--primary-ink);
+  --energy: var(--gold);
+  --buzz: var(--bad);
+  --buzz-h: var(--bad-h);
+  --danger: var(--bad);
+  --success: var(--good);
+  --host: var(--violet);
+  --team: var(--indigo);
+  --silver: #C0C0C0;
+  --bronze: #CD7F32;
+
+  /* ── trame textile de fond ──
+     L'opacité du trait est encodée dans le SVG (stroke-opacity) : une
+     data-URI ne peut pas lire une var CSS, donc chaque thème fournit sa
+     propre trame. */
+  --pattern-size: 26px;
+  --pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='26'%3E%3Cpath d='M13 2 L24 13 L13 24 L2 13 Z' fill='none' stroke='%23B8462A' stroke-width='1' stroke-opacity='0.14'/%3E%3C/svg%3E");
+
+  /* halos d'ambiance — discrets sur fond crème */
+  --glow-1: 10%;
+  --glow-2: 6%;
 }
 
-[data-theme='light'] {
-  --bg:        #EFEDF8;
-  --bg-deep:   #E5E2F2;
-  --surface:   #FFFFFF;
-  --surface-2: #F2F0FA;
-  --line:      #E3DFF1;
-  --txt:       #211C3D;
-  --txt-60:    rgba(33,28,61,0.60);
-  --txt-40:    rgba(33,28,61,0.42);
-  --txt-25:    rgba(33,28,61,0.28);
-  --scrim:     rgba(33,28,61,0.34);
+[data-theme='dark'] {
+  /* ── surfaces — SOMBRE (nuit Teranga) ── */
+  --bg-rgb: 26 20 16;
+  --bg-deep-rgb: 18 14 10;
+  --surface-rgb: 36 27 20;
+  --surface-2-rgb: 46 34 24;
+  --line-rgb: 59 49 40;
+  --txt-rgb: 241 229 201;
 
-  --glow-1: 8.32%;
-  --glow-2: 5.12%;
+  --txt-60: rgb(var(--txt-rgb) / 0.66);
+  --txt-40: rgb(var(--txt-rgb) / 0.44);
+  --txt-25: rgb(var(--txt-rgb) / 0.28);
+  --scrim: rgb(10 7 5 / 0.66);
+
+  /* ── marque — SOMBRE (accents éclaircis pour tenir le contraste) ── */
+  --primary-rgb: 209 87 58;
+  --primary-d-rgb: 184 70 42;
+  --primary-ink-rgb: 26 20 16;
+  --gold-rgb: 232 166 48;
+  --gold-bright-rgb: 240 186 80;
+  --indigo-rgb: 107 123 168;
+  --good-rgb: 63 163 114;
+  --bad-rgb: 224 90 58;
+  --bad-h-rgb: 240 122 85;
+  --violet-rgb: 155 114 212;
+  --warn-rgb: 232 166 48;
+
+  /* Trame en or sur fond nuit : le terracotta y disparaîtrait. */
+  --pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='26'%3E%3Cpath d='M13 2 L24 13 L13 24 L2 13 Z' fill='none' stroke='%23E8A630' stroke-width='1' stroke-opacity='0.10'/%3E%3C/svg%3E");
+
+  --glow-1: 14%;
+  --glow-2: 8%;
 }
 
 @layer base {
   html,
   body {
+    /* Trame de losanges tissés + dégradé chaud : la signature Xalaat. */
     background-image:
-      radial-gradient(115% 75% at 50% -8%, color-mix(in oklab, #00D397 var(--glow-1), transparent) 0%, transparent 52%),
-      radial-gradient(95% 60% at 50% 112%, color-mix(in oklab, #8B5CF6 var(--glow-2), transparent) 0%, transparent 50%),
+      var(--pattern),
+      radial-gradient(115% 75% at 50% -8%, rgb(var(--gold-rgb) / var(--glow-1)) 0%, transparent 52%),
+      radial-gradient(95% 60% at 50% 112%, rgb(var(--primary-rgb) / var(--glow-2)) 0%, transparent 50%),
       linear-gradient(180deg, var(--bg) 0%, var(--bg-deep) 100%);
+    background-size: var(--pattern-size) var(--pattern-size), auto, auto, auto;
     background-attachment: fixed;
     background-color: var(--bg);
     color: var(--txt);
@@ -91,7 +185,27 @@
   }
 
   .bg-header-glass {
-    background-color: color-mix(in srgb, var(--bg) 90%, transparent);
+    background-color: rgb(var(--bg-rgb) / 0.9);
+  }
+
+  /* Titre en serif italique — l'accent typographique Xalaat. */
+  .font-accent {
+    font-family: var(--font-accent);
+    font-style: italic;
+    font-weight: 400;
+  }
+
+  /* Trame décorative applicable à une carte / un panneau. */
+  .pattern-lozenge {
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='26'%3E%3Cpath d='M13 2 L24 13 L13 24 L2 13 Z' fill='none' stroke='currentColor' stroke-width='1' stroke-opacity='0.18'/%3E%3C/svg%3E");
+    background-size: 26px 26px;
+  }
+
+  .pattern-zigzag {
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22'%3E%3Cpath d='M0 15.4 L11 6.6 L22 15.4' fill='none' stroke='currentColor' stroke-width='1.4' stroke-linejoin='round' stroke-opacity='0.22'/%3E%3C/svg%3E");
+    background-size: 22px 22px;
   }
 }
 
@@ -108,7 +222,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--accent, #00D397);
+  background: var(--primary);
   animation: blink 1.4s ease-in-out infinite;
   flex-shrink: 0;
 }

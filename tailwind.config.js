@@ -1,4 +1,12 @@
 /** @type {import('tailwindcss').Config} */
+
+// Toutes les couleurs de thème passent par des canaux RGB déclarés dans
+// global.css. La forme `rgb(var(--x-rgb) / <alpha-value>)` est ce qui rend
+// les modificateurs d'opacité (`bg-surface/40`, `text-accent/20`…) réellement
+// fonctionnels — avec un simple `var(--x)` Tailwind ne peut pas injecter
+// l'alpha et le modificateur est silencieusement ignoré.
+const token = (name) => `rgb(var(--${name}-rgb) / <alpha-value>)`;
+
 module.exports = {
   content: [
     './app/**/*.{js,jsx,ts,tsx}',
@@ -8,60 +16,71 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        'dark-bg': '#292349',
-        'dark-card': '#342D5B',
-        'dark-hover': '#3E3666',
-        'primary': '#D5442F',
-        'primary-dark': '#B5371F',
-        'danger': '#D5442F',
-        'success': '#00D397',
-        'success-dark': '#00B07F',
-        'warning': '#F59E0B',
-        'text-primary': '#FFFFFF',
-        'text-secondary': '#A89CC8',
-        'text-muted': '#7B6FA0',
-        'border-color': '#3E3666',
-
-        // ── Design tokens (theme-aware via CSS variables, see global.css) ──
-        bg: 'var(--bg)',
-        'bg-deep': 'var(--bg-deep)',
-        surface: 'var(--surface)',
-        'surface-2': 'var(--surface-2)',
-        line: 'var(--line)',
-        txt: 'var(--txt)',
+        // ── Surfaces & texte (bascule clair/sombre) ──
+        bg: token('bg'),
+        'bg-deep': token('bg-deep'),
+        surface: token('surface'),
+        'surface-2': token('surface-2'),
+        line: token('line'),
+        txt: token('txt'),
         'txt-60': 'var(--txt-60)',
         'txt-40': 'var(--txt-40)',
         'txt-25': 'var(--txt-25)',
         scrim: 'var(--scrim)',
 
-        // ── Brand colors (identical in both themes) ──
-        accent: '#00D397',
-        'accent-d': '#00B383',
-        energy: '#FFD700',
-        buzz: '#D5442F',
-        'buzz-h': '#FF6B4A',
-        host: '#8B5CF6',
-        team: '#4A90D9',
-        warn: '#F59E0B',
+        // ── Marque Xalaat ──
+        // `accent` = terracotta, la couleur d'action de l'app.
+        accent: token('primary'),
+        'accent-d': token('primary-d'),
+        'btn-fg': token('primary-ink'),
+
+        // Alias explicites — à préférer dans le code neuf.
+        primary: token('primary'),
+        'primary-d': token('primary-d'),
+        'primary-ink': token('primary-ink'),
+        terracotta: token('primary'),
+        indigo: token('indigo'),
+        secondary: token('indigo'),
+
+        // Deux ors — voir global.css. `gold` est l'or encre (lisible sur la
+        // crème), `gold-bright` l'or décor (aplats, médailles, marque) qui
+        // ne doit jamais porter de texte sombre… ni servir de texte clair.
+        gold: token('gold'),
+        'gold-bright': token('gold-bright'),
+
+        // ── Rôles sémantiques ──
+        energy: token('gold'),        // points, or, 1re place
+        success: token('good'),       // bonne réponse
+        good: token('good'),
+        buzz: token('bad'),           // buzz, erreur
+        'buzz-h': token('bad-h'),
+        danger: token('bad'),
+        bad: token('bad'),
+        warn: token('warn'),
+        host: token('violet'),        // animateur / manager
+        team: token('indigo'),        // équipes
+
         silver: '#C0C0C0',
         bronze: '#CD7F32',
-        'btn-fg': '#08231B',
       },
       fontFamily: {
         display: ['var(--font-display)', 'system-ui', 'sans-serif'],
         ui: ['var(--font-ui)', 'system-ui', 'sans-serif'],
+        serif: ['var(--font-accent)', 'Georgia', 'serif'],
       },
       borderRadius: {
-        'casino': '20px',
-        '3xl': '24px',
-        '4xl': '32px',
+        // Le design Xalaat privilégie des angles nets sur les grandes
+        // surfaces et des pilules sur les contrôles.
+        casino: '16px',
+        '3xl': '20px',
+        '4xl': '26px',
       },
       boxShadow: {
-        'glow': '0 0 20px rgba(213, 68, 47, 0.3)',
-        'glow-success': '0 0 20px rgba(0, 211, 151, 0.3)',
-        'danger': '0 0 12px rgba(213, 68, 47, 0.4)',
-        'soft': '0 4px 20px rgba(0, 0, 0, 0.3)',
-        'card': '0 8px 32px rgba(0, 0, 0, 0.4)',
+        glow: '0 0 20px rgb(var(--primary-rgb) / 0.28)',
+        'glow-success': '0 0 20px rgb(var(--good-rgb) / 0.30)',
+        danger: '0 0 12px rgb(var(--bad-rgb) / 0.40)',
+        soft: '0 4px 20px rgb(26 20 16 / 0.10)',
+        card: '0 12px 28px -10px rgb(26 20 16 / 0.18), 0 2px 6px rgb(26 20 16 / 0.05)',
       },
       animation: {
         'pulse-ring': 'pulse-ring 2s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite',

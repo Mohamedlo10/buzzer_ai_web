@@ -33,7 +33,7 @@ export function Slider({
     <div className="mb-6">
       <div className="flex flex-row items-center justify-between mb-3">
         <span className="text-txt-60 text-sm font-medium">{label}</span>
-        <span className="text-[#00D397] font-bold text-lg">
+        <span className="text-accent font-bold text-lg">
           {value}{suffix}
         </span>
       </div>
@@ -55,7 +55,7 @@ export function Slider({
         {/* Slider track + native range input */}
         <div className="flex-1 relative h-2 bg-surface-2 rounded-full overflow-hidden">
           <div
-            className="h-full rounded-full bg-[#00D397]"
+            className="h-full rounded-full bg-accent"
             style={{ width: `${percentage}%` }}
           />
         </div>

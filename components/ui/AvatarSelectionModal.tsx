@@ -41,7 +41,7 @@ export function AvatarSelectionModal({
           <div className="flex flex-col items-center py-6">
             <div
               className="w-24 h-24 rounded-full overflow-hidden border-4 shadow-lg border-accent"
-              style={{ boxShadow: '0 0 20px rgba(0,211,151,0.3)' }}
+              style={{ boxShadow: '0 0 20px rgb(var(--primary-rgb) / 0.3)' }}
             >
               <img src={previewUrl} alt="Aperçu avatar" className="w-full h-full object-cover" />
             </div>
@@ -129,7 +129,7 @@ export function AvatarSelectionModal({
           <button
             type="button"
             onClick={() => onComplete(selectedStyle, selectedSeed)}
-            className="w-full py-4 rounded-2xl font-bold text-lg text-btn-fg bg-accent shadow-[0_0_15px_rgba(0,211,151,0.3)] transition-opacity hover:opacity-90 cursor-pointer"
+            className="w-full py-4 rounded-2xl font-bold text-lg text-btn-fg bg-accent shadow-[0_0_15px_rgb(var(--primary-rgb)_/_0.3)] transition-opacity hover:opacity-90 cursor-pointer"
           >
             Continuer
           </button>

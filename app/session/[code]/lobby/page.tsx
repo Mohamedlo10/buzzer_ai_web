@@ -121,13 +121,13 @@ function ArcadeTeamsSection({
       <div className="rounded-[18px] overflow-hidden bg-surface border border-line">
         <div className="px-5 py-3.5 border-b border-line flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Trophy size={14} className="text-[#4A90D9]" />
+            <Trophy size={14} className="text-team" />
             <span className={`${orbitronClass} text-txt-40 text-[10px] tracking-[0.2em] font-bold`}>ÉQUIPES</span>
           </div>
           {!isManager && (
             <button
               onClick={onChangeTeam}
-              className="px-2.5 py-1 rounded-lg bg-[#4A90D9]/10 border border-[#4A90D9]/15 text-[#4A90D9] text-[11px] font-semibold cursor-pointer hover:bg-[#4A90D9]/15 transition-colors"
+              className="px-2.5 py-1 rounded-lg bg-team/10 border border-team/15 text-team text-[11px] font-semibold cursor-pointer hover:bg-team/15 transition-colors"
             >
               Changer
             </button>
@@ -139,8 +139,8 @@ function ArcadeTeamsSection({
               <div
                 className="w-2 h-2 rounded-full shrink-0"
                 style={{
-                  background: team.color ?? '#3A3A5E',
-                  boxShadow: `0 0 5px ${team.color ?? '#3A3A5E'}`,
+                  background: team.color ?? 'var(--indigo)',
+                  boxShadow: `0 0 5px ${team.color ?? 'var(--indigo)'}`,
                 }}
               />
               <span className={`${rajdhaniClass} flex-1 text-txt font-semibold text-sm`}>{team.name}</span>
@@ -159,7 +159,7 @@ function ArcadeTeamsSection({
                     avatarUrl={member.userId ? (avatarMap[member.userId] ?? member.avatarUrl) : member.avatarUrl}
                     username={member.name}
                     size={26}
-                    borderColor={isMe ? '#00D397' : undefined}
+                    borderColor={isMe ? 'var(--primary)' : undefined}
                   />
                   <span
                     className={`${rajdhaniClass} flex-1 text-[13px] ${isMe ? 'text-accent font-semibold' : 'text-txt-60'}`}
@@ -286,9 +286,9 @@ export default function LobbyPage() {
 
   const handleShare = async () => {
     if (!code) return;
-    const msg = `Rejoins ma partie Quiz By Mouha_Dev! Code: ${code}`;
+    const msg = `Rejoins ma partie sur Xalaat (Quiz by MouhaDev) ! Code: ${code}`;
     if (navigator.share) {
-      try { await navigator.share({ title: 'Invitation Quiz By Mouha_Dev', text: msg }); } catch { /* cancelled */ }
+      try { await navigator.share({ title: 'Invitation Xalaat — Quiz by MouhaDev', text: msg }); } catch { /* cancelled */ }
     } else {
       await navigator.clipboard.writeText(msg);
       window.alert('Lien copié dans le presse-papiers !');
@@ -477,7 +477,7 @@ export default function LobbyPage() {
             </span>
             {isManager && (
               <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-energy/12 border border-energy/40 text-energy text-[10px] font-bold">
-                <Crown size={10} fill="#FFD700" color="#FFD700" />
+                <Crown size={10} fill="var(--gold)" color="var(--gold)" />
                 HOST
               </span>
             )}
@@ -506,7 +506,7 @@ export default function LobbyPage() {
               avatarUrl={currentPlayer?.userId ? (avatarMap[currentPlayer.userId] ?? currentPlayer.avatarUrl) : user?.avatarUrl}
               username={currentPlayer?.name ?? user?.username ?? 'Joueur'}
               size={74}
-              borderColor="#00D397"
+              borderColor="var(--primary)"
             />
           </div>
           <h2 className="text-txt text-[23px] font-bold mt-3">Tu es dans la partie !</h2>
@@ -628,8 +628,8 @@ export default function LobbyPage() {
             </p>
             {managerPlayer && (
               <div className="flex items-center justify-center gap-2.5 mt-3 p-2.5 rounded-xl bg-energy/10 border border-energy/25">
-                <Crown size={16} className="text-energy" fill="#FFD700" />
-                <Avatar avatarUrl={managerPlayer.avatarUrl} username={managerPlayer.name} size={36} borderColor="#FFD700" />
+                <Crown size={16} className="text-energy" fill="var(--gold)" />
+                <Avatar avatarUrl={managerPlayer.avatarUrl} username={managerPlayer.name} size={36} borderColor="var(--gold)" />
                 <div className="text-left">
                   <p className="text-energy font-bold text-sm">{managerPlayer.name}</p>
                   <p className="text-txt-40 text-[10px] tracking-wider">HOST DE LA PARTIE</p>
@@ -680,7 +680,7 @@ export default function LobbyPage() {
                 </>
               ) : (
                 <>
-                  <span className="dotpulse" style={{ background: canStart ? '#08231B' : 'var(--txt-40)' }} />
+                  <span className="dotpulse" style={{ background: canStart ? 'var(--primary-ink)' : 'var(--txt-40)' }} />
                   <Play size={20} className={canStart ? 'text-btn-fg' : 'text-txt-40'} fill="currentColor" />
                   <span className={`${orbitron.className} text-lg font-bold tracking-wide ${canStart ? 'text-btn-fg' : 'text-txt-40'}`}>
                     Lancer la partie
@@ -691,8 +691,8 @@ export default function LobbyPage() {
 
             {!canStart && !isStarting && (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, padding: '8px 0 6px', marginBottom: 8 }}>
-                <AlertCircle size={13} color="#FF3A5C" />
-                <span className={rajdhani.className} style={{ fontSize: 13, color: '#FF3A5C' }}>Minimum 2 joueurs requis</span>
+                <AlertCircle size={13} color="var(--bad)" />
+                <span className={rajdhani.className} style={{ fontSize: 13, color: 'var(--bad)' }}>Minimum 2 joueurs requis</span>
               </div>
             )}
 
@@ -703,11 +703,11 @@ export default function LobbyPage() {
                 style={{
                   flex: 1, padding: '12px 0', borderRadius: 13,
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, cursor: 'pointer',
-                  background: '#FF3A5C12', border: '1px solid #FF3A5C30',
+                  background: 'rgb(var(--bad-rgb) / 0.071)', border: '1px solid rgb(var(--bad-rgb) / 0.188)',
                 }}
               >
-                <LogOut size={15} color="#FF3A5C" />
-                <span className={rajdhani.className} style={{ fontSize: 13, fontWeight: 600, color: '#FF3A5C' }}>Quitter</span>
+                <LogOut size={15} color="var(--bad)" />
+                <span className={rajdhani.className} style={{ fontSize: 13, fontWeight: 600, color: 'var(--bad)' }}>Quitter</span>
               </button>
               <button
                 onClick={handleDeleteSession}
@@ -715,15 +715,15 @@ export default function LobbyPage() {
                 style={{
                   flex: 1, padding: '12px 0', borderRadius: 13,
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, cursor: 'pointer',
-                  background: '#FF3A5C12', border: '1px solid #FF3A5C30',
+                  background: 'rgb(var(--bad-rgb) / 0.071)', border: '1px solid rgb(var(--bad-rgb) / 0.188)',
                 }}
               >
                 {isDeletingSession ? (
-                  <div style={{ width: 14, height: 14, border: '2px solid #FF3A5C', borderTopColor: 'transparent', borderRadius: '50%' }} className="animate-spin" />
+                  <div style={{ width: 14, height: 14, border: '2px solid var(--bad)', borderTopColor: 'transparent', borderRadius: '50%' }} className="animate-spin" />
                 ) : (
-                  <Trash2 size={15} color="#FF3A5C" />
+                  <Trash2 size={15} color="var(--bad)" />
                 )}
-                <span className={rajdhani.className} style={{ fontSize: 13, fontWeight: 600, color: '#FF3A5C' }}>Supprimer</span>
+                <span className={rajdhani.className} style={{ fontSize: 13, fontWeight: 600, color: 'var(--bad)' }}>Supprimer</span>
               </button>
             </div>
           </div>
@@ -772,12 +772,12 @@ export default function LobbyPage() {
                           avatarUrl={player.userId ? (avatarMap[player.userId] ?? player.avatarUrl) : player.avatarUrl}
                           username={player.name}
                           size={46}
-                          borderColor={player.isManager ? '#FFD700' : isYou ? '#00D397' : undefined}
+                          borderColor={player.isManager ? 'var(--gold)' : isYou ? 'var(--primary)' : undefined}
                         />
                       )}
                       {player.isManager && (
                         <div className="absolute -top-1 left-1/2 -translate-x-1/2">
-                          <Crown size={11} fill="#FFD700" color="#FFD700" />
+                          <Crown size={11} fill="var(--gold)" color="var(--gold)" />
                         </div>
                       )}
                     </div>
@@ -871,20 +871,20 @@ export default function LobbyPage() {
                       <p className={`${rajdhani.className} text-[9px] text-txt-40 tracking-[0.2em] mb-2.5`}>SITUATION ACTUELLE</p>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, flexWrap: 'wrap' }}>
                         {[
-                          { val: cats, label: 'cat/joueur', color: '#C084FC' },
-                          { val: null, label: '×', color: '#E8E8F025' },
-                          { val: session.questionsPerCategory, label: 'Q/cat', color: '#4A90D9' },
-                          { val: null, label: '×', color: '#E8E8F025' },
-                          { val: realPlayers, label: 'joueurs', color: '#FFD700' },
-                          { val: null, label: '=', color: '#E8E8F025' },
-                          { val: totalCurrent, label: '/ 60 max', color: '#FF3A5C', bg: '#FF3A5C10' },
+                          { val: cats, label: 'cat/joueur', color: 'var(--violet)' },
+                          { val: null, label: '×', color: 'var(--txt-25)' },
+                          { val: session.questionsPerCategory, label: 'Q/cat', color: 'var(--indigo)' },
+                          { val: null, label: '×', color: 'var(--txt-25)' },
+                          { val: realPlayers, label: 'joueurs', color: 'var(--gold)' },
+                          { val: null, label: '=', color: 'var(--txt-25)' },
+                          { val: totalCurrent, label: '/ 60 max', color: 'var(--bad)', bg: 'rgb(var(--bad-rgb) / 0.063)' },
                         ].map((item, i) =>
                           item.val === null ? (
                             <span key={i} style={{ color: item.color, fontWeight: 700, fontSize: 14 }}>{item.label}</span>
                           ) : (
                             <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '6px 10px', borderRadius: 9, background: item.bg ?? 'var(--surface)' }}>
                               <span style={{ color: item.color, fontWeight: 700, fontSize: 17 }}>{item.val}</span>
-                              <span style={{ color: '#E8E8F038', fontSize: 9 }}>{item.label}</span>
+                              <span style={{ color: 'var(--txt-40)', fontSize: 9 }}>{item.label}</span>
                             </div>
                           )
                         )}
@@ -939,7 +939,7 @@ export default function LobbyPage() {
                       <button
                         onClick={handleStartWithAdjustedQ}
                         disabled={isSavingConfig || isStarting}
-                        className="flex-1 py-3 rounded-[14px] flex items-center justify-center gap-1.5 cursor-pointer bg-gradient-to-br from-accent to-[#00C877] disabled:opacity-60 transition-opacity"
+                        className="flex-1 py-3 rounded-[14px] flex items-center justify-center gap-1.5 cursor-pointer bg-gradient-to-br from-accent to-accent-d disabled:opacity-60 transition-opacity"
                       >
                         {isSavingConfig || isStarting ? (
                           <div className="w-3.5 h-3.5 border-2 border-btn-fg border-t-transparent rounded-full animate-spin" />
@@ -996,12 +996,12 @@ export default function LobbyPage() {
                     className="flex items-center px-4 py-3.5 rounded-[14px] cursor-pointer transition-opacity disabled:opacity-60"
                     style={{
                       background: isCurrent ? (team.color ? `${team.color}12` : 'var(--surface-2)') : 'var(--bg)',
-                      border: `1px solid ${isCurrent ? (team.color ?? '#00D397') : 'var(--line)'}`,
+                      border: `1px solid ${isCurrent ? (team.color ?? 'var(--primary)') : 'var(--line)'}`,
                     }}
                   >
                     <div
                       className="w-3 h-3 rounded-full mr-3 shrink-0"
-                      style={{ background: team.color ?? '#3A3A5E' }}
+                      style={{ background: team.color ?? 'var(--indigo)' }}
                     />
                     <span className={`${rajdhani.className} flex-1 text-txt font-semibold text-sm text-left`}>{team.name}</span>
                     <span className={`${rajdhani.className} text-txt-40 text-xs`}>
@@ -1018,7 +1018,7 @@ export default function LobbyPage() {
             </div>
             {isChangingTeam && (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '14px 0' }}>
-                <div style={{ width: 22, height: 22, border: '2.5px solid #00D397', borderTopColor: 'transparent', borderRadius: '50%' }} className="animate-spin" />
+                <div style={{ width: 22, height: 22, border: '2.5px solid var(--primary)', borderTopColor: 'transparent', borderRadius: '50%' }} className="animate-spin" />
               </div>
             )}
             <div style={{ height: 28 }} />
@@ -1053,7 +1053,7 @@ export default function LobbyPage() {
                 avatarUrl={selectedLobbyPlayer.userId ? (avatarMap[selectedLobbyPlayer.userId] ?? selectedLobbyPlayer.avatarUrl) : selectedLobbyPlayer.avatarUrl}
                 username={selectedLobbyPlayer.name}
                 size={72}
-                borderColor={selectedLobbyPlayer.isManager ? '#FFD700' : selectedLobbyPlayer.userId === user?.id ? '#00D397' : undefined}
+                borderColor={selectedLobbyPlayer.isManager ? 'var(--gold)' : selectedLobbyPlayer.userId === user?.id ? 'var(--primary)' : undefined}
               />
               <h3 className="text-txt text-lg font-bold mt-3">{selectedLobbyPlayer.name}</h3>
               <div className="flex items-center gap-1.5 mt-1.5">
@@ -1069,7 +1069,7 @@ export default function LobbyPage() {
                 )}
                 {selectedLobbyPlayer.isManager && (
                   <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-energy/12 text-energy text-[10px] font-bold">
-                    <Crown size={10} fill="#FFD700" color="#FFD700" />
+                    <Crown size={10} fill="var(--gold)" color="var(--gold)" />
                     HOST
                   </span>
                 )}
@@ -1079,7 +1079,7 @@ export default function LobbyPage() {
                   return (
                     <span
                       className="text-[10px] font-bold px-2.5 py-0.5 rounded-full"
-                      style={{ backgroundColor: (team.color ?? '#4A90D9') + '20', color: team.color ?? '#4A90D9' }}
+                      style={{ backgroundColor: (team.color ?? 'var(--indigo)') + '20', color: team.color ?? 'var(--indigo)' }}
                     >
                       {team.name}
                     </span>
@@ -1170,8 +1170,8 @@ export default function LobbyPage() {
         }
         confirmLabel="Démarrer"
         cancelLabel="Annuler"
-        confirmColor="#00D397"
-        icon={<Play size={24} color="#00D397" />}
+        confirmColor="var(--primary)"
+        icon={<Play size={24} color="var(--primary)" />}
         onConfirm={() => { setShowStartConfirm(false); handleStartGame(); }}
         onCancel={() => setShowStartConfirm(false)}
       />

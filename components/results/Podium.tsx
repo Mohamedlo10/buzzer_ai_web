@@ -3,7 +3,7 @@
 import { Avatar } from '~/components/ui/Avatar';
 import type { SessionRankingEntry } from '~/types/api';
 
-const MEDALS = ['#FFD700', '#C0C0C0', '#CD7F32'] as const;
+const MEDALS = ['var(--gold)', '#C0C0C0', '#CD7F32'] as const;
 const PODIUM_HEIGHT: Record<number, number> = { 1: 150, 2: 120, 3: 96 };
 
 interface PodiumProps {
@@ -26,7 +26,7 @@ export function Podium({ rankings, currentUserId, onPlayerTap }: PodiumProps) {
     <div className="flex items-end justify-center gap-2.5 mt-1 mb-2 px-1">
       {displayOrder.map((entry) => {
         const rank = rankings.findIndex((r) => r.player.id === entry.player.id) + 1;
-        const medal = MEDALS[rank - 1] ?? '#00D397';
+        const medal = MEDALS[rank - 1] ?? 'var(--primary)';
         const height = PODIUM_HEIGHT[rank] ?? 100;
         const isYou = (entry.player.userId ?? entry.player.id) === currentUserId;
 
@@ -50,7 +50,7 @@ export function Podium({ rankings, currentUserId, onPlayerTap }: PodiumProps) {
               {isYou ? 'Toi' : entry.player.name}
             </span>
             <div
-              className="w-full rounded-t-xl pt-2 flex flex-col items-center text-[#11112a] animate-[rise_0.55s_both]"
+              className="w-full rounded-t-xl pt-2 flex flex-col items-center text-[#1A1410] animate-[rise_0.55s_both]"
               style={{
                 height,
                 background: `linear-gradient(180deg, ${medal}, color-mix(in oklab, ${medal} 35%, var(--surface)))`,

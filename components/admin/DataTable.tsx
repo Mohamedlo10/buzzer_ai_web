@@ -101,7 +101,7 @@ export function DataTable<T>({
                     type="checkbox"
                     checked={selectAll}
                     onChange={(e) => onSelectAll(e.target.checked)}
-                    className="rounded border-line bg-bg text-[#9B59B6] focus:ring-[#9B59B6]"
+                    className="rounded border-line bg-bg text-host focus:ring-host"
                   />
                 </th>
               )}
@@ -160,7 +160,7 @@ export function DataTable<T>({
                           type="checkbox"
                           checked={selectedRows?.has(id) || false}
                           onChange={(e) => onSelectRow(id, e.target.checked)}
-                          className="rounded border-line bg-bg text-[#9B59B6] focus:ring-[#9B59B6]"
+                          className="rounded border-line bg-bg text-host focus:ring-host"
                         />
                       </td>
                     )}

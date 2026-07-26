@@ -47,7 +47,7 @@ function RankingInfoModal({ onClose }: { onClose: () => void }) {
         {/* Modal header */}
         <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-line">
           <div className="flex items-center gap-2">
-            <Trophy size={20} color="#FFD700" />
+            <Trophy size={20} color="var(--gold)" />
             <span className="text-txt font-bold text-base">Comment fonctionne le classement ?</span>
           </div>
           <button
@@ -61,7 +61,7 @@ function RankingInfoModal({ onClose }: { onClose: () => void }) {
         {/* Modal body */}
         <div className="px-5 py-4 space-y-4">
           <p className="text-txt-60 text-sm leading-relaxed">
-            Le classement utilise le système <span className="text-[#9B59B6] font-semibold">Glicko-2</span>, un algorithme
+            Le classement utilise le système <span className="text-host font-semibold">Glicko-2</span>, un algorithme
             de classement relatif (comme aux échecs). Il évalue ta force par rapport à tes adversaires,
             pas par rapport à un barème de points fixe.
           </p>
@@ -124,7 +124,7 @@ function RankingInfoModal({ onClose }: { onClose: () => void }) {
                   { games: 100, bonus: '+150' },
                 ].map(({ games, bonus }) => (
                   <div key={games} className="bg-bg rounded-lg px-3 py-2">
-                    <span className="text-[#00D397] font-bold text-sm">{bonus}</span>
+                    <span className="text-accent font-bold text-sm">{bonus}</span>
                     <span className="text-txt-40 text-xs"> pts</span>
                     <p className="text-txt-40 text-xs">{games} parties</p>
                   </div>
@@ -215,25 +215,25 @@ function Podium({ rankings, currentPage }: { rankings: GlobalRanking[]; currentP
         <span className="text-txt text-xs mt-1 w-20 text-center truncate">
           {top3[1].username || 'Inconnu'}
         </span>
-        <span className="text-[#00D397] text-xs">{perf(top3[1])} score</span>
+        <span className="text-accent text-xs">{perf(top3[1])} score</span>
       </div>
 
       {/* 1st */}
       <div className="flex flex-col items-center mx-2">
         <div className="relative mb-2">
-          <Avatar avatarUrl={top3[0].avatarUrl} username={top3[0].username || '?'} size={80} borderColor="#FFD700" />
+          <Avatar avatarUrl={top3[0].avatarUrl} username={top3[0].username || '?'} size={80} borderColor="var(--gold)" />
           <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-            <Crown size={18} color="#FFD700" />
+            <Crown size={18} color="var(--gold)" />
           </div>
         </div>
-        <div className="w-24 h-32 bg-[#FFD70020] rounded-t-xl flex flex-col items-center justify-end pb-2 border-t-2 border-x-2 border-[#FFD700]">
-          <Crown size={28} color="#FFD700" />
-          <span className="text-[#FFD700] font-bold mt-1 text-lg">1</span>
+        <div className="w-24 h-32 bg-energy/15 rounded-t-xl flex flex-col items-center justify-end pb-2 border-t-2 border-x-2 border-energy">
+          <Crown size={28} color="var(--gold)" />
+          <span className="text-energy font-bold mt-1 text-lg">1</span>
         </div>
         <span className="text-txt text-sm font-semibold mt-1 w-24 text-center truncate">
           {top3[0].username || 'Inconnu'}
         </span>
-        <span className="text-[#00D397] text-sm font-bold">{perf(top3[0])} score</span>
+        <span className="text-accent text-sm font-bold">{perf(top3[0])} score</span>
       </div>
 
       {/* 3rd */}
@@ -248,7 +248,7 @@ function Podium({ rankings, currentPage }: { rankings: GlobalRanking[]; currentP
         <span className="text-txt text-xs mt-1 w-20 text-center truncate">
           {top3[2].username || 'Inconnu'}
         </span>
-        <span className="text-[#00D397] text-xs">{perf(top3[2])} score</span>
+        <span className="text-accent text-xs">{perf(top3[2])} score</span>
       </div>
     </div>
   );
@@ -271,14 +271,14 @@ function RankingRow({
   const rank = entry.rank ?? 0;
 
   const getRankIcon = (r: number) => {
-    if (r === 1) return <Crown size={20} color="#FFD700" />;
+    if (r === 1) return <Crown size={20} color="var(--gold)" />;
     if (r === 2) return <Medal size={20} color="#C0C0C0" />;
     if (r === 3) return <Medal size={20} color="#CD7F32" />;
     return <span className="text-txt-40 font-bold w-6 text-center">{r}</span>;
   };
 
   const getRankColor = (r: number) => {
-    if (r === 1) return 'text-[#FFD700]';
+    if (r === 1) return 'text-energy';
     if (r === 2) return 'text-[#C0C0C0]';
     if (r === 3) return 'text-[#CD7F32]';
     return 'text-txt';
@@ -290,15 +290,15 @@ function RankingRow({
 
     if (status === 'ACCEPTED') {
       return (
-        <div className="w-10 h-10 rounded-full bg-[#00D39720] flex items-center justify-center">
-          <UserCheck size={18} color="#00D397" />
+        <div className="w-10 h-10 rounded-full bg-accent/15 flex items-center justify-center">
+          <UserCheck size={18} color="var(--primary)" />
         </div>
       );
     }
     if (status === 'PENDING') {
       return (
-        <div className="w-10 h-10 rounded-full bg-[#F39C1220] flex items-center justify-center">
-          <Clock size={18} color="#F39C12" />
+        <div className="w-10 h-10 rounded-full bg-warn/15 flex items-center justify-center">
+          <Clock size={18} color="var(--warn)" />
         </div>
       );
     }
@@ -312,9 +312,9 @@ function RankingRow({
     return (
       <button
         onClick={() => onAddFriend?.(entry.userId, entry.username || 'Inconnu')}
-        className="w-10 h-10 rounded-full bg-[#00D397] flex items-center justify-center hover:bg-[#00D39730] transition-colors cursor-pointer"
+        className="w-10 h-10 rounded-full bg-accent flex items-center justify-center hover:bg-accent/20 transition-colors cursor-pointer"
       >
-        <UserPlus size={18} color="#00412e" />
+        <UserPlus size={18} color="var(--primary-d)" />
       </button>
     );
   };
@@ -342,7 +342,7 @@ function RankingRow({
       tabIndex={0}
       onKeyDown={(e) => e.key === 'Enter' && router.push(`/profile/${entry.userId}`)}
       className={`w-full flex flex-row items-start py-3 border-b border-line text-left hover:bg-surface-2/30 active:bg-surface-2/50 transition-colors cursor-pointer ${
-        isCurrentUser ? 'bg-[#00D39710] -mx-4 px-4 w-[calc(100%+32px)]' : ''
+        isCurrentUser ? 'bg-accent/5 -mx-4 px-4 w-[calc(100%+32px)]' : ''
       }`}
     >
       {/* Rank icon */}
@@ -354,14 +354,14 @@ function RankingRow({
           avatarUrl={entry.avatarUrl}
           username={entry.username || '?'}
           size={36}
-          borderColor={isCurrentUser ? '#00D397' : undefined}
+          borderColor={isCurrentUser ? 'var(--primary)' : undefined}
         />
       </div>
 
       {/* Main info */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-2">
-          <span className={`font-semibold ${isCurrentUser ? 'text-[#00D397]' : getRankColor(rank)}`}>
+          <span className={`font-semibold ${isCurrentUser ? 'text-accent' : getRankColor(rank)}`}>
             {entry.username || 'Inconnu'}
             {isCurrentUser && ' (Vous)'}
           </span>
@@ -370,17 +370,17 @@ function RankingRow({
           <div className="flex flex-col items-end shrink-0 gap-0.5">
             {isProvisional ? (
               <div className="flex flex-col items-end">
-                <span className="text-[#F59E0B] text-[10px] font-semibold leading-tight">
+                <span className="text-warn text-[10px] font-semibold leading-tight">
                   Classement après
                 </span>
-                <span className="text-[#F59E0B] text-[10px] font-semibold leading-tight">
+                <span className="text-warn text-[10px] font-semibold leading-tight">
                   10 parties
                 </span>
                 <span className="text-txt/30 text-[9px]">{entry.totalGames}/10 jouées</span>
               </div>
             ) : glickoRating != null ? (
               <>
-                <span className="text-[#9B59B6] font-bold text-sm leading-none">
+                <span className="text-host font-bold text-sm leading-none">
                   {glickoRating.toFixed(0)}
                 </span>
                 {glickoDeviation != null && (
@@ -400,7 +400,7 @@ function RankingRow({
         {perfIndex != null && (
           <div className="w-full h-1 bg-surface-2 rounded-full mt-1 mb-1 overflow-hidden">
             <div
-              className="h-full bg-[#9B59B6] rounded-full"
+              className="h-full bg-host rounded-full"
               style={{ width: `${Math.min(100, Math.max(0, perfIndex))}%` }}
             />
           </div>
@@ -495,7 +495,7 @@ function Pagination({
             onClick={() => onPageChange(p as number)}
             className={`w-9 h-9 rounded-lg text-sm font-semibold transition-colors cursor-pointer ${
               p === currentPage
-                ? 'bg-[#9B59B6] text-txt'
+                ? 'bg-host text-txt'
                 : 'bg-surface-2 text-txt-60 hover:bg-surface-2'
             }`}
           >
@@ -638,7 +638,7 @@ export default function RankingsPage() {
               autoComplete="off"
             />
             {isSearching && (
-              <div className="w-4 h-4 border-2 border-[#9B59B6] border-t-transparent rounded-full animate-spin mr-2" />
+              <div className="w-4 h-4 border-2 border-host border-t-transparent rounded-full animate-spin mr-2" />
             )}
             {searchUsername.length > 0 && !isSearching && (
               <button
@@ -656,12 +656,12 @@ export default function RankingsPage() {
           <Card className="mb-4">
             <div className="flex flex-row justify-around">
               <div className="flex flex-col items-center">
-                <Users size={20} color="#00D397" />
+                <Users size={20} color="var(--primary)" />
                 <span className="text-txt font-bold text-lg mt-1">{totalElements}</span>
                 <span className="text-txt-60 text-xs">Joueurs</span>
               </div>
               <div className="flex flex-col items-center">
-                <Trophy size={20} color="#9B59B6" />
+                <Trophy size={20} color="var(--violet)" />
                 <span className="text-txt font-bold text-lg mt-1">
                   {currentUserRank ?? 'N/A'}
                 </span>

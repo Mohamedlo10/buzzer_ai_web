@@ -36,18 +36,18 @@ const STATUS_CONFIG: Record<
   AdminSessionStatus,
   { label: string; color: string; bg: string; icon: React.ElementType }
 > = {
-  LOBBY:      { label: 'Lobby',      color: '#00D397', bg: '#00D39720', icon: Users },
-  GENERATING: { label: 'Génération', color: '#FFD700', bg: '#FFD70020', icon: Zap },
-  PLAYING:    { label: 'En cours',   color: '#4A90D9', bg: '#4A90D920', icon: Swords },
-  PAUSED:     { label: 'Pause',      color: '#F39C12', bg: '#F39C1220', icon: Clock },
+  LOBBY:      { label: 'Lobby',      color: 'var(--primary)', bg: 'rgb(var(--primary-rgb) / 0.125)', icon: Users },
+  GENERATING: { label: 'Génération', color: 'var(--gold)', bg: 'rgb(var(--gold-rgb) / 0.125)', icon: Zap },
+  PLAYING:    { label: 'En cours',   color: 'var(--indigo)', bg: 'rgb(var(--indigo-rgb) / 0.125)', icon: Swords },
+  PAUSED:     { label: 'Pause',      color: 'var(--warn)', bg: 'rgb(var(--warn-rgb) / 0.125)', icon: Clock },
   RESULTS:    { label: 'Terminée',   color: '#C0C0C0', bg: '#C0C0C020', icon: Trophy },
-  CANCELLED:  { label: 'Annulée',    color: '#D5442F', bg: '#D5442F20', icon: XCircle },
+  CANCELLED:  { label: 'Annulée',    color: 'var(--bad)', bg: 'rgb(var(--bad-rgb) / 0.125)', icon: XCircle },
 };
 
 const DIFFICULTY_CONFIG = {
-  EASY:   { label: 'Facile',    color: '#00D397' },
-  MEDIUM: { label: 'Moyen',     color: '#F39C12' },
-  HARD:   { label: 'Difficile', color: '#D5442F' },
+  EASY:   { label: 'Facile',    color: 'var(--primary)' },
+  MEDIUM: { label: 'Moyen',     color: 'var(--warn)' },
+  HARD:   { label: 'Difficile', color: 'var(--bad)' },
 };
 
 function formatDate(iso: string | null) {
@@ -125,7 +125,7 @@ export default function AdminSessionDetailPage() {
       width: '50px',
       render: (row) => (
         <span className={`text-xs font-bold ${
-          row.rank === 1 ? 'text-[#FFD700]' :
+          row.rank === 1 ? 'text-energy' :
           row.rank === 2 ? 'text-[#C0C0C0]' :
           row.rank === 3 ? 'text-[#CD7F32]' :
           'text-txt-60'
@@ -141,7 +141,7 @@ export default function AdminSessionDetailPage() {
         <div className="flex items-center gap-2">
           <span className="text-txt font-medium">{row.username}</span>
           {row.isManager && (
-            <span className="text-xs px-1.5 py-0.5 rounded bg-[#FFD70020] text-[#FFD700]">Manager</span>
+            <span className="text-xs px-1.5 py-0.5 rounded bg-energy/15 text-energy">Manager</span>
           )}
           {row.isSpectator && (
             <span className="text-xs px-1.5 py-0.5 rounded bg-[#FFFFFF10] text-txt-60">Spectateur</span>
@@ -153,7 +153,7 @@ export default function AdminSessionDetailPage() {
       key: 'score',
       header: 'Score',
       width: '80px',
-      render: (row) => <span className="text-[#00D397] font-bold">{row.score}</span>,
+      render: (row) => <span className="text-accent font-bold">{row.score}</span>,
     },
     {
       key: 'joinedAt',
@@ -207,8 +207,8 @@ export default function AdminSessionDetailPage() {
       width: '150px',
       render: (row) => (
         <div className="flex items-center gap-1.5">
-          <CheckCircle size={12} color="#00D397" />
-          <span className="text-[#00D397] text-sm font-medium truncate">{row.answer}</span>
+          <CheckCircle size={12} color="var(--primary)" />
+          <span className="text-accent text-sm font-medium truncate">{row.answer}</span>
         </div>
       ),
     },
@@ -219,11 +219,11 @@ export default function AdminSessionDetailPage() {
       render: (row) =>
         row.winnerName ? (
           <div className="flex items-center gap-1.5">
-            <Trophy size={12} color="#FFD700" />
-            <span className="text-[#FFD700] text-xs">{row.winnerName}</span>
+            <Trophy size={12} color="var(--gold)" />
+            <span className="text-energy text-xs">{row.winnerName}</span>
           </div>
         ) : row.isSkipped ? (
-          <span className="text-[#F39C12] text-xs">Passée</span>
+          <span className="text-warn text-xs">Passée</span>
         ) : (
           <span className="text-txt/30 text-xs">—</span>
         ),
@@ -252,7 +252,7 @@ export default function AdminSessionDetailPage() {
                 {cfg.label}
               </span>
               {session.isTeamMode && (
-                <span className="text-xs px-2 py-0.5 rounded-full bg-[#4A90D920] text-[#4A90D9]">Équipes</span>
+                <span className="text-xs px-2 py-0.5 rounded-full bg-team/15 text-team">Équipes</span>
               )}
               {session.isPrivate && (
                 <span className="text-xs px-2 py-0.5 rounded-full bg-[#FFFFFF10] text-txt-60">Privée</span>
@@ -269,10 +269,10 @@ export default function AdminSessionDetailPage() {
           <button
             onClick={handleForceStop}
             disabled={stopMutation.isPending}
-            className="flex items-center gap-2 px-4 py-2 bg-[#D5442F20] rounded-xl hover:bg-[#D5442F30] transition-colors disabled:opacity-40"
+            className="flex items-center gap-2 px-4 py-2 bg-buzz/15 rounded-xl hover:bg-buzz/20 transition-colors disabled:opacity-40"
           >
-            <Square size={14} color="#D5442F" />
-            <span className="text-[#D5442F] text-sm font-semibold">
+            <Square size={14} color="var(--bad)" />
+            <span className="text-buzz text-sm font-semibold">
               {stopMutation.isPending ? 'Arrêt...' : 'Forcer arrêt'}
             </span>
           </button>
@@ -291,7 +291,7 @@ export default function AdminSessionDetailPage() {
             onClick={() => setActiveTab(tab)}
             className={`flex items-center gap-2 px-5 py-3 text-sm font-medium transition-colors ${
               activeTab === tab
-                ? 'text-[#00D397] border-b-2 border-[#00D397]'
+                ? 'text-accent border-b-2 border-accent'
                 : 'text-txt-60 hover:text-txt-60'
             }`}
           >

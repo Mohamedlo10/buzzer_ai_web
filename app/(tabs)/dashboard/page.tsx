@@ -329,7 +329,7 @@ function JoinModal({
             style={
               isJoining || !code.trim()
                 ? { background: 'var(--surface-2)', color: 'var(--txt-40)' }
-                : { background: 'linear-gradient(135deg, #FF5C44, #D5442F)', color: '#FFFFFF' }
+                : { background: 'linear-gradient(135deg, var(--bad-h), var(--bad))', color: '#FFFFFF' }
             }
           >
             {isJoining ? (
@@ -393,7 +393,7 @@ export default function DashboardPage() {
           <button
             onClick={() => refetch()}
             className="px-6 py-3 rounded-xl hover:opacity-90 transition-opacity cursor-pointer"
-            style={{ background: 'linear-gradient(135deg, #00D397, #00B383)' }}
+            style={{ background: 'linear-gradient(135deg, var(--primary), var(--primary-d))' }}
           >
             <span className="text-btn-fg font-bold">Réessayer</span>
           </button>
@@ -470,7 +470,7 @@ export default function DashboardPage() {
             {/* New Room */}
             <button
               onClick={() => router.push('/room/create')}
-              className="rounded-[24px] bg-gradient-to-br from-[#BA2E13] to-[#881D0B] p-5 flex flex-col items-center justify-center gap-3 text-center shadow-lg hover:opacity-95 active:scale-98 transition-all cursor-pointer min-h-[140px]"
+              className="rounded-[24px] bg-gradient-to-br from-accent-d to-accent-d p-5 flex flex-col items-center justify-center gap-3 text-center shadow-lg hover:opacity-95 active:scale-98 transition-all cursor-pointer min-h-[140px]"
             >
               <div className="w-10 h-10 rounded-full border-[1.5px] border-white/40 flex items-center justify-center text-white">
                 <Plus size={20} />

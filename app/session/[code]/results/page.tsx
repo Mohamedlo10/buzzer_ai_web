@@ -34,8 +34,8 @@ function rankLabel(index: number): string {
 
 // ── Category card helpers ─────────────────────────────────────────────────────
 const CATEGORY_COLORS = [
-  '#00D397', '#4A90D9', '#9B59B6', '#F59E0B', '#D5442F', '#EC4899',
-  '#10B981', '#3B82F6', '#8B5CF6', '#EF4444', '#06B6D4', '#84CC16',
+  'var(--primary)', 'var(--indigo)', 'var(--violet)', 'var(--warn)', 'var(--bad)', 'var(--bad)',
+  'var(--good)', 'var(--indigo)', 'var(--violet)', 'var(--bad)', 'var(--indigo)', 'var(--good)',
 ];
 
 function getCategoryIcon(name: string): string {
@@ -64,13 +64,13 @@ interface TeamEntry {
 }
 
 function TeamRankingsCard({ teamRankings }: { teamRankings: TeamEntry[] }) {
-  const rankColors = ['#FFD700', '#C0C0C0', '#CD7F32'];
+  const rankColors = ['var(--gold)', '#C0C0C0', '#CD7F32'];
 
   return (
     <div className="bg-surface rounded-2xl border border-line overflow-hidden">
       <div className="flex items-center justify-between px-4 py-3 border-b border-line">
         <div className="flex items-center gap-2">
-          <Trophy size={16} color="#F59E0B" />
+          <Trophy size={16} color="var(--warn)" />
           <p className="text-txt-60 font-bold text-xs tracking-widest uppercase">Classement par équipe</p>
         </div>
         <p className="text-txt-40 text-xs font-semibold tracking-wider uppercase">Points équipe</p>
@@ -86,7 +86,7 @@ function TeamRankingsCard({ teamRankings }: { teamRankings: TeamEntry[] }) {
           >
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                {index === 0 && <Crown size={14} color="#FFD700" />}
+                {index === 0 && <Crown size={14} color="var(--gold)" />}
                 <span className="font-bold text-base" style={{ color: team.color }}>{team.name}</span>
                 <span className="text-txt-40 text-xs">{team.players.length} joueur{team.players.length > 1 ? 's' : ''}</span>
               </div>
@@ -252,8 +252,8 @@ export default function ResultsPage() {
     return (
       <SafeScreen>
         <div className="flex-1 flex flex-col justify-center items-center min-h-screen">
-          <div className="w-20 h-20 rounded-full bg-[#00D39720] flex items-center justify-center mb-4">
-            <Trophy size={40} color="#00D397" />
+          <div className="w-20 h-20 rounded-full bg-accent/15 flex items-center justify-center mb-4">
+            <Trophy size={40} color="var(--primary)" />
           </div>
           <p className="text-txt font-semibold">Chargement des résultats…</p>
         </div>
@@ -266,7 +266,7 @@ export default function ResultsPage() {
       <SafeScreen>
         <div className="flex-1 flex flex-col items-center justify-center px-4 min-h-screen">
           <div className="w-24 h-24 rounded-full bg-surface flex items-center justify-center mb-4">
-            <BarChart3 size={48} color="#6B7280" />
+            <BarChart3 size={48} color="var(--txt-40)" />
           </div>
           <p className="text-txt-60 text-center mb-4">Aucun résultat disponible</p>
           <button onClick={handleBack} className="bg-accent px-8 py-4 rounded-2xl hover:bg-accent-d transition-colors">
@@ -302,7 +302,7 @@ export default function ResultsPage() {
         teamMap.set(entry.teamId, {
           id: entry.teamId,
           name: entry.teamName,
-          color: entry.teamColor ?? '#00D397',
+          color: entry.teamColor ?? 'var(--primary)',
           score: entry.teamScore ?? 0,
           players: [entry],
         });
@@ -345,7 +345,7 @@ export default function ResultsPage() {
           <button
             onClick={handleBack}
             className="px-4 py-2 rounded-full shrink-0"
-            style={{ background: 'linear-gradient(135deg, #00D397, #00B383)' }}
+            style={{ background: 'linear-gradient(135deg, var(--primary), var(--primary-d))' }}
           >
             <span className="text-btn-fg font-bold text-sm">Retourner à la salle</span>
           </button>
@@ -381,12 +381,12 @@ export default function ResultsPage() {
           <div className="grid grid-cols-4 md:grid-cols-7 gap-2">
             {[
               { label: 'JOUEURS', value: rankings.length, color: 'var(--txt)' },
-              { label: 'MAX', value: rankings[0]?.finalScore ?? 0, color: '#FFD700' },
-              { label: 'POS.', value: currentUserRanking ? `${currentUserRanking.rank}${currentUserRanking.rank === 1 ? 'er' : 'e'}` : '—', color: '#00D397' },
+              { label: 'MAX', value: rankings[0]?.finalScore ?? 0, color: 'var(--gold)' },
+              { label: 'POS.', value: currentUserRanking ? `${currentUserRanking.rank}${currentUserRanking.rank === 1 ? 'er' : 'e'}` : '—', color: 'var(--primary)' },
               { label: 'BASE', value: currentUserRanking?.score ?? '—', color: 'var(--txt)' },
               { label: 'CORR.', value: correctionTotal !== 0 ? (correctionTotal > 0 ? `+${correctionTotal}` : correctionTotal) : '0', color: 'var(--txt)' },
-              { label: 'DETTES', value: netDebt !== 0 ? (netDebt > 0 ? `+${netDebt}` : `${netDebt}`) : '0', color: netDebt < 0 ? '#D5442F' : netDebt > 0 ? '#00D397' : 'var(--txt)' },
-              { label: 'FINAL', value: currentUserRanking?.finalScore ?? '—', color: '#00D397' },
+              { label: 'DETTES', value: netDebt !== 0 ? (netDebt > 0 ? `+${netDebt}` : `${netDebt}`) : '0', color: netDebt < 0 ? 'var(--bad)' : netDebt > 0 ? 'var(--primary)' : 'var(--txt)' },
+              { label: 'FINAL', value: currentUserRanking?.finalScore ?? '—', color: 'var(--primary)' },
             ].map(({ label, value, color }) => (
               <div key={label} className="flex flex-col items-center text-center">
                 <p className="text-txt-40 text-[8.5px] font-bold tracking-wide mb-1">{label}</p>
@@ -436,7 +436,7 @@ export default function ResultsPage() {
 
           {rankings.map((entry, index) => {
             const isCurrentUser = (entry.player.userId ?? entry.player.id) === user?.id;
-            const rankColors = ['#FFD700', '#C0C0C0', '#CD7F32'];
+            const rankColors = ['var(--gold)', '#C0C0C0', '#CD7F32'];
             const scoreColor = index < 3 ? rankColors[index] : 'var(--txt)';
             const playerUserId = entry.player.userId ?? entry.player.id;
 
@@ -455,10 +455,10 @@ export default function ResultsPage() {
                     avatarUrl={entry.player.avatarUrl}
                     username={entry.player.name}
                     size={40}
-                    borderColor={index === 0 ? '#FFD700' : index === 1 ? '#C0C0C0' : index === 2 ? '#CD7F32' : undefined}
+                    borderColor={index === 0 ? 'var(--gold)' : index === 1 ? '#C0C0C0' : index === 2 ? '#CD7F32' : undefined}
                   />
                   {index === 0 && (
-                    <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-[#FFD700] flex items-center justify-center">
+                    <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-gold-bright flex items-center justify-center">
                       <Crown size={10} className="text-btn-fg" />
                     </div>
                   )}
@@ -519,14 +519,14 @@ export default function ResultsPage() {
               <Zap size={16} className="text-warn" />
               <p className="text-txt font-bold text-xs tracking-widest uppercase flex-1">Dettes</p>
               <div className="w-[22px] h-[22px] rounded-full bg-warn flex items-center justify-center">
-                <span className="text-[#11112a] text-[11px] font-bold">{allDebts.length}</span>
+                <span className="text-[#1A1410] text-[11px] font-bold">{allDebts.length}</span>
               </div>
             </div>
 
             {allDebts.map((debt, i) => {
               const iOwe = debt.debtorId === user?.id;
               const owedToMe = debt.creditorName === user?.username;
-              const accentColor = iOwe ? '#D5442F' : owedToMe ? '#00D397' : '#4A90D9';
+              const accentColor = iOwe ? 'var(--bad)' : owedToMe ? 'var(--primary)' : 'var(--indigo)';
 
               return (
                 <div
@@ -555,7 +555,7 @@ export default function ResultsPage() {
                   </div>
                   <span
                     className="font-display font-semibold text-sm shrink-0"
-                    style={{ color: iOwe ? '#D5442F' : owedToMe ? '#00D397' : 'var(--txt-60)' }}
+                    style={{ color: iOwe ? 'var(--bad)' : owedToMe ? 'var(--primary)' : 'var(--txt-60)' }}
                   >
                     {iOwe ? '-' : owedToMe ? '+' : '-'}{debt.amount} pts
                   </span>

@@ -20,12 +20,12 @@ import * as adminApi from '~/lib/api/admin';
 import type { AdminRoomDetailResponse, AdminSessionStatus } from '~/types/api';
 
 const STATUS_CONFIG: Record<AdminSessionStatus, { label: string; color: string }> = {
-  LOBBY:      { label: 'Lobby',         color: '#00D397' },
-  GENERATING: { label: 'Génération...', color: '#FFD700' },
-  PLAYING:    { label: 'En cours',      color: '#4A90D9' },
-  PAUSED:     { label: 'Pause',         color: '#F39C12' },
+  LOBBY:      { label: 'Lobby',         color: 'var(--primary)' },
+  GENERATING: { label: 'Génération...', color: 'var(--gold)' },
+  PLAYING:    { label: 'En cours',      color: 'var(--indigo)' },
+  PAUSED:     { label: 'Pause',         color: 'var(--warn)' },
   RESULTS:    { label: 'Terminée',      color: '#C0C0C0' },
-  CANCELLED:  { label: 'Annulée',       color: '#D5442F' },
+  CANCELLED:  { label: 'Annulée',       color: 'var(--bad)' },
 };
 
 function formatDate(iso: string | null) {
@@ -116,7 +116,7 @@ export default function AdminRoomDetailPage() {
             <div className="flex items-center gap-2 mt-0.5">
               <span className="text-txt-60 text-xs">Code: {room.code}</span>
               {!room.isActive && (
-                <span className="text-xs px-1.5 py-0.5 rounded bg-[#D5442F20] text-[#D5442F]">Inactive</span>
+                <span className="text-xs px-1.5 py-0.5 rounded bg-buzz/15 text-buzz">Inactive</span>
               )}
             </div>
           </div>
@@ -131,7 +131,7 @@ export default function AdminRoomDetailPage() {
             <button
               onClick={handleDelete}
               disabled={deleteMutation.isPending}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#D5442F20] hover:bg-[#D5442F30] text-[#D5442F] transition-colors text-xs font-medium"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-buzz/15 hover:bg-buzz/20 text-buzz transition-colors text-xs font-medium"
             >
               <Trash2 size={14} />
               Supprimer
@@ -147,7 +147,7 @@ export default function AdminRoomDetailPage() {
             key={tab}
             onClick={() => setActiveTab(tab)}
             className={`flex-1 py-3 text-sm font-medium transition-colors ${
-              activeTab === tab ? 'text-[#00D397] border-b-2 border-[#00D397]' : 'text-txt-60 hover:text-txt-60'
+              activeTab === tab ? 'text-accent border-b-2 border-accent' : 'text-txt-60 hover:text-txt-60'
             }`}
           >
             {tab === 'info' ? 'Infos' : tab === 'members' ? 'Membres' : 'Sessions'}
@@ -196,7 +196,7 @@ export default function AdminRoomDetailPage() {
                       <div className="flex items-center gap-2">
                         <span className="text-txt font-semibold">{member.username}</span>
                         {member.isOwner && (
-                          <span className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-[#FFD70020] text-[#FFD700] font-medium">
+                          <span className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-energy/15 text-energy font-medium">
                             <Crown size={12} />
                             Owner
                           </span>
@@ -279,7 +279,7 @@ export default function AdminRoomDetailPage() {
               value={newOwnerId}
               onChange={(e) => setNewOwnerId(e.target.value)}
               placeholder="ID utilisateur..."
-              className="w-full bg-bg text-txt px-4 py-3 rounded-xl border border-line focus:border-[#9B59B6] focus:outline-none text-sm mb-4"
+              className="w-full bg-bg text-txt px-4 py-3 rounded-xl border border-line focus:border-host focus:outline-none text-sm mb-4"
             />
             <div className="flex gap-3">
               <button
@@ -291,7 +291,7 @@ export default function AdminRoomDetailPage() {
               <button
                 onClick={handleTransfer}
                 disabled={!newOwnerId.trim() || transferMutation.isPending}
-                className="flex-1 py-3 rounded-xl bg-[#9B59B6] text-white text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40"
+                className="flex-1 py-3 rounded-xl bg-host text-white text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40"
               >
                 {transferMutation.isPending ? 'Transfert...' : 'Transférer'}
               </button>

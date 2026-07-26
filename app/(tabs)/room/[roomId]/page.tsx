@@ -20,10 +20,10 @@ import * as sessionsApi from '~/lib/api/sessions';
 import type { FriendResponse, RoomDetailResponse, RoomSessionResponse, SessionStatus } from '~/types/api';
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; icon: React.ComponentType<{ size: number; color: string }> }> = {
-  LOBBY:      { label: 'Lobby',        color: '#00D397', bg: '#00D39720', icon: Users },
-  GENERATING: { label: 'Génération...', color: '#FFD700', bg: '#FFD70020', icon: Zap },
-  PLAYING:    { label: 'En cours',     color: '#4A90D9', bg: '#4A90D920', icon: Swords },
-  PAUSED:     { label: 'Pause',        color: '#F39C12', bg: '#F39C1220', icon: Clock },
+  LOBBY:      { label: 'Lobby',        color: 'var(--primary)', bg: 'rgb(var(--primary-rgb) / 0.125)', icon: Users },
+  GENERATING: { label: 'Génération...', color: 'var(--gold)', bg: 'rgb(var(--gold-rgb) / 0.125)', icon: Zap },
+  PLAYING:    { label: 'En cours',     color: 'var(--indigo)', bg: 'rgb(var(--indigo-rgb) / 0.125)', icon: Swords },
+  PAUSED:     { label: 'Pause',        color: 'var(--warn)', bg: 'rgb(var(--warn-rgb) / 0.125)', icon: Clock },
   RESULTS:    { label: 'Terminée',     color: '#C0C0C0', bg: '#C0C0C020', icon: Trophy },
 };
 
@@ -49,7 +49,7 @@ function RoomCodeCard({
         <div className="mb-5">
           {qrLoading ? (
             <div className="w-52 h-52 rounded-2xl bg-bg flex flex-col items-center justify-center">
-              <div className="w-8 h-8 border-2 border-[#00D397] border-t-transparent rounded-full animate-spin" />
+              <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
               <p className="text-txt-40 text-xs mt-3">Chargement...</p>
             </div>
           ) : qrImage ? (
@@ -67,7 +67,7 @@ function RoomCodeCard({
 
         {/* Code below QR */}
         <div className="flex items-center gap-2 mb-1">
-          <Hash size={14} color="#00D397" />
+          <Hash size={14} color="var(--primary)" />
           <span className="text-txt-60 text-xs font-medium uppercase tracking-wider">
             Code de la salle
           </span>
@@ -81,10 +81,10 @@ function RoomCodeCard({
         <div className="flex gap-3 w-full">
           <button
             onClick={onCopy}
-            className="flex-1 flex items-center justify-center bg-[#00D39720] px-4 py-3 rounded-2xl hover:bg-[#00D39730] transition-colors"
+            className="flex-1 flex items-center justify-center bg-accent/15 px-4 py-3 rounded-2xl hover:bg-accent/20 transition-colors"
           >
-            <Copy size={17} color="#00D397" />
-            <span className="text-[#00D397] font-semibold ml-2">Copier</span>
+            <Copy size={17} color="var(--primary)" />
+            <span className="text-accent font-semibold ml-2">Copier</span>
           </button>
           <button
             onClick={onShare}
@@ -193,7 +193,7 @@ function ActiveSessionCard({
             className="mx-5 mb-4 py-3 rounded-2xl flex items-center justify-center w-[calc(100%-40px)] bg-red-500/20 border border-red-500/40 hover:bg-red-500/30 transition-colors"
           >
             <div className="flex items-center">
-              <Trash2 size={18} color="#EF4444" />
+              <Trash2 size={18} color="var(--bad)" />
               <span className="text-red-400 font-bold text-base ml-2">Supprimer la session</span>
             </div>
           </button>
@@ -227,14 +227,14 @@ function MembersWithStats({
     })
     .sort((a, b) => b.ratio - a.ratio);
 
-  const rankColors = ['#FFD700', '#C0C0C0', '#CD7F32'];
+  const rankColors = ['var(--gold)', '#C0C0C0', '#CD7F32'];
 
   return (
     <div className="bg-surface rounded-3xl border border-line overflow-hidden">
       <div className="flex items-center justify-between px-4 py-3 border-b border-line">
         <p className="text-txt-40 text-[10px] font-bold tracking-widest uppercase">Membres</p>
-        <div className="bg-[#00D39720] px-3 py-1 rounded-full">
-          <span className="text-[#00D397] text-xs font-bold">{members.length} Joueur{members.length !== 1 ? 's' : ''}</span>
+        <div className="bg-accent/15 px-3 py-1 rounded-full">
+          <span className="text-accent text-xs font-bold">{members.length} Joueur{members.length !== 1 ? 's' : ''}</span>
         </div>
       </div>
 
@@ -246,11 +246,11 @@ function MembersWithStats({
         return (
           <div
             key={member.id}
-            className={`flex items-center py-3 px-4 border-b border-line last:border-b-0 ${isCurrentUser ? 'bg-[#00D39708]' : ''}`}
+            className={`flex items-center py-3 px-4 border-b border-line last:border-b-0 ${isCurrentUser ? 'bg-accent/5' : ''}`}
           >
             {/* Rank badge */}
             <div className="w-8 flex items-center justify-center mr-2 shrink-0">
-              {index === 0 && hasPlayed && <Crown size={16} color="#FFD700" />}
+              {index === 0 && hasPlayed && <Crown size={16} color="var(--gold)" />}
               {index === 1 && hasPlayed && <Medal size={16} color="#C0C0C0" />}
               {index === 2 && hasPlayed && <Medal size={16} color="#CD7F32" />}
               {(!hasPlayed || index > 2) && (
@@ -268,19 +268,19 @@ function MembersWithStats({
                   <span className="text-txt font-bold">{member.username.charAt(0).toUpperCase()}</span>
                 )}
               </div>
-              <div className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-surface ${member.isOnline ? 'bg-[#00D397]' : 'bg-[#6B7280]'}`} />
+              <div className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-surface ${member.isOnline ? 'bg-accent' : 'bg-txt-40'}`} />
             </div>
 
             {/* Name */}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5 flex-wrap">
-                <span className={`font-semibold text-sm ${isCurrentUser ? 'text-[#00D397]' : 'text-txt'}`}>
+                <span className={`font-semibold text-sm ${isCurrentUser ? 'text-accent' : 'text-txt'}`}>
                   {member.username}
                 </span>
                 {member.isOwner && (
-                  <div className="flex items-center px-1.5 py-0.5 rounded-full bg-[#FFD70020]">
-                    <Crown size={10} color="#FFD700" />
-                    <span className="text-[#FFD700] text-[10px] font-medium ml-0.5">Chef</span>
+                  <div className="flex items-center px-1.5 py-0.5 rounded-full bg-energy/15">
+                    <Crown size={10} color="var(--gold)" />
+                    <span className="text-energy text-[10px] font-medium ml-0.5">Chef</span>
                   </div>
                 )}
               </div>
@@ -452,7 +452,7 @@ function InviteFriendsModal({
         <div className="flex-1 overflow-y-auto py-3">
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
-              <div className="w-8 h-8 border-2 border-[#00D397] border-t-transparent rounded-full animate-spin" />
+              <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
             </div>
           ) : friends.length === 0 ? (
             <div className="flex flex-col items-center py-12 px-6">
@@ -486,7 +486,7 @@ function InviteFriendsModal({
                     </div>
                     <span
                       className={`absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full border-2 border-bg ${
-                        friend.isOnline ? 'bg-[#00D397]' : 'bg-[#6B7280]'
+                        friend.isOnline ? 'bg-accent' : 'bg-txt-40'
                       }`}
                     />
                   </div>
@@ -511,7 +511,7 @@ function InviteFriendsModal({
                     <div
                       className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
                         isSelected
-                          ? 'bg-[#00D397] border-[#00D397]'
+                          ? 'bg-accent border-accent'
                           : 'border-line bg-transparent'
                       }`}
                     >
@@ -536,14 +536,14 @@ function InviteFriendsModal({
               disabled={selected.size === 0 || isSending || sent}
               className={`w-full py-4 rounded-2xl flex items-center justify-center transition-colors font-bold text-base ${
                 sent
-                  ? 'bg-[#00D39740] cursor-default'
+                  ? 'bg-accent/25 cursor-default'
                   : selected.size === 0 || isSending
                   ? 'bg-surface-2 cursor-not-allowed'
-                  : 'bg-[#00D397] hover:opacity-90 cursor-pointer'
+                  : 'bg-accent hover:opacity-90 cursor-pointer'
               }`}
             >
               {sent ? (
-                <span className="text-[#00D397]">Invitations envoyées ✓</span>
+                <span className="text-accent">Invitations envoyées ✓</span>
               ) : isSending ? (
                 <span className="text-txt-60">Envoi en cours...</span>
               ) : (
@@ -692,9 +692,9 @@ export default function RoomDetailPage() {
 
   const handleShare = async () => {
     if (!room) return;
-    const msg = `Rejoins ma salle Quiz By Mouha_Dev! Code: ${room.code}`;
+    const msg = `Rejoins ma salle sur Xalaat (Quiz by MouhaDev) ! Code: ${room.code}`;
     if (navigator.share) {
-      try { await navigator.share({ title: 'Invitation Quiz By Mouha_Dev', text: msg }); } catch { /* cancelled */ }
+      try { await navigator.share({ title: 'Invitation Xalaat — Quiz by MouhaDev', text: msg }); } catch { /* cancelled */ }
     } else {
       await navigator.clipboard.writeText(msg);
     }
@@ -750,8 +750,8 @@ export default function RoomDetailPage() {
     return (
       <div className="min-h-screen bg-bg flex items-center justify-center">
         <div className="flex flex-col items-center">
-          <div className="w-20 h-20 rounded-full bg-[#00D39720] flex items-center justify-center mb-4">
-            <Sparkles size={40} color="#00D397" />
+          <div className="w-20 h-20 rounded-full bg-accent/15 flex items-center justify-center mb-4">
+            <Sparkles size={40} color="var(--primary)" />
           </div>
           <p className="text-txt font-semibold">Chargement...</p>
         </div>
@@ -764,12 +764,12 @@ export default function RoomDetailPage() {
       <div className="min-h-screen bg-bg flex items-center justify-center px-4">
         <div className="flex flex-col items-center">
           <div className="w-24 h-24 rounded-full bg-surface flex items-center justify-center mb-4">
-            <Eye size={48} color="#6B7280" />
+            <Eye size={48} color="var(--txt-40)" />
           </div>
           <p className="text-txt-60 text-center mb-4">Salle introuvable</p>
           <button
             onClick={() => router.back()}
-            className="bg-[#00D397] px-8 py-4 rounded-2xl hover:bg-[#00B377] transition-colors"
+            className="bg-accent px-8 py-4 rounded-2xl hover:bg-accent-d transition-colors"
           >
             <span className="text-btn-fg font-bold">Retour</span>
           </button>
@@ -786,7 +786,7 @@ export default function RoomDetailPage() {
           onClick={() => router.back()}
           className="w-10 h-10 rounded-full bg-surface flex items-center justify-center shrink-0"
         >
-          <ChevronRight size={20} color="#00D397" className="rotate-180" />
+          <ChevronRight size={20} color="var(--primary)" className="rotate-180" />
         </button>
         <p className="text-txt font-bold text-xl flex-1">Room #{room.name}</p>
         {isOwner && (
@@ -806,7 +806,7 @@ export default function RoomDetailPage() {
         <div className="bg-surface rounded-3xl border border-line p-5 flex flex-col items-center">
           {qrLoading ? (
             <div className="w-36 h-36 rounded-2xl bg-bg flex items-center justify-center mb-4">
-              <div className="w-6 h-6 border-2 border-[#00D397] border-t-transparent rounded-full animate-spin" />
+              <div className="w-6 h-6 border-2 border-accent border-t-transparent rounded-full animate-spin" />
             </div>
           ) : qrImage ? (
             <div className="bg-white p-2.5 rounded-2xl shadow-lg mb-4">
@@ -819,13 +819,13 @@ export default function RoomDetailPage() {
             </div>
           )}
           <p className="text-txt-40 text-[10px] font-bold tracking-widest uppercase mb-1">Code de la salle</p>
-          <p className="text-[#00D397] text-3xl font-bold tracking-[6px] select-all">{room.code}</p>
+          <p className="text-accent text-3xl font-bold tracking-[6px] select-all">{room.code}</p>
         </div>
 
         {/* Invite button */}
         <button
           onClick={() => setShowInviteModal(true)}
-          className="w-full py-4 rounded-2xl flex items-center justify-center bg-[#00D397] hover:opacity-90 transition-opacity"
+          className="w-full py-4 rounded-2xl flex items-center justify-center bg-accent hover:opacity-90 transition-opacity"
         >
           <UserPlus size={20} className="text-btn-fg" />
           <span className="text-btn-fg font-bold text-base ml-2">Inviter des amis</span>
@@ -862,7 +862,7 @@ export default function RoomDetailPage() {
               onClick={handleLeaveRoom}
               className="flex items-center px-5 py-4 hover:bg-white/5 w-full text-left transition-colors"
             >
-              <LogOut size={18} color="#EF4444" className="mr-3" />
+              <LogOut size={18} color="var(--bad)" className="mr-3" />
               <span className="text-red-400 font-medium">Quitter la salle</span>
             </button>
           ) : (
@@ -870,7 +870,7 @@ export default function RoomDetailPage() {
               onClick={handleDeleteRoom}
               className="flex items-center px-5 py-4 hover:bg-white/5 w-full text-left transition-colors"
             >
-              <Trash2 size={18} color="#EF4444" className="mr-3" />
+              <Trash2 size={18} color="var(--bad)" className="mr-3" />
               <span className="text-red-400 font-medium">Supprimer la salle</span>
             </button>
           )}
@@ -892,7 +892,7 @@ export default function RoomDetailPage() {
         <button
           onClick={hasActiveSession ? () => navigateToSession(activeSessions[0]) : handleCreateSession}
           className="flex items-center gap-2 px-8 py-3.5 rounded-full"
-          style={{ background: 'linear-gradient(135deg, #00D397, #00B383)' }}
+          style={{ background: 'linear-gradient(135deg, var(--primary), var(--primary-d))' }}
         >
           <Play size={18} className="text-btn-fg" fill="currentColor" />
           <span className="text-btn-fg font-bold text-sm tracking-wider uppercase">

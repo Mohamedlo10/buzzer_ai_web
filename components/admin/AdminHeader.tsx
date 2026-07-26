@@ -54,7 +54,7 @@ export function AdminHeader() {
           <Bell size={20} />
           <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full" />
         </button>
-        <div className="w-8 h-8 rounded-full bg-[#9B59B6] flex items-center justify-center">
+        <div className="w-8 h-8 rounded-full bg-host flex items-center justify-center">
           <User size={16} color="white" />
         </div>
       </div>

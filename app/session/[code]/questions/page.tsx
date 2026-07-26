@@ -43,15 +43,15 @@ function QuestionItem({
       <div className="bg-surface rounded-2xl border border-line overflow-hidden">
         {/* Header */}
         <div className="flex flex-row items-center px-4 py-3 border-b border-line">
-          <div className="w-7 h-7 rounded-lg bg-[#FFD70020] flex items-center justify-center mr-3">
-            <span className="text-[#FFD700] font-bold text-xs">{index + 1}</span>
+          <div className="w-7 h-7 rounded-lg bg-energy/15 flex items-center justify-center mr-3">
+            <span className="text-energy font-bold text-xs">{index + 1}</span>
           </div>
           <span className="text-txt-60 text-sm flex-1">Question {index + 1}</span>
           <button
             onClick={() => onRemove(index)}
             className="w-8 h-8 rounded-full bg-red-500/20 flex items-center justify-center hover:bg-red-500/30 transition-colors"
           >
-            <Trash2 size={14} color="#EF4444" />
+            <Trash2 size={14} color="var(--bad)" />
           </button>
         </div>
 
@@ -108,7 +108,7 @@ function QuestionItem({
                   onClick={() => onUpdate(index, { questionType: 'TEXT' })}
                   className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${
                     (question.questionType ?? 'TEXT') === 'TEXT'
-                      ? 'bg-[#00D397] text-btn-fg'
+                      ? 'bg-accent text-btn-fg'
                       : 'bg-surface-2 text-txt-60'
                   }`}
                 >
@@ -118,7 +118,7 @@ function QuestionItem({
                   onClick={() => onUpdate(index, { questionType: 'IDENTIFICATION' })}
                   className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${
                     question.questionType === 'IDENTIFICATION'
-                      ? 'bg-[#00D397] text-btn-fg'
+                      ? 'bg-accent text-btn-fg'
                       : 'bg-surface-2 text-txt-60'
                   }`}
                 >
@@ -389,7 +389,7 @@ export default function QuestionsPage() {
             onClick={handleSave}
             disabled={isSaving || validCount === 0}
             className={`px-4 py-2 rounded-xl transition-colors ${
-              validCount > 0 && !isSaving ? 'bg-[#00D397] hover:bg-[#00B377]' : 'bg-surface-2 cursor-not-allowed'
+              validCount > 0 && !isSaving ? 'bg-accent hover:bg-accent-d' : 'bg-surface-2 cursor-not-allowed'
             }`}
           >
             {isSaving ? (
@@ -410,7 +410,7 @@ export default function QuestionsPage() {
             onClick={() => setShowImport((s) => !s)}
             className="w-full bg-surface rounded-2xl border border-line px-4 py-3 flex flex-row items-center hover:bg-surface-2 transition-colors"
           >
-            <FileSpreadsheet size={18} color="#9B59B6" />
+            <FileSpreadsheet size={18} color="var(--violet)" />
             <span className="text-txt font-semibold text-sm ml-2 flex-1 text-left">
               Importer des questions
             </span>
@@ -428,14 +428,14 @@ export default function QuestionsPage() {
                 <button
                   onClick={handleDownloadTemplate}
                   disabled={isDownloadingTemplate}
-                  className="w-full flex flex-row items-center justify-center py-3 rounded-xl bg-[#00D39720] border border-[#00D39740] mb-4 hover:bg-[#00D39730] transition-colors"
+                  className="w-full flex flex-row items-center justify-center py-3 rounded-xl bg-accent/15 border border-accent/25 mb-4 hover:bg-accent/20 transition-colors"
                 >
                   {isDownloadingTemplate ? (
-                    <div className="w-5 h-5 border-2 border-[#00D397] border-t-transparent rounded-full animate-spin" />
+                    <div className="w-5 h-5 border-2 border-accent border-t-transparent rounded-full animate-spin" />
                   ) : (
                     <>
-                      <Download size={18} color="#00D397" />
-                      <span className="text-[#00D397] font-semibold ml-2">
+                      <Download size={18} color="var(--primary)" />
+                      <span className="text-accent font-semibold ml-2">
                         Télécharger le template Excel
                       </span>
                     </>
@@ -448,7 +448,7 @@ export default function QuestionsPage() {
                   <button
                     onClick={() => setImportMode('excel')}
                     className={`flex-1 py-3 rounded-xl flex flex-col items-center transition-colors ${
-                      importMode === 'excel' ? 'bg-[#9B59B6]' : 'bg-surface-2 hover:bg-surface-2'
+                      importMode === 'excel' ? 'bg-host' : 'bg-surface-2 hover:bg-surface-2'
                     }`}
                   >
                     <FileUp size={18} color={importMode === 'excel' ? '#FFFFFF' : '#FFFFFF60'} />
@@ -460,7 +460,7 @@ export default function QuestionsPage() {
                   <button
                     onClick={() => setImportMode('paste')}
                     className={`flex-1 py-3 rounded-xl flex flex-col items-center transition-colors ${
-                      importMode === 'paste' ? 'bg-[#9B59B6]' : 'bg-surface-2 hover:bg-surface-2'
+                      importMode === 'paste' ? 'bg-host' : 'bg-surface-2 hover:bg-surface-2'
                     }`}
                   >
                     <ClipboardPaste size={18} color={importMode === 'paste' ? '#FFFFFF' : '#FFFFFF60'} />
@@ -474,8 +474,8 @@ export default function QuestionsPage() {
                 {importMode === 'excel' && (
                   <div className="mb-3">
                     <label className="cursor-pointer block">
-                      <div className="bg-bg rounded-xl border-2 border-dashed border-[#9B59B6] p-6 flex flex-col items-center hover:border-[#B56CD6] transition-colors">
-                        <FileUp size={32} color="#9B59B6" />
+                      <div className="bg-bg rounded-xl border-2 border-dashed border-host p-6 flex flex-col items-center hover:border-host transition-colors">
+                        <FileUp size={32} color="var(--violet)" />
                         <p className="text-txt font-semibold mt-2">
                           Cliquez pour sélectionner un fichier
                         </p>
@@ -490,7 +490,7 @@ export default function QuestionsPage() {
                     </label>
                     {isParsing && (
                       <div className="flex items-center justify-center py-3">
-                        <div className="w-5 h-5 border-2 border-[#9B59B6] border-t-transparent rounded-full animate-spin" />
+                        <div className="w-5 h-5 border-2 border-host border-t-transparent rounded-full animate-spin" />
                       </div>
                     )}
                   </div>
@@ -501,8 +501,8 @@ export default function QuestionsPage() {
                   <div className="mb-3">
                     <p className="text-txt-60 text-xs mb-2">
                       Formats acceptés :{'\n'}
-                      • <span className="text-[#00D397]">#</span> (préféré) : Question # Réponse # Explication{'\n'}
-                      • <span className="text-[#00D397]">Tab</span> : Question↹Réponse↹Explication
+                      • <span className="text-accent">#</span> (préféré) : Question # Réponse # Explication{'\n'}
+                      • <span className="text-accent">Tab</span> : Question↹Réponse↹Explication
                     </p>
                     <textarea
                       value={pasteText}
@@ -515,7 +515,7 @@ export default function QuestionsPage() {
                       onClick={handlePasteImport}
                       disabled={!pasteText.trim() || isParsing}
                       className={`w-full py-3 rounded-xl flex items-center justify-center transition-colors ${
-                        pasteText.trim() && !isParsing ? 'bg-[#9B59B6] hover:bg-[#A56CE6]' : 'bg-surface-2 cursor-not-allowed'
+                        pasteText.trim() && !isParsing ? 'bg-host hover:bg-host' : 'bg-surface-2 cursor-not-allowed'
                       }`}
                     >
                       {isParsing ? (
@@ -534,7 +534,7 @@ export default function QuestionsPage() {
         {/* Preview Section */}
         {previewQuestions && previewQuestions.length > 0 && (
           <div className="px-4 mb-4">
-            <div className="bg-surface rounded-2xl border border-[#9B59B6] p-4">
+            <div className="bg-surface rounded-2xl border border-host p-4">
               <div className="flex flex-row items-center justify-between mb-3">
                 <p className="text-txt font-bold text-base">
                   Preview ({previewQuestions.length} questions)
@@ -553,7 +553,7 @@ export default function QuestionsPage() {
                     <p className="text-txt text-sm truncate">
                       {i + 1}. {q.text}
                     </p>
-                    <p className="text-[#00D397] text-xs">
+                    <p className="text-accent text-xs">
                       → {q.answer}
                     </p>
                   </div>
@@ -562,7 +562,7 @@ export default function QuestionsPage() {
 
               <button
                 onClick={handleConfirmPreview}
-                className="w-full py-3 rounded-xl bg-[#00D397] flex items-center justify-center hover:bg-[#00B377] transition-colors"
+                className="w-full py-3 rounded-xl bg-accent flex items-center justify-center hover:bg-accent-d transition-colors"
               >
                 <span className="text-btn-fg font-bold">Confirmer et ajouter</span>
               </button>
@@ -573,7 +573,7 @@ export default function QuestionsPage() {
         {/* Questions list */}
         <div className="px-4 pt-2">
           <div className="flex flex-row items-center mb-3">
-            <PenLine size={16} color="#FFD700" />
+            <PenLine size={16} color="var(--gold)" />
             <p className="text-txt font-bold text-base ml-2">
               Questions ({questions.length})
             </p>
@@ -593,7 +593,7 @@ export default function QuestionsPage() {
           {/* Add question button */}
           <button
             onClick={addQuestion}
-            className="w-full border-2 border-dashed border-line rounded-2xl py-4 flex items-center justify-center hover:border-[#00D397] hover:bg-[#00D39710] transition-colors mt-1"
+            className="w-full border-2 border-dashed border-line rounded-2xl py-4 flex items-center justify-center hover:border-accent hover:bg-accent/5 transition-colors mt-1"
           >
             <div className="flex flex-row items-center">
               <Plus size={18} color="#FFFFFF40" />
@@ -608,7 +608,7 @@ export default function QuestionsPage() {
         {error && (
           <div className="px-4 mt-4">
             <div className="bg-red-500/10 rounded-2xl p-4 border border-red-500/30 flex flex-row items-center">
-              <AlertCircle size={18} color="#EF4444" />
+              <AlertCircle size={18} color="var(--bad)" />
               <p className="text-red-400 flex-1 ml-3 text-sm">{error}</p>
             </div>
           </div>
@@ -620,7 +620,7 @@ export default function QuestionsPage() {
             onClick={handleSave}
             disabled={isSaving || validCount === 0}
             className={`w-full py-4 rounded-2xl flex flex-row items-center justify-center transition-colors ${
-              validCount > 0 && !isSaving ? 'bg-[#00D397] hover:bg-[#00B377]' : 'bg-surface-2 cursor-not-allowed'
+              validCount > 0 && !isSaving ? 'bg-accent hover:bg-accent-d' : 'bg-surface-2 cursor-not-allowed'
             }`}
           >
             {isSaving ? (

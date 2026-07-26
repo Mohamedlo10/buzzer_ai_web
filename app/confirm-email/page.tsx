@@ -113,9 +113,9 @@ function ConfirmEmailContent() {
         <div className="w-full max-w-md bg-surface rounded-3xl p-8 border border-line text-center shadow-2xl">
           <div
             className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5"
-            style={{ background: 'rgba(0,211,151,0.12)', border: '1px solid rgba(0,211,151,0.3)' }}
+            style={{ background: 'rgb(var(--primary-rgb) / 0.12)', border: '1px solid rgb(var(--primary-rgb) / 0.3)' }}
           >
-            <Mail size={32} color="#00D397" />
+            <Mail size={32} color="var(--primary)" />
           </div>
           <h1 className="text-txt font-bold text-2xl mb-3">Vérifiez votre boîte mail</h1>
           {user?.email && (
@@ -166,9 +166,9 @@ function ConfirmEmailContent() {
         <div className="w-full max-w-md bg-surface rounded-3xl p-8 border border-line text-center shadow-2xl">
           <div
             className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5"
-            style={{ background: 'rgba(0,211,151,0.12)', border: '1px solid rgba(0,211,151,0.3)' }}
+            style={{ background: 'rgb(var(--primary-rgb) / 0.12)', border: '1px solid rgb(var(--primary-rgb) / 0.3)' }}
           >
-            <CheckCircle size={32} color="#00D397" />
+            <CheckCircle size={32} color="var(--primary)" />
           </div>
           <h1 className="text-txt font-bold text-2xl mb-3">Email confirmé !</h1>
           <p className="text-txt-60 text-sm leading-relaxed">
@@ -183,9 +183,9 @@ function ConfirmEmailContent() {
         <div className="w-full max-w-md bg-surface rounded-3xl p-8 border border-line text-center shadow-2xl">
           <div
             className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5"
-            style={{ background: 'rgba(213,68,47,0.12)', border: '1px solid rgba(213,68,47,0.3)' }}
+            style={{ background: 'rgb(var(--bad-rgb) / 0.12)', border: '1px solid rgb(var(--bad-rgb) / 0.3)' }}
           >
-            <XCircle size={32} color="#D5442F" />
+            <XCircle size={32} color="var(--bad)" />
           </div>
           <h1 className="text-txt font-bold text-2xl mb-3">Lien invalide</h1>
           <p className="text-txt-60 text-sm leading-relaxed mb-6">{errorMessage}</p>

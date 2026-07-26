@@ -10,9 +10,21 @@ import {
   Brain,
   Target,
   ArrowRight,
-  Sparkles,
   ChevronRight,
 } from 'lucide-react';
+import { XalaatMark } from '~/components/ui/XalaatMark';
+
+/**
+ * L'onboarding est un écran « splash » volontairement sombre dans les deux
+ * thèmes : c'est la première impression de marque. Les couleurs y sont donc
+ * fixes (nuances Saaru) plutôt que liées aux tokens de surface, et les
+ * accents sont désignés par leur *canal* RGB pour pouvoir en dériver des
+ * halos translucides.
+ */
+type AccentToken = 'primary' | 'gold' | 'bad' | 'indigo' | 'violet';
+
+const NIGHT_INK = '#F1E5C9';
+const NIGHT_INK_SOFT = 'rgba(241,229,201,0.68)';
 
 interface Slide {
   id: string;
@@ -20,20 +32,23 @@ interface Slide {
   subtitle: string;
   description: string;
   icon: React.ReactNode;
-  gradient: [string, string];
-  accentColor: string;
+  gradient: [AccentToken, AccentToken];
+  accent: AccentToken;
 }
+
+const col = (t: AccentToken) => `rgb(var(--${t}-rgb))`;
+const colA = (t: AccentToken, a: number) => `rgb(var(--${t}-rgb) / ${a})`;
 
 const slides: Slide[] = [
   {
     id: '1',
-    title: 'Quiz By Mouha_Dev',
+    title: 'Xalaat',
     subtitle: 'Quiz Multijoueur en Temps Réel',
     description:
       'Affrontez vos amis sur des questions générées par intelligence artificielle. Le plus rapide buzz et gagne !',
     icon: <Zap size={80} color="#FFFFFF" strokeWidth={1.5} />,
-    gradient: ['#00D397', '#D5442F'],
-    accentColor: '#00D397',
+    gradient: ['primary', 'bad'],
+    accent: 'primary',
   },
   {
     id: '2',
@@ -42,8 +57,8 @@ const slides: Slide[] = [
     description:
       'Créez une session avec un code à 6 chiffres ou rejoignez une partie existante en quelques secondes.',
     icon: <Users size={80} color="#FFFFFF" strokeWidth={1.5} />,
-    gradient: ['#D5442F', '#00D397'],
-    accentColor: '#D5442F',
+    gradient: ['bad', 'primary'],
+    accent: 'bad',
   },
   {
     id: '3',
@@ -52,8 +67,8 @@ const slides: Slide[] = [
     description:
       "Appuyez sur le buzzer pour répondre en premier. Le système de file gère l'ordre des réponses.",
     icon: <Target size={80} color="#FFFFFF" strokeWidth={1.5} />,
-    gradient: ['#00D397', '#FFD700'],
-    accentColor: '#00D397',
+    gradient: ['primary', 'gold'],
+    accent: 'primary',
   },
   {
     id: '4',
@@ -62,8 +77,8 @@ const slides: Slide[] = [
     description:
       "Histoire, Science, Sport, Culture Pop... L'IA génère des questions uniques à chaque partie.",
     icon: <Brain size={80} color="#FFFFFF" strokeWidth={1.5} />,
-    gradient: ['#FFD700', '#D5442F'],
-    accentColor: '#FFD700',
+    gradient: ['gold', 'bad'],
+    accent: 'gold',
   },
   {
     id: '5',
@@ -72,8 +87,8 @@ const slides: Slide[] = [
     description:
       'À la fin de chaque partie, découvrez qui vous doit des points et qui vous en doit par catégorie !',
     icon: <Trophy size={80} color="#FFFFFF" strokeWidth={1.5} />,
-    gradient: ['#D5442F', '#FFD700'],
-    accentColor: '#D5442F',
+    gradient: ['bad', 'gold'],
+    accent: 'bad',
   },
 ];
 
@@ -96,21 +111,26 @@ export default function OnboardingPage() {
   const isLast = currentIndex === slides.length - 1;
 
   return (
+    // `data-theme="dark"` rebascule les tokens sur leur variante nuit pour ce
+    // sous-arbre : les accents y prennent leurs valeurs éclaircies, lisibles
+    // sur le fond sombre, même quand l'app est en thème clair.
     <div
+      data-theme="dark"
       className="min-h-screen flex flex-col relative overflow-hidden"
-      style={{ background: 'linear-gradient(to bottom, var(--btn-fg), #1a1633)' }}
+      style={{ background: 'linear-gradient(to bottom, #241B14, #1A1410)', color: NIGHT_INK }}
     >
-      {/* Logo Header */}
-      <div className="pt-10 flex justify-center">
-        <div className="flex flex-row items-center">
-          <Sparkles size={20} color="#FFD700" />
-          <span
-            className="text-txt text-xl font-bold ml-2"
-            style={{ textShadow: '1px 1px 10px rgba(213,68,47,0.5)' }}
-          >
-            Quiz By Mouha_Dev
-          </span>
+      {/* Logo Header — marque + signature MouhaDev */}
+      <div className="pt-10 flex flex-col items-center gap-1.5">
+        <div className="flex flex-row items-center gap-2">
+          <XalaatMark size={24} color="var(--gold-bright)" accent="var(--primary)" />
+          <span className="font-display text-2xl font-bold tracking-[-0.02em]">Xalaat</span>
         </div>
+        <span
+          className="text-[10px] font-bold uppercase tracking-[0.2em]"
+          style={{ color: 'rgb(var(--gold-bright-rgb) / 0.9)' }}
+        >
+          Quiz by MouhaDev
+        </span>
       </div>
 
       {/* Slide content */}
@@ -127,29 +147,26 @@ export default function OnboardingPage() {
               width: 180,
               height: 180,
               borderRadius: 40,
-              boxShadow: `0 0 30px 0 ${currentSlide.accentColor}80`,
-              background: `linear-gradient(135deg, ${currentSlide.gradient[0]}, ${currentSlide.gradient[1]})`,
+              boxShadow: `0 0 30px 0 ${colA(currentSlide.accent, 0.5)}`,
+              background: `linear-gradient(135deg, ${col(currentSlide.gradient[0])}, ${col(currentSlide.gradient[1])})`,
               flexShrink: 0,
             }}
           >
             {currentSlide.icon}
           </div>
 
-          <h2
-            className="text-txt text-4xl font-bold text-center mb-2"
-            style={{ textShadow: `0 0 20px ${currentSlide.accentColor}` }}
-          >
+          <h2 className="font-display text-4xl font-bold text-center mb-2 tracking-[-0.02em]">
             {currentSlide.title}
           </h2>
 
           <p
             className="text-center mb-6 text-lg font-semibold"
-            style={{ color: currentSlide.accentColor }}
+            style={{ color: col(currentSlide.accent) }}
           >
             {currentSlide.subtitle}
           </p>
 
-          <p className="text-txt-60 text-center text-lg leading-7 px-4">
+          <p className="text-center text-lg leading-7 px-4" style={{ color: NIGHT_INK_SOFT }}>
             {currentSlide.description}
           </p>
         </div>
@@ -170,8 +187,8 @@ export default function OnboardingPage() {
                 borderRadius: 4,
                 backgroundColor:
                   index === currentIndex
-                    ? slide.accentColor
-                    : 'rgba(255,255,255,0.3)',
+                    ? col(slide.accent)
+                    : 'rgba(241,229,201,0.3)',
                 transition: 'all 0.3s ease',
                 border: 'none',
                 cursor: 'pointer',
@@ -184,9 +201,9 @@ export default function OnboardingPage() {
               type="button"
               onClick={handleNext}
               className="ml-2 w-8 h-8 rounded-full flex items-center justify-center transition-opacity hover:opacity-80"
-              style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}
+              style={{ backgroundColor: 'rgba(241,229,201,0.12)' }}
             >
-              <ChevronRight size={16} color="#FFFFFF99" />
+              <ChevronRight size={16} color={NIGHT_INK_SOFT} />
             </button>
           )}
         </div>
@@ -199,12 +216,13 @@ export default function OnboardingPage() {
             onClick={() => goTo('/register')}
             className="w-full flex flex-row items-center justify-center py-4 rounded-2xl transition-opacity hover:opacity-90 active:opacity-80"
             style={{
-              backgroundColor: currentSlide.accentColor,
-              boxShadow: `0 0 20px ${currentSlide.accentColor}80`,
+              backgroundColor: col(currentSlide.accent),
+              boxShadow: `0 0 20px ${colA(currentSlide.accent, 0.5)}`,
+              color: currentSlide.accent === 'gold' ? '#1A1410' : NIGHT_INK,
             }}
           >
-            <span className="text-txt font-bold text-lg mr-2">S&apos;inscrire</span>
-            <ArrowRight size={20} color="#FFFFFF" />
+            <span className="font-bold text-lg mr-2">S&apos;inscrire</span>
+            <ArrowRight size={20} />
           </button>
 
           {/* Se connecter — secondary */}
@@ -213,11 +231,11 @@ export default function OnboardingPage() {
             onClick={() => goTo('/login')}
             className="w-full flex flex-row items-center justify-center py-4 rounded-2xl transition-opacity hover:opacity-90 active:opacity-80"
             style={{
-              backgroundColor: 'rgba(255,255,255,0.08)',
-              border: '1px solid rgba(255,255,255,0.15)',
+              backgroundColor: 'rgba(241,229,201,0.08)',
+              border: '1px solid rgba(241,229,201,0.18)',
             }}
           >
-            <span className="text-txt font-semibold text-lg">Se connecter</span>
+            <span className="font-semibold text-lg">Se connecter</span>
           </button>
         </div>
       </div>

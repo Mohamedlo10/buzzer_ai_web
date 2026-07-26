@@ -29,7 +29,7 @@ export function StatusBadge({ isOnline, className = '' }: { isOnline: boolean; c
     <div className={`flex flex-row items-center ${className}`}>
       <span
         className={`w-2 h-2 rounded-full mr-1.5 ${isOnline ? 'bg-accent' : 'bg-surface-2'}`}
-        style={isOnline ? { boxShadow: '0 0 4px 1px #00D397cc' } : {}}
+        style={isOnline ? { boxShadow: '0 0 4px 1px rgb(var(--primary-rgb) / 0.8)' } : {}}
       />
       <span className={`text-xs ${isOnline ? 'text-accent' : 'text-txt-40'}`}>
         {isOnline ? 'En ligne' : 'Hors ligne'}

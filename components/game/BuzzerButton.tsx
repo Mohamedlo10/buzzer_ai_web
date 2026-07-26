@@ -92,16 +92,16 @@ export function BuzzerButton({
       >
         {/* Outer pulse ring */}
         <div
-          className="absolute inset-0 rounded-full border-2 border-[#D5442F] animate-ping opacity-30 pointer-events-none"
+          className="absolute inset-0 rounded-full border-2 border-buzz animate-ping opacity-30 pointer-events-none"
           style={{ top: -4, left: -4, width: 200, height: 200 }}
         />
 
         {/* Main button */}
         <div
-          className="absolute inset-0 m-[4px] flex items-center justify-center rounded-full border-[3px] border-[#FF6B4A] overflow-hidden"
+          className="absolute inset-0 m-[4px] flex items-center justify-center rounded-full border-[3px] border-buzz-h overflow-hidden"
           style={{
-            background: 'linear-gradient(135deg, #FF4444, #D5442F)',
-            boxShadow: '0 6px 16px rgba(213,68,47,0.4)',
+            background: 'linear-gradient(135deg, var(--bad), var(--bad))',
+            boxShadow: '0 6px 16px rgb(var(--bad-rgb) / 0.4)',
           }}
         >
           {/* Subtle top highlight */}

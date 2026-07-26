@@ -11,22 +11,26 @@ interface ButtonProps {
   className?: string;
 }
 
-const variantStyles: Record<ButtonVariant, { container: string; text: string }> = {
+const variantStyles: Record<ButtonVariant, { container: string; text: string; spinner: string }> = {
   primary: {
-    container: 'bg-cyan',
-    text: 'text-dark-bg',
+    container: 'bg-accent',
+    text: 'text-btn-fg',
+    spinner: 'border-btn-fg',
   },
   secondary: {
     container: 'bg-surface border border-line',
     text: 'text-txt',
+    spinner: 'border-txt',
   },
   danger: {
     container: 'bg-danger',
     text: 'text-white',
+    spinner: 'border-white',
   },
   ghost: {
     container: 'bg-transparent',
-    text: 'text-cyan',
+    text: 'text-accent',
+    spinner: 'border-accent',
   },
 };
 
@@ -54,9 +58,7 @@ export function Button({
     >
       {loading ? (
         <div
-          className={`w-5 h-5 border-2 border-t-transparent rounded-full animate-spin ${
-            variant === 'primary' ? 'border-dark-bg' : 'border-white'
-          }`}
+          className={`w-5 h-5 border-2 border-t-transparent rounded-full animate-spin ${styles.spinner}`}
         />
       ) : (
         <span className={`font-bold text-base ${styles.text}`}>{title}</span>

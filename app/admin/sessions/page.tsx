@@ -45,12 +45,12 @@ const STATUS_OPTIONS: { value: string; label: string }[] = [
 ];
 
 const STATUS_CONFIG: Record<AdminSessionStatus, { label: string; color: string; bg: string }> = {
-  LOBBY:      { label: 'Lobby',      color: '#00D397', bg: '#00D39720' },
-  GENERATING: { label: 'Génération', color: '#FFD700', bg: '#FFD70020' },
-  PLAYING:    { label: 'En cours',   color: '#4A90D9', bg: '#4A90D920' },
-  PAUSED:     { label: 'Pause',      color: '#F39C12', bg: '#F39C1220' },
+  LOBBY:      { label: 'Lobby',      color: 'var(--primary)', bg: 'rgb(var(--primary-rgb) / 0.125)' },
+  GENERATING: { label: 'Génération', color: 'var(--gold)', bg: 'rgb(var(--gold-rgb) / 0.125)' },
+  PLAYING:    { label: 'En cours',   color: 'var(--indigo)', bg: 'rgb(var(--indigo-rgb) / 0.125)' },
+  PAUSED:     { label: 'Pause',      color: 'var(--warn)', bg: 'rgb(var(--warn-rgb) / 0.125)' },
   RESULTS:    { label: 'Terminée',   color: '#C0C0C0', bg: '#C0C0C020' },
-  CANCELLED:  { label: 'Annulée',    color: '#D5442F', bg: '#D5442F20' },
+  CANCELLED:  { label: 'Annulée',    color: 'var(--bad)', bg: 'rgb(var(--bad-rgb) / 0.125)' },
 };
 
 function formatShortDate(iso: string | null) {
@@ -186,8 +186,8 @@ export default function AdminSessionsPage() {
       render: (row) => (
         <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-semibold ${
           row.sessionMode === 'WITHOUT_MODERATOR'
-            ? 'bg-[#3B82F620] text-[#3B82F6]'
-            : 'bg-[#F59E0B20] text-[#F59E0B]'
+            ? 'bg-team/15 text-team'
+            : 'bg-warn/15 text-warn'
         }`}>
           {row.sessionMode === 'WITHOUT_MODERATOR' ? 'Sans modérateur' : 'Avec modérateur'}
         </span>
@@ -234,10 +234,10 @@ export default function AdminSessionsPage() {
                 handleStop(row);
               }}
               disabled={stopMutation.isPending && stopMutation.variables === row.id}
-              className="p-1.5 rounded-lg bg-[#D5442F20] hover:bg-[#D5442F30] transition-colors disabled:opacity-40"
+              className="p-1.5 rounded-lg bg-buzz/15 hover:bg-buzz/20 transition-colors disabled:opacity-40"
               title="Forcer l'arrêt"
             >
-              <Square size={14} color="#D5442F" />
+              <Square size={14} color="var(--bad)" />
             </button>
           )}
         </div>
@@ -258,9 +258,9 @@ export default function AdminSessionsPage() {
       {/* Active Sessions */}
       <div>
         <div className="flex items-center gap-2 mb-3">
-          <Activity size={18} color="#00D397" />
+          <Activity size={18} color="var(--primary)" />
           <h2 className="text-txt font-bold">Sessions actives</h2>
-          <span className="ml-auto px-2 py-0.5 bg-[#00D39720] text-[#00D397] text-xs rounded-full font-semibold">
+          <span className="ml-auto px-2 py-0.5 bg-accent/15 text-accent text-xs rounded-full font-semibold">
             {activeSessions?.length ?? 0} live
           </span>
         </div>
@@ -306,7 +306,7 @@ export default function AdminSessionsPage() {
                   setStatusFilter(e.target.value);
                   setPage(0);
                 }}
-                className="bg-bg text-txt text-sm rounded-xl px-3 py-2 border border-line focus:outline-none focus:border-[#9B59B6] w-full sm:w-auto"
+                className="bg-bg text-txt text-sm rounded-xl px-3 py-2 border border-line focus:outline-none focus:border-host w-full sm:w-auto"
               >
                 {STATUS_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>
@@ -324,7 +324,7 @@ export default function AdminSessionsPage() {
                   setFromDate(e.target.value);
                   setPage(0);
                 }}
-                className="bg-bg text-txt text-sm rounded-xl px-3 py-2 border border-line focus:outline-none focus:border-[#9B59B6] flex-1"
+                className="bg-bg text-txt text-sm rounded-xl px-3 py-2 border border-line focus:outline-none focus:border-host flex-1"
               />
               <span className="text-txt-40 text-sm hidden sm:inline">à</span>
               <input
@@ -334,7 +334,7 @@ export default function AdminSessionsPage() {
                   setToDate(e.target.value);
                   setPage(0);
                 }}
-                className="bg-bg text-txt text-sm rounded-xl px-3 py-2 border border-line focus:outline-none focus:border-[#9B59B6] flex-1"
+                className="bg-bg text-txt text-sm rounded-xl px-3 py-2 border border-line focus:outline-none focus:border-host flex-1"
               />
             </div>
           </div>
@@ -369,12 +369,12 @@ function ActiveSessionCard({
 }) {
   const statusColor =
     session.status === 'PLAYING'
-      ? '#00D397'
+      ? 'var(--primary)'
       : session.status === 'PAUSED'
-      ? '#F39C12'
+      ? 'var(--warn)'
       : session.status === 'LOBBY'
-      ? '#4A90D9'
-      : '#9B59B6';
+      ? 'var(--indigo)'
+      : 'var(--violet)';
 
   return (
     <Card
@@ -408,7 +408,7 @@ function ActiveSessionCard({
         )}
         <div className="flex justify-between">
           <span className="text-txt-60">Mode</span>
-          <span className={`text-xs font-semibold ${session.sessionMode === 'WITHOUT_MODERATOR' ? 'text-[#3B82F6]' : 'text-[#F59E0B]'}`}>
+          <span className={`text-xs font-semibold ${session.sessionMode === 'WITHOUT_MODERATOR' ? 'text-team' : 'text-warn'}`}>
             {session.sessionMode === 'WITHOUT_MODERATOR' ? 'Sans modérateur' : 'Avec modérateur'}
           </span>
         </div>

@@ -23,7 +23,7 @@ export function PlayerCard({
   return (
     <div
       className={`bg-surface rounded-xl p-4 border mb-3 transition-shadow ${
-        isCurrentUser ? 'border-accent shadow-[0_0_8px_rgba(0,211,151,0.2)]' : 'border-line'
+        isCurrentUser ? 'border-accent shadow-[0_0_8px_rgb(var(--primary-rgb)_/_0.2)]' : 'border-line'
       }`}
     >
       <div className="flex flex-row items-center">

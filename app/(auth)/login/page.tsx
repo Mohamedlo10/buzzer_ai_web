@@ -68,7 +68,7 @@ export default function LoginPage() {
               width: 140,
               height: 140,
               borderRadius: 70,
-              boxShadow: '0 0 30px 0 rgba(0, 211, 151, 0.4)',
+              boxShadow: '0 0 30px 0 rgb(var(--primary-rgb) / 0.4)',
             }}
           >
             {/* Gradient Ring */}
@@ -78,7 +78,7 @@ export default function LoginPage() {
                 height: 120,
                 borderRadius: 70,
                 padding: 4,
-                background: 'linear-gradient(135deg, #FFD700, #D5442F, #00D397)',
+                background: 'linear-gradient(135deg, var(--gold), var(--bad), var(--primary))',
               }}
             >
               {/* Inner Circle */}
@@ -93,13 +93,13 @@ export default function LoginPage() {
                 <div
                   className="absolute inset-0"
                   style={{
-                    background: 'linear-gradient(135deg, rgba(0,211,151,0.125), rgba(213,68,47,0.125))',
+                    background: 'linear-gradient(135deg, rgb(var(--primary-rgb) / 0.125), rgb(var(--bad-rgb) / 0.125))',
                   }}
                 />
                 {/* Logo Image */}
                 <img
                   src="icon.png"
-                  alt="BuzzMaster Logo"
+                  alt="Xalaat"
                   width={96}
                   height={96}
                   style={{ objectFit: 'contain', position: 'relative', zIndex: 1 }}
@@ -122,27 +122,21 @@ export default function LoginPage() {
           </div>
 
           {/* Title */}
-          <h1
-            className="text-txt text-3xl font-bold mb-1"
-            style={{
-              textShadow: '0 0 15px #D5442F',
-              letterSpacing: 1,
-            }}
-          >
-            Quiz Buzzer - AI
+          <h1 className="text-txt font-display text-4xl font-bold mb-1 tracking-[-0.02em]">
+            Xalaat
           </h1>
 
           {/* Subtitle Badge */}
           <div
             className="flex flex-row items-center mt-2 px-4 py-1.5 rounded-full"
             style={{
-              backgroundColor: 'rgba(255, 215, 0, 0.125)',
-              border: '1px solid rgba(255, 215, 0, 0.314)',
+              backgroundColor: 'rgb(var(--gold-rgb) / 0.125)',
+              border: '1px solid rgb(var(--gold-rgb) / 0.314)',
             }}
           >
-            <Crown size={14} color="#FFD700" />
-            <span className="text-[#FFD700] text-sm font-semibold ml-2 tracking-wide">
-              MOUHA_DEV
+            <Crown size={14} color="var(--gold)" />
+            <span className="text-energy text-sm font-semibold ml-2 tracking-wide">
+              QUIZ BY MOUHADEV
             </span>
           </div>
         </div>
@@ -182,7 +176,7 @@ export default function LoginPage() {
               />
             </div>
             {errors.username && (
-              <p className="text-[#D5442F] text-sm mt-2 ml-2">{errors.username}</p>
+              <p className="text-buzz text-sm mt-2 ml-2">{errors.username}</p>
             )}
           </div>
 
@@ -227,7 +221,7 @@ export default function LoginPage() {
               </button>
             </div>
             {errors.password && (
-              <p className="text-[#D5442F] text-sm mt-2 ml-2">{errors.password}</p>
+              <p className="text-buzz text-sm mt-2 ml-2">{errors.password}</p>
             )}
           </div>
 
@@ -237,7 +231,7 @@ export default function LoginPage() {
             onClick={handleLogin}
             disabled={isLoading}
             className={`w-full py-4 rounded-2xl flex items-center justify-center transition-opacity text-white font-bold text-lg ${
-              isLoading ? 'bg-surface-2 opacity-70' : 'bg-buzz shadow-[0_0_15px_rgba(213,68,47,0.5)]'
+              isLoading ? 'bg-surface-2 opacity-70' : 'bg-buzz shadow-[0_0_15px_rgb(var(--bad-rgb)_/_0.5)]'
             }`}
           >
             {isLoading ? (

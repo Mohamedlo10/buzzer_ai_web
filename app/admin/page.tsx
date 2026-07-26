@@ -37,10 +37,10 @@ const PERIOD_TABS = [
 ];
 
 const CHART_TABS = [
-  { label: 'Utilisateurs', key: 'userGrowth', color: '#3B82F6' },
-  { label: 'Sessions', key: 'sessionCreated', color: '#10B981' },
-  { label: 'Coût AI', key: 'aiCost', color: '#F59E0B' },
-  { label: 'Joueurs actifs', key: 'activePlayers', color: '#9B59B6' },
+  { label: 'Utilisateurs', key: 'userGrowth', color: 'var(--indigo)' },
+  { label: 'Sessions', key: 'sessionCreated', color: 'var(--good)' },
+  { label: 'Coût AI', key: 'aiCost', color: 'var(--warn)' },
+  { label: 'Joueurs actifs', key: 'activePlayers', color: 'var(--violet)' },
 ];
 
 export default function AdminDashboardPage() {
@@ -111,57 +111,57 @@ export default function AdminDashboardPage() {
           title="Utilisateurs"
           value={stats?.totalUsers ?? '-'}
           icon={Users}
-          iconColor="#3B82F6"
-          iconBg="#3B82F620"
+          iconColor="var(--indigo)"
+          iconBg="rgb(var(--indigo-rgb) / 0.125)"
         />
         <KpiCard
           title="Sessions totales"
           value={stats?.totalSessions ?? '-'}
           icon={Gamepad2}
-          iconColor="#10B981"
-          iconBg="#10B98120"
+          iconColor="var(--good)"
+          iconBg="rgb(var(--good-rgb) / 0.125)"
         />
         <KpiCard
           title="Sessions actives"
           value={stats?.activeSessions ?? '-'}
           icon={Activity}
-          iconColor="#F59E0B"
-          iconBg="#F59E0B20"
+          iconColor="var(--warn)"
+          iconBg="rgb(var(--warn-rgb) / 0.125)"
         />
         <KpiCard
           title="Coût AI (mois)"
           value={stats ? `$${stats.aiCostThisMonth.toFixed(2)}` : '-'}
           icon={DollarSign}
-          iconColor="#EF4444"
-          iconBg="#EF444420"
+          iconColor="var(--bad)"
+          iconBg="rgb(var(--bad-rgb) / 0.125)"
         />
         <KpiCard
           title="Questions générées"
           value={stats?.totalQuestions ?? '-'}
           icon={Brain}
-          iconColor="#8B5CF6"
-          iconBg="#8B5CF620"
+          iconColor="var(--violet)"
+          iconBg="rgb(var(--violet-rgb) / 0.125)"
         />
         <KpiCard
           title="Tokens input"
           value={stats?.aiInputTokensThisMonth ?? '-'}
           icon={BookOpen}
-          iconColor="#06B6D4"
-          iconBg="#06B6D420"
+          iconColor="var(--indigo)"
+          iconBg="rgb(var(--indigo-rgb) / 0.125)"
         />
         <KpiCard
           title="Tokens output"
           value={stats?.aiOutputTokensThisMonth ?? '-'}
           icon={BookOpen}
-          iconColor="#EC4899"
-          iconBg="#EC489920"
+          iconColor="var(--bad)"
+          iconBg="rgb(var(--bad-rgb) / 0.125)"
         />
         <KpiCard
           title="Salles actives"
           value={activeSessions?.length ?? '-'}
           icon={DoorOpen}
-          iconColor="#00D397"
-          iconBg="#00D39720"
+          iconColor="var(--primary)"
+          iconBg="rgb(var(--primary-rgb) / 0.125)"
         />
       </div>
 
@@ -176,7 +176,7 @@ export default function AdminDashboardPage() {
                 onClick={() => setPeriod(t.value)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                   period === t.value
-                    ? 'bg-[#9B59B6] text-white'
+                    ? 'bg-host text-white'
                     : 'bg-surface-2 text-txt-60 hover:text-txt'
                 }`}
               >
@@ -244,7 +244,7 @@ export default function AdminDashboardPage() {
         {/* Top Players */}
         <div className="bg-surface rounded-2xl border border-line p-5">
           <div className="flex items-center gap-2 mb-4">
-            <Trophy size={18} color="#FFD700" />
+            <Trophy size={18} color="var(--gold)" />
             <h3 className="text-txt font-bold">Top Joueurs</h3>
           </div>
           {topLoading ? (
@@ -254,7 +254,7 @@ export default function AdminDashboardPage() {
               {topStats?.topPlayers.slice(0, 5).map((p, i) => (
                 <div key={p.userId} className="flex items-center gap-3">
                   <span className={`w-6 text-center font-bold text-sm ${
-                    i === 0 ? 'text-[#FFD700]' : i === 1 ? 'text-[#C0C0C0]' : i === 2 ? 'text-[#CD7F32]' : 'text-txt-40'
+                    i === 0 ? 'text-energy' : i === 1 ? 'text-[#C0C0C0]' : i === 2 ? 'text-[#CD7F32]' : 'text-txt-40'
                   }`}>
                     {i + 1}
                   </span>
@@ -263,7 +263,7 @@ export default function AdminDashboardPage() {
                     <p className="text-txt text-sm font-medium truncate">{p.username}</p>
                     <p className="text-txt-40 text-xs">{p.totalWins} victoires</p>
                   </div>
-                  <span className="text-[#9B59B6] font-bold text-sm">{p.glickoRating?.toFixed(0)}</span>
+                  <span className="text-host font-bold text-sm">{p.glickoRating?.toFixed(0)}</span>
                 </div>
               ))}
             </div>
@@ -273,7 +273,7 @@ export default function AdminDashboardPage() {
         {/* Top Categories */}
         <div className="bg-surface rounded-2xl border border-line p-5">
           <div className="flex items-center gap-2 mb-4">
-            <Flame size={18} color="#F97316" />
+            <Flame size={18} color="var(--warn)" />
             <h3 className="text-txt font-bold">Top Catégories</h3>
           </div>
           {topLoading ? (
@@ -302,9 +302,9 @@ export default function AdminDashboardPage() {
         {/* Active Sessions */}
         <div className="bg-surface rounded-2xl border border-line p-5">
           <div className="flex items-center gap-2 mb-4">
-            <Activity size={18} color="#00D397" />
+            <Activity size={18} color="var(--primary)" />
             <h3 className="text-txt font-bold">Sessions en cours</h3>
-            <span className="ml-auto px-2 py-0.5 bg-[#00D39720] text-[#00D397] text-xs rounded-full font-semibold">
+            <span className="ml-auto px-2 py-0.5 bg-accent/15 text-accent text-xs rounded-full font-semibold">
               {activeSessions?.length ?? 0} live
             </span>
           </div>

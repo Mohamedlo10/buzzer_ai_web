@@ -60,7 +60,7 @@ export default function AdminSettingsPage() {
         {/* Maintenance */}
         <div>
           <h2 className="text-txt font-bold text-lg mb-4 flex items-center gap-2">
-            <RefreshCw size={20} color="#9B59B6" />
+            <RefreshCw size={20} color="var(--violet)" />
             Maintenance
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -74,7 +74,7 @@ export default function AdminSettingsPage() {
               <button
                 onClick={() => globalRecalc.mutate()}
                 disabled={globalRecalc.isPending}
-                className="w-full py-3 rounded-xl bg-[#9B59B6] text-white text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40 flex items-center justify-center gap-2"
+                className="w-full py-3 rounded-xl bg-host text-white text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40 flex items-center justify-center gap-2"
               >
                 <RefreshCw size={16} className={globalRecalc.isPending ? 'animate-spin' : ''} />
                 {globalRecalc.isPending ? 'Recalcul en cours...' : 'Recalculer classements globaux'}
@@ -91,7 +91,7 @@ export default function AdminSettingsPage() {
               <button
                 onClick={() => roomRecalc.mutate()}
                 disabled={roomRecalc.isPending}
-                className="w-full py-3 rounded-xl bg-[#9B59B6] text-white text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40 flex items-center justify-center gap-2"
+                className="w-full py-3 rounded-xl bg-host text-white text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40 flex items-center justify-center gap-2"
               >
                 <RefreshCw size={16} className={roomRecalc.isPending ? 'animate-spin' : ''} />
                 {roomRecalc.isPending ? 'Recalcul en cours...' : 'Recalculer classements par salle'}
@@ -103,7 +103,7 @@ export default function AdminSettingsPage() {
         {/* Quick Stats */}
         <div>
           <h2 className="text-txt font-bold text-lg mb-4 flex items-center gap-2">
-            <BarChart3 size={20} color="#00D397" />
+            <BarChart3 size={20} color="var(--primary)" />
             Statistiques rapides
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -111,29 +111,29 @@ export default function AdminSettingsPage() {
               title="Utilisateurs"
               value={stats?.totalUsers ?? '-'}
               icon={Users}
-              iconColor="#3B82F6"
-              iconBg="#3B82F620"
+              iconColor="var(--indigo)"
+              iconBg="rgb(var(--indigo-rgb) / 0.125)"
             />
             <KpiCard
               title="Sessions"
               value={stats?.totalSessions ?? '-'}
               icon={Gamepad2}
-              iconColor="#10B981"
-              iconBg="#10B98120"
+              iconColor="var(--good)"
+              iconBg="rgb(var(--good-rgb) / 0.125)"
             />
             <KpiCard
               title="Questions"
               value={stats?.totalQuestions ?? '-'}
               icon={Brain}
-              iconColor="#8B5CF6"
-              iconBg="#8B5CF620"
+              iconColor="var(--violet)"
+              iconBg="rgb(var(--violet-rgb) / 0.125)"
             />
             <KpiCard
               title="Coût AI (mois)"
               value={stats ? `$${stats.aiCostThisMonth.toFixed(2)}` : '-'}
               icon={DollarSign}
-              iconColor="#EF4444"
-              iconBg="#EF444420"
+              iconColor="var(--bad)"
+              iconBg="rgb(var(--bad-rgb) / 0.125)"
             />
           </div>
         </div>

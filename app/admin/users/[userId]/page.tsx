@@ -47,9 +47,9 @@ const roleMeta: Record<
   UserRole,
   { label: string; color: string; bg: string; icon: React.ComponentType<{ size: number; color: string }> }
 > = {
-  USER:        { label: 'User',        color: '#00D397', bg: '#00D39720', icon: User },
-  ADMIN:       { label: 'Admin',       color: '#3B82F6', bg: '#3B82F620', icon: ShieldCheck },
-  SUPER_ADMIN: { label: 'Super Admin', color: '#FFD700', bg: '#FFD70020', icon: Crown },
+  USER:        { label: 'User',        color: 'var(--primary)', bg: 'rgb(var(--primary-rgb) / 0.125)', icon: User },
+  ADMIN:       { label: 'Admin',       color: 'var(--indigo)', bg: 'rgb(var(--indigo-rgb) / 0.125)', icon: ShieldCheck },
+  SUPER_ADMIN: { label: 'Super Admin', color: 'var(--gold)', bg: 'rgb(var(--gold-rgb) / 0.125)', icon: Crown },
 };
 
 function formatDate(iso: string | null): string {
@@ -129,7 +129,7 @@ export default function AdminUserDetailPage({ params }: PageProps) {
   if (isLoading || !user) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="w-10 h-10 border-4 border-[#9B59B6] border-t-transparent rounded-full animate-spin" />
+        <div className="w-10 h-10 border-4 border-host border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -157,7 +157,7 @@ export default function AdminUserDetailPage({ params }: PageProps) {
             <Avatar avatarUrl={user.avatarUrl} username={user.username} size={72} />
             <span
               className={`absolute bottom-1 right-1 w-4 h-4 rounded-full border-2 border-surface ${
-                user.isOnline ? 'bg-[#00D397]' : 'bg-[#6B7280]'
+                user.isOnline ? 'bg-accent' : 'bg-txt-40'
               }`}
             />
           </div>
@@ -173,7 +173,7 @@ export default function AdminUserDetailPage({ params }: PageProps) {
                 {role.label}
               </div>
               {user.banned && (
-                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-[#EF444420] text-[#EF4444]">
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-danger/15 text-danger">
                   <Ban size={12} />
                   Banni
                 </span>
@@ -194,13 +194,13 @@ export default function AdminUserDetailPage({ params }: PageProps) {
               <span className="inline-flex items-center gap-1.5">
                 <Clock size={14} />
                 {user.isOnline ? (
-                  <span className="text-[#00D397]">En ligne</span>
+                  <span className="text-accent">En ligne</span>
                 ) : (
                   <>Dernière connexion : {formatDateTime(user.lastSeenAt)}</>
                 )}
               </span>
               {user.bannedAt && (
-                <span className="inline-flex items-center gap-1.5 text-[#EF4444]">
+                <span className="inline-flex items-center gap-1.5 text-danger">
                   <Ban size={14} />
                   Banni le {formatDate(user.bannedAt)}
                   {user.bannedReason && ` — ${user.bannedReason}`}
@@ -252,7 +252,7 @@ export default function AdminUserDetailPage({ params }: PageProps) {
               <button
                 onClick={() => unbanMutation.mutate()}
                 disabled={unbanMutation.isPending}
-                className="flex items-center gap-2 px-3 py-2 rounded-xl bg-[#00D39720] hover:bg-[#00D39730] text-[#00D397] text-sm transition-colors"
+                className="flex items-center gap-2 px-3 py-2 rounded-xl bg-accent/15 hover:bg-accent/20 text-accent text-sm transition-colors"
               >
                 <CheckCircle2 size={16} />
                 Débannir
@@ -265,7 +265,7 @@ export default function AdminUserDetailPage({ params }: PageProps) {
                   }
                 }}
                 disabled={banMutation.isPending}
-                className="flex items-center gap-2 px-3 py-2 rounded-xl bg-[#EF444420] hover:bg-[#EF444430] text-[#EF4444] text-sm transition-colors"
+                className="flex items-center gap-2 px-3 py-2 rounded-xl bg-danger/15 hover:bg-danger/20 text-danger text-sm transition-colors"
               >
                 <ShieldX size={16} />
                 Bannir
@@ -279,7 +279,7 @@ export default function AdminUserDetailPage({ params }: PageProps) {
                 }
               }}
               disabled={deleteMutation.isPending}
-              className="flex items-center gap-2 px-3 py-2 rounded-xl bg-[#EF444420] hover:bg-[#EF444430] text-[#EF4444] text-sm transition-colors"
+              className="flex items-center gap-2 px-3 py-2 rounded-xl bg-danger/15 hover:bg-danger/20 text-danger text-sm transition-colors"
             >
               <Trash2 size={16} />
               Supprimer
@@ -294,29 +294,29 @@ export default function AdminUserDetailPage({ params }: PageProps) {
           title="Parties jouées"
           value={user.totalGames}
           icon={Gamepad2}
-          iconColor="#9B59B6"
-          iconBg="#9B59B620"
+          iconColor="var(--violet)"
+          iconBg="rgb(var(--violet-rgb) / 0.125)"
         />
         <KpiCard
           title="Victoires"
           value={user.totalWins}
           icon={Trophy}
-          iconColor="#FFD700"
-          iconBg="#FFD70020"
+          iconColor="var(--gold)"
+          iconBg="rgb(var(--gold-rgb) / 0.125)"
         />
         <KpiCard
           title="Score total"
           value={user.totalScore}
           icon={Star}
-          iconColor="#3B82F6"
-          iconBg="#3B82F620"
+          iconColor="var(--indigo)"
+          iconBg="rgb(var(--indigo-rgb) / 0.125)"
         />
         <KpiCard
           title="Score moyen"
           value={user.avgScore.toFixed(1)}
           icon={Target}
-          iconColor="#00D397"
-          iconBg="#00D39720"
+          iconColor="var(--primary)"
+          iconBg="rgb(var(--primary-rgb) / 0.125)"
         />
       </div>
 
@@ -325,29 +325,29 @@ export default function AdminUserDetailPage({ params }: PageProps) {
           title="Glicko Rating"
           value={user.glickoRating.toFixed(0)}
           icon={Zap}
-          iconColor="#F59E0B"
-          iconBg="#F59E0B20"
+          iconColor="var(--warn)"
+          iconBg="rgb(var(--warn-rgb) / 0.125)"
         />
         <KpiCard
           title="Glicko Déviation"
           value={user.glickoDeviation.toFixed(0)}
           icon={Crosshair}
-          iconColor="#EC4899"
-          iconBg="#EC489920"
+          iconColor="var(--bad)"
+          iconBg="rgb(var(--bad-rgb) / 0.125)"
         />
         <KpiCard
           title="Meilleur score"
           value={user.bestScore}
           icon={Star}
-          iconColor="#8B5CF6"
-          iconBg="#8B5CF620"
+          iconColor="var(--violet)"
+          iconBg="rgb(var(--violet-rgb) / 0.125)"
         />
         <KpiCard
           title="Winrate"
           value={`${(user.winRate * 100).toFixed(0)}%`}
           icon={Trophy}
-          iconColor="#10B981"
-          iconBg="#10B98120"
+          iconColor="var(--good)"
+          iconBg="rgb(var(--good-rgb) / 0.125)"
         />
       </div>
 
@@ -374,7 +374,7 @@ export default function AdminUserDetailPage({ params }: PageProps) {
                     cy="50"
                     r="42"
                     fill="none"
-                    stroke="#9B59B6"
+                    stroke="var(--violet)"
                     strokeWidth="10"
                     strokeDasharray={`${(user.globalAccuracyRate || 0) * 2.64} 264`}
                     strokeLinecap="round"
@@ -407,8 +407,8 @@ export default function AdminUserDetailPage({ params }: PageProps) {
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-6">
-              <div className="w-24 h-24 rounded-2xl bg-[#F59E0B20] flex items-center justify-center shrink-0">
-                <Zap size={40} color="#F59E0B" />
+              <div className="w-24 h-24 rounded-2xl bg-warn/15 flex items-center justify-center shrink-0">
+                <Zap size={40} color="var(--warn)" />
               </div>
               <div className="flex-1">
                 <p className="text-txt text-4xl font-bold">{user.glickoRating.toFixed(0)}</p>
@@ -417,7 +417,7 @@ export default function AdminUserDetailPage({ params }: PageProps) {
                 </p>
                 <div className="w-full h-2 bg-surface-2 rounded-full mt-3">
                   <div
-                    className="h-full rounded-full bg-[#F59E0B]"
+                    className="h-full rounded-full bg-warn"
                     style={{
                       width: `${Math.min(100, Math.max(0, (user.glickoRating / 2500) * 100))}%`,
                     }}
@@ -438,7 +438,7 @@ export default function AdminUserDetailPage({ params }: PageProps) {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Gamepad2 size={18} color="#9B59B6" />
+            <Gamepad2 size={18} color="var(--violet)" />
             Sessions récentes
           </CardTitle>
         </CardHeader>
@@ -465,10 +465,10 @@ export default function AdminUserDetailPage({ params }: PageProps) {
                       <td className="px-3 py-2.5 text-sm">
                         <span className="inline-flex items-center gap-1.5 text-xs font-medium text-txt-60">
                           <span className={`w-2 h-2 rounded-full ${
-                            s.status === 'RESULTS' ? 'bg-[#00D397]' :
-                            s.status === 'PLAYING' ? 'bg-[#3B82F6]' :
-                            s.status === 'CANCELLED' ? 'bg-[#EF4444]' :
-                            'bg-[#F59E0B]'
+                            s.status === 'RESULTS' ? 'bg-accent' :
+                            s.status === 'PLAYING' ? 'bg-team' :
+                            s.status === 'CANCELLED' ? 'bg-danger' :
+                            'bg-warn'
                           }`} />
                           {s.status}
                         </span>
@@ -491,7 +491,7 @@ export default function AdminUserDetailPage({ params }: PageProps) {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Users size={18} color="#3B82F6" />
+              <Users size={18} color="var(--indigo)" />
               Amis ({user.friends.length})
             </CardTitle>
           </CardHeader>
@@ -518,7 +518,7 @@ export default function AdminUserDetailPage({ params }: PageProps) {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <DoorOpen size={18} color="#00D397" />
+              <DoorOpen size={18} color="var(--primary)" />
               Salles ({user.rooms.length})
             </CardTitle>
           </CardHeader>
@@ -539,7 +539,7 @@ export default function AdminUserDetailPage({ params }: PageProps) {
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
                       {r.isOwner && (
-                        <span className="px-2 py-0.5 rounded-full bg-[#FFD70020] text-[#FFD700] text-xs font-medium">
+                        <span className="px-2 py-0.5 rounded-full bg-energy/15 text-energy text-xs font-medium">
                           Propriétaire
                         </span>
                       )}

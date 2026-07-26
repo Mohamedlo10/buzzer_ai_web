@@ -112,7 +112,7 @@ function MascotRunner({
       >
         <g style={runStyle.body}>
           <rect x="9" y="2" width="6" height="5" rx="1.5" className="fill-surface stroke-current" strokeWidth="2" />
-          <line x1="11" y1="4.5" x2="13" y2="4.5" stroke={state === 'sad' ? '#D5442F' : '#00D397'} strokeWidth="1.5" />
+          <line x1="11" y1="4.5" x2="13" y2="4.5" stroke={state === 'sad' ? 'var(--bad)' : 'var(--primary)'} strokeWidth="1.5" />
           <rect x="8" y="7" width="8" height="6" rx="2" className="fill-surface stroke-current" strokeWidth="2" />
           <line x1="12" y1="7" x2="12" y2="7.5" strokeWidth="1.5" />
           <line
@@ -309,7 +309,7 @@ export default function LoadingPage() {
               className="absolute inset-y-0 left-0 rounded-full transition-all duration-500 ease-out"
               style={{
                 width: `${Math.max(progress, 3)}%`,
-                background: 'linear-gradient(90deg, #00B383, #00D397)',
+                background: 'linear-gradient(90deg, var(--primary-d), var(--primary))',
               }}
             />
           </div>
@@ -391,8 +391,8 @@ export default function LoadingPage() {
         {/* Error display */}
         {error && !error.includes('secours') && (
           <div className="mt-8 w-full max-w-sm">
-            <div className="p-4 bg-[#D5442F20] rounded-xl border border-[#D5442F40] mb-4">
-              <p className="text-[#D5442F] text-center">{error}</p>
+            <div className="p-4 bg-buzz/15 rounded-xl border border-buzz/25 mb-4">
+              <p className="text-buzz text-center">{error}</p>
             </div>
 
             <div className="flex flex-row gap-3">
@@ -413,7 +413,7 @@ export default function LoadingPage() {
                   setTotalQuestions(0);
                   if (session?.id) fetchSession(session.id);
                 }}
-                className="flex-1 flex flex-row items-center justify-center bg-[#00D397] py-3.5 rounded-xl hover:bg-[#00B377] transition-colors"
+                className="flex-1 flex flex-row items-center justify-center bg-accent py-3.5 rounded-xl hover:bg-accent-d transition-colors"
               >
                 <RefreshCw size={18} className="text-btn-fg" />
                 <span className="text-btn-fg font-semibold ml-2">Réessayer</span>
@@ -438,7 +438,7 @@ export default function LoadingPage() {
                   setIsCancelling(false);
                 }
               }}
-              className="w-full flex flex-row items-center justify-center bg-[#D5442F] py-3.5 rounded-xl hover:bg-[#B53320] transition-colors"
+              className="w-full flex flex-row items-center justify-center bg-buzz py-3.5 rounded-xl hover:bg-accent-d transition-colors"
             >
               <span className="text-txt font-semibold">
                 {isCancelling ? 'Annulation…' : 'Arrêter la génération'}

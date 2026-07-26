@@ -4,7 +4,7 @@ import { Trophy } from 'lucide-react';
 import { Avatar } from '~/components/ui/Avatar';
 import type { PlayerResponse } from '~/types/api';
 
-const MEDAL_COLORS = ['#FFD700', '#C0C0C0', '#CD7F32'];
+const MEDAL_COLORS = ['var(--gold)', '#C0C0C0', '#CD7F32'];
 
 interface LiveLeaderboardProps {
   players: PlayerResponse[];
@@ -22,7 +22,7 @@ export function LiveLeaderboard({ players, currentUserId, onPlayerTap, onCorrect
     <div className="bg-surface rounded-2xl border border-line overflow-hidden">
       <div className="flex items-center justify-between px-4 py-3 border-b border-line bg-energy/5">
         <div className="flex items-center gap-2">
-          <Trophy size={15} color="#FFD700" />
+          <Trophy size={15} color="var(--gold)" />
           <span className="text-txt font-bold text-sm">Classement</span>
         </div>
         {onCorrectClick ? (
@@ -56,7 +56,7 @@ export function LiveLeaderboard({ players, currentUserId, onPlayerTap, onCorrect
                   avatarUrl={player.avatarUrl}
                   username={player.name}
                   size={34}
-                  borderColor={index === 0 ? '#FFD700' : medalColor}
+                  borderColor={index === 0 ? 'var(--gold)' : medalColor}
                 />
                 <span className="text-[11px] font-semibold w-full text-center truncate text-txt">
                   {isYou ? 'Toi' : player.name}
@@ -88,7 +88,7 @@ export function LiveLeaderboard({ players, currentUserId, onPlayerTap, onCorrect
               avatarUrl={player.avatarUrl}
               username={player.name}
               size={28}
-              borderColor={isYou ? '#00D397' : undefined}
+              borderColor={isYou ? 'var(--primary)' : undefined}
             />
             <span className={`flex-1 text-[13px] font-semibold truncate ${isYou ? 'text-accent' : 'text-txt'}`}>
               {isYou ? 'Toi (Vous)' : player.name}

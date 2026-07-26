@@ -99,7 +99,7 @@ export default function SoloCareersPage() {
             <button
               onClick={() => router.push('/solo/career/new')}
               className="mt-6 px-6 py-3.5 rounded-xl font-bold text-sm text-btn-fg flex items-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all cursor-pointer"
-              style={{ background: 'linear-gradient(135deg, #00D397, #00B383)' }}
+              style={{ background: 'linear-gradient(135deg, var(--primary), var(--primary-d))' }}
             >
               <Plus size={16} />
               Créer une carrière
@@ -137,8 +137,8 @@ export default function SoloCareersPage() {
                             style={{
                               width: `${career.completionPercentage}%`,
                               background: isCompleted
-                                ? 'linear-gradient(90deg, #00D397, #00B383)'
-                                : 'linear-gradient(90deg, #FFD700, #F59E0B)'
+                                ? 'linear-gradient(90deg, var(--primary), var(--primary-d))'
+                                : 'linear-gradient(90deg, var(--gold), var(--warn))'
                             }}
                           />
                         </div>

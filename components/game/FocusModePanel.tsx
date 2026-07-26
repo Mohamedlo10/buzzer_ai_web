@@ -81,7 +81,7 @@ export function FocusModePanel({
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-bg flex flex-col justify-between px-6 py-8 select-none shadow-[inset_0_0_100px_rgba(33,28,61,0.2)] dark:shadow-[inset_0_0_120px_rgba(0,0,0,0.45)]"
+      className="fixed inset-0 z-50 bg-bg flex flex-col justify-between px-6 py-8 select-none shadow-[inset_0_0_100px_rgb(var(--txt-rgb)_/_0.2)] dark:shadow-[inset_0_0_120px_rgba(0,0,0,0.45)]"
       style={{
         backgroundImage:
           'radial-gradient(120% 70% at 50% 0%, color-mix(in oklab, var(--accent) 18%, transparent), transparent 60%)',
@@ -101,10 +101,10 @@ export function FocusModePanel({
           style={{
             borderColor:
               remaining <= answerTimeSeconds * 0.3
-                ? '#D5442F'
+                ? 'var(--bad)'
                 : remaining <= answerTimeSeconds * 0.6
-                ? '#F59E0B'
-                : '#00D397',
+                ? 'var(--warn)'
+                : 'var(--primary)',
           }}
         >
           {/* Subtle spinning glow ring if active */}
@@ -114,10 +114,10 @@ export function FocusModePanel({
               style={{
                 borderColor:
                   remaining <= answerTimeSeconds * 0.3
-                    ? '#D5442F'
+                    ? 'var(--bad)'
                     : remaining <= answerTimeSeconds * 0.6
-                    ? '#F59E0B'
-                    : '#00D397',
+                    ? 'var(--warn)'
+                    : 'var(--primary)',
               }}
             />
           )}
@@ -126,9 +126,9 @@ export function FocusModePanel({
             style={{
               color:
                 remaining <= answerTimeSeconds * 0.3
-                  ? '#D5442F'
+                  ? 'var(--bad)'
                   : remaining <= answerTimeSeconds * 0.6
-                  ? '#F59E0B'
+                  ? 'var(--warn)'
                   : 'var(--txt)',
             }}
           >
@@ -180,9 +180,9 @@ export function FocusModePanel({
               disabled={hasSubmittedRef.current || isSubmitting || !!result}
               className={`flex items-center gap-3.5 w-full rounded-2xl border-[1.5px] p-4 min-h-[62px] text-left transition-all duration-150 active:scale-[0.98] disabled:cursor-default shadow-sm ${
                 showCorrect
-                  ? 'bg-accent/18 border-accent shadow-glow-success'
+                  ? 'bg-success/20 border-success shadow-glow-success'
                   : showWrong
-                  ? 'bg-buzz/18 border-buzz animate-[shake_0.4s_ease] shadow-glow-danger'
+                  ? 'bg-buzz/18 border-buzz animate-[shake_0.4s_ease] shadow-danger'
                   : isSelected
                   ? 'bg-[color-mix(in_oklab,_var(--accent)_22%,_var(--surface))] border-accent shadow-[0_0_0_3px_color-mix(in_oklab,_var(--accent)_30%,_transparent)]'
                   : 'bg-surface border-line hover:border-line/80'
@@ -206,7 +206,7 @@ export function FocusModePanel({
               </span>
 
               {/* Validation Icons */}
-              {showCorrect && <CheckCircle size={20} className="text-accent shrink-0" />}
+              {showCorrect && <CheckCircle size={20} className="text-success shrink-0" />}
               {showWrong && <XCircle size={20} className="text-buzz shrink-0" />}
             </button>
           );

@@ -43,7 +43,7 @@ export function AdminSidebar() {
       >
         {/* Logo */}
         <div className="flex items-center gap-3 px-5 h-16 border-b border-line">
-          <Crown size={24} color="#FFD700" />
+          <Crown size={24} color="var(--gold)" />
           {!collapsed && (
             <span className="text-txt font-bold text-lg whitespace-nowrap">Admin</span>
           )}
@@ -60,7 +60,7 @@ export function AdminSidebar() {
                 href={item.href}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors ${
                   isActive
-                    ? 'bg-[#9B59B6] text-white'
+                    ? 'bg-host text-white'
                     : 'text-txt-60 hover:bg-surface-2 hover:text-txt'
                 }`}
                 title={collapsed ? item.label : undefined}
@@ -87,7 +87,7 @@ export function AdminSidebar() {
       {/* ─── Mobile Header (hamburger + logo) ─── */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-bg-deep border-b border-line h-14 flex items-center justify-between px-4">
         <div className="flex items-center gap-2">
-          <Crown size={20} color="#FFD700" />
+          <Crown size={20} color="var(--gold)" />
           <span className="text-txt font-bold">Admin</span>
         </div>
         <button
@@ -113,7 +113,7 @@ export function AdminSidebar() {
                   onClick={() => setMobileOpen(false)}
                   className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${
                     isActive
-                      ? 'bg-[#9B59B6] text-white'
+                      ? 'bg-host text-white'
                       : 'text-txt-60 hover:bg-surface-2 hover:text-txt'
                   }`}
                 >
@@ -137,7 +137,7 @@ export function AdminSidebar() {
                 key={item.href}
                 href={item.href}
                 className={`flex flex-col items-center justify-center gap-1 min-w-[56px] py-1 rounded-xl transition-colors ${
-                  isActive ? 'text-[#9B59B6]' : 'text-txt-40'
+                  isActive ? 'text-host' : 'text-txt-40'
                 }`}
               >
                 <Icon size={20} />

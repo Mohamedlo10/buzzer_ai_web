@@ -8,7 +8,7 @@ interface GlobalTimerBarProps {
 
 export function GlobalTimerBar({ totalSeconds, remainingSeconds, paused = false }: GlobalTimerBarProps) {
   const pct = totalSeconds > 0 ? Math.min(100, Math.round((remainingSeconds / totalSeconds) * 100)) : 0;
-  const color = pct > 60 ? '#00D397' : pct > 30 ? '#F59E0B' : '#D5442F';
+  const color = pct > 60 ? 'var(--primary)' : pct > 30 ? 'var(--warn)' : 'var(--bad)';
 
   return (
     <div className="flex items-center gap-2 px-4 py-1">

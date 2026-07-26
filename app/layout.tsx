@@ -1,25 +1,37 @@
 import type { Metadata } from 'next';
-import { Space_Grotesk, Hanken_Grotesk } from 'next/font/google';
+import { Bricolage_Grotesque, Manrope, Instrument_Serif } from 'next/font/google';
 import { AppProviders } from '~/components/providers/AppProviders';
 import '~/global.css';
 
-const spaceGrotesk = Space_Grotesk({
+const bricolage = Bricolage_Grotesque({
   subsets: ['latin'],
-  weight: ['500', '600'],
+  weight: ['500', '600', '700', '800'],
   variable: '--font-display',
   display: 'swap',
 });
 
-const hankenGrotesk = Hanken_Grotesk({
+const manrope = Manrope({
   subsets: ['latin'],
-  weight: ['500', '600', '700'],
+  weight: ['400', '500', '600', '700'],
   variable: '--font-ui',
   display: 'swap',
 });
 
+const instrumentSerif = Instrument_Serif({
+  subsets: ['latin'],
+  weight: ['400'],
+  style: ['normal', 'italic'],
+  variable: '--font-accent',
+  display: 'swap',
+});
+
 export const metadata: Metadata = {
-  title: 'Quiz By Mouha_Dev',
-  description: 'Le jeu de buzzer multijoueur intelligent',
+  title: {
+    default: 'Xalaat — Quiz by MouhaDev',
+    template: '%s · Xalaat',
+  },
+  description: 'Xalaat — Quiz by MouhaDev. Le jeu de buzzer multijoueur intelligent.',
+  applicationName: 'Xalaat',
   icons: {
     icon: '/favicon.ico',
     shortcut: '/favicon.ico',
@@ -33,11 +45,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="fr" className={`${spaceGrotesk.variable} ${hankenGrotesk.variable}`}>
+    <html lang="fr" className={`${bricolage.variable} ${manrope.variable} ${instrumentSerif.variable}`}>
       <head>
+        {/* Xalaat est un thème clair par défaut (Teranga) ; le sombre n'est
+            servi que sur préférence explicite ou système. */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('theme');if(t!=='dark'&&t!=='light'){t=window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';}document.documentElement.setAttribute('data-theme',t);}catch(e){}})();`,
+            __html: `(function(){try{var t=localStorage.getItem('theme');if(t!=='dark'&&t!=='light'){t=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}document.documentElement.setAttribute('data-theme',t);}catch(e){}})();`,
           }}
         />
       </head>

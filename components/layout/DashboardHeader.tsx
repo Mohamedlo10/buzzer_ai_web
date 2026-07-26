@@ -3,7 +3,8 @@
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '~/stores/useAuthStore';
 import { useTheme } from '~/components/providers/ThemeProvider';
-import { Bell, User, Sun, Moon, Zap } from 'lucide-react';
+import { Bell, User, Sun, Moon } from 'lucide-react';
+import { XalaatLogo } from '~/components/ui/XalaatMark';
 
 interface DashboardHeaderProps {
   notificationCount?: number;
@@ -46,18 +47,7 @@ export function DashboardHeader({
   return (
     <div className="flex flex-row items-center justify-between px-4 pb-3 pt-5 bg-header-glass backdrop-blur-md border-b border-line">
       {/* Logo & Wordmark */}
-      <div className="flex flex-row items-center">
-        <div
-          className="w-10 h-10 rounded-xl mr-3 flex items-center justify-center shrink-0"
-          style={{ background: 'linear-gradient(135deg, #D5442F, #FF6B4A)' }}
-        >
-          <Zap size={20} color="#FFFFFF" fill="#FFFFFF" />
-        </div>
-        <div>
-          <p className="text-txt font-display font-semibold text-lg leading-tight">Quiz</p>
-          <p className="text-accent text-[10px] font-bold uppercase tracking-[0.18em]">By Mouha_Dev</p>
-        </div>
-      </div>
+      <XalaatLogo size={40} />
 
       {/* Actions */}
       <div className="flex flex-row items-center gap-2">

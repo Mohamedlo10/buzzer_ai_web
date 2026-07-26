@@ -22,13 +22,13 @@ import { useBuzzStore } from '~/stores/useBuzzStore';
 import type { CreateSessionRequest, QuestionMode, SessionMode, TeamRequest } from '~/types/api';
 
 const TEAM_PRESET_COLORS = [
-  '#FF5733', '#3498DB', '#2ECC71', '#F39C12',
-  '#9B59B6', '#1ABC9C', '#E74C3C', '#E91E63',
+  'var(--bad)', 'var(--indigo)', 'var(--good)', 'var(--warn)',
+  'var(--violet)', 'var(--good)', 'var(--bad)', 'var(--bad)',
 ];
 
 const DEFAULT_TEAMS: TeamRequest[] = [
-  { name: 'Rouge', color: '#FF5733' },
-  { name: 'Bleu', color: '#3498DB' },
+  { name: 'Rouge', color: 'var(--bad)' },
+  { name: 'Bleu', color: 'var(--indigo)' },
 ];
 
 interface SessionConfigFormProps {
@@ -49,7 +49,7 @@ function StepBar({ step, total }: { step: number; total: number }) {
             key={i}
             className="flex-1 h-1 rounded-full transition-all duration-300"
             style={{
-              backgroundColor: isFilled ? '#00D397' : 'var(--surface-2)',
+              backgroundColor: isFilled ? 'var(--primary)' : 'var(--surface-2)',
               opacity: isFilled ? 1 : 0.5,
             }}
           />
@@ -65,7 +65,7 @@ function ModeCard({
   label,
   sublabel,
   active,
-  accent = '#00D397',
+  accent = 'var(--primary)',
   onClick,
 }: {
   icon: React.ReactNode;
@@ -120,7 +120,7 @@ function StepperField({
   max,
   step = 1,
   onChange,
-  accent = 'var(--accent, #00D397)',
+  accent = 'var(--accent, var(--primary))',
 }: {
   label: string;
   value: number;
@@ -169,7 +169,7 @@ function ToggleRow({
   sub,
   checked,
   onChange,
-  accent = 'var(--team, #4A90D9)',
+  accent = 'var(--team, var(--indigo))',
 }: {
   icon: React.ReactNode;
   label: string;
@@ -219,7 +219,7 @@ function ChoiceStrip({
   value,
   options,
   onChange,
-  accent = '#00D397',
+  accent = 'var(--primary)',
 }: {
   label: string;
   value: number | null;
@@ -310,7 +310,7 @@ function TeamEditor({
             onChange={e => updateName(index, e.target.value)}
             placeholder={`Équipe ${index + 1}`}
             maxLength={20}
-            className="flex-1 bg-bg rounded-xl px-4 py-3 text-txt border border-line focus:outline-none focus:border-[#00D397] placeholder:text-txt-25 text-[15px]"
+            className="flex-1 bg-bg rounded-xl px-4 py-3 text-txt border border-line focus:outline-none focus:border-accent placeholder:text-txt-25 text-[15px]"
           />
 
           {/* Delete team button */}
@@ -322,10 +322,10 @@ function TeamEditor({
             style={{
               backgroundColor: teams.length <= 2
                 ? 'var(--surface-2)'
-                : 'color-mix(in srgb, var(--buzz, #D5442F) 15%, transparent)',
+                : 'color-mix(in srgb, var(--buzz, var(--bad)) 15%, transparent)',
               color: teams.length <= 2
                 ? 'var(--txt-25)'
-                : 'var(--buzz, #D5442F)',
+                : 'var(--buzz, var(--bad))',
             }}
           >
             <X size={16} />
@@ -348,12 +348,12 @@ function TeamEditor({
         <div
           className="rounded-xl p-3 border flex flex-row items-center gap-2"
           style={{
-            backgroundColor: 'color-mix(in srgb, var(--buzz, #D5442F) 10%, transparent)',
-            borderColor: 'color-mix(in srgb, var(--buzz, #D5442F) 28%, transparent)',
+            backgroundColor: 'color-mix(in srgb, var(--buzz, var(--bad)) 10%, transparent)',
+            borderColor: 'color-mix(in srgb, var(--buzz, var(--bad)) 28%, transparent)',
           }}
         >
-          <AlertCircle size={14} style={{ color: 'var(--buzz, #D5442F)' }} />
-          <span className="text-xs font-semibold" style={{ color: 'var(--buzz, #D5442F)' }}>
+          <AlertCircle size={14} style={{ color: 'var(--buzz, var(--bad))' }} />
+          <span className="text-xs font-semibold" style={{ color: 'var(--buzz, var(--bad))' }}>
             Minimum 2 équipes requises
           </span>
         </div>
@@ -522,17 +522,17 @@ export function SessionConfigForm({ onSuccess, onClose, roomId, initialMaxPlayer
             <ModeCard
               label="Avec modérateur"
               sublabel="L'hôte valide les réponses"
-              icon={<User size={26} className={sessionMode === 'WITH_MODERATOR' ? 'text-[#00D397]' : 'text-txt-40'} />}
+              icon={<User size={26} className={sessionMode === 'WITH_MODERATOR' ? 'text-accent' : 'text-txt-40'} />}
               active={sessionMode === 'WITH_MODERATOR'}
-              accent="#00D397"
+              accent="var(--primary)"
               onClick={() => setSessionMode('WITH_MODERATOR')}
             />
             <ModeCard
               label="Sans modérateur"
               sublabel="Réponses automatiques"
-              icon={<Bot size={26} className={sessionMode === 'WITHOUT_MODERATOR' ? 'text-[#8B5CF6]' : 'text-txt-40'} />}
+              icon={<Bot size={26} className={sessionMode === 'WITHOUT_MODERATOR' ? 'text-host' : 'text-txt-40'} />}
               active={sessionMode === 'WITHOUT_MODERATOR'}
-              accent="#8B5CF6"
+              accent="var(--violet)"
               onClick={() => setSessionMode('WITHOUT_MODERATOR')}
             />
           </div>
@@ -545,17 +545,17 @@ export function SessionConfigForm({ onSuccess, onClose, roomId, initialMaxPlayer
             <ModeCard
               label="IA"
               sublabel="Générées par l'IA"
-              icon={<Sparkles size={26} className={questionMode === 'AI' ? 'text-[#00D397]' : 'text-txt-40'} />}
+              icon={<Sparkles size={26} className={questionMode === 'AI' ? 'text-accent' : 'text-txt-40'} />}
               active={questionMode === 'AI'}
-              accent="#00D397"
+              accent="var(--primary)"
               onClick={() => handleModeChange('AI')}
             />
             <ModeCard
               label="Manuel"
               sublabel="Saisies dans le lobby"
-              icon={<PenLine size={26} className={questionMode === 'MANUAL' ? 'text-[#FFD700]' : 'text-txt-40'} />}
+              icon={<PenLine size={26} className={questionMode === 'MANUAL' ? 'text-energy' : 'text-txt-40'} />}
               active={questionMode === 'MANUAL'}
-              accent="#FFD700"
+              accent="var(--gold)"
               onClick={() => handleModeChange('MANUAL')}
             />
           </div>
@@ -566,11 +566,11 @@ export function SessionConfigForm({ onSuccess, onClose, roomId, initialMaxPlayer
           <div
             className="rounded-2xl p-4 border flex items-start gap-3"
             style={{
-              backgroundColor: 'color-mix(in srgb, var(--energy, #FFD700) 10%, transparent)',
-              borderColor: 'color-mix(in srgb, var(--energy, #FFD700) 30%, transparent)',
+              backgroundColor: 'color-mix(in srgb, var(--energy, var(--gold)) 10%, transparent)',
+              borderColor: 'color-mix(in srgb, var(--energy, var(--gold)) 30%, transparent)',
             }}
           >
-            <PenLine size={18} className="text-energy shrink-0 mt-0.5" style={{ color: 'var(--energy, #FFD700)' }} />
+            <PenLine size={18} className="text-energy shrink-0 mt-0.5" style={{ color: 'var(--energy, var(--gold))' }} />
             <p className="text-txt text-xs leading-relaxed">
               Vous pourrez saisir vos questions dans le lobby avant de démarrer la session.
             </p>
@@ -583,10 +583,10 @@ export function SessionConfigForm({ onSuccess, onClose, roomId, initialMaxPlayer
           <ToggleRow
             label="Mode équipes"
             sub="Les points sont partagés entre coéquipiers"
-            icon={<Users size={16} className="text-team" style={{ color: 'var(--team, #4A90D9)' }} />}
+            icon={<Users size={16} className="text-team" style={{ color: 'var(--team, var(--indigo))' }} />}
             checked={config.isTeamMode}
             onChange={(v) => setConfig((c) => ({ ...c, isTeamMode: v }))}
-            accent="var(--team, #4A90D9)"
+            accent="var(--team, var(--indigo))"
           />
         </div>
 
@@ -595,11 +595,11 @@ export function SessionConfigForm({ onSuccess, onClose, roomId, initialMaxPlayer
           <div
             className="rounded-2xl p-4 border flex items-start gap-3"
             style={{
-              backgroundColor: 'color-mix(in srgb, var(--host, #8B5CF6) 10%, transparent)',
-              borderColor: 'color-mix(in srgb, var(--host, #8B5CF6) 30%, transparent)',
+              backgroundColor: 'color-mix(in srgb, var(--host, var(--violet)) 10%, transparent)',
+              borderColor: 'color-mix(in srgb, var(--host, var(--violet)) 30%, transparent)',
             }}
           >
-            <Bot size={18} className="text-host shrink-0 mt-0.5" style={{ color: 'var(--host, #8B5CF6)' }} />
+            <Bot size={18} className="text-host shrink-0 mt-0.5" style={{ color: 'var(--host, var(--violet))' }} />
             <p className="text-txt text-xs leading-relaxed">
               Questions affichées entièrement · réponses automatisées · buzz immédiat.
             </p>
@@ -649,7 +649,7 @@ export function SessionConfigForm({ onSuccess, onClose, roomId, initialMaxPlayer
                 { label: '5', value: 5 },
                 { label: '6', value: 6 },
               ]}
-              accent="var(--accent, #00D397)"
+              accent="var(--accent, var(--primary))"
             />
           </div>
         )}
@@ -724,11 +724,11 @@ export function SessionConfigForm({ onSuccess, onClose, roomId, initialMaxPlayer
         <div
           className="rounded-2xl p-4 border flex items-start gap-3"
           style={{
-            backgroundColor: 'color-mix(in srgb, var(--team, #4A90D9) 10%, transparent)',
-            borderColor: 'color-mix(in srgb, var(--team, #4A90D9) 30%, transparent)',
+            backgroundColor: 'color-mix(in srgb, var(--team, var(--indigo)) 10%, transparent)',
+            borderColor: 'color-mix(in srgb, var(--team, var(--indigo)) 30%, transparent)',
           }}
         >
-          <Users size={18} className="text-team shrink-0 mt-0.5" style={{ color: 'var(--team, #4A90D9)' }} />
+          <Users size={18} className="text-team shrink-0 mt-0.5" style={{ color: 'var(--team, var(--indigo))' }} />
           <p className="text-txt text-xs leading-relaxed">
             Minimum 2 équipes · maximum 8. Cliquez sur la pastille de couleur pour la changer, ou personnalisez le nom.
           </p>
@@ -748,15 +748,15 @@ export function SessionConfigForm({ onSuccess, onClose, roomId, initialMaxPlayer
         label: 'Modération',
         value: sessionMode === 'WITH_MODERATOR' ? 'Avec modérateur' : 'Sans modérateur',
         icon: sessionMode === 'WITH_MODERATOR' ? <User size={16} /> : <Bot size={16} />,
-        iconColor: sessionMode === 'WITH_MODERATOR' ? '#00D397' : '#8B5CF6',
-        valueColor: sessionMode === 'WITH_MODERATOR' ? '#00D397' : '#8B5CF6',
+        iconColor: sessionMode === 'WITH_MODERATOR' ? 'var(--primary)' : 'var(--violet)',
+        valueColor: sessionMode === 'WITH_MODERATOR' ? 'var(--primary)' : 'var(--violet)',
       },
       {
         label: 'Source des questions',
         value: questionMode === 'AI' ? 'Générées par IA' : 'Saisie manuelle',
         icon: questionMode === 'AI' ? <Sparkles size={16} /> : <PenLine size={16} />,
-        iconColor: questionMode === 'AI' ? '#00D397' : '#FFD700',
-        valueColor: questionMode === 'AI' ? '#00D397' : '#FFD700',
+        iconColor: questionMode === 'AI' ? 'var(--primary)' : 'var(--gold)',
+        valueColor: questionMode === 'AI' ? 'var(--primary)' : 'var(--gold)',
       },
     ];
 
@@ -822,15 +822,15 @@ export function SessionConfigForm({ onSuccess, onClose, roomId, initialMaxPlayer
       label: 'Format de la session',
       value: config.isTeamMode ? `Équipes (${teams.length})` : 'Solo',
       icon: <Users size={16} />,
-      iconColor: config.isTeamMode ? '#4A90D9' : 'var(--txt)',
-      valueColor: config.isTeamMode ? '#4A90D9' : 'var(--txt)',
+      iconColor: config.isTeamMode ? 'var(--indigo)' : 'var(--txt)',
+      valueColor: config.isTeamMode ? 'var(--indigo)' : 'var(--txt)',
     });
 
     return (
       <div className="flex flex-col gap-6">
         {/* Hero Banner */}
         <div className="flex flex-col items-center text-center py-4">
-          <div className="w-[68px] h-[68px] rounded-[22px] bg-gradient-to-br from-[#00D397] to-[#00B383] flex items-center justify-center shadow-[0_8px_24px_rgba(0,211,151,0.28)] animate-pulse mb-3 shrink-0">
+          <div className="w-[68px] h-[68px] rounded-[22px] bg-gradient-to-br from-accent to-accent-d flex items-center justify-center shadow-[0_8px_24px_rgb(var(--primary-rgb)_/_0.28)] animate-pulse mb-3 shrink-0">
             <Zap size={32} className="text-btn-fg fill-current" />
           </div>
           <h2 className="text-2xl font-bold text-txt">Tout est prêt !</h2>
@@ -850,8 +850,8 @@ export function SessionConfigForm({ onSuccess, onClose, roomId, initialMaxPlayer
           <div
             className="rounded-2xl p-4 border flex items-center gap-3"
             style={{
-              backgroundColor: 'color-mix(in srgb, var(--buzz, #D5442F) 10%, transparent)',
-              borderColor: 'color-mix(in srgb, var(--buzz, #D5442F) 30%, transparent)',
+              backgroundColor: 'color-mix(in srgb, var(--buzz, var(--bad)) 10%, transparent)',
+              borderColor: 'color-mix(in srgb, var(--buzz, var(--bad)) 30%, transparent)',
             }}
           >
             <AlertCircle size={18} className="text-buzz shrink-0" style={{ color: 'var(--buzz)' }} />
@@ -864,8 +864,8 @@ export function SessionConfigForm({ onSuccess, onClose, roomId, initialMaxPlayer
           <div
             className="rounded-2xl p-4 border flex items-center gap-3 animate-shake"
             style={{
-              backgroundColor: 'color-mix(in srgb, var(--buzz, #D5442F) 10%, transparent)',
-              borderColor: 'color-mix(in srgb, var(--buzz, #D5442F) 30%, transparent)',
+              backgroundColor: 'color-mix(in srgb, var(--buzz, var(--bad)) 10%, transparent)',
+              borderColor: 'color-mix(in srgb, var(--buzz, var(--bad)) 30%, transparent)',
             }}
           >
             <AlertCircle size={18} className="text-buzz shrink-0" style={{ color: 'var(--buzz)' }} />
@@ -932,7 +932,7 @@ export function SessionConfigForm({ onSuccess, onClose, roomId, initialMaxPlayer
               <button
                 type="button"
                 onClick={handleNext}
-                className="px-3 py-1.5 rounded-full bg-[#00D397] hover:bg-[#00B383] transition-colors flex items-center justify-center shrink-0 shadow-sm"
+                className="px-3 py-1.5 rounded-full bg-accent hover:bg-accent-d transition-colors flex items-center justify-center shrink-0 shadow-sm"
               >
                 <span className="text-btn-fg text-xs font-bold whitespace-nowrap">Suivant</span>
               </button>
@@ -972,8 +972,8 @@ export function SessionConfigForm({ onSuccess, onClose, roomId, initialMaxPlayer
               ? 'bg-surface-2 cursor-not-allowed'
               : (config.isTeamMode && teams.length < 2)
                 ? 'bg-surface-2 opacity-50 cursor-not-allowed text-txt-40'
-                : 'bg-gradient-to-br from-[#00D397] to-[#00B383] shadow-[0_4px_20px_rgba(0,211,151,0.25)] hover:opacity-95'
-            : 'bg-gradient-to-br from-[#00D397] to-[#00B383] shadow-[0_4px_20px_rgba(0,211,151,0.25)] hover:opacity-95'
+                : 'bg-gradient-to-br from-accent to-accent-d shadow-[0_4px_20px_rgb(var(--primary-rgb)_/_0.25)] hover:opacity-95'
+            : 'bg-gradient-to-br from-accent to-accent-d shadow-[0_4px_20px_rgb(var(--primary-rgb)_/_0.25)] hover:opacity-95'
             }`}
         >
           {isLastStep ? (

@@ -29,14 +29,14 @@ export function StatCard({ title, value, change, icon: Icon, color }: StatCardPr
         {change !== undefined && (
           <div
             className={`flex flex-row items-center gap-1 px-2 py-1 rounded-full ${
-              isPositive ? 'bg-[#00D39720]' : isNegative ? 'bg-[#D5442F20]' : 'bg-surface-2'
+              isPositive ? 'bg-accent/15' : isNegative ? 'bg-buzz/15' : 'bg-surface-2'
             }`}
           >
-            {isPositive && <TrendingUp size={12} color="#00D397" />}
-            {isNegative && <TrendingDown size={12} color="#D5442F" />}
+            {isPositive && <TrendingUp size={12} color="var(--primary)" />}
+            {isNegative && <TrendingDown size={12} color="var(--bad)" />}
             <span
               className={`text-xs font-medium ${
-                isPositive ? 'text-[#00D397]' : isNegative ? 'text-[#D5442F]' : 'text-txt-60'
+                isPositive ? 'text-accent' : isNegative ? 'text-buzz' : 'text-txt-60'
               }`}
             >
               {isPositive ? '+' : ''}{change}%

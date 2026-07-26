@@ -24,18 +24,18 @@ import { appStorage } from '~/lib/utils/storage';
 import type { CategoryRequest, Difficulty, TeamResponse } from '~/types/api';
 
 const PREDEFINED_CATEGORIES = [
-  { name: 'Histoire', emoji: '📜', color: '#FFD700' },
-  { name: 'Science', emoji: '🔬', color: '#00D397' },
-  { name: 'Sports', emoji: '🏆', color: '#D5442F' },
-  { name: 'Géographie', emoji: '🌍', color: '#4A90D9' },
-  { name: 'Culture G', emoji: '🌐', color: '#9B59B6' },
-  { name: 'Cinéma', emoji: '🎬', color: '#EC4899' },
+  { name: 'Histoire', emoji: '📜', color: 'var(--gold)' },
+  { name: 'Science', emoji: '🔬', color: 'var(--primary)' },
+  { name: 'Sports', emoji: '🏆', color: 'var(--bad)' },
+  { name: 'Géographie', emoji: '🌍', color: 'var(--indigo)' },
+  { name: 'Culture G', emoji: '🌐', color: 'var(--violet)' },
+  { name: 'Cinéma', emoji: '🎬', color: 'var(--bad)' },
 ];
 
 const DIFFICULTIES: { value: Difficulty; label: string; color: string; bg: string }[] = [
-  { value: 'FACILE', label: 'Facile', color: '#00D397', bg: '#00D39720' },
-  { value: 'INTERMEDIAIRE', label: 'Intermédiaire', color: '#FFD700', bg: '#FFD70020' },
-  { value: 'EXPERT', label: 'Expert', color: '#D5442F', bg: '#D5442F20' },
+  { value: 'FACILE', label: 'Facile', color: 'var(--primary)', bg: 'rgb(var(--primary-rgb) / 0.125)' },
+  { value: 'INTERMEDIAIRE', label: 'Intermédiaire', color: 'var(--gold)', bg: 'rgb(var(--gold-rgb) / 0.125)' },
+  { value: 'EXPERT', label: 'Expert', color: 'var(--bad)', bg: 'rgb(var(--bad-rgb) / 0.125)' },
 ];
 
 export default function CategorySelectionPage() {
@@ -350,8 +350,8 @@ export default function CategorySelectionPage() {
       <SafeScreen>
         <div className="flex-1 flex flex-col justify-center items-center min-h-screen">
           <div className="flex flex-col items-center">
-            <div className="w-20 h-20 rounded-full bg-[#00D39720] flex items-center justify-center mb-4">
-              <Sparkles size={40} color="#00D397" />
+            <div className="w-20 h-20 rounded-full bg-accent/15 flex items-center justify-center mb-4">
+              <Sparkles size={40} color="var(--primary)" />
             </div>
             <p className="text-txt font-semibold">Vérification...</p>
           </div>
@@ -395,7 +395,7 @@ export default function CategorySelectionPage() {
           ) : (
             sortedTeams.map((team) => {
               const isSelected = selectedTeamId === team.id;
-              const teamColor = team.color ?? '#4A90D9';
+              const teamColor = team.color ?? 'var(--indigo)';
               return (
                 <button
                   key={team.id}
@@ -561,7 +561,7 @@ export default function CategorySelectionPage() {
                   >
                     <div
                       className="w-[34px] h-[34px] rounded-[10px] flex items-center justify-center text-[17px] shrink-0"
-                      style={{ backgroundColor: `${catInfo?.color ?? '#9B59B6'}30` }}
+                      style={{ backgroundColor: `${catInfo?.color ?? 'var(--violet)'}30` }}
                     >
                       {catInfo?.emoji ?? '✨'}
                     </div>
@@ -576,7 +576,7 @@ export default function CategorySelectionPage() {
                             className="px-2 py-0.5 rounded-md text-[10.5px] font-bold transition-colors"
                             style={{
                               backgroundColor: category.difficulty === diff.value ? diff.color : 'var(--surface-2)',
-                              color: category.difficulty === diff.value ? '#11112a' : 'var(--txt-60)',
+                              color: category.difficulty === diff.value ? '#1A1410' : 'var(--txt-60)',
                             }}
                           >
                             {diff.label}
@@ -687,7 +687,7 @@ export default function CategorySelectionPage() {
                   style={{
                     backgroundColor: customDifficulty === diff.value ? diff.color : 'var(--bg)',
                     borderColor: customDifficulty === diff.value ? diff.color : 'var(--line)',
-                    color: customDifficulty === diff.value ? '#11112a' : 'var(--txt-60)',
+                    color: customDifficulty === diff.value ? '#1A1410' : 'var(--txt-60)',
                   }}
                 >
                   {diff.label}

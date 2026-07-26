@@ -53,12 +53,12 @@ export function QRCodeModal({ visible, onClose, type, id, code, title }: QRCodeM
     if (!code) return;
 
     const message = type === 'session'
-      ? `Rejoins ma partie Quiz By Mouha_Dev! Code: ${code}`
-      : `Rejoins ma salle Quiz By Mouha_Dev! Code: ${code}`;
+      ? `Rejoins ma partie sur Xalaat (Quiz by MouhaDev) ! Code: ${code}`
+      : `Rejoins ma salle sur Xalaat (Quiz by MouhaDev) ! Code: ${code}`;
 
     if (navigator.share) {
       try {
-        await navigator.share({ title: 'Invitation Quiz By Mouha_Dev', text: message });
+        await navigator.share({ title: 'Invitation Xalaat — Quiz by MouhaDev', text: message });
       } catch {
         // User cancelled
       }
@@ -81,8 +81,8 @@ export function QRCodeModal({ visible, onClose, type, id, code, title }: QRCodeM
         {/* Header */}
         <div className="flex flex-row items-center justify-between px-5 py-4 border-b border-line">
           <div className="flex flex-row items-center">
-            <div className="w-10 h-10 rounded-xl bg-[#00D39720] flex items-center justify-center mr-3">
-              <QrCode size={20} color="#00D397" />
+            <div className="w-10 h-10 rounded-xl bg-accent/15 flex items-center justify-center mr-3">
+              <QrCode size={20} color="var(--primary)" />
             </div>
             <div>
               <p className="text-txt font-bold text-lg">
@@ -105,7 +105,7 @@ export function QRCodeModal({ visible, onClose, type, id, code, title }: QRCodeM
         <div className="p-6 flex flex-col items-center">
           {isLoading ? (
             <div className="w-64 h-64 rounded-2xl bg-bg flex flex-col items-center justify-center">
-              <div className="w-10 h-10 border-2 border-[#00D397] border-t-transparent rounded-full animate-spin" />
+              <div className="w-10 h-10 border-2 border-accent border-t-transparent rounded-full animate-spin" />
               <p className="text-txt-60 mt-4">Chargement...</p>
             </div>
           ) : error ? (
@@ -113,7 +113,7 @@ export function QRCodeModal({ visible, onClose, type, id, code, title }: QRCodeM
               <p className="text-red-400 text-center">{error}</p>
               <button
                 onClick={loadQRCode}
-                className="mt-4 px-6 py-3 bg-[#00D397] rounded-xl hover:bg-[#00B377] transition-colors"
+                className="mt-4 px-6 py-3 bg-accent rounded-xl hover:bg-accent-d transition-colors"
               >
                 <span className="text-btn-fg font-bold">Réessayer</span>
               </button>
@@ -138,7 +138,7 @@ export function QRCodeModal({ visible, onClose, type, id, code, title }: QRCodeM
           {code && (
             <div className="mt-6 bg-bg rounded-2xl px-6 py-4 border border-line w-full">
               <p className="text-txt-60 text-sm mb-1">Code</p>
-              <p className="text-[#00D397] font-bold text-2xl tracking-wider">{code}</p>
+              <p className="text-accent font-bold text-2xl tracking-wider">{code}</p>
             </div>
           )}
 

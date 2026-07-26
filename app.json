@@ -1,17 +1,17 @@
 {
   "expo": {
-    "name": "BuzzMaster AI",
+    "name": "Xalaat",
     "slug": "buzzmaster-ai",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "dark",
+    "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "scheme": "buzzmaster",
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#0F1419"
+      "backgroundColor": "#F1E5C9"
     },
     "ios": {
       "supportsTablet": true,
@@ -20,7 +20,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#0F1419"
+        "backgroundColor": "#F1E5C9"
       },
       "edgeToEdgeEnabled": true,
       "package": "com.buzzmaster.ai"

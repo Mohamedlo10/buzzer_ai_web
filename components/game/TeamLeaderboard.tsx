@@ -57,7 +57,7 @@ export function TeamLeaderboard({
       <div className="flex flex-col">
         {teamStandings.map((team, index) => {
           const isMyTeam = team.members.some((m) => m.userId === currentUserId);
-          const teamColor = team.color ?? '#4A90D9';
+          const teamColor = team.color ?? 'var(--indigo)';
           // Width percentage for the progress bar background indicator
           const widthPercent = Math.min(100, Math.round((team.totalScore / maxTotal) * 100));
 

@@ -2,8 +2,9 @@
 
 import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Lock, Eye, EyeOff, CheckCircle, XCircle, Zap } from 'lucide-react';
+import { Lock, Eye, EyeOff, CheckCircle, XCircle } from 'lucide-react';
 import * as authApi from '~/lib/api/auth';
+import { XalaatLogo } from '~/components/ui/XalaatMark';
 
 function ResetPasswordContent() {
   const router = useRouter();
@@ -48,18 +49,7 @@ function ResetPasswordContent() {
     <div className="min-h-screen flex flex-col bg-bg">
       <div className="flex-1 flex flex-col items-center justify-center px-6 py-12">
         {/* Logo */}
-        <div className="flex flex-row items-center mb-10">
-          <div
-            className="w-10 h-10 rounded-xl mr-3 flex items-center justify-center"
-            style={{ background: 'linear-gradient(135deg, #D5442F, #FF6B4A)' }}
-          >
-            <Zap size={20} color="#FFFFFF" fill="#FFFFFF" />
-          </div>
-          <div>
-            <p className="text-txt font-display font-semibold text-lg leading-tight">Quiz Buzzer AI</p>
-            <p className="text-accent text-[10px] font-bold uppercase tracking-[0.18em]">By Mouha_Dev</p>
-          </div>
-        </div>
+        <XalaatLogo size={40} className="mb-10" />
 
         <div
           className="w-full max-w-md bg-surface rounded-3xl p-8 border border-line"
@@ -72,9 +62,9 @@ function ResetPasswordContent() {
                 <div className="text-center">
                   <div
                     className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-5"
-                    style={{ background: 'rgba(213,68,47,0.12)', border: '1px solid rgba(213,68,47,0.3)' }}
+                    style={{ background: 'rgb(var(--bad-rgb) / 0.12)', border: '1px solid rgb(var(--bad-rgb) / 0.3)' }}
                   >
-                    <XCircle size={28} color="#D5442F" />
+                    <XCircle size={28} color="var(--bad)" />
                   </div>
                   <h1 className="text-txt font-bold text-2xl mb-3">Lien invalide</h1>
                   <p className="text-txt-60 text-sm mb-6">Utilisez le lien reçu par email pour réinitialiser votre mot de passe.</p>
@@ -90,9 +80,9 @@ function ResetPasswordContent() {
                 <>
                   <div
                     className="w-14 h-14 rounded-2xl flex items-center justify-center mb-5"
-                    style={{ background: 'rgba(0,211,151,0.12)', border: '1px solid rgba(0,211,151,0.3)' }}
+                    style={{ background: 'rgb(var(--primary-rgb) / 0.12)', border: '1px solid rgb(var(--primary-rgb) / 0.3)' }}
                   >
-                    <Lock size={28} color="#00D397" />
+                    <Lock size={28} color="var(--primary)" />
                   </div>
                   <h1 className="text-txt font-bold text-2xl mb-2">Nouveau mot de passe</h1>
                   <p className="text-txt-60 text-sm mb-7 leading-relaxed">
@@ -102,10 +92,10 @@ function ResetPasswordContent() {
                   {errors.general && (
                     <div
                       className="flex items-start gap-2 p-3 rounded-xl mb-5 text-sm"
-                      style={{ background: 'rgba(213,68,47,0.1)', border: '1px solid rgba(213,68,47,0.3)' }}
+                      style={{ background: 'rgb(var(--bad-rgb) / 0.1)', border: '1px solid rgb(var(--bad-rgb) / 0.3)' }}
                     >
-                      <XCircle size={16} color="#D5442F" className="mt-0.5 shrink-0" />
-                      <p className="text-[#D5442F]">{errors.general}</p>
+                      <XCircle size={16} color="var(--bad)" className="mt-0.5 shrink-0" />
+                      <p className="text-buzz">{errors.general}</p>
                     </div>
                   )}
 
@@ -131,7 +121,7 @@ function ResetPasswordContent() {
                         {showNew ? <EyeOff size={20} /> : <Eye size={20} />}
                       </button>
                     </div>
-                    {errors.newPassword && <p className="text-[#D5442F] text-sm mt-2 ml-2">{errors.newPassword}</p>}
+                    {errors.newPassword && <p className="text-buzz text-sm mt-2 ml-2">{errors.newPassword}</p>}
                   </div>
 
                   {/* Confirm password */}
@@ -157,7 +147,7 @@ function ResetPasswordContent() {
                         {showConfirm ? <EyeOff size={20} /> : <Eye size={20} />}
                       </button>
                     </div>
-                    {errors.confirmPassword && <p className="text-[#D5442F] text-sm mt-2 ml-2">{errors.confirmPassword}</p>}
+                    {errors.confirmPassword && <p className="text-buzz text-sm mt-2 ml-2">{errors.confirmPassword}</p>}
                   </div>
 
                   <button
@@ -165,7 +155,7 @@ function ResetPasswordContent() {
                     onClick={handleReset}
                     disabled={isLoading}
                     className={`w-full py-4 rounded-2xl flex items-center justify-center font-bold text-lg text-white transition-opacity cursor-pointer ${
-                      isLoading ? 'bg-surface-2 opacity-70' : 'bg-buzz shadow-[0_0_15px_rgba(213,68,47,0.5)]'
+                      isLoading ? 'bg-surface-2 opacity-70' : 'bg-buzz shadow-[0_0_15px_rgb(var(--bad-rgb)_/_0.5)]'
                     }`}
                   >
                     {isLoading ? (
@@ -188,9 +178,9 @@ function ResetPasswordContent() {
             <div className="text-center">
               <div
                 className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-5"
-                style={{ background: 'rgba(0,211,151,0.12)', border: '1px solid rgba(0,211,151,0.3)' }}
+                style={{ background: 'rgb(var(--primary-rgb) / 0.12)', border: '1px solid rgb(var(--primary-rgb) / 0.3)' }}
               >
-                <CheckCircle size={28} color="#00D397" />
+                <CheckCircle size={28} color="var(--primary)" />
               </div>
               <h1 className="text-txt font-bold text-2xl mb-3">Mot de passe mis à jour !</h1>
               <p className="text-txt-60 text-sm leading-relaxed mb-7">
@@ -199,7 +189,7 @@ function ResetPasswordContent() {
               <button
                 type="button"
                 onClick={() => router.replace('/login')}
-                className="w-full py-4 rounded-2xl font-bold text-lg text-white bg-buzz shadow-[0_0_15px_rgba(213,68,47,0.5)] hover:opacity-90 transition-opacity cursor-pointer"
+                className="w-full py-4 rounded-2xl font-bold text-lg text-white bg-buzz shadow-[0_0_15px_rgb(var(--bad-rgb)_/_0.5)] hover:opacity-90 transition-opacity cursor-pointer"
               >
                 Se connecter
               </button>

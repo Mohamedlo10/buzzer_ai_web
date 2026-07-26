@@ -51,25 +51,25 @@ export function RunningCharacter({ progress, size = 40 }: RunningCharacterProps)
         // Celebration pose
         <div style={{ width: size, height: size, display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
           {/* Head */}
-          <div className="w-3 h-3 rounded-full bg-[#00D397]" />
+          <div className="w-3 h-3 rounded-full bg-accent" />
           {/* Body */}
-          <div className="w-1 h-4 bg-[#00D397]" />
+          <div className="w-1 h-4 bg-accent" />
           {/* Arms up */}
           <div
-            className="absolute w-1 h-3 bg-[#00D397]"
+            className="absolute w-1 h-3 bg-accent"
             style={{ top: 6, left: 4, transform: 'rotate(-45deg)', transformOrigin: 'top center' }}
           />
           <div
-            className="absolute w-1 h-3 bg-[#00D397]"
+            className="absolute w-1 h-3 bg-accent"
             style={{ top: 6, right: 4, transform: 'rotate(45deg)', transformOrigin: 'top center' }}
           />
           {/* Jump legs */}
           <div
-            className="absolute w-1 h-3 bg-[#00D397]"
+            className="absolute w-1 h-3 bg-accent"
             style={{ bottom: 2, left: 6, transform: 'rotate(30deg)', transformOrigin: 'top center' }}
           />
           <div
-            className="absolute w-1 h-3 bg-[#00D397]"
+            className="absolute w-1 h-3 bg-accent"
             style={{ bottom: 2, right: 6, transform: 'rotate(-30deg)', transformOrigin: 'top center' }}
           />
         </div>
@@ -87,27 +87,27 @@ export function RunningCharacter({ progress, size = 40 }: RunningCharacterProps)
           }}
         >
           {/* Head */}
-          <div className="w-3 h-3 rounded-full bg-[#00D397]" />
+          <div className="w-3 h-3 rounded-full bg-accent" />
           {/* Body */}
-          <div className="w-1 h-4 bg-[#00D397]" />
+          <div className="w-1 h-4 bg-accent" />
           {/* Left Arm */}
           <div
-            className="absolute w-1 h-3 bg-[#00D397]"
+            className="absolute w-1 h-3 bg-accent"
             style={{ top: 6, left: 6, transform: `rotate(${pose.armL}deg)`, transformOrigin: 'top center' }}
           />
           {/* Right Arm */}
           <div
-            className="absolute w-1 h-3 bg-[#00D397]"
+            className="absolute w-1 h-3 bg-accent"
             style={{ top: 6, right: 6, transform: `rotate(${pose.armR}deg)`, transformOrigin: 'top center' }}
           />
           {/* Left Leg */}
           <div
-            className="absolute w-1 h-4 bg-[#00D397]"
+            className="absolute w-1 h-4 bg-accent"
             style={{ bottom: 4, left: 8, transform: `rotate(${pose.legL}deg)`, transformOrigin: 'top center' }}
           />
           {/* Right Leg */}
           <div
-            className="absolute w-1 h-4 bg-[#00D397]"
+            className="absolute w-1 h-4 bg-accent"
             style={{ bottom: 4, right: 8, transform: `rotate(${pose.legR}deg)`, transformOrigin: 'top center' }}
           />
         </div>

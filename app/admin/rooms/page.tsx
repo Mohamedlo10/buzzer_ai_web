@@ -85,7 +85,7 @@ export default function AdminRoomsPage() {
       header: 'Nom',
       render: (row: AdminRoomResponse) => (
         <div className="flex items-center gap-2">
-          <FolderOpen size={16} color="#9B59B6" />
+          <FolderOpen size={16} color="var(--violet)" />
           <span className="text-txt font-medium">{row.name}</span>
         </div>
       ),
@@ -119,8 +119,8 @@ export default function AdminRoomsPage() {
         <span
           className="text-xs px-2 py-0.5 rounded-full font-medium"
           style={{
-            backgroundColor: row.isActive ? '#00D39720' : '#D5442F20',
-            color: row.isActive ? '#00D397' : '#D5442F',
+            backgroundColor: row.isActive ? 'rgb(var(--primary-rgb) / 0.125)' : 'rgb(var(--bad-rgb) / 0.125)',
+            color: row.isActive ? 'var(--primary)' : 'var(--bad)',
           }}
         >
           {row.isActive ? 'Active' : 'Inactive'}
@@ -157,7 +157,7 @@ export default function AdminRoomsPage() {
               e.stopPropagation();
               handleDelete(row);
             }}
-            className="p-1.5 rounded-lg bg-[#D5442F20] hover:bg-[#D5442F30] text-[#D5442F] transition-colors"
+            className="p-1.5 rounded-lg bg-buzz/15 hover:bg-buzz/20 text-buzz transition-colors"
             title="Supprimer"
           >
             <Trash2 size={14} />
@@ -187,7 +187,7 @@ export default function AdminRoomsPage() {
           <button
             onClick={() => refetch()}
             disabled={isLoading}
-            className="text-[#00D397] text-sm font-medium hover:opacity-80 disabled:opacity-40 transition-opacity"
+            className="text-accent text-sm font-medium hover:opacity-80 disabled:opacity-40 transition-opacity"
           >
             {isLoading ? 'Actualisation...' : 'Actualiser'}
           </button>
@@ -228,7 +228,7 @@ export default function AdminRoomsPage() {
               value={newOwnerId}
               onChange={(e) => setNewOwnerId(e.target.value)}
               placeholder="ID utilisateur..."
-              className="w-full bg-bg text-txt px-4 py-3 rounded-xl border border-line focus:border-[#9B59B6] focus:outline-none text-sm mb-4"
+              className="w-full bg-bg text-txt px-4 py-3 rounded-xl border border-line focus:border-host focus:outline-none text-sm mb-4"
             />
             <div className="flex gap-3">
               <button
@@ -240,7 +240,7 @@ export default function AdminRoomsPage() {
               <button
                 onClick={handleTransfer}
                 disabled={!newOwnerId.trim() || transferMutation.isPending}
-                className="flex-1 py-3 rounded-xl bg-[#9B59B6] text-white text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40"
+                className="flex-1 py-3 rounded-xl bg-host text-white text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40"
               >
                 {transferMutation.isPending ? 'Transfert...' : 'Transférer'}
               </button>

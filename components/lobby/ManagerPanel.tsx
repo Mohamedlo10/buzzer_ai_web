@@ -43,9 +43,9 @@ export function ManagerPanel({
   };
 
   return (
-    <Card className="mb-4 border border-[#FFD70040]">
+    <Card className="mb-4 border border-energy/25">
       <div className="flex flex-row items-center mb-4">
-        <Crown size={18} color="#FFD700" />
+        <Crown size={18} color="var(--gold)" />
         <p className="text-txt font-bold ml-2 flex-1">Contrôles Manager</p>
         <span className="text-txt-60 text-sm">
           {playerCount} joueur{playerCount > 1 ? 's' : ''}
@@ -60,10 +60,10 @@ export function ManagerPanel({
           isStarting
             ? 'bg-surface-2 cursor-not-allowed'
             : canStart
-            ? 'bg-[#00D397] hover:bg-[#00B377]'
+            ? 'bg-accent hover:bg-accent-d'
             : 'bg-surface-2 cursor-not-allowed'
         }`}
-        style={canStart && !isStarting ? { boxShadow: '0 0 12px rgba(0,211,151,0.4)' } : undefined}
+        style={canStart && !isStarting ? { boxShadow: '0 0 12px rgb(var(--primary-rgb) / 0.4)' } : undefined}
       >
         {isStarting ? (
           <span className="text-txt-60 font-bold">Démarrage...</span>
@@ -78,7 +78,7 @@ export function ManagerPanel({
       </button>
 
       {!canStart && !isStarting && (
-        <p className="text-[#D5442F] text-xs text-center mb-3">
+        <p className="text-buzz text-xs text-center mb-3">
           Minimum {minPlayers} joueurs requis
         </p>
       )}
@@ -108,10 +108,10 @@ export function ManagerPanel({
         {onLeaveSession && (
           <button
             onClick={handleLeave}
-            className="flex-1 bg-[#D5442F20] py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-[#D5442F40] transition-colors"
+            className="flex-1 bg-buzz/15 py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-buzz/25 transition-colors"
           >
-            <LogOut size={16} color="#D5442F" />
-            <span className="text-[#D5442F] font-medium text-sm">Quitter</span>
+            <LogOut size={16} color="var(--bad)" />
+            <span className="text-buzz font-medium text-sm">Quitter</span>
           </button>
         )}
       </div>

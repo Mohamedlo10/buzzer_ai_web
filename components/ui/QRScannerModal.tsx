@@ -142,7 +142,7 @@ export function QRScannerModal({ visible, onClose, onScan }: QRScannerModalProps
         {error ? (
           <div className="px-6 flex flex-col items-center">
             <div className="w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center mb-4">
-              <AlertCircle size={32} color="#EF4444" />
+              <AlertCircle size={32} color="var(--bad)" />
             </div>
             <p className="text-white text-center font-medium">{error}</p>
             <button
@@ -166,14 +166,14 @@ export function QRScannerModal({ visible, onClose, onScan }: QRScannerModalProps
             <div className="relative z-10 flex flex-col items-center">
               <div className="w-64 h-64 relative">
                 {/* Corner brackets */}
-                <div className="absolute top-0 left-0 w-10 h-10 border-t-4 border-l-4 border-[#00D397] rounded-tl-lg" />
-                <div className="absolute top-0 right-0 w-10 h-10 border-t-4 border-r-4 border-[#00D397] rounded-tr-lg" />
-                <div className="absolute bottom-0 left-0 w-10 h-10 border-b-4 border-l-4 border-[#00D397] rounded-bl-lg" />
-                <div className="absolute bottom-0 right-0 w-10 h-10 border-b-4 border-r-4 border-[#00D397] rounded-br-lg" />
+                <div className="absolute top-0 left-0 w-10 h-10 border-t-4 border-l-4 border-accent rounded-tl-lg" />
+                <div className="absolute top-0 right-0 w-10 h-10 border-t-4 border-r-4 border-accent rounded-tr-lg" />
+                <div className="absolute bottom-0 left-0 w-10 h-10 border-b-4 border-l-4 border-accent rounded-bl-lg" />
+                <div className="absolute bottom-0 right-0 w-10 h-10 border-b-4 border-r-4 border-accent rounded-br-lg" />
 
                 {/* Scan line animation */}
                 {isReady && (
-                  <div className="absolute left-2 right-2 h-0.5 bg-[#00D397] opacity-80 animate-scan-line" />
+                  <div className="absolute left-2 right-2 h-0.5 bg-accent opacity-80 animate-scan-line" />
                 )}
 
                 {/* Loading state */}

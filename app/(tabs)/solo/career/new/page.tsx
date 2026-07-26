@@ -107,7 +107,7 @@ export default function NewSoloCareerPage() {
             style={
               isCreating || !category.trim()
                 ? { background: 'var(--surface-2)', color: 'var(--txt-40)' }
-                : { background: 'linear-gradient(135deg, #00D397, #00B383)', color: '#08231B' }
+                : { background: 'linear-gradient(135deg, var(--primary), var(--primary-d))', color: 'var(--primary-ink)' }
             }
           >
             {isCreating ? (

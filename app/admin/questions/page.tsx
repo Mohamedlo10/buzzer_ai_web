@@ -23,9 +23,9 @@ import * as adminApi from '~/lib/api/admin';
 import type { AdminCategoryResponse, AdminQuestionResponse } from '~/types/api';
 
 const DIFFICULTY_CONFIG = {
-  EASY:   { label: 'Facile',    color: '#00D397' },
-  MEDIUM: { label: 'Moyen',     color: '#F39C12' },
-  HARD:   { label: 'Difficile', color: '#D5442F' },
+  EASY:   { label: 'Facile',    color: 'var(--primary)' },
+  MEDIUM: { label: 'Moyen',     color: 'var(--warn)' },
+  HARD:   { label: 'Difficile', color: 'var(--bad)' },
 };
 
 const DIFFICULTY_OPTIONS = ['EASY', 'MEDIUM', 'HARD'] as const;
@@ -230,7 +230,7 @@ export default function AdminQuestionsPage() {
                               <textarea
                                 value={editForm.text ?? ''}
                                 onChange={(e) => setEditForm((prev) => ({ ...prev, text: e.target.value }))}
-                                className="w-full bg-bg text-txt px-3 py-2 rounded-lg border border-line focus:border-[#9B59B6] focus:outline-none text-sm resize-y min-h-[60px]"
+                                className="w-full bg-bg text-txt px-3 py-2 rounded-lg border border-line focus:border-host focus:outline-none text-sm resize-y min-h-[60px]"
                               />
                             ) : (
                               <span className="line-clamp-2">{q.text}</span>
@@ -241,12 +241,12 @@ export default function AdminQuestionsPage() {
                               <input
                                 value={editForm.answer ?? ''}
                                 onChange={(e) => setEditForm((prev) => ({ ...prev, answer: e.target.value }))}
-                                className="w-full bg-bg text-txt px-3 py-2 rounded-lg border border-line focus:border-[#9B59B6] focus:outline-none text-sm"
+                                className="w-full bg-bg text-txt px-3 py-2 rounded-lg border border-line focus:border-host focus:outline-none text-sm"
                               />
                             ) : (
                               <div className="flex items-center gap-1">
-                                <CheckCircle size={13} color="#00D397" />
-                                <span className="text-[#00D397] font-medium">{q.answer}</span>
+                                <CheckCircle size={13} color="var(--primary)" />
+                                <span className="text-accent font-medium">{q.answer}</span>
                               </div>
                             )}
                           </td>
@@ -257,7 +257,7 @@ export default function AdminQuestionsPage() {
                                 onChange={(e) =>
                                   setEditForm((prev) => ({ ...prev, explanation: e.target.value }))
                                 }
-                                className="w-full bg-bg text-txt px-3 py-2 rounded-lg border border-line focus:border-[#9B59B6] focus:outline-none text-sm resize-y min-h-[60px]"
+                                className="w-full bg-bg text-txt px-3 py-2 rounded-lg border border-line focus:border-host focus:outline-none text-sm resize-y min-h-[60px]"
                               />
                             ) : (
                               <span className="text-txt-60 italic line-clamp-2">{q.explanation ?? '—'}</span>
@@ -270,7 +270,7 @@ export default function AdminQuestionsPage() {
                                 onChange={(e) =>
                                   setEditForm((prev) => ({ ...prev, difficulty: e.target.value as 'EASY' | 'MEDIUM' | 'HARD' }))
                                 }
-                                className="w-full bg-bg text-txt px-3 py-2 rounded-lg border border-line focus:border-[#9B59B6] focus:outline-none text-sm"
+                                className="w-full bg-bg text-txt px-3 py-2 rounded-lg border border-line focus:border-host focus:outline-none text-sm"
                               >
                                 {DIFFICULTY_OPTIONS.map((d) => (
                                   <option key={d} value={d}>
@@ -294,7 +294,7 @@ export default function AdminQuestionsPage() {
                                   <button
                                     onClick={() => saveEdit(q.id)}
                                     disabled={updateMutation.isPending}
-                                    className="p-1.5 rounded-lg bg-[#00D39720] hover:bg-[#00D39730] text-[#00D397] transition-colors"
+                                    className="p-1.5 rounded-lg bg-accent/15 hover:bg-accent/20 text-accent transition-colors"
                                     title="Sauvegarder"
                                   >
                                     <Save size={14} />
@@ -318,7 +318,7 @@ export default function AdminQuestionsPage() {
                                   </button>
                                   <button
                                     onClick={() => handleDeleteQuestion(q)}
-                                    className="p-1.5 rounded-lg bg-[#D5442F20] hover:bg-[#D5442F30] text-[#D5442F] transition-colors"
+                                    className="p-1.5 rounded-lg bg-buzz/15 hover:bg-buzz/20 text-buzz transition-colors"
                                     title="Supprimer"
                                   >
                                     <Trash2 size={14} />
@@ -426,10 +426,10 @@ export default function AdminQuestionsPage() {
                 }}
                 className="text-left"
               >
-                <Card className="h-full hover:border-[#9B59B6] transition-colors">
+                <Card className="h-full hover:border-host transition-colors">
                   <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 rounded-xl bg-[#4A90D920] flex items-center justify-center shrink-0">
-                      <BookOpen size={20} color="#4A90D9" />
+                    <div className="w-10 h-10 rounded-xl bg-team/15 flex items-center justify-center shrink-0">
+                      <BookOpen size={20} color="var(--indigo)" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-txt font-semibold truncate">{cat.category}</p>

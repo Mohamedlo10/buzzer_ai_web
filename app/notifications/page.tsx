@@ -88,7 +88,7 @@ export default function NotificationsPage() {
         </button>
         <p className="text-txt font-bold text-2xl">Notifications</p>
         {data && data.total > 0 && (
-          <span className="ml-3 bg-[#D5442F] text-txt text-xs font-bold px-2 py-0.5 rounded-full">
+          <span className="ml-3 bg-buzz text-txt text-xs font-bold px-2 py-0.5 rounded-full">
             {data.total}
           </span>
         )}
@@ -125,20 +125,20 @@ export default function NotificationsPage() {
                         <div className="flex items-center gap-2">
                           <p className="text-txt-60 text-sm">Veut vous ajouter</p>
                           {req.requester.globalRank != null && (
-                            <span className="text-[#00D397] text-xs font-semibold">#{req.requester.globalRank}</span>
+                            <span className="text-accent text-xs font-semibold">#{req.requester.globalRank}</span>
                           )}
                         </div>
                       </div>
                       <div className="flex flex-row gap-2">
                         <button
                           onClick={() => handleAcceptFriend(req.id)}
-                          className="w-10 h-10 rounded-full bg-[#00D397] flex items-center justify-center hover:bg-[#00C085] transition-colors cursor-pointer"
+                          className="w-10 h-10 rounded-full bg-accent flex items-center justify-center hover:bg-accent-d transition-colors cursor-pointer"
                         >
                           <Check size={18} className="text-btn-fg" />
                         </button>
                         <button
                           onClick={() => handleDeclineFriend(req.id)}
-                          className="w-10 h-10 rounded-full bg-[#D5442F] flex items-center justify-center hover:bg-[#C03020] transition-colors cursor-pointer"
+                          className="w-10 h-10 rounded-full bg-buzz flex items-center justify-center hover:bg-accent-d transition-colors cursor-pointer"
                         >
                           <X size={18} color="#FFFFFF" />
                         </button>
@@ -159,8 +159,8 @@ export default function NotificationsPage() {
                 {data.gameInvitations.map((inv) => (
                   <Card key={inv.id} className="mb-3">
                     <div className="flex flex-row items-center">
-                      <div className="w-11 h-11 rounded-full bg-[#00D39720] flex items-center justify-center mr-3 shrink-0">
-                        <Gamepad2 size={20} color="#00D397" />
+                      <div className="w-11 h-11 rounded-full bg-accent/15 flex items-center justify-center mr-3 shrink-0">
+                        <Gamepad2 size={20} color="var(--primary)" />
                       </div>
                       <div className="flex-1">
                         <p className="text-txt font-semibold">{inv.senderName}</p>
@@ -171,7 +171,7 @@ export default function NotificationsPage() {
                       <div className="flex flex-row gap-2">
                         <button
                           onClick={() => handleAcceptGame(inv.id, inv.sessionCode)}
-                          className="w-10 h-10 rounded-full bg-[#00D397] flex items-center justify-center hover:bg-[#00C085] transition-colors cursor-pointer"
+                          className="w-10 h-10 rounded-full bg-accent flex items-center justify-center hover:bg-accent-d transition-colors cursor-pointer"
                         >
                           <Check size={18} className="text-btn-fg" />
                         </button>
@@ -208,13 +208,13 @@ export default function NotificationsPage() {
                         </p>
                       </div>
                       {inv.alreadyMember ? (
-                        <div className="px-3 py-2 rounded-lg bg-[#00D39720]">
-                          <span className="text-[#00D397] text-sm font-medium">Déjà membre</span>
+                        <div className="px-3 py-2 rounded-lg bg-accent/15">
+                          <span className="text-accent text-sm font-medium">Déjà membre</span>
                         </div>
                       ) : (
                         <button
                           onClick={() => handleJoinRoom(inv.roomCode)}
-                          className="flex items-center gap-1 px-3 py-2 rounded-lg bg-[#00D397] hover:opacity-90 transition-opacity cursor-pointer"
+                          className="flex items-center gap-1 px-3 py-2 rounded-lg bg-accent hover:opacity-90 transition-opacity cursor-pointer"
                         >
                           <span className="text-btn-fg font-semibold text-sm">Rejoindre</span>
                           <ArrowRight size={14} className="text-btn-fg" />
