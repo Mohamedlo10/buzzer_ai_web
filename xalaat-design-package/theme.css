@@ -1,0 +1,45 @@
+/* Xalaat — design tokens
+   Extraits du fichier design (palette "teranga", typo "boldonse", cartes "sharp").
+   Source de vérité unique : ne pas redéfinir ces valeurs ailleurs. */
+
+:root {
+  /* Couleurs — palette Teranga */
+  --color-bg: #F1E5C9;
+  --color-surface: #FBF4DF;
+  --color-surface-2: #F6EBC9;
+  --color-ink: #1A1410;
+  --color-ink-soft: #5B4E3D;
+  --color-line: rgba(26, 20, 16, 0.10);
+  --color-primary: #B8462A;
+  --color-primary-ink: #FBF4DF;
+  --color-accent: #E8A630;
+  --color-secondary: #2A3656;
+
+  /* Typographie */
+  --font-display: "Boldonse", "Bricolage Grotesque", system-ui, sans-serif;
+  --font-body: "Manrope", system-ui, sans-serif;
+  --font-accent: "Instrument Serif", Georgia, serif;
+  --font-display-weight: 400;
+
+  /* Cartes — variante "sharp" retenue */
+  --card-radius: 8px;
+  --card-shadow: none;
+  --card-border: none;
+
+  /* Radius pilule (boutons ronds, avatars, tabs) */
+  --radius-pill: 999px;
+}
+
+/* Variantes de carte alternatives, si besoin ailleurs dans l'appli */
+.card--outlined { border-radius: 20px; border: 1px solid var(--color-line); box-shadow: none; }
+.card--elevated { border-radius: 20px; border: none; box-shadow: 0 12px 28px -10px rgba(26,20,16,0.16); }
+.card--sharp    { border-radius: var(--card-radius); border: var(--card-border); box-shadow: var(--card-shadow); }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--color-bg);
+  font-family: var(--font-body);
+  color: var(--color-ink);
+}
+* { box-sizing: border-box; }
