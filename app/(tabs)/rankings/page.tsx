@@ -13,6 +13,7 @@ import type { GlobalRanking } from '~/types/api';
 
 import { PatternLozenge } from '~/components/shared/PatternLozenge';
 import { Avatar } from '~/components/shared/Avatar';
+import { UserProfileModal } from '~/components/shared/UserProfileModal';
 
 const PAGE_SIZE = 25;
 
@@ -63,6 +64,7 @@ export default function RankingsPage() {
   const [searchUsername, setSearchUsername] = useState('');
   const [searchTimer, setSearchTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
   const [showInfoModal, setShowInfoModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<GlobalRanking | null>(null);
 
   const user = useAuthStore((state) => state.user);
 
@@ -332,7 +334,7 @@ export default function RankingsPage() {
             return (
               <div
                 key={p.userId || index}
-                onClick={() => router.push(`/profile/${p.userId}`)}
+                onClick={() => setSelectedUser(p)}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -389,6 +391,16 @@ export default function RankingsPage() {
             </button>
           </div>
         )}
+
+        <UserProfileModal
+          visible={!!selectedUser}
+          userId={selectedUser?.userId ?? null}
+          username={selectedUser?.username}
+          avatarUrl={selectedUser?.avatarUrl}
+          score={Math.round(selectedUser?.glickoRating ?? selectedUser?.totalScore ?? 0)}
+          rank={selectedUser?.rank}
+          onClose={() => setSelectedUser(null)}
+        />
       </div>
     </SafeScreen>
   );

@@ -767,14 +767,14 @@ export default function RoomDetailPage() {
   return (
     <div className="min-h-screen bg-bg flex flex-col">
       {/* ── Header ── */}
-      <div className="flex items-center px-4 pt-6 pb-4 gap-3 shrink-0">
+      <div className="flex items-center px-4 pt-4 pb-3 gap-3 shrink-0 bg-bg border-b border-line z-10">
         <button
           onClick={() => router.back()}
           className="w-10 h-10 rounded-full bg-surface flex items-center justify-center shrink-0"
         >
           <ChevronRight size={20} color="var(--primary)" className="rotate-180" />
         </button>
-        <p className="text-txt font-bold text-xl flex-1">Room #{room.name}</p>
+        <p className="text-txt font-bold text-xl flex-1 truncate">Room #{room.name}</p>
         {isOwner && (
           <button
             onClick={() => router.push(`/room/${roomId}/edit`)}
@@ -785,8 +785,8 @@ export default function RoomDetailPage() {
         )}
       </div>
 
-      {/* ── Scrollable content ── */}
-      <div className={`flex-1 overflow-y-auto pb-[140px] px-4 flex flex-col gap-4${showConfigModal ? ' overflow-hidden' : ''}`}>
+      {/* ── Scrollable content area ── */}
+      <div className={`flex-1 px-4 py-4 flex flex-col gap-4 pb-[180px]${showConfigModal ? ' overflow-hidden' : ''}`}>
 
         {/* QR + Code */}
         <div className="bg-surface rounded-3xl border border-line p-5 flex flex-col items-center">
@@ -842,7 +842,7 @@ export default function RoomDetailPage() {
         />
 
         {/* Danger zone */}
-        <div className="bg-surface rounded-3xl border border-line overflow-hidden">
+        <div className="bg-surface rounded-3xl border border-line overflow-hidden mb-2">
           {!isOwner ? (
             <button
               onClick={handleLeaveRoom}
@@ -863,8 +863,8 @@ export default function RoomDetailPage() {
         </div>
       </div>
 
-      {/* ── Bottom action bar (above tab nav) ── */}
-      <div className="fixed bottom-[70px] left-0 right-0 bg-bg border-t border-line px-4 py-3 flex items-center justify-between gap-3 z-40">
+      {/* ── Floating Sticky Action Bar ── */}
+      <div className="fixed bottom-[calc(80px+24px)] left-4 right-4 bg-surface border border-line px-4 py-3 flex items-center justify-between gap-3 z-[60] rounded-[24px] shadow-[0_12px_40px_rgba(0,0,0,0.25)]">
         {/* Invite */}
         <button
           onClick={() => setShowInviteModal(true)}

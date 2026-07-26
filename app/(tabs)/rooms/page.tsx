@@ -20,6 +20,7 @@ import { PatternZigzag } from '~/components/shared/PatternZigzag';
 import { Avatar } from '~/components/shared/Avatar';
 import { QuizOfTheDayCard } from '~/components/shared/QuizOfTheDayCard';
 import { GlobalRankCard } from '~/components/shared/GlobalRankCard';
+import { AllRoomsModal } from '~/components/shared/AllRoomsModal';
 
 // ──────────────────────────────────────────────
 // Hub Progress Bar Helper
@@ -339,6 +340,7 @@ function RoomsContent() {
   const searchParams = useSearchParams();
   const { data, isLoading, isError, refetch } = useDashboardV2();
   const [showJoinModal, setShowJoinModal] = useState(false);
+  const [showAllRoomsModal, setShowAllRoomsModal] = useState(false);
   const [showAllRooms, setShowAllRooms] = useState(false);
   const user = useAuthStore((s) => s.user);
 
@@ -532,7 +534,7 @@ function RoomsContent() {
           </div>
           <button
             type="button"
-            onClick={() => router.push('/rooms/all')}
+            onClick={() => setShowAllRoomsModal(true)}
             style={{
               fontSize: 12,
               fontWeight: 700,
@@ -739,6 +741,7 @@ function RoomsContent() {
       </div>
 
       <JoinModal visible={showJoinModal} onClose={() => setShowJoinModal(false)} />
+      <AllRoomsModal visible={showAllRoomsModal} onClose={() => setShowAllRoomsModal(false)} />
     </SafeScreen>
   );
 }
