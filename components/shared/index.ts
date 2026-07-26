@@ -6,3 +6,6 @@ export { PatternLozenge } from './PatternLozenge';
 export { PatternZigzag } from './PatternZigzag';
 export { PatternDots } from './PatternDots';
 export { AnimatedCounter } from './AnimatedCounter';
+export { QuizOfTheDayCard } from './QuizOfTheDayCard';
+export type { ActiveRoomSummary } from './QuizOfTheDayCard';
+export { GlobalRankCard } from './GlobalRankCard';

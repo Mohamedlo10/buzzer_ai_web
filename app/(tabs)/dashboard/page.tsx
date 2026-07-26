@@ -9,9 +9,10 @@ import { useAuthStore } from '~/stores/useAuthStore';
 import { useDashboardV2 } from '~/lib/query/hooks';
 
 import { PatternLozenge } from '~/components/shared/PatternLozenge';
-import { PatternZigzag } from '~/components/shared/PatternZigzag';
 import { Avatar } from '~/components/shared/Avatar';
 import { AnimatedCounter } from '~/components/shared/AnimatedCounter';
+import { QuizOfTheDayCard } from '~/components/shared/QuizOfTheDayCard';
+import { GlobalRankCard } from '~/components/shared/GlobalRankCard';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -58,6 +59,7 @@ export default function DashboardPage() {
   const username = user?.username || 'Awa';
   const dayName = new Date().toLocaleDateString('fr-FR', { weekday: 'long' });
   const activeRooms = data.recentRooms?.filter((room) => room.hasActiveSession) || [];
+  const globalRank = data.globalStats?.rank || 154;
 
   const leaderboardList = [
     { rank: 1, name: username, score: data.globalStats?.totalScore || 18420, hue: 60 },
@@ -68,9 +70,9 @@ export default function DashboardPage() {
   const handleAiPromptSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (aiPrompt.trim()) {
-      router.push(`/room/create?prompt=${encodeURIComponent(aiPrompt.trim())}`);
+      router.push(`/solo/training?prompt=${encodeURIComponent(aiPrompt.trim())}`);
     } else {
-      router.push('/room/create');
+      router.push('/solo/training');
     }
   };
 
@@ -166,18 +168,18 @@ export default function DashboardPage() {
             gap: 6,
             overflowX: 'auto',
             flexWrap: 'nowrap',
-            marginBottom: 22,
+            marginBottom: 20,
             paddingBottom: 4,
           }}
           className="scrollbar-hide"
         >
           {[
-            { label: 'Mbalax', action: () => router.push('/room/create?prompt=Mbalax'), active: true },
-            { label: 'Multijoueur', action: () => router.push('/rooms'), active: false },
-            { label: 'Mode Solo', action: () => router.push('/solo'), active: false },
-            { label: 'Cinéma', action: () => router.push('/room/create?prompt=Cinema'), active: false },
-            { label: 'Histoire 🇸🇳', action: () => router.push('/room/create?prompt=Histoire'), active: false },
-            { label: 'Géo', action: () => router.push('/room/create?prompt=Geo'), active: false },
+            { label: 'Mbalax', action: () => router.push('/solo/training?prompt=Mbalax'), active: true },
+            { label: 'Carrière 🏆', action: () => router.push('/solo/career'), active: false },
+            { label: 'Entraînement 🎯', action: () => router.push('/solo/training'), active: false },
+            { label: 'Cinéma', action: () => router.push('/solo/training?prompt=Cinema'), active: false },
+            { label: 'Histoire 🇸🇳', action: () => router.push('/solo/training?prompt=Histoire'), active: false },
+            { label: 'Géo', action: () => router.push('/solo/training?prompt=Geo'), active: false },
           ].map((chip) => (
             <button
               key={chip.label}
@@ -200,70 +202,69 @@ export default function DashboardPage() {
           ))}
         </div>
 
-        {/* Featured Card (Quiz du jour / Active Session) */}
-        <div
-          style={{
-            position: 'relative',
-            overflow: 'hidden',
-            background: 'var(--color-secondary)',
-            color: '#FFFFFF',
-            borderRadius: 'var(--card-radius)',
-            padding: 18,
-            marginBottom: 18,
-          }}
-        >
-          <div style={{ position: 'absolute', inset: 0, opacity: 0.7, pointerEvents: 'none' }}>
-            <PatternZigzag color="var(--color-accent)" opacity={0.22} size={20} />
-          </div>
-          <div style={{ position: 'relative', zIndex: 1 }}>
-            <div style={{ fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', opacity: 0.75 }}>
-              {activeRooms.length > 0 ? 'Partie active' : 'Quiz du jour'}
+        {/* Quick Access Cards: Mode Carrière & Entraînement */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 18 }}>
+          <button
+            type="button"
+            onClick={() => router.push('/solo/career')}
+            style={{
+              background: 'var(--color-surface)',
+              border: '1px solid var(--color-line)',
+              borderRadius: 'var(--card-radius)',
+              padding: 16,
+              textAlign: 'left',
+              cursor: 'pointer',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              minHeight: 120,
+            }}
+          >
+            <div style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(232, 166, 48, 0.15)', display: 'grid', placeItems: 'center' }}>
+              <Trophy size={18} className="text-accent" />
             </div>
-            <div
-              style={{
-                fontFamily: 'var(--font-display)',
-                fontWeight: 'var(--font-display-weight)' as any,
-                fontSize: 24,
-                lineHeight: 1.05,
-                letterSpacing: '-0.02em',
-                margin: '8px 0 14px',
-              }}
-            >
-              {activeRooms.length > 0 ? activeRooms[0].name : 'Lutte sénégalaise'}
-              <br />
-              <span style={{ fontFamily: 'var(--font-accent)', fontStyle: 'italic', fontWeight: 400, opacity: 0.85 }}>
-                {activeRooms.length > 0 ? `Hôte: ${activeRooms[0].ownerName}` : "les années d'or"}
-              </span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, opacity: 0.85 }}>
-                <span>{activeRooms.length > 0 ? `${activeRooms[0].memberCount} membres` : '10 questions'}</span>·
-                <span>{activeRooms.length > 0 ? 'En direct' : '4 min'}</span>·
-                <span>+1 200 pts max</span>
+            <div>
+              <div style={{ fontFamily: 'var(--font-display)', fontWeight: 'var(--font-display-weight)' as any, fontSize: 15, color: 'var(--color-ink)' }}>
+                Carrière
               </div>
-              <button
-                type="button"
-                onClick={() =>
-                  activeRooms.length > 0
-                    ? router.push(`/room/${activeRooms[0].id}`)
-                    : router.push('/solo')
-                }
-                style={{
-                  background: 'var(--color-accent)',
-                  color: 'var(--color-ink)',
-                  padding: '8px 14px',
-                  borderRadius: 'var(--radius-pill)',
-                  fontSize: 13,
-                  fontWeight: 700,
-                  border: 'none',
-                  cursor: 'pointer',
-                }}
-              >
-                {activeRooms.length > 0 ? 'Rejoindre →' : 'Jouer →'}
-              </button>
+              <div style={{ fontSize: 11.5, color: 'var(--color-ink-soft)', marginTop: 2 }}>
+                12 niveaux de difficulté
+              </div>
             </div>
-          </div>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => router.push('/solo/training')}
+            style={{
+              background: 'var(--color-surface)',
+              border: '1px solid var(--color-line)',
+              borderRadius: 'var(--card-radius)',
+              padding: 16,
+              textAlign: 'left',
+              cursor: 'pointer',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              minHeight: 120,
+            }}
+          >
+            <div style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(184, 70, 42, 0.15)', display: 'grid', placeItems: 'center' }}>
+              <Dumbbell size={18} style={{ color: 'var(--color-primary)' }} />
+            </div>
+            <div>
+              <div style={{ fontFamily: 'var(--font-display)', fontWeight: 'var(--font-display-weight)' as any, fontSize: 15, color: 'var(--color-ink)' }}>
+                Entraînement
+              </div>
+              <div style={{ fontSize: 11.5, color: 'var(--color-ink-soft)', marginTop: 2 }}>
+                Sets IA & thèmes libres
+              </div>
+            </div>
+          </button>
         </div>
+
+        {/* Featured Card (Quiz du jour / Active Session) */}
+        <QuizOfTheDayCard activeRoom={activeRooms[0] ?? null} style={{ marginBottom: 18 }} />
 
         {/* Mini Leaderboard */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 10 }}>
@@ -330,6 +331,9 @@ export default function DashboardPage() {
             </div>
           ))}
         </div>
+
+        {/* Classement mondial — clôture la section « Top de la semaine » */}
+        <GlobalRankCard rank={globalRank} style={{ marginBottom: 4 }} />
       </div>
     </SafeScreen>
   );

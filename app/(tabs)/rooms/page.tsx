@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { X, QrCode } from 'lucide-react';
 
 import { SafeScreen } from '~/components/layout/SafeScreen';
@@ -17,6 +17,8 @@ import { useAuthStore } from '~/stores/useAuthStore';
 import { PatternLozenge } from '~/components/shared/PatternLozenge';
 import { PatternZigzag } from '~/components/shared/PatternZigzag';
 import { Avatar } from '~/components/shared/Avatar';
+import { QuizOfTheDayCard } from '~/components/shared/QuizOfTheDayCard';
+import { GlobalRankCard } from '~/components/shared/GlobalRankCard';
 
 // ──────────────────────────────────────────────
 // Hub Progress Bar Helper
@@ -299,12 +301,24 @@ function JoinModal({
 // Main Multijoueur / Rooms Page (03-hub-join-modal.jsx)
 // ──────────────────────────────────────────────
 
-export default function RoomsPage() {
+function RoomsContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { data, isLoading, isError, refetch } = useDashboardV2();
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [showAllRooms, setShowAllRooms] = useState(false);
   const user = useAuthStore((s) => s.user);
+
+  // Arrivée depuis l'onglet Multijoueur (`/rooms?join=1`) : on ouvre le modal
+  // de code puis on retire le paramètre. Sans ce nettoyage, un rafraîchissement
+  // ou un retour arrière le rouvrirait ; et comme l'URL redevient `/rooms`, un
+  // nouvel appui sur l'onglet est bien vu comme un changement et rejoue l'effet.
+  const wantsJoin = searchParams.get('join') === '1';
+  useEffect(() => {
+    if (!wantsJoin) return;
+    setShowJoinModal(true);
+    router.replace('/rooms', { scroll: false });
+  }, [wantsJoin, router]);
 
   if (isLoading) {
     return (
@@ -337,6 +351,7 @@ export default function RoomsPage() {
 
   const username = user?.username || 'Momo';
   const recentRooms = data.recentRooms || [];
+  const activeRoom = recentRooms.find((room) => room.hasActiveSession) ?? null;
   const topCategory = data.topCategories?.[0]?.category || 'Histoire du Sénégal';
   const topCategoryWinRate = Math.round(data.topCategories?.[0]?.winRate || 82);
   const rank = data.globalStats?.rank || 154;
@@ -462,76 +477,8 @@ export default function RoomsPage() {
           </div>
         </div>
 
-        {/* Solo mode card */}
-        <div
-          onClick={() => router.push('/solo')}
-          style={{
-            position: 'relative',
-            overflow: 'hidden',
-            background: '#2A3656',
-            color: '#FFFFFF',
-            borderRadius: 'var(--card-radius)',
-            padding: 18,
-            marginBottom: 22,
-            cursor: 'pointer',
-          }}
-        >
-          <div style={{ position: 'absolute', inset: 0, opacity: 0.6, pointerEvents: 'none' }}>
-            <PatternLozenge color="var(--color-accent)" opacity={0.2} size={22} />
-          </div>
-          <div style={{ position: 'relative', zIndex: 1 }}>
-            <div
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 6,
-                fontSize: 10.5,
-                letterSpacing: '0.12em',
-                textTransform: 'uppercase',
-                color: 'var(--color-accent)',
-                fontWeight: 700,
-                marginBottom: 8,
-              }}
-            >
-              ◆ Mode solo
-            </div>
-            <div
-              style={{
-                fontFamily: 'var(--font-display)',
-                fontWeight: 'var(--font-display-weight)' as any,
-                fontSize: 21,
-                letterSpacing: '-0.015em',
-                marginBottom: 8,
-              }}
-            >
-              Entraînement & carrière
-            </div>
-            <p style={{ fontSize: 13, lineHeight: 1.45, opacity: 0.82, margin: '0 0 16px', maxWidth: 260 }}>
-              Défie l'IA, progresse sur 12 niveaux et gagne des xalaat-points.
-            </p>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                router.push('/solo');
-              }}
-              style={{
-                width: '100%',
-                background: 'var(--color-accent)',
-                color: 'var(--color-ink)',
-                borderRadius: 'var(--radius-pill)',
-                padding: '12px 0',
-                textAlign: 'center',
-                fontSize: 13.5,
-                fontWeight: 700,
-                border: 'none',
-                cursor: 'pointer',
-              }}
-            >
-              Jouer en solo →
-            </button>
-          </div>
-        </div>
+        {/* Classement mondial — carte principale en haut */}
+        <GlobalRankCard rank={rank} style={{ marginBottom: 22 }} />
 
         {/* Your rooms list */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 10 }}>
@@ -663,73 +610,7 @@ export default function RoomsPage() {
           </div>
         )}
 
-        {/* Global Rank Card */}
-        <div
-          style={{
-            background: 'var(--color-ink)',
-            color: 'var(--color-bg)',
-            borderRadius: 'var(--card-radius)',
-            padding: '24px 20px',
-            textAlign: 'center',
-            marginBottom: 14,
-            position: 'relative',
-            overflow: 'hidden',
-          }}
-        >
-          <div style={{ position: 'absolute', inset: 0, opacity: 0.3, pointerEvents: 'none' }}>
-            <PatternLozenge color="var(--color-accent)" opacity={0.2} size={20} />
-          </div>
-          <div
-            style={{
-              position: 'relative',
-              width: 88,
-              height: 88,
-              margin: '0 auto 12px',
-              borderRadius: '50%',
-              border: '3px solid rgba(232, 166, 48, 0.35)',
-              display: 'grid',
-              placeItems: 'center',
-            }}
-          >
-            <div
-              style={{
-                width: 72,
-                height: 72,
-                borderRadius: '50%',
-                border: '3px solid var(--color-accent)',
-                display: 'grid',
-                placeItems: 'center',
-              }}
-            >
-              <div
-                style={{
-                  fontFamily: 'var(--font-display)',
-                  fontWeight: 'var(--font-display-weight)' as any,
-                  fontSize: 18,
-                  letterSpacing: '-0.01em',
-                  color: 'var(--color-accent)',
-                }}
-              >
-                #{rank}
-              </div>
-            </div>
-          </div>
-          <div
-            style={{
-              position: 'relative',
-              fontSize: 10,
-              letterSpacing: '0.14em',
-              textTransform: 'uppercase',
-              opacity: 0.6,
-              marginBottom: 4,
-            }}
-          >
-            Classement mondial
-          </div>
-          <div style={{ position: 'relative', fontFamily: 'var(--font-accent)', fontStyle: 'italic', fontSize: 14 }}>
-            Top 1% des joueurs
-          </div>
-        </div>
+
 
         {/* Stats Section */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingBottom: 24 }}>
@@ -827,5 +708,19 @@ export default function RoomsPage() {
 
       <JoinModal visible={showJoinModal} onClose={() => setShowJoinModal(false)} />
     </SafeScreen>
+  );
+}
+
+export default function RoomsPage() {
+  return (
+    <Suspense
+      fallback={
+        <SafeScreen className="bg-bg flex items-center justify-center min-h-[100dvh]">
+          <Spinner size="large" text="Chargement..." />
+        </SafeScreen>
+      }
+    >
+      <RoomsContent />
+    </Suspense>
   );
 }
