@@ -556,19 +556,7 @@ function RoomsContent() {
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 8 }}>
-                  <div
-                    style={{
-                      width: 36,
-                      height: 36,
-                      borderRadius: 10,
-                      background: 'rgba(232, 166, 48, 0.14)',
-                      display: 'grid',
-                      placeItems: 'center',
-                      fontSize: 16,
-                    }}
-                  >
-                    📁
-                  </div>
+                  <Avatar name={room.ownerName} size={36} />
                   <span
                     style={{
                       fontSize: 10,
@@ -600,11 +588,8 @@ function RoomsContent() {
                 </div>
                 <div style={{ height: 1, background: 'var(--color-line)', marginBottom: 10 }} />
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span style={{ display: 'flex', alignItems: 'center' }}>
-                    <Avatar name={room.ownerName} hue={60} size={24} ring="var(--color-surface)" />
-                    <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-ink-soft)', marginLeft: 6 }}>
-                      {room.memberCount} membres
-                    </span>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-ink-soft)' }}>
+                    👥 {room.memberCount} membre{room.memberCount > 1 ? 's' : ''}
                   </span>
                   <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-primary)' }}>Rejoindre →</span>
                 </div>
