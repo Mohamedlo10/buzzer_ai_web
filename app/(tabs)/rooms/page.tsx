@@ -2,6 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { createPortal } from 'react-dom';
 import { X, QrCode } from 'lucide-react';
 
 import { SafeScreen } from '~/components/layout/SafeScreen';
@@ -48,6 +49,22 @@ function JoinModal({
   const [isJoining, setIsJoining] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showScanner, setShowScanner] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (visible && !showScanner) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [visible, showScanner]);
 
   const resetState = () => {
     setCode('');
@@ -202,98 +219,114 @@ function JoinModal({
       .finally(() => setIsJoining(false));
   };
 
-  if (!visible && !showScanner) return null;
+  if (!mounted || (!visible && !showScanner)) return null;
 
-  return (
+  return createPortal(
     <>
       <QRScannerModal
         visible={showScanner}
         onClose={() => setShowScanner(false)}
         onScan={handleQRScan}
       />
-      <div
-        className="fixed inset-0 bg-scrim backdrop-blur-sm flex items-center justify-center z-50 p-5 animate-[fadein_.2s_ease-out_both]"
-        onClick={handleClose}
-        style={{ display: visible && !showScanner ? undefined : 'none' }}
-      >
+      {visible && !showScanner && (
         <div
-          className="w-full max-w-[340px] bg-surface border border-line rounded-3xl overflow-hidden animate-[pop_.3s_ease-out_both]"
-          onClick={(e) => e.stopPropagation()}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '16px',
+            background: 'var(--scrim)',
+            backdropFilter: 'blur(4px)',
+          }}
+          onClick={handleClose}
         >
-          <div className="flex flex-row items-center justify-between px-[18px] pt-[18px] pb-2.5">
-            <p className="text-txt font-display font-semibold text-xl">Rejoindre</p>
-            <button
-              onClick={handleClose}
-              className="w-[28px] h-[28px] rounded-full bg-surface-2 flex items-center justify-center text-txt-60 hover:bg-surface transition-colors cursor-pointer border-none"
-            >
-              <X size={15} />
-            </button>
-          </div>
-
-          <div className="px-[18px] pb-3.5">
-            <div className="bg-bg rounded-xl px-3 py-2.5">
-              <p className="text-txt-60 text-[12.5px] text-center leading-[1.5]">
-                Entre le code de la partie (6 chiffres) ou de la salle permanente pour la rejoindre.
-              </p>
+          <div
+            className="w-full max-w-[340px] bg-surface border border-line rounded-3xl overflow-hidden animate-[pop_.3s_ease-out_both]"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              maxHeight: '85vh',
+              overflowY: 'auto',
+            }}
+          >
+            <div className="flex flex-row items-center justify-between px-[18px] pt-[18px] pb-2.5">
+              <p className="text-txt font-display font-semibold text-xl">Rejoindre</p>
+              <button
+                onClick={handleClose}
+                className="w-[28px] h-[28px] rounded-full bg-surface-2 flex items-center justify-center text-txt-60 hover:bg-surface transition-colors cursor-pointer border-none"
+              >
+                <X size={15} />
+              </button>
             </div>
-          </div>
 
-          <div className="px-[18px] pb-1.5">
-            <p className="text-txt font-semibold text-[12px] mb-2">Code secret</p>
-            <input
-              value={code}
-              onChange={(e) => {
-                setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, ''));
-                setError(null);
-              }}
-              placeholder="Ex : ABC123"
-              className={`w-full bg-bg rounded-[12px] px-4 py-3 text-txt text-center font-display font-semibold text-[20px] tracking-[0.1em] border outline-none transition-colors focus:border-accent ${
-                error ? 'border-buzz' : 'border-line'
-              }`}
-              maxLength={20}
-              autoCapitalize="characters"
-              autoComplete="off"
-              autoFocus
-              onKeyDown={(e) => e.key === 'Enter' && handleJoin()}
-            />
-          </div>
-
-          {error && (
-            <div className="px-[18px] pt-2.5">
-              <div className="flex items-start gap-2 px-3 py-2.5 rounded-xl bg-buzz/10 border border-buzz/30">
-                <X size={14} className="text-buzz shrink-0 mt-0.5" />
-                <p className="text-buzz-h text-[12.5px] font-semibold leading-[1.4]">{error}</p>
+            <div className="px-[18px] pb-3.5">
+              <div className="bg-bg rounded-xl px-3 py-2.5">
+                <p className="text-txt-60 text-[12.5px] text-center leading-[1.5]">
+                  Entre le code de la partie (6 chiffres) ou de la salle permanente pour la rejoindre.
+                </p>
               </div>
             </div>
-          )}
 
-          <div className="px-[18px] pt-3.5 pb-2">
-            <button
-              onClick={handleJoin}
-              disabled={isJoining || !code.trim()}
-              className="w-full py-3.5 rounded-full flex items-center justify-center gap-2 font-bold text-sm transition-opacity cursor-pointer disabled:cursor-not-allowed border-none"
-              style={
-                isJoining || !code.trim()
-                  ? { background: 'var(--color-surface-2)', color: 'var(--color-ink-soft)' }
-                  : { background: 'var(--color-primary)', color: 'var(--color-primary-ink)' }
-              }
-            >
-              {isJoining ? <Spinner text="Connexion…" /> : 'Rejoindre'}
-            </button>
-          </div>
+            <div className="px-[18px] pb-1.5">
+              <p className="text-txt font-semibold text-[12px] mb-2">Code secret</p>
+              <input
+                value={code}
+                onChange={(e) => {
+                  setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, ''));
+                  setError(null);
+                }}
+                placeholder="Ex : ABC123"
+                className={`w-full bg-bg rounded-[12px] px-4 py-3 text-txt text-center font-display font-semibold text-[20px] tracking-[0.1em] border outline-none transition-colors focus:border-accent ${
+                  error ? 'border-buzz' : 'border-line'
+                }`}
+                maxLength={20}
+                autoCapitalize="characters"
+                autoComplete="off"
+                autoFocus
+                onKeyDown={(e) => e.key === 'Enter' && handleJoin()}
+              />
+            </div>
 
-          <div className="px-[18px] pb-[18px] text-center">
-            <button
-              onClick={() => setShowScanner(true)}
-              disabled={isJoining}
-              className="text-primary font-bold text-sm bg-transparent border-none cursor-pointer"
-            >
-              ▦ Scanner un QR code
-            </button>
+            {error && (
+              <div className="px-[18px] pt-2.5">
+                <div className="flex items-start gap-2 px-3 py-2.5 rounded-xl bg-buzz/10 border border-buzz/30">
+                  <X size={14} className="text-buzz shrink-0 mt-0.5" />
+                  <p className="text-buzz-h text-[12.5px] font-semibold leading-[1.4]">{error}</p>
+                </div>
+              </div>
+            )}
+
+            <div className="px-[18px] pt-3.5 pb-2">
+              <button
+                onClick={handleJoin}
+                disabled={isJoining || !code.trim()}
+                className="w-full py-3.5 rounded-full flex items-center justify-center gap-2 font-bold text-sm transition-opacity cursor-pointer disabled:cursor-not-allowed border-none"
+                style={
+                  isJoining || !code.trim()
+                    ? { background: 'var(--color-surface-2)', color: 'var(--color-ink-soft)' }
+                    : { background: 'var(--color-primary)', color: 'var(--color-primary-ink)' }
+                }
+              >
+                {isJoining ? <Spinner text="Connexion…" /> : 'Rejoindre'}
+              </button>
+            </div>
+
+            <div className="px-[18px] pb-[18px] text-center">
+              <button
+                onClick={() => setShowScanner(true)}
+                disabled={isJoining}
+                className="text-primary font-bold text-sm bg-transparent border-none cursor-pointer"
+              >
+                ▦ Scanner un QR code
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-    </>
+      )}
+    </>,
+    document.body
   );
 }
 
@@ -313,7 +346,7 @@ function RoomsContent() {
   // de code puis on retire le paramètre. Sans ce nettoyage, un rafraîchissement
   // ou un retour arrière le rouvrirait ; et comme l'URL redevient `/rooms`, un
   // nouvel appui sur l'onglet est bien vu comme un changement et rejoue l'effet.
-  const wantsJoin = searchParams.get('join') === '1';
+  const wantsJoin = searchParams.get('join') === '1' || searchParams.get('openModal') === 'true';
   useEffect(() => {
     if (!wantsJoin) return;
     setShowJoinModal(true);

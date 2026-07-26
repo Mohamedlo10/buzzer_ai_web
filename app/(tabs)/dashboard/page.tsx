@@ -177,6 +177,7 @@ export default function DashboardPage() {
             { label: 'Mbalax', action: () => router.push('/solo/training?prompt=Mbalax'), active: true },
             { label: 'Carrière 🏆', action: () => router.push('/solo/career'), active: false },
             { label: 'Entraînement 🎯', action: () => router.push('/solo/training'), active: false },
+            { label: 'Multijoueur 👥', action: () => router.push('/rooms?join=1'), active: false },
             { label: 'Cinéma', action: () => router.push('/solo/training?prompt=Cinema'), active: false },
             { label: 'Histoire 🇸🇳', action: () => router.push('/solo/training?prompt=Histoire'), active: false },
             { label: 'Géo', action: () => router.push('/solo/training?prompt=Geo'), active: false },
