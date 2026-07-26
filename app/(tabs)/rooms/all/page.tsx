@@ -11,19 +11,32 @@ import { Avatar } from '~/components/shared/Avatar';
 
 import * as roomsApi from '~/lib/api/rooms';
 import * as dashboardApi from '~/lib/api/dashboard';
-import type { RoomSummaryResponse } from '~/types/api';
+import { useAuthStore } from '~/stores/useAuthStore';
 
-type FilterType = 'all' | 'active' | 'my' | 'public';
+type FilterType = 'all' | 'active' | 'public' | 'my';
+
+export interface UICombinedRoom {
+  id: string;
+  name: string;
+  code: string;
+  ownerName: string;
+  memberCount: number;
+  hasActiveSession?: boolean;
+  isPrivate?: boolean;
+  isOwner?: boolean;
+}
 
 export default function AllRoomsPage() {
   const router = useRouter();
-  const [rooms, setRooms] = useState<RoomSummaryResponse[]>([]);
+  const user = useAuthStore((s) => s.user);
+
+  const [rooms, setRooms] = useState<UICombinedRoom[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
   const [isLoading, setIsLoading] = useState(true);
 
   // Access code modal for private rooms
-  const [selectedRoom, setSelectedRoom] = useState<RoomSummaryResponse | null>(null);
+  const [selectedRoom, setSelectedRoom] = useState<UICombinedRoom | null>(null);
   const [accessCodeInput, setAccessCodeInput] = useState('');
   const [joinError, setJoinError] = useState<string | null>(null);
   const [isJoining, setIsJoining] = useState(false);
@@ -31,20 +44,38 @@ export default function AllRoomsPage() {
   const fetchRooms = async () => {
     setIsLoading(true);
     try {
-      // Load both dashboard rooms and user rooms for maximum completeness
       const [dashV2, userRooms] = await Promise.all([
         dashboardApi.getDashboardV2().catch(() => null),
         roomsApi.getUserRooms().catch(() => []),
       ]);
 
-      const map = new Map<string, RoomSummaryResponse>();
+      const map = new Map<string, UICombinedRoom>();
+
       if (dashV2?.recentRooms) {
-        dashV2.recentRooms.forEach((r) => map.set(r.id, r));
+        dashV2.recentRooms.forEach((r) => {
+          map.set(r.id, {
+            id: r.id,
+            name: r.name,
+            code: r.code,
+            ownerName: r.ownerName,
+            memberCount: r.memberCount,
+            hasActiveSession: r.hasActiveSession,
+            isOwner: r.ownerName === user?.username,
+          });
+        });
       }
-      if (dashV2?.activeRooms) {
-        dashV2.activeRooms.forEach((r) => map.set(r.id, r));
-      }
-      userRooms.forEach((r) => map.set(r.id, r));
+
+      userRooms.forEach((r) => {
+        map.set(r.id, {
+          id: r.id,
+          name: r.name,
+          code: r.code,
+          ownerName: r.ownerName,
+          memberCount: r.memberCount,
+          hasActiveSession: r.hasActiveSession,
+          isOwner: r.ownerId === user?.id || r.ownerName === user?.username,
+        });
+      });
 
       setRooms(Array.from(map.values()));
     } catch (err) {
@@ -56,9 +87,9 @@ export default function AllRoomsPage() {
 
   useEffect(() => {
     fetchRooms();
-  }, []);
+  }, [user]);
 
-  const handleJoinClick = (room: RoomSummaryResponse) => {
+  const handleJoinClick = (room: UICombinedRoom) => {
     if (room.isPrivate) {
       setSelectedRoom(room);
       setAccessCodeInput('');
@@ -83,7 +114,6 @@ export default function AllRoomsPage() {
   };
 
   const filteredRooms = rooms.filter((r) => {
-    // Search query filter
     const q = searchQuery.toLowerCase().trim();
     if (q) {
       const matchName = r.name?.toLowerCase().includes(q);
@@ -92,9 +122,8 @@ export default function AllRoomsPage() {
       if (!matchName && !matchOwner && !matchCode) return false;
     }
 
-    // Tab filter
-    if (activeFilter === 'active') return r.status === 'IN_PROGRESS' || r.status === 'PLAYING';
-    if (activeFilter === 'my') return r.isOwner;
+    if (activeFilter === 'active') return !!r.hasActiveSession;
+    if (activeFilter === 'my') return !!r.isOwner;
     if (activeFilter === 'public') return !r.isPrivate;
 
     return true;
@@ -158,7 +187,7 @@ export default function AllRoomsPage() {
               Tous les salons
             </h1>
             <div style={{ fontSize: 12, color: 'var(--color-ink-soft)' }}>
-              {filteredRooms.length} salons trouvés
+              {filteredRooms.length} salons disponibles
             </div>
           </div>
 
@@ -302,7 +331,7 @@ export default function AllRoomsPage() {
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {filteredRooms.map((room) => {
-              const isLive = room.status === 'IN_PROGRESS' || room.status === 'PLAYING';
+              const isLive = !!room.hasActiveSession;
 
               return (
                 <div
