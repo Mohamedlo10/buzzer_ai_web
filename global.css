@@ -166,6 +166,11 @@
     box-sizing: border-box;
   }
 
+  input:focus, textarea:focus, select:focus, button:focus {
+    outline: none !important;
+    box-shadow: none;
+  }
+
   ::-webkit-scrollbar {
     width: 6px;
     height: 6px;

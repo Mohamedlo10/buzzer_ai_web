@@ -43,7 +43,7 @@ export function DashboardHeader({
   const user = useAuthStore((state) => state.user);
 
   return (
-    <div className="flex flex-row items-center justify-between px-4 pb-3 pt-5 bg-header-glass backdrop-blur-md border-b border-line">
+    <header className="sticky top-0 z-50 flex flex-row items-center justify-between px-4 pb-3 pt-4 bg-header-glass backdrop-blur-md border-b border-line">
       {/* Logo & Wordmark */}
       <XalaatLogo size={40} />
 
@@ -95,7 +95,7 @@ export function DashboardHeader({
           )}
         </button>
       </div>
-    </div>
+    </header>
   );
 }
 

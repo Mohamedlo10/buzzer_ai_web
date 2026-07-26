@@ -403,54 +403,6 @@ export default function DashboardPage() {
 
   return (
     <SafeScreen className="bg-bg">
-      {/* ── Custom Header (aligned with mockup) ── */}
-      <div className="flex flex-row items-center justify-between px-5 pt-6 pb-4">
-        <div className="flex flex-row items-center gap-3">
-          {/* Profile Avatar */}
-          <button
-            onClick={() => router.push('/profile')}
-            className="w-10 h-10 rounded-full overflow-hidden border border-line bg-surface-2 flex items-center justify-center"
-          >
-            {user?.avatarUrl ? (
-              <img src={user.avatarUrl} alt="Profile" className="w-full h-full object-cover" />
-            ) : (
-              <span className="text-txt font-bold text-sm">
-                {user?.username?.charAt(0).toUpperCase()}
-              </span>
-            )}
-          </button>
-          <span className="text-txt font-display font-bold text-sm tracking-widest uppercase">
-            XALAAT HUB
-          </span>
-        </div>
-
-        {/* Actions (Bell notification) */}
-        <div className="flex flex-row items-center gap-2">
-          {/* Bascule de thème retirée — l'app est en clair pour tous.
-              À réafficher en même temps que le mode sombre (cf. ThemeProvider).
-          <button
-            onClick={toggleTheme}
-            className="w-10 h-10 rounded-full bg-surface border border-line flex items-center justify-center text-txt hover:text-accent transition-colors cursor-pointer"
-            aria-label={theme === 'dark' ? 'Mode clair' : 'Mode sombre'}
-          >
-            {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
-          </button>
-          */}
-
-          {/* Notification Bell */}
-          <button
-            onClick={() => router.push('/notifications')}
-            className="relative w-10 h-10 flex items-center justify-center text-txt hover:text-accent transition-colors cursor-pointer"
-            aria-label="Notifications"
-          >
-            <Bell size={20} />
-            {pendingTotal > 0 && (
-              <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-buzz rounded-full animate-pulse" />
-            )}
-          </button>
-        </div>
-      </div>
-
       <div className="overflow-y-auto pb-24">
         {/* ── Welcome back section ── */}
         <div className="px-5 py-4">

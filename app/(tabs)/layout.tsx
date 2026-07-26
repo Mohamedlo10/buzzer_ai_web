@@ -17,13 +17,12 @@ export default function TabsLayout({
 
   // Mark the user online as soon as they enter the app
   usePresence();
-  const isDashboard = pathname === '/dashboard' || pathname.startsWith('/dashboard/');
   const isRoom = pathname.startsWith('/room/');
 
   return (
     <AuthGuard>
-      <div className="flex flex-col min-h-screen">
-        {!isDashboard && !isRoom && <DashboardHeader notificationCount={pendingRequests.length} />}
+      <div className="flex flex-col min-h-[100dvh]">
+        {!isRoom && <DashboardHeader notificationCount={pendingRequests.length} />}
         <main className="flex-1 pb-[78px]">{children}</main>
         <TabBar />
       </div>
