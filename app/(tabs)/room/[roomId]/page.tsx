@@ -20,11 +20,11 @@ import * as sessionsApi from '~/lib/api/sessions';
 import type { FriendResponse, RoomDetailResponse, RoomSessionResponse, SessionStatus } from '~/types/api';
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; icon: React.ComponentType<{ size: number; color: string }> }> = {
-  LOBBY:      { label: 'Lobby',        color: 'var(--primary)', bg: 'rgb(var(--primary-rgb) / 0.125)', icon: Users },
+  LOBBY: { label: 'Lobby', color: 'var(--primary)', bg: 'rgb(var(--primary-rgb) / 0.125)', icon: Users },
   GENERATING: { label: 'Génération...', color: 'var(--gold)', bg: 'rgb(var(--gold-rgb) / 0.125)', icon: Zap },
-  PLAYING:    { label: 'En cours',     color: 'var(--indigo)', bg: 'rgb(var(--indigo-rgb) / 0.125)', icon: Swords },
-  PAUSED:     { label: 'Pause',        color: 'var(--warn)', bg: 'rgb(var(--warn-rgb) / 0.125)', icon: Clock },
-  RESULTS:    { label: 'Terminée',     color: '#C0C0C0', bg: '#C0C0C020', icon: Trophy },
+  PLAYING: { label: 'En cours', color: 'var(--indigo)', bg: 'rgb(var(--indigo-rgb) / 0.125)', icon: Swords },
+  PAUSED: { label: 'Pause', color: 'var(--warn)', bg: 'rgb(var(--warn-rgb) / 0.125)', icon: Clock },
+  RESULTS: { label: 'Terminée', color: '#C0C0C0', bg: '#C0C0C020', icon: Trophy },
 };
 
 // ── Room Code Card (with inline QR) ─────────────────────────────────────────
@@ -117,11 +117,11 @@ function ActiveSessionCard({
 
   const getButtonLabel = (status: SessionStatus) => {
     switch (status) {
-      case 'LOBBY':   return 'Rejoindre';
+      case 'LOBBY': return 'Rejoindre';
       case 'PLAYING': return 'Reprendre';
-      case 'PAUSED':  return 'Reprendre';
+      case 'PAUSED': return 'Reprendre';
       case 'RESULTS': return 'Voir résultats';
-      default:        return 'Voir';
+      default: return 'Voir';
     }
   };
 
@@ -400,7 +400,7 @@ function InviteFriendsModal({
     friendsApi.getFriends().then((list) => {
       // Exclure les membres déjà dans la salle
       setFriends(list.filter((f) => !memberUserIds.includes(f.id)));
-    }).catch(() => {}).finally(() => setIsLoading(false));
+    }).catch(() => { }).finally(() => setIsLoading(false));
   }, []);
 
   const isAlreadyInvited = (id: string) => pendingInvitationUserIds.includes(id);
@@ -473,9 +473,8 @@ function InviteFriendsModal({
                   key={friend.id}
                   onClick={() => toggle(friend.id)}
                   disabled={alreadyInvited}
-                  className={`flex items-center px-4 py-3 w-full transition-colors ${
-                    alreadyInvited ? 'opacity-50 cursor-not-allowed' : 'hover:bg-white/5 cursor-pointer'
-                  }`}
+                  className={`flex items-center px-4 py-3 w-full transition-colors ${alreadyInvited ? 'opacity-50 cursor-not-allowed' : 'hover:bg-white/5 cursor-pointer'
+                    }`}
                 >
                   {/* Avatar */}
                   <div className="relative shrink-0 mr-3">
@@ -485,9 +484,8 @@ function InviteFriendsModal({
                       </span>
                     </div>
                     <span
-                      className={`absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full border-2 border-bg ${
-                        friend.isOnline ? 'bg-accent' : 'bg-txt-40'
-                      }`}
+                      className={`absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full border-2 border-bg ${friend.isOnline ? 'bg-accent' : 'bg-txt-40'
+                        }`}
                     />
                   </div>
 
@@ -509,11 +507,10 @@ function InviteFriendsModal({
                     </div>
                   ) : (
                     <div
-                      className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
-                        isSelected
+                      className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${isSelected
                           ? 'bg-accent border-accent'
                           : 'border-line bg-transparent'
-                      }`}
+                        }`}
                     >
                       {isSelected && (
                         <svg width="12" height="9" viewBox="0 0 12 9" fill="none">
@@ -534,13 +531,12 @@ function InviteFriendsModal({
             <button
               onClick={handleSend}
               disabled={selected.size === 0 || isSending || sent}
-              className={`w-full py-4 rounded-2xl flex items-center justify-center transition-colors font-bold text-base ${
-                sent
+              className={`w-full py-4 rounded-2xl flex items-center justify-center transition-colors font-bold text-base ${sent
                   ? 'bg-accent/25 cursor-default'
                   : selected.size === 0 || isSending
-                  ? 'bg-surface-2 cursor-not-allowed'
-                  : 'bg-accent hover:opacity-90 cursor-pointer'
-              }`}
+                    ? 'bg-surface-2 cursor-not-allowed'
+                    : 'bg-accent hover:opacity-90 cursor-pointer'
+                }`}
             >
               {sent ? (
                 <span className="text-accent">Invitations envoyées ✓</span>
@@ -667,9 +663,9 @@ export default function RoomDetailPage() {
     } else {
       const routes: Record<string, string> = {
         GENERATING: `/session/${code}/loading`,
-        PLAYING:    `/session/${code}/game`,
-        RESULTS:    `/session/${code}/results`,
-        PAUSED:     `/session/${code}/game`,
+        PLAYING: `/session/${code}/game`,
+        RESULTS: `/session/${code}/results`,
+        PAUSED: `/session/${code}/game`,
       };
       router.push(`${routes[status] || `/session/${code}/lobby`}?sessionId=${sessionId}&roomId=${roomId}`);
     }

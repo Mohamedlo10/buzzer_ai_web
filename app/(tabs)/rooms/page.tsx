@@ -303,6 +303,7 @@ export default function RoomsPage() {
   const router = useRouter();
   const { data, isLoading, isError, refetch } = useDashboardV2();
   const [showJoinModal, setShowJoinModal] = useState(false);
+  const [showAllRooms, setShowAllRooms] = useState(false);
   const user = useAuthStore((s) => s.user);
 
   if (isLoading) {
@@ -461,16 +462,18 @@ export default function RoomsPage() {
           </div>
         </div>
 
-        {/* Solo mode banner */}
+        {/* Solo mode card */}
         <div
+          onClick={() => router.push('/solo')}
           style={{
             position: 'relative',
             overflow: 'hidden',
-            background: 'var(--color-secondary)',
+            background: '#2A3656',
             color: '#FFFFFF',
             borderRadius: 'var(--card-radius)',
             padding: 18,
             marginBottom: 22,
+            cursor: 'pointer',
           }}
         >
           <div style={{ position: 'absolute', inset: 0, opacity: 0.6, pointerEvents: 'none' }}>
@@ -508,7 +511,10 @@ export default function RoomsPage() {
             </p>
             <button
               type="button"
-              onClick={() => router.push('/solo')}
+              onClick={(e) => {
+                e.stopPropagation();
+                router.push('/solo');
+              }}
               style={{
                 width: '100%',
                 background: 'var(--color-accent)',
@@ -539,11 +545,25 @@ export default function RoomsPage() {
           >
             Tes salons ({recentRooms.length})
           </div>
+          <button
+            type="button"
+            onClick={() => router.push('/rooms/all')}
+            style={{
+              fontSize: 12.5,
+              fontWeight: 700,
+              color: 'var(--color-primary)',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+            }}
+          >
+            Voir plus →
+          </button>
         </div>
 
         {recentRooms.length > 0 ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 22 }}>
-            {recentRooms.map((room) => (
+            {(showAllRooms ? recentRooms : recentRooms.slice(0, 3)).map((room) => (
               <div
                 key={room.id}
                 onClick={() => router.push(`/room/${room.id}`)}

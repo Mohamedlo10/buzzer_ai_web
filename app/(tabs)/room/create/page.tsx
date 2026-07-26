@@ -2,10 +2,9 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, FolderOpen, Users } from 'lucide-react';
-
-import { Card } from '~/components/ui/Card';
+import { SafeScreen } from '~/components/layout/SafeScreen';
 import { Spinner } from '~/components/loading/Spinner';
+import { PatternLozenge } from '~/components/shared/PatternLozenge';
 import * as roomsApi from '~/lib/api/rooms';
 
 export default function CreateRoomPage() {
@@ -19,7 +18,7 @@ export default function CreateRoomPage() {
   const handleCreate = async () => {
     const trimmedName = name.trim();
     if (!trimmedName) {
-      setError('Le nom de la salle est requis');
+      setError('Le nom du salon est requis');
       return;
     }
 
@@ -47,108 +46,216 @@ export default function CreateRoomPage() {
   };
 
   return (
-    <div className="min-h-screen bg-bg">
-      {/* Header */}
-      <div className="bg-bg pt-6 pb-4 px-4 border-b border-line">
-        <div className="flex items-center">
-          <button
-            onClick={() => router.back()}
-            className="w-10 h-10 rounded-full bg-surface flex items-center justify-center mr-3 hover:bg-surface-2 transition-colors"
+    <SafeScreen className="bg-bg min-h-[100dvh] relative overflow-hidden flex flex-col">
+      {/* Background pattern */}
+      <div style={{ position: 'absolute', inset: 0, opacity: 0.5, pointerEvents: 'none' }}>
+        <PatternLozenge color="var(--color-primary)" opacity={0.05} size={26} />
+      </div>
+
+      {/* Top bar */}
+      <div
+        style={{
+          position: 'relative',
+          zIndex: 2,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 12,
+          padding: '16px 20px',
+          borderBottom: '1px solid var(--color-line)',
+        }}
+      >
+        <button
+          onClick={() => router.back()}
+          type="button"
+          style={{
+            width: 36,
+            height: 36,
+            borderRadius: 'var(--radius-pill)',
+            background: 'var(--color-surface)',
+            border: '1px solid var(--color-line)',
+            display: 'grid',
+            placeItems: 'center',
+            fontSize: 16,
+            cursor: 'pointer',
+            color: 'var(--color-ink)',
+          }}
+        >
+          ←
+        </button>
+        <div>
+          <div
+            style={{
+              fontFamily: 'var(--font-display)',
+              fontWeight: 'var(--font-display-weight)' as any,
+              fontSize: 19,
+              letterSpacing: '-0.015em',
+            }}
           >
-            <ArrowLeft size={20} color="#FFFFFF" />
-          </button>
-          <div className="flex-1">
-            <p className="text-txt font-bold text-xl">Nouvelle Salle</p>
-            <p className="text-txt-60 text-xs mt-0.5">Créez un espace pour vos parties</p>
+            Nouveau salon
           </div>
+          <div style={{ fontSize: 12, color: 'var(--color-ink-soft)' }}>Crée un espace pour tes parties</div>
         </div>
       </div>
 
-      {/* Content */}
-      <div className="overflow-y-auto">
-        <div className="px-4 pt-6">
-          <Card className="mb-4">
-            <div className="flex items-center justify-center mb-6">
-              <div className="w-16 h-16 rounded-full bg-accent/15 flex items-center justify-center">
-                <FolderOpen size={28} color="var(--primary)" />
-              </div>
-            </div>
-
-            <p className="text-txt font-medium mb-2">Nom de la salle *</p>
-            <input
-              value={name}
-              onChange={(e) => {
-                setName(e.target.value);
-                setError(null);
-              }}
-              placeholder="Ex: Soirée quiz, Les Champions..."
-              className="w-full bg-bg rounded-xl px-4 py-3 text-txt border border-line focus:border-accent focus:outline-none mb-4 placeholder:text-txt-25"
-              maxLength={50}
-              autoFocus
-            />
-
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-txt font-medium">Nombre maximum de joueurs</p>
-              <div className="flex items-center gap-2 bg-bg rounded-xl border border-line px-3 py-1.5">
-                <Users size={14} color="var(--primary)" />
-                <span className="text-txt font-bold text-sm w-8 text-center">{maxPlayers}</span>
-              </div>
-            </div>
-            <input
-              type="range"
-              min={2}
-              max={250}
-              value={maxPlayers}
-              onChange={(e) => setMaxPlayers(Number(e.target.value))}
-              className="w-full accent-[var(--primary)] mb-1"
-            />
-            <div className="flex justify-between text-txt-40 text-xs mb-4">
-              <span>2</span>
-              <span>250</span>
-            </div>
-
-            <p className="text-txt font-medium mb-2">Description (optionnel)</p>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Décrivez votre salle..."
-              className="w-full bg-bg rounded-xl px-4 py-3 text-txt border border-line focus:border-accent focus:outline-none resize-none placeholder:text-txt-25"
-              maxLength={200}
-              rows={3}
-              style={{ minHeight: 80 }}
-            />
-          </Card>
-
-          {error && (
-            <div className="mb-4 p-4 bg-buzz/15 rounded-xl border border-buzz/25">
-              <p className="text-buzz text-center font-medium">{error}</p>
-            </div>
-          )}
-
-          <button
-            onClick={handleCreate}
-            disabled={isCreating}
-            className={`w-full py-4 rounded-2xl flex items-center justify-center transition-colors ${
-              isCreating
-                ? 'bg-surface-2 cursor-not-allowed'
-                : 'bg-accent hover:bg-accent-d'
-            }`}
-            style={
-              !isCreating
-                ? { boxShadow: '0 0 12px rgb(var(--primary-rgb) / 0.4)' }
-                : undefined
-            }
+      {/* Main Content */}
+      <div
+        style={{
+          position: 'relative',
+          zIndex: 2,
+          flex: 1,
+          padding: '20px 20px 24px',
+        }}
+        className="overflow-y-auto"
+      >
+        <div
+          style={{
+            background: 'var(--color-surface)',
+            borderRadius: 'var(--card-radius)',
+            border: '1px solid var(--color-line)',
+            padding: 22,
+            marginBottom: 20,
+          }}
+        >
+          <div
+            style={{
+              width: 56,
+              height: 56,
+              borderRadius: '50%',
+              background: 'rgba(184, 70, 42, 0.12)',
+              display: 'grid',
+              placeItems: 'center',
+              fontSize: 22,
+              margin: '0 auto 22px',
+            }}
           >
-            {isCreating ? (
-              <Spinner text="Création..." />
-            ) : (
-              <span className="text-btn-fg font-bold text-lg">Créer la salle</span>
-            )}
-          </button>
+            📁
+          </div>
+
+          <label style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-ink)', display: 'block', marginBottom: 8 }}>
+            Nom du salon *
+          </label>
+          <input
+            value={name}
+            onChange={(e) => {
+              setName(e.target.value);
+              setError(null);
+            }}
+            placeholder="Ex : Soirée quiz, Les champions…"
+            style={{
+              width: '100%',
+              padding: '13px 14px',
+              borderRadius: 12,
+              border: '1px solid var(--color-line)',
+              background: 'var(--color-bg)',
+              color: 'var(--color-ink)',
+              fontSize: 14,
+              fontFamily: 'inherit',
+              marginBottom: 20,
+              outline: 'none',
+              boxSizing: 'border-box',
+            }}
+            maxLength={50}
+            autoFocus
+          />
+
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+            <label style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-ink)' }}>
+              Nombre maximum de joueurs
+            </label>
+            <span
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
+                padding: '5px 10px',
+                borderRadius: 'var(--radius-pill)',
+                background: 'rgba(184, 70, 42, 0.12)',
+                color: 'var(--color-primary)',
+                fontSize: 12.5,
+                fontWeight: 700,
+              }}
+            >
+              👥 {maxPlayers}
+            </span>
+          </div>
+
+          <input
+            type="range"
+            min={2}
+            max={250}
+            value={maxPlayers}
+            onChange={(e) => setMaxPlayers(Number(e.target.value))}
+            className="w-full accent-[var(--color-primary)] mb-1 cursor-pointer"
+          />
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--color-ink-soft)', marginBottom: 22 }}>
+            <span>2</span>
+            <span>250</span>
+          </div>
+
+          <label style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-ink)', display: 'block', marginBottom: 8 }}>
+            Description (optionnel)
+          </label>
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Décris ton salon…"
+            rows={3}
+            style={{
+              width: '100%',
+              padding: '13px 14px',
+              borderRadius: 12,
+              border: '1px solid var(--color-line)',
+              background: 'var(--color-bg)',
+              color: 'var(--color-ink)',
+              fontSize: 14,
+              fontFamily: 'inherit',
+              resize: 'none',
+              outline: 'none',
+              boxSizing: 'border-box',
+            }}
+            maxLength={200}
+          />
         </div>
 
-        <div className="h-8" />
+        {error && (
+          <div
+            style={{
+              marginBottom: 16,
+              padding: 12,
+              borderRadius: 12,
+              background: 'rgba(209, 74, 46, 0.12)',
+              border: '1px solid rgba(209, 74, 46, 0.3)',
+              color: 'var(--color-primary)',
+              textAlign: 'center',
+              fontSize: 13,
+              fontWeight: 600,
+            }}
+          >
+            {error}
+          </div>
+        )}
+
+        <button
+          onClick={handleCreate}
+          disabled={isCreating}
+          type="button"
+          style={{
+            width: '100%',
+            padding: '17px 20px',
+            borderRadius: 'var(--radius-pill)',
+            background: 'var(--color-primary)',
+            color: 'var(--color-primary-ink)',
+            border: 'none',
+            fontFamily: 'inherit',
+            fontSize: 15,
+            fontWeight: 700,
+            cursor: 'pointer',
+            boxShadow: '0 14px 30px -12px rgba(184, 70, 42, 0.4)',
+          }}
+        >
+          {isCreating ? <Spinner text="Création…" /> : 'Créer le salon'}
+        </button>
       </div>
-    </div>
+    </SafeScreen>
   );
 }

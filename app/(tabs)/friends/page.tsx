@@ -4,15 +4,16 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { Search, UserPlus, Users, X } from 'lucide-react';
 
 import { SafeScreen } from '~/components/layout/SafeScreen';
-import { Card } from '~/components/ui/Card';
 import { Spinner } from '~/components/loading/Spinner';
-import { Avatar } from '~/components/ui/Avatar';
 import { FriendCard } from '~/components/friend/FriendCard';
 import { FriendRequestCard } from '~/components/friend/FriendRequestCard';
 import { useFriendStore } from '~/stores/useFriendStore';
 import { wsManager } from '~/lib/websocket';
 import * as usersApi from '~/lib/api/users';
 import type { UserResponse } from '~/types/api';
+
+import { PatternLozenge } from '~/components/shared/PatternLozenge';
+import { Avatar } from '~/components/shared/Avatar';
 
 type TabType = 'friends' | 'requests' | 'search';
 
@@ -46,8 +47,6 @@ export default function FriendsPage() {
     loadData();
   }, [loadData]);
 
-  // Re-fetch friends once WS is connected (after a short delay so the server
-  // has time to process the heartbeat and update isOnline in the DB)
   useEffect(() => {
     const unsubscribe = wsManager.subscribe((event: any) => {
       if (event.type === '_connection_change' && event.connected) {
@@ -57,7 +56,6 @@ export default function FriendsPage() {
     return unsubscribe;
   }, [fetchFriends]);
 
-  // Debounced search — fires 1s after last keystroke
   useEffect(() => {
     if (!searchQuery.trim()) {
       setSearchResults([]);
@@ -66,7 +64,7 @@ export default function FriendsPage() {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
       performSearch(searchQuery);
-    }, 1000);
+    }, 600);
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
@@ -76,7 +74,7 @@ export default function FriendsPage() {
     setIsSearching(true);
     try {
       const results = await usersApi.searchUsers(query);
-      setSearchResults(results.content);
+      setSearchResults(results.content || []);
     } catch (err) {
       console.error('Search failed:', err);
     } finally {
@@ -93,226 +91,267 @@ export default function FriendsPage() {
     }
   };
 
-  const handleAccept = async (requestId: string) => {
-    try {
-      await acceptRequest(requestId);
-    } catch {
-      alert("Impossible d'accepter la demande");
-    }
-  };
-
-  const handleDecline = async (requestId: string) => {
-    try {
-      await declineRequest(requestId);
-    } catch {
-      alert('Impossible de refuser la demande');
-    }
-  };
-
-  const handleCancel = async (requestId: string) => {
-    try {
-      await cancelRequest(requestId);
-    } catch {
-      alert("Impossible d'annuler la demande");
-    }
-  };
-
   const totalRequests = pendingRequests.length + storeSentRequests.length;
 
-  const renderFriendsList = () => (
-    <>
-      {friends.length === 0 ? (
-        <Card className="flex flex-col items-center py-12">
-          <Users size={48} className="text-txt-40 mb-4" />
-          <p className="text-txt-60 text-center mb-2">Aucun ami</p>
-          <p className="text-txt-40 text-center text-sm px-8 mb-4">
-            Ajoutez des amis pour jouer ensemble et suivre leurs activités
-          </p>
-          <button
-            onClick={() => setActiveTab('search')}
-            className="bg-accent px-6 py-3 rounded-xl hover:opacity-90 transition-opacity cursor-pointer"
-          >
-            <span className="text-btn-fg font-bold">Rechercher des amis</span>
-          </button>
-        </Card>
-      ) : (
-        friends.map((friend) => (
-          <FriendCard key={friend.id} friend={friend} />
-        ))
-      )}
-    </>
-  );
+  return (
+    <SafeScreen className="bg-bg min-h-[100dvh] relative overflow-hidden flex flex-col">
+      {/* Background pattern */}
+      <div style={{ position: 'absolute', inset: 0, opacity: 0.5, pointerEvents: 'none' }}>
+        <PatternLozenge color="var(--color-primary)" opacity={0.05} size={26} />
+      </div>
 
-  const renderRequestsList = () => (
-    <>
-      {pendingRequests.length > 0 && (
-        <div className="mb-4">
-          <p className="text-txt-60 text-sm font-medium mb-3 uppercase tracking-wide">
-            Demandes reçues ({pendingRequests.length})
-          </p>
-          {pendingRequests.map((request) => (
-            <FriendRequestCard
-              key={request.id}
-              type="received"
-              request={request}
-              onAccept={() => handleAccept(request.id)}
-              onDecline={() => handleDecline(request.id)}
-            />
-          ))}
-        </div>
-      )}
+      {/* Main Content Area */}
+      <div
+        style={{
+          position: 'relative',
+          zIndex: 2,
+          flex: 1,
+          padding: '12px 20px 24px',
+        }}
+        className="overflow-y-auto"
+      >
+        <h1
+          style={{
+            fontFamily: 'var(--font-display)',
+            fontWeight: 'var(--font-display-weight)' as any,
+            fontSize: 26,
+            letterSpacing: '-0.02em',
+            margin: '4px 0 18px',
+          }}
+        >
+          Amis
+        </h1>
 
-      {storeSentRequests.length > 0 && (
-        <div>
-          <p className="text-txt-60 text-sm font-medium mb-3 uppercase tracking-wide">
-            Demandes envoyées ({storeSentRequests.length})
-          </p>
-          {storeSentRequests.map((request) => (
-            <FriendRequestCard
-              key={request.id}
-              type="sent"
-              request={request}
-              onCancel={() => handleCancel(request.id)}
-            />
-          ))}
-        </div>
-      )}
-
-      {pendingRequests.length === 0 && storeSentRequests.length === 0 && (
-        <Card className="flex flex-col items-center py-12">
-          <UserPlus size={48} className="text-txt-40 mb-4" />
-          <p className="text-txt-60 text-center">Aucune demande en attente</p>
-        </Card>
-      )}
-    </>
-  );
-
-  const renderSearch = () => (
-    <>
-      <Card className="mb-4">
-        <div className="flex flex-row items-center">
-          <Search size={20} className="text-txt-60 mr-3 shrink-0" />
-          <input
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Rechercher un utilisateur..."
-            className="flex-1 bg-transparent text-txt py-3 focus:outline-none placeholder:text-txt-40"
-          />
-          {isSearching && (
-            <div className="w-4 h-4 border-2 border-accent border-t-transparent rounded-full animate-spin mr-2" />
-          )}
-          {searchQuery.length > 0 && !isSearching && (
-            <button
-              onClick={() => setSearchQuery('')}
-              className="ml-2 hover:opacity-70 transition-opacity cursor-pointer"
-            >
-              <X size={18} className="text-txt-60" />
-            </button>
-          )}
-        </div>
-      </Card>
-
-      {searchResults.length > 0 && (
-        <div>
-          <p className="text-txt-60 text-sm font-medium mb-3 uppercase tracking-wide">
-            Résultats ({searchResults.length})
-          </p>
-          {searchResults.map((user) => {
-            const isFriend = friends.some((f) => f.id === user.id);
-            const hasPendingRequest = pendingRequests.some(
-              (r) => r.requester.id === user.id,
-            );
-            const isSent = sentRequests.has(user.id) || storeSentRequests.some((r) => r.receiver.id === user.id);
-
+        {/* Tab switch pills */}
+        <div
+          style={{
+            display: 'flex',
+            gap: 6,
+            background: 'var(--color-surface-2)',
+            borderRadius: 'var(--radius-pill)',
+            padding: 4,
+            marginBottom: 18,
+          }}
+        >
+          {[
+            { id: 'friends', label: `Amis (${friends.length})` },
+            { id: 'requests', label: `Demandes${totalRequests > 0 ? ` (${totalRequests})` : ''}` },
+            { id: 'search', label: 'Recherche' },
+          ].map((tab) => {
+            const isActive = activeTab === tab.id;
             return (
-              <Card key={user.id} className="mb-3">
-                <div className="flex flex-row items-center">
-                  <div className="mr-3 shrink-0">
-                    <Avatar avatarUrl={user.avatarUrl} username={user.username} size={48} />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-txt font-semibold">{user.username}</p>
-                    <p className="text-txt-60 text-sm">
-                      {isFriend ? 'Déjà ami' : hasPendingRequest ? 'Demande reçue' : isSent ? 'Demande envoyée' : ''}
-                    </p>
-                  </div>
-                  {isFriend ? (
-                    <div className="px-3 py-1.5 rounded-lg bg-accent/15">
-                      <span className="text-accent text-sm">Ami</span>
-                    </div>
-                  ) : isSent || hasPendingRequest ? (
-                    <div className="px-3 py-1.5 rounded-lg bg-surface-2">
-                      <span className="text-txt-60 text-sm">En attente</span>
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => handleSendRequest(user.id)}
-                      className="px-4 py-2 rounded-lg bg-accent hover:opacity-90 transition-opacity cursor-pointer"
-                    >
-                      <span className="text-btn-fg font-medium">Ajouter</span>
-                    </button>
-                  )}
-                </div>
-              </Card>
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setActiveTab(tab.id as TabType)}
+                style={{
+                  flex: 1,
+                  textAlign: 'center',
+                  padding: '9px 0',
+                  borderRadius: 'var(--radius-pill)',
+                  background: isActive ? 'var(--color-primary)' : 'transparent',
+                  color: isActive ? 'var(--color-primary-ink)' : 'var(--color-ink-soft)',
+                  fontSize: 13,
+                  fontWeight: 700,
+                  border: 'none',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                }}
+              >
+                {tab.label}
+              </button>
             );
           })}
         </div>
-      )}
 
-      {searchResults.length === 0 && searchQuery.length > 0 && !isSearching && (
-        <Card className="flex flex-col items-center py-8">
-          <p className="text-txt-60 text-center">
-            Aucun utilisateur trouvé pour &ldquo;{searchQuery}&rdquo;
-          </p>
-        </Card>
-      )}
-    </>
-  );
-
-  return (
-    <SafeScreen>
-      {/* Header */}
-      <div className="px-4 pt-4 pb-4">
-        <div className="flex flex-row items-center justify-between mb-4">
-          <p className="text-txt font-bold text-2xl font-display">Amis</p>
-        </div>
-
-        {/* Tabs */}
-        <div className="flex flex-row bg-surface rounded-xl p-1">
-          {(['friends', 'requests', 'search'] as TabType[]).map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`flex-1 py-2 rounded-lg flex items-center justify-center transition-colors cursor-pointer ${
-                activeTab === tab ? 'bg-accent' : 'hover:bg-surface-2'
-              }`}
-            >
-              <span
-                className={`font-medium text-sm ${
-                  activeTab === tab ? 'text-btn-fg' : 'text-txt-60'
-                }`}
-              >
-                {tab === 'friends' && 'Amis'}
-                {tab === 'requests' &&
-                  `Demandes${totalRequests > 0 ? ` (${totalRequests})` : ''}`}
-                {tab === 'search' && 'Recherche'}
-              </span>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="flex-1 overflow-y-auto px-4">
+        {/* Content Tabs */}
         {isLoading ? (
           <Spinner text="Chargement..." className="py-12" />
         ) : (
           <>
-            {activeTab === 'friends' && renderFriendsList()}
-            {activeTab === 'requests' && renderRequestsList()}
-            {activeTab === 'search' && renderSearch()}
+            {activeTab === 'friends' && (
+              friends.length === 0 ? (
+                <div
+                  style={{
+                    background: 'var(--color-surface)',
+                    borderRadius: 'var(--card-radius)',
+                    border: '1px solid var(--color-line)',
+                    padding: '36px 20px',
+                    textAlign: 'center',
+                  }}
+                >
+                  <Users size={36} className="text-txt-40 mx-auto mb-3" />
+                  <div style={{ fontFamily: 'var(--font-display)', fontSize: 16, fontWeight: 700, marginBottom: 4 }}>
+                    Aucun ami
+                  </div>
+                  <div style={{ fontSize: 13, color: 'var(--color-ink-soft)', marginBottom: 16 }}>
+                    Ajoute des amis pour les défier en duel.
+                  </div>
+                  <button
+                    onClick={() => setActiveTab('search')}
+                    type="button"
+                    style={{
+                      background: 'var(--color-primary)',
+                      color: 'var(--color-primary-ink)',
+                      border: 'none',
+                      padding: '10px 18px',
+                      borderRadius: 'var(--radius-pill)',
+                      fontSize: 13,
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Rechercher des amis
+                  </button>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {friends.map((friend, i) => (
+                    <div
+                      key={friend.id}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 14,
+                        background: 'var(--color-surface)',
+                        border: '1px solid var(--color-line)',
+                        borderRadius: 'var(--card-radius)',
+                        padding: 14,
+                      }}
+                    >
+                      <Avatar name={friend.username} avatarUrl={friend.avatarUrl} hue={30 + i * 40} size={42} />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div
+                          style={{
+                            fontFamily: 'var(--font-display)',
+                            fontWeight: 'var(--font-display-weight)' as any,
+                            fontSize: 15,
+                          }}
+                        >
+                          {friend.username}
+                        </div>
+                        <div style={{ fontSize: 12, color: 'var(--color-ink-soft)' }}>
+                          {friend.isOnline ? 'En ligne' : 'Hors ligne'}{' '}
+                          {friend.globalRank != null && (
+                            <>
+                              · <span style={{ color: 'var(--color-primary)', fontWeight: 700 }}>#{friend.globalRank}</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )
+            )}
+
+            {activeTab === 'requests' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {pendingRequests.map((req) => (
+                  <FriendRequestCard
+                    key={req.id}
+                    type="received"
+                    request={req}
+                    onAccept={() => acceptRequest(req.id)}
+                    onDecline={() => declineRequest(req.id)}
+                  />
+                ))}
+                {storeSentRequests.map((req) => (
+                  <FriendRequestCard
+                    key={req.id}
+                    type="sent"
+                    request={req}
+                    onCancel={() => cancelRequest(req.id)}
+                  />
+                ))}
+                {pendingRequests.length === 0 && storeSentRequests.length === 0 && (
+                  <div
+                    style={{
+                      background: 'var(--color-surface)',
+                      borderRadius: 'var(--card-radius)',
+                      border: '1px solid var(--color-line)',
+                      padding: 32,
+                      textAlign: 'center',
+                      fontSize: 13,
+                      color: 'var(--color-ink-soft)',
+                    }}
+                  >
+                    Aucune demande en attente
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeTab === 'search' && (
+              <div>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 10,
+                    background: 'var(--color-surface)',
+                    border: '1px solid var(--color-line)',
+                    borderRadius: 'var(--radius-pill)',
+                    padding: '11px 16px',
+                    marginBottom: 16,
+                  }}
+                >
+                  <Search size={16} style={{ opacity: 0.6 }} />
+                  <input
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Rechercher un pseudo…"
+                    style={{
+                      flex: 1,
+                      fontSize: 13.5,
+                      color: 'var(--color-ink)',
+                      background: 'transparent',
+                      border: 'none',
+                      outline: 'none',
+                    }}
+                  />
+                </div>
+
+                {searchResults.map((u, i) => (
+                  <div
+                    key={u.id}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 12,
+                      background: 'var(--color-surface)',
+                      border: '1px solid var(--color-line)',
+                      borderRadius: 12,
+                      padding: 12,
+                      marginBottom: 8,
+                    }}
+                  >
+                    <Avatar name={u.username} avatarUrl={u.avatarUrl} hue={20 + i * 35} size={36} />
+                    <div style={{ flex: 1, minWidth: 0, fontSize: 14, fontWeight: 700 }}>
+                      {u.username}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleSendRequest(u.id)}
+                      style={{
+                        background: 'var(--color-primary)',
+                        color: 'var(--color-primary-ink)',
+                        border: 'none',
+                        padding: '6px 14px',
+                        borderRadius: 'var(--radius-pill)',
+                        fontSize: 12,
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                      }}
+                    >
+                      Ajouter +
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </>
         )}
-        <div className="h-8" />
       </div>
     </SafeScreen>
   );

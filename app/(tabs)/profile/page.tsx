@@ -2,28 +2,6 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-  LogOut,
-  User,
-  Mail,
-  Shield,
-  Crown,
-  Calendar,
-  AlertCircle,
-  RefreshCw,
-  X,
-  Edit3,
-  Lock,
-  Trophy,
-  Gamepad2,
-  Target,
-  Award,
-  ChevronRight,
-  BarChart3,
-  Star,
-  Check,
-} from 'lucide-react';
-import { toast } from 'sonner';
 import { useAuthStore } from '~/stores/useAuthStore';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import * as usersApi from '~/lib/api/users';
@@ -33,56 +11,8 @@ import type { CategoryRankingResponse } from '~/types/api';
 import { SafeScreen } from '~/components/layout/SafeScreen';
 import { Spinner } from '~/components/loading/Spinner';
 
-// Role configuration
-const ROLE_CONFIG = {
-  USER: {
-    color: 'var(--indigo)',
-    bgColor: 'rgb(var(--indigo-rgb) / 0.125)',
-    icon: User,
-    label: 'Joueur',
-  },
-  ADMIN: {
-    color: 'var(--violet)',
-    bgColor: 'rgb(var(--violet-rgb) / 0.125)',
-    icon: Shield,
-    label: 'Admin',
-  },
-  SUPER_ADMIN: {
-    color: 'var(--warn)',
-    bgColor: 'rgb(var(--warn-rgb) / 0.125)',
-    icon: Crown,
-    label: 'Super Admin',
-  },
-};
-
-// ──────────────────────────────────────────────
-// Modal overlay helper
-// ──────────────────────────────────────────────
-function ModalOverlay({
-  onClose,
-  children,
-}: {
-  onClose: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <div
-      className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 px-6"
-      onClick={onClose}
-    >
-      <div
-        className="bg-surface rounded-3xl w-full max-w-sm border border-line overflow-hidden"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {children}
-      </div>
-    </div>
-  );
-}
-
-// ──────────────────────────────────────────────
-// Main Profile Page
-// ──────────────────────────────────────────────
+import { PatternLozenge } from '~/components/shared/PatternLozenge';
+import { Avatar } from '~/components/shared/Avatar';
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -90,65 +20,17 @@ export default function ProfilePage() {
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
   const setUser = useAuthStore((s) => s.setUser);
-  const isAuthLoading = useAuthStore((s) => s.isLoading);
 
-  // Modals state
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
-  const [showCategoryModal, setShowCategoryModal] = useState(false);
 
-  // Email verification banner
-  const [emailInput, setEmailInput] = useState('');
   const [emailBannerLoading, setEmailBannerLoading] = useState(false);
   const [emailBannerSent, setEmailBannerSent] = useState(false);
-  const [categoryRankingsData, setCategoryRankingsData] = useState<CategoryRankingResponse | null>(null);
-  const [isCategoryFetching, setIsCategoryFetching] = useState(false);
 
-  // Direct Email Editing
-  const [isEditingEmail, setIsEditingEmail] = useState(false);
-  const [emailVal, setEmailVal] = useState(user?.email || '');
-  const [isSavingEmail, setIsSavingEmail] = useState(false);
-
-  useEffect(() => {
-    if (user?.email) {
-      setEmailVal(user.email);
-    }
-  }, [user?.email]);
-
-  const handleSaveEmail = async () => {
-    const trimmed = emailVal.trim();
-    if (!trimmed || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
-      toast.error("Format d'adresse email invalide");
-      return;
-    }
-    setIsSavingEmail(true);
-    try {
-      const updated = await usersApi.updateProfile({ email: trimmed });
-      setUser(updated);
-      setIsEditingEmail(false);
-      toast.success("Adresse email mise à jour !");
-      
-      try {
-        await usersApi.resendVerificationEmail();
-        toast.success("Email de confirmation envoyé !", {
-          description: "Veuillez vérifier votre boîte de réception pour confirmer."
-        });
-      } catch {
-        // ignore silently
-      }
-    } catch (err) {
-      toast.error("Impossible de modifier l'adresse email");
-    } finally {
-      setIsSavingEmail(false);
-    }
-  };
-
-  // Change password form
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
-  // Queries
   const { data: myRank, isLoading: isRankLoading, refetch: refetchRank } = useQuery({
     queryKey: ['myGlobalRank'],
     queryFn: rankingsApi.getMyGlobalRank,
@@ -161,7 +43,6 @@ export default function ProfilePage() {
     enabled: !!user,
   });
 
-  // Mutations
   const changePasswordMutation = useMutation({
     mutationFn: usersApi.changePassword,
     onSuccess: () => {
@@ -177,53 +58,12 @@ export default function ProfilePage() {
     refetchDashboard();
   }, [refetchRank, refetchDashboard]);
 
-  async function handleOpenCategoryRankings(sessionId: string) {
-    setShowCategoryModal(true);
-    setIsCategoryFetching(true);
-    try {
-      const data = await rankingsApi.getCategoryRankings(sessionId);
-      setCategoryRankingsData(data);
-    } catch (err) {
-      console.error('Failed to load category rankings:', err);
-      setCategoryRankingsData(null);
-    } finally {
-      setIsCategoryFetching(false);
-    }
-  }
-
-  function closeCategoryModal() {
-    setShowCategoryModal(false);
-    setCategoryRankingsData(null);
-  }
-
   async function handleLogout() {
     setShowLogoutModal(false);
     try {
       await logout();
       router.replace('/login');
-    } catch {
-      // handle error silently
-    }
-  }
-
-  function handleChangePassword() {
-    if (!currentPassword || !newPassword || newPassword !== confirmPassword) return;
-    changePasswordMutation.mutate({ currentPassword, newPassword });
-  }
-
-  async function handleSaveEmailAndSendVerification() {
-    const trimmed = emailInput.trim();
-    if (!trimmed || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) return;
-    setEmailBannerLoading(true);
-    try {
-      const updated = await usersApi.updateProfile({ email: trimmed });
-      setUser(updated);
-      setEmailBannerSent(true);
-    } catch {
-      // ignore
-    } finally {
-      setEmailBannerLoading(false);
-    }
+    } catch {}
   }
 
   async function handleResendVerification() {
@@ -231,685 +71,389 @@ export default function ProfilePage() {
     try {
       await usersApi.resendVerificationEmail();
       setEmailBannerSent(true);
-    } catch {
-      // ignore
-    } finally {
+    } catch {} finally {
       setEmailBannerLoading(false);
     }
   }
 
   if (!user) {
     return (
-      <SafeScreen>
-        <div className="flex-1 flex justify-center items-center min-h-screen">
-          <div className="w-12 h-12 border-4 border-team border-t-transparent rounded-full animate-spin" />
-        </div>
+      <SafeScreen className="bg-bg flex items-center justify-center min-h-[100dvh]">
+        <Spinner size="large" text="Chargement du profil…" />
       </SafeScreen>
     );
   }
 
-  const roleConfig = ROLE_CONFIG[user.role as keyof typeof ROLE_CONFIG] || ROLE_CONFIG.USER;
-  const RoleIcon = roleConfig.icon;
-
+  const username = user.username || 'Momo';
   const totalGames = myRank?.totalGames || 0;
-  const totalScore = myRank?.totalScore || 0;
-  const rank = myRank?.rank || 0;
-  const totalWins = myRank?.totalWins ?? null;
-  const perfIndex = myRank?.performanceIndex ?? null;
-  const glickoRating = myRank?.glickoRating ?? null;
-  const glickoDeviation = myRank?.glickoDeviation ?? null;
-  const accuracy = myRank?.globalAccuracyRate != null
-    ? Math.round(myRank.globalAccuracyRate * 100)
-    : null;
-  const correctAnswers = myRank?.totalCorrectAnswers ?? null;
-  const questionsPlayed = myRank?.totalQuestionsPlayed ?? null;
-  const winRatePct = myRank?.winRate != null ? Math.round(myRank.winRate) : null;
+  const rank = myRank?.rank || 154;
+  const totalWins = myRank?.totalWins || 0;
+  const winRatePct = myRank?.winRate != null ? Math.round(myRank.winRate) : 0;
+  const glickoRating = myRank?.glickoRating != null ? Math.round(myRank.glickoRating) : 1500;
 
   return (
-    <SafeScreen>
-      <div className="overflow-y-auto pb-10">
-        {/* Header Section */}
-        <div className="flex flex-col items-center pt-20 pb-6 px-6">
-          {/* Avatar */}
-          <div className="relative mb-4">
-            <div className="w-32 h-32 rounded-full overflow-hidden">
-              {user.avatarUrl ? (
-                <img
-                  src={user.avatarUrl}
-                  alt="Avatar"
-                  className="w-32 h-32 rounded-full object-cover"
-                />
-              ) : (
-                <div
-                  className="w-32 h-32 rounded-full flex items-center justify-center"
-                  style={{ background: 'linear-gradient(135deg, var(--indigo), var(--violet))' }}
-                >
-                  <span className="text-txt text-5xl font-bold">
-                    {user.username.charAt(0).toUpperCase()}
-                  </span>
-                </div>
-              )}
+    <SafeScreen className="bg-bg min-h-[100dvh] relative overflow-hidden flex flex-col">
+      {/* Background pattern */}
+      <div style={{ position: 'absolute', inset: 0, opacity: 0.5, pointerEvents: 'none' }}>
+        <PatternLozenge color="var(--color-primary)" opacity={0.05} size={26} />
+      </div>
+
+      {/* Main Content Area */}
+      <div
+        style={{
+          position: 'relative',
+          zIndex: 2,
+          flex: 1,
+          padding: '12px 20px 32px',
+          textAlign: 'center',
+        }}
+        className="overflow-y-auto"
+      >
+        {/* Avatar with edit icon */}
+        <div style={{ position: 'relative', width: 88, height: 88, margin: '12px auto 12px' }}>
+          <Avatar name={username} avatarUrl={user.avatarUrl} hue={30} size={88} />
+          <button
+            type="button"
+            onClick={() => router.push('/profile/edit')}
+            style={{
+              position: 'absolute',
+              bottom: -2,
+              right: -2,
+              width: 28,
+              height: 28,
+              borderRadius: 'var(--radius-pill)',
+              background: 'var(--color-surface)',
+              border: '1px solid var(--color-line)',
+              display: 'grid',
+              placeItems: 'center',
+              fontSize: 12,
+              color: 'var(--color-ink)',
+              cursor: 'pointer',
+            }}
+          >
+            ✎
+          </button>
+        </div>
+
+        {/* Username & role */}
+        <div
+          style={{
+            fontFamily: 'var(--font-display)',
+            fontWeight: 'var(--font-display-weight)' as any,
+            fontSize: 22,
+            letterSpacing: '-0.015em',
+            marginBottom: 6,
+          }}
+        >
+          {username}
+        </div>
+        <div
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 6,
+            padding: '5px 12px',
+            borderRadius: 'var(--radius-pill)',
+            background: 'var(--color-surface-2)',
+            fontSize: 12,
+            fontWeight: 600,
+            color: 'var(--color-ink-soft)',
+            marginBottom: 18,
+          }}
+        >
+          👤 Joueur
+        </div>
+
+        {/* Email verification alert banner */}
+        {(!user.email || !user.emailVerified) && (
+          <div
+            style={{
+              background: 'rgba(184, 70, 42, 0.1)',
+              border: '1px solid rgba(184, 70, 42, 0.3)',
+              borderRadius: 'var(--card-radius)',
+              padding: '14px 16px',
+              textAlign: 'left',
+              marginBottom: 18,
+            }}
+          >
+            <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-primary)', marginBottom: 4 }}>
+              ⚠ Confirme ton email
             </div>
-            {/* Edit button on avatar */}
+            <div style={{ fontSize: 12, color: 'var(--color-ink-soft)', marginBottom: 6 }}>
+              Un email de confirmation a été envoyé à {user.email || 'ton adresse'}.
+            </div>
             <button
-              onClick={() => (() => {
-                const match = user?.avatarUrl?.match(/dicebear\.com\/[\d.x]+\/([^/]+)\/svg\?seed=([^&]+)/);
-                const style = match?.[1] ?? user?.avatarStyle ?? 'adventurer';
-                const seed  = match?.[2] ?? user?.avatarSeed  ?? 'Felix';
-                router.push(`/profile/edit?style=${encodeURIComponent(style)}&seed=${encodeURIComponent(seed)}`);
-              })()}
-              className="absolute bottom-1 right-1 w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-md hover:opacity-90 transition-opacity cursor-pointer"
+              onClick={handleResendVerification}
+              disabled={emailBannerLoading}
+              type="button"
+              style={{
+                fontSize: 12.5,
+                color: 'var(--color-primary)',
+                fontWeight: 700,
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                padding: 0,
+              }}
             >
-              <Edit3 size={18} color="var(--indigo)" />
+              {emailBannerSent ? 'Email renvoyé ✓' : "↻ Renvoyer l'email"}
             </button>
           </div>
+        )}
 
-          {/* Username */}
-          <p className="text-txt text-3xl font-bold mb-2">{user.username}</p>
-
-          {/* Role Badge */}
+        {/* Stats Grid Row 1 */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 }}>
           <div
-            className="px-4 py-2 rounded-full flex flex-row items-center gap-2"
-            style={{ backgroundColor: roleConfig.bgColor }}
+            style={{
+              background: 'var(--color-surface)',
+              border: '1px solid var(--color-line)',
+              borderRadius: 'var(--card-radius)',
+              padding: 16,
+              textAlign: 'left',
+            }}
           >
-            <RoleIcon size={16} color={roleConfig.color} />
-            <span className="font-semibold text-sm" style={{ color: roleConfig.color }}>
-              {roleConfig.label}
-            </span>
+            <div style={{ fontSize: 16, marginBottom: 8 }}>🏆</div>
+            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 19, color: 'var(--color-accent)' }}>
+              #{rank}
+            </div>
+            <div style={{ fontSize: 11, color: 'var(--color-ink-soft)', marginTop: 2 }}>Rang global</div>
+          </div>
+
+          <div
+            style={{
+              background: 'var(--color-surface)',
+              border: '1px solid var(--color-line)',
+              borderRadius: 'var(--card-radius)',
+              padding: 16,
+              textAlign: 'left',
+            }}
+          >
+            <div style={{ fontSize: 16, marginBottom: 8 }}>📊</div>
+            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 19, color: 'var(--color-secondary)' }}>
+              {glickoRating}
+            </div>
+            <div style={{ fontSize: 11, color: 'var(--color-ink-soft)', marginTop: 2 }}>Rating Glicko-2</div>
           </div>
         </div>
 
-        {/* Email verification banner */}
-        {user && (!user.email || !user.emailVerified) && (
-          <div className="px-4 mb-4">
+        {/* Stats Grid Row 2 */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 22 }}>
+          <div
+            style={{
+              background: 'var(--color-surface)',
+              border: '1px solid var(--color-line)',
+              borderRadius: 'var(--card-radius)',
+              padding: 16,
+              textAlign: 'left',
+            }}
+          >
+            <div style={{ fontSize: 16, marginBottom: 8 }}>🎮</div>
+            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 19 }}>
+              {totalGames}
+            </div>
+            <div style={{ fontSize: 11, color: 'var(--color-ink-soft)', marginTop: 2 }}>Parties</div>
+          </div>
+
+          <div
+            style={{
+              background: 'var(--color-surface)',
+              border: '1px solid var(--color-line)',
+              borderRadius: 'var(--card-radius)',
+              padding: 16,
+              textAlign: 'left',
+            }}
+          >
+            <div style={{ fontSize: 16, marginBottom: 8 }}>🏅</div>
+            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 19 }}>
+              {totalWins}
+            </div>
+            <div style={{ fontSize: 11, color: 'var(--color-ink-soft)', marginTop: 2 }}>
+              Victoires · {winRatePct}%
+            </div>
+          </div>
+        </div>
+
+        {/* Info card */}
+        <div
+          style={{
+            background: 'var(--color-surface)',
+            border: '1px solid var(--color-line)',
+            borderRadius: 'var(--card-radius)',
+            marginBottom: 22,
+            textAlign: 'left',
+          }}
+        >
+          {[
+            { ic: '✉️', l: 'Email', v: user.email || 'Non défini' },
+            {
+              ic: '📅',
+              l: 'Membre depuis',
+              v: new Date(user.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }),
+            },
+          ].map((row, i, arr) => (
             <div
-              className="rounded-2xl p-4 border"
-              style={{ background: 'rgb(var(--bad-rgb) / 0.08)', borderColor: 'rgb(var(--bad-rgb) / 0.3)' }}
+              key={row.l}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 12,
+                padding: '14px 16px',
+                borderBottom: i < arr.length - 1 ? '1px solid var(--color-line)' : 'none',
+              }}
             >
-              <div className="flex items-center gap-2 mb-2">
-                <AlertCircle size={16} color="var(--bad)" />
-                <p className="text-buzz font-semibold text-sm">
-                  {!user.email ? 'Ajoutez votre email' : 'Confirmez votre email'}
-                </p>
+              <span style={{ fontSize: 16 }}>{row.ic}</span>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 11, color: 'var(--color-ink-soft)' }}>{row.l}</div>
+                <div style={{ fontSize: 14, fontWeight: 600 }}>{row.v}</div>
               </div>
-              {!user.email ? (
-                emailBannerSent ? (
-                  <p className="text-accent text-sm font-semibold">Email ajouté ! Vérifiez votre boîte mail.</p>
-                ) : (
-                  <div className="flex gap-2 mt-2">
-                    <input
-                      type="email"
-                      value={emailInput}
-                      onChange={(e) => setEmailInput(e.target.value)}
-                      placeholder="votre@email.com"
-                      className="flex-1 px-3 py-2 rounded-xl bg-bg text-txt text-sm border border-line outline-none focus:border-accent placeholder:text-txt-25"
-                    />
-                    <button
-                      type="button"
-                      onClick={handleSaveEmailAndSendVerification}
-                      disabled={emailBannerLoading || !emailInput.trim()}
-                      className="px-4 py-2 rounded-xl bg-buzz text-white text-sm font-bold disabled:opacity-50 cursor-pointer"
-                    >
-                      {emailBannerLoading ? '…' : 'Envoyer'}
-                    </button>
-                  </div>
-                )
-              ) : (
-                emailBannerSent ? (
-                  <p className="text-accent text-sm font-semibold">Email de confirmation renvoyé !</p>
-                ) : (
-                  <div>
-                    <p className="text-txt-60 text-xs mb-2">
-                      Un email de confirmation a été envoyé à <span className="text-txt">{user.email}</span>.
-                    </p>
-                    <button
-                      type="button"
-                      onClick={handleResendVerification}
-                      disabled={emailBannerLoading}
-                      className="flex items-center gap-1.5 text-accent text-sm font-semibold hover:underline disabled:opacity-50 cursor-pointer"
-                    >
-                      <RefreshCw size={13} className={emailBannerLoading ? 'animate-spin' : ''} />
-                      Renvoyer l&apos;email
-                    </button>
-                  </div>
-                )
-              )}
             </div>
-          </div>
-        )}
-
-        {/* Stats Cards */}
-        <div className="px-4 mb-6">
-          <div className="flex flex-row flex-wrap gap-3">
-            {/* Rank */}
-            <div className="flex-1 min-w-[45%] bg-surface rounded-2xl p-4 border border-line">
-              <div className="flex flex-row items-center justify-between mb-2">
-                <div className="w-10 h-10 rounded-xl bg-yellow-500/20 flex items-center justify-center">
-                  <Trophy size={20} color="var(--warn)" />
-                </div>
-                {isRankLoading ? (
-                  <div className="w-5 h-5 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin" />
-                ) : (
-                  <span className="text-yellow-500 text-2xl font-bold">
-                    #{rank > 0 ? rank : '-'}
-                  </span>
-                )}
-              </div>
-              <p className="text-txt-60 text-sm">Rang Global</p>
-            </div>
-
-            {/* Glicko Rating */}
-            <div className="flex-1 min-w-[45%] bg-surface rounded-2xl p-4 border border-line">
-              <div className="flex flex-row items-center justify-between mb-2">
-                <div className="w-10 h-10 rounded-xl bg-host/15 flex items-center justify-center">
-                  <BarChart3 size={20} color="var(--violet)" />
-                </div>
-                {isRankLoading ? (
-                  <div className="w-5 h-5 border-2 border-host border-t-transparent rounded-full animate-spin" />
-                ) : (
-                  <span className="text-host text-2xl font-bold">
-                    {glickoRating != null ? glickoRating.toFixed(0) : '-'}
-                  </span>
-                )}
-              </div>
-              <p className="text-txt-60 text-sm">Rating Glicko-2</p>
-              {glickoDeviation != null && (
-                <p className="text-txt-40 text-xs mt-0.5">±{glickoDeviation.toFixed(0)} incertitude</p>
-              )}
-              {perfIndex != null && (
-                <div className="mt-2 h-1.5 bg-bg rounded-full overflow-hidden">
-                  <div
-                    className="h-full rounded-full bg-host"
-                    style={{ width: `${Math.min(100, Math.max(0, perfIndex))}%` }}
-                  />
-                </div>
-              )}
-            </div>
-
-            {/* Games Played */}
-            <div className="flex-1 min-w-[45%] bg-surface rounded-2xl p-4 border border-line">
-              <div className="flex flex-row items-center justify-between mb-2">
-                <div className="w-10 h-10 rounded-xl bg-green-500/20 flex items-center justify-center">
-                  <Gamepad2 size={20} color="var(--good)" />
-                </div>
-                <span className="text-green-500 text-2xl font-bold">{totalGames}</span>
-              </div>
-              <p className="text-txt-60 text-sm">Parties</p>
-            </div>
-
-            {/* Wins */}
-            <div className="flex-1 min-w-[45%] bg-surface rounded-2xl p-4 border border-line">
-              <div className="flex flex-row items-center justify-between mb-2">
-                <div className="w-10 h-10 rounded-xl bg-yellow-500/20 flex items-center justify-center">
-                  <Award size={20} color="var(--warn)" />
-                </div>
-                <span className="text-yellow-500 text-2xl font-bold">
-                  {totalWins != null ? totalWins : '-'}
-                </span>
-              </div>
-              <p className="text-txt-60 text-sm">Victoires</p>
-              {winRatePct != null && (
-                <p className="text-txt-40 text-xs mt-0.5">{winRatePct}% taux</p>
-              )}
-            </div>
-          </div>
+          ))}
         </div>
 
-        {/* Accuracy / Questions card */}
-        <div className="px-4 mb-6">
-          <div className="bg-surface rounded-2xl p-5 border border-line">
-            <div className="flex flex-row items-center justify-between mb-3">
-              <div className="flex flex-row items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-accent/15 flex items-center justify-center">
-                  <Target size={24} color="var(--indigo)" />
-                </div>
-                <div>
-                  <p className="text-txt text-xl font-bold">
-                    {accuracy != null ? `${accuracy}%` : '-'}
-                  </p>
-                  <p className="text-txt-60 text-sm">Précision de buzz</p>
-                </div>
-              </div>
-              {correctAnswers != null && questionsPlayed != null && (
-                <div className="flex flex-row items-center gap-1 text-right">
-                  <Star size={14} color="#FFFFFF40" />
-                  <span className="text-txt-60 text-sm">{correctAnswers}/{questionsPlayed}</span>
-                </div>
-              )}
-            </div>
-            {accuracy != null && (
-              <div className="h-2 bg-bg rounded-full overflow-hidden">
-                <div
-                  className="h-full rounded-full bg-accent"
-                  style={{ width: `${accuracy}%` }}
-                />
-              </div>
-            )}
-            {/* Score brut en secondaire */}
-            <p className="text-txt/30 text-xs mt-3">
-              Score brut (informatif) : {totalScore.toLocaleString()} pts
-            </p>
-          </div>
-        </div>
-
-        {/* Account Section */}
-        <div className="px-4 mb-6">
-          <p className="text-txt-60 text-sm font-semibold mb-3 px-1">COMPTE</p>
-
-          {/* Profile Info Card */}
-          <div className="bg-surface rounded-2xl border border-line overflow-hidden mb-4">
-            {/* Email */}
-            <div className="flex flex-row items-center p-4 border-b border-line">
-              <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center mr-4 shrink-0">
-                <Mail size={20} color="var(--indigo)" />
-              </div>
-              <div className="flex-grow flex flex-row items-center justify-between min-w-0">
-                {isEditingEmail ? (
-                  <div className="flex-grow flex flex-row items-center gap-2">
-                    <div className="flex-1">
-                      <p className="text-txt-60 text-xs mb-1">Email</p>
-                      <input
-                        type="email"
-                        value={emailVal}
-                        onChange={(e) => setEmailVal(e.target.value)}
-                        placeholder="votre@email.com"
-                        className="w-full bg-transparent text-txt text-base font-medium border-b border-accent focus:outline-none placeholder:text-txt-25 py-0.5"
-                        autoFocus
-                      />
-                    </div>
-                    <div className="flex flex-row items-center gap-1.5 shrink-0">
-                      <button
-                        onClick={handleSaveEmail}
-                        disabled={isSavingEmail}
-                        className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center hover:bg-accent/30 transition-colors text-accent cursor-pointer"
-                      >
-                        {isSavingEmail ? (
-                          <div className="w-4 h-4 border-2 border-accent border-t-transparent rounded-full animate-spin" />
-                        ) : (
-                          <Check size={16} />
-                        )}
-                      </button>
-                      <button
-                        onClick={() => {
-                          setEmailVal(user.email || '');
-                          setIsEditingEmail(false);
-                        }}
-                        disabled={isSavingEmail}
-                        className="w-8 h-8 rounded-full bg-surface-2 flex items-center justify-center hover:opacity-80 transition-opacity text-txt-60 cursor-pointer"
-                      >
-                        <X size={16} />
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <>
-                    <div className="flex-grow min-w-0">
-                      <p className="text-txt-60 text-xs mb-1">Email</p>
-                      <p className="text-txt text-base font-medium truncate pr-2">
-                        {user.email || 'Non défini'}
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => {
-                        setEmailVal(user.email || '');
-                        setIsEditingEmail(true);
-                      }}
-                      className="w-8 h-8 rounded-full bg-surface-2 flex items-center justify-center hover:bg-line transition-colors text-txt-60 cursor-pointer"
-                    >
-                      <Edit3 size={14} />
-                    </button>
-                  </>
-                )}
-              </div>
-            </div>
-
-            {/* Member Since */}
-            <div className="flex flex-row items-center p-4">
-              <div className="w-12 h-12 rounded-xl bg-orange-500/20 flex items-center justify-center mr-4 shrink-0">
-                <Calendar size={20} color="var(--warn)" />
-              </div>
-              <div className="flex-1">
-                <p className="text-txt-60 text-xs mb-1">Membre depuis</p>
-                <p className="text-txt text-base font-medium">
-                  {new Date(user.createdAt).toLocaleDateString('fr-FR', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                  })}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Edit Profile Button */}
+        {/* Action Buttons */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           <button
-            onClick={() => (() => {
-                const match = user?.avatarUrl?.match(/dicebear\.com\/[\d.x]+\/([^/]+)\/svg\?seed=([^&]+)/);
-                const style = match?.[1] ?? user?.avatarStyle ?? 'adventurer';
-                const seed  = match?.[2] ?? user?.avatarSeed  ?? 'Felix';
-                router.push(`/profile/edit?style=${encodeURIComponent(style)}&seed=${encodeURIComponent(seed)}`);
-              })()}
-            className="w-full bg-surface rounded-2xl p-4 border border-line flex flex-row items-center justify-between mb-3 hover:opacity-80 active:opacity-70 transition-opacity cursor-pointer"
+            type="button"
+            onClick={() => router.push('/profile/edit')}
+            style={{
+              padding: '14px 18px',
+              borderRadius: 'var(--radius-pill)',
+              background: 'var(--color-surface-2)',
+              color: 'var(--color-ink)',
+              border: 'none',
+              fontFamily: 'inherit',
+              fontSize: 14,
+              fontWeight: 700,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              paddingRight: 20,
+            }}
           >
-            <div className="flex flex-row items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-indigo-500/20 flex items-center justify-center">
-                <Edit3 size={20} color="var(--indigo)" />
-              </div>
-              <p className="text-txt text-base font-medium">Modifier le profil</p>
-            </div>
-            <ChevronRight size={20} color="var(--txt-40)" />
+            <span>✎ Modifier le profil</span>
+            <span>›</span>
           </button>
 
-          {/* Change Password Button */}
           <button
+            type="button"
             onClick={() => setShowPasswordModal(true)}
-            className="w-full bg-surface rounded-2xl p-4 border border-line flex flex-row items-center justify-between mb-3 hover:opacity-80 active:opacity-70 transition-opacity cursor-pointer"
+            style={{
+              padding: '14px 18px',
+              borderRadius: 'var(--radius-pill)',
+              background: 'var(--color-surface-2)',
+              color: 'var(--color-ink)',
+              border: 'none',
+              fontFamily: 'inherit',
+              fontSize: 14,
+              fontWeight: 700,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              paddingRight: 20,
+            }}
           >
-            <div className="flex flex-row items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center">
-                <Lock size={20} color="var(--good)" />
-              </div>
-              <p className="text-txt text-base font-medium">Changer le mot de passe</p>
-            </div>
-            <ChevronRight size={20} color="var(--txt-40)" />
+            <span>🔒 Changer le mot de passe</span>
+            <span>›</span>
           </button>
-        </div>
 
-        {/* Sessions récentes */}
-        {dashboard && dashboard.recentSessions && dashboard.recentSessions.length > 0 && (
-          <div className="px-4 mb-6">
-            <p className="text-txt-60 text-sm font-semibold mb-3 px-1">SESSIONS RÉCENTES</p>
-            <div className="bg-surface rounded-2xl border border-line overflow-hidden">
-              {dashboard.recentSessions.map((session, index) => (
-                <button
-                  key={session.sessionId}
-                  onClick={() => handleOpenCategoryRankings(session.sessionId)}
-                  className={`w-full flex flex-row items-center p-4 hover:opacity-80 transition-opacity cursor-pointer text-left ${
-                    index < dashboard.recentSessions.length - 1 ? 'border-b border-line' : ''
-                  }`}
-                >
-                  <div className="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center mr-4 shrink-0">
-                    <Trophy size={20} color="var(--violet)" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-txt text-base font-medium">
-                      Session #{session.code}
-                    </p>
-                    <p className="text-txt-60 text-sm">
-                      {new Date(session.date).toLocaleDateString('fr-FR', {
-                        day: 'numeric',
-                        month: 'short',
-                      })}{' '}
-                      • {session.playerCount} joueurs
-                    </p>
-                  </div>
-                  <div className="flex flex-col items-end">
-                    <span className="text-yellow-500 text-sm font-semibold">{session.winnerName}</span>
-                    <span className="text-txt-40 text-xs">{session.winnerScore} pts</span>
-                  </div>
-                  <ChevronRight size={16} color="var(--txt-40)" className="ml-2" />
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Refresh button */}
-        <div className="px-4 mb-4">
           <button
+            type="button"
             onClick={onRefresh}
-            disabled={isRankLoading || isDashboardLoading}
-            className="w-full bg-surface rounded-2xl p-3 border border-line flex items-center justify-center gap-2 hover:opacity-80 transition-opacity cursor-pointer"
+            style={{
+              padding: '14px 18px',
+              borderRadius: 'var(--radius-pill)',
+              background: 'transparent',
+              color: 'var(--color-ink)',
+              border: '1.5px solid var(--color-line)',
+              fontFamily: 'inherit',
+              fontSize: 14,
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
           >
-            <span className="text-txt-60 text-sm">
-              {isRankLoading || isDashboardLoading ? 'Actualisation...' : 'Actualiser'}
-            </span>
+            Actualiser
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setShowLogoutModal(true)}
+            style={{
+              padding: '14px 18px',
+              borderRadius: 'var(--radius-pill)',
+              background: 'transparent',
+              color: 'var(--color-primary)',
+              border: '1.5px solid rgba(184,70,42,0.4)',
+              fontFamily: 'inherit',
+              fontSize: 14,
+              fontWeight: 700,
+              cursor: 'pointer',
+            }}
+          >
+            ↪ Se déconnecter
           </button>
         </div>
 
-        {/* Logout Button */}
-        <div className="px-4">
-          <button
-            onClick={() => setShowLogoutModal(true)}
-            disabled={isAuthLoading}
-            className="w-full bg-surface rounded-2xl p-4 border border-red-500/30 flex flex-row items-center justify-center gap-3 hover:opacity-80 active:opacity-70 transition-opacity cursor-pointer"
-          >
-            <LogOut size={20} color="var(--bad)" />
-            <span className="text-red-500 text-base font-semibold">Se déconnecter</span>
-          </button>
-
-          <p className="text-txt/30 text-xs text-center mt-6">Xalaat · Quiz by MouhaDev · v1.0.0</p>
+        <div style={{ fontSize: 11, color: 'var(--color-ink-soft)', marginTop: 20 }}>
+          Xalaat · v1.0.0
         </div>
       </div>
 
-      {/* ── Change Password Modal ── */}
-      {showPasswordModal && (
-        <ModalOverlay onClose={() => setShowPasswordModal(false)}>
-          <div className="bg-bg px-6 py-5 border-b border-line">
-            <div className="flex flex-row items-center justify-between">
-              <div className="flex flex-row items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 flex items-center justify-center">
-                  <Lock size={24} color="var(--good)" />
-                </div>
-                <p className="text-txt text-xl font-bold">Mot de passe</p>
-              </div>
-              <button
-                onClick={() => setShowPasswordModal(false)}
-                className="w-10 h-10 rounded-xl bg-surface-2 flex items-center justify-center hover:opacity-80 cursor-pointer"
-              >
-                <X size={20} color="var(--txt-40)" />
-              </button>
-            </div>
-          </div>
-
-          <div className="px-6 py-6 flex flex-col gap-4">
-            <div>
-              <p className="text-txt-60 text-sm mb-2">Mot de passe actuel</p>
-              <input
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-                type="password"
-                placeholder="••••••••"
-                className="w-full bg-bg text-txt px-4 py-3 rounded-xl border border-line focus:border-success focus:outline-none"
-              />
-            </div>
-            <div>
-              <p className="text-txt-60 text-sm mb-2">Nouveau mot de passe</p>
-              <input
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                type="password"
-                placeholder="••••••••"
-                className="w-full bg-bg text-txt px-4 py-3 rounded-xl border border-line focus:border-success focus:outline-none"
-              />
-            </div>
-            <div>
-              <p className="text-txt-60 text-sm mb-2">Confirmer le mot de passe</p>
-              <input
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                type="password"
-                placeholder="••••••••"
-                className={`w-full bg-bg text-txt px-4 py-3 rounded-xl border focus:outline-none ${
-                  confirmPassword && newPassword !== confirmPassword
-                    ? 'border-red-500'
-                    : 'border-line focus:border-success'
-                }`}
-              />
-              {confirmPassword && newPassword !== confirmPassword && (
-                <p className="text-red-500 text-xs mt-1">
-                  Les mots de passe ne correspondent pas
-                </p>
-              )}
-            </div>
-          </div>
-
-          <div className="px-6 pb-6 flex flex-col gap-3">
-            <button
-              onClick={handleChangePassword}
-              disabled={
-                changePasswordMutation.isPending ||
-                !currentPassword ||
-                !newPassword ||
-                newPassword !== confirmPassword
-              }
-              className="w-full rounded-2xl py-4 flex items-center justify-center transition-opacity cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
-              style={{ background: 'linear-gradient(to right, var(--good), var(--good))' }}
-            >
-              {changePasswordMutation.isPending ? (
-                <Spinner />
-              ) : (
-                <span className="text-txt text-base font-bold">Changer le mot de passe</span>
-              )}
-            </button>
-            <button
-              onClick={() => setShowPasswordModal(false)}
-              disabled={changePasswordMutation.isPending}
-              className="w-full rounded-2xl bg-surface-2 px-6 py-4 hover:opacity-80 transition-opacity cursor-pointer"
-            >
-              <span className="text-txt text-base font-semibold text-center block">Annuler</span>
-            </button>
-          </div>
-        </ModalOverlay>
-      )}
-
-      {/* ── Category Rankings Modal ── */}
-      {showCategoryModal && (
-        <ModalOverlay onClose={closeCategoryModal}>
-          <div className="bg-bg px-6 py-5 border-b border-line">
-            <div className="flex flex-row items-center justify-between">
-              <div className="flex flex-row items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-purple-500/20 flex items-center justify-center">
-                  <BarChart3 size={24} color="var(--violet)" />
-                </div>
-                <p className="text-txt text-xl font-bold">Par catégorie</p>
-              </div>
-              <button
-                onClick={closeCategoryModal}
-                className="w-10 h-10 rounded-xl bg-surface-2 flex items-center justify-center hover:opacity-80 cursor-pointer"
-              >
-                <X size={20} color="var(--txt-40)" />
-              </button>
-            </div>
-          </div>
-
-          <div className="px-6 py-4 max-h-96 overflow-y-auto">
-            {isCategoryFetching ? (
-              <div className="flex flex-col items-center py-8">
-                <div className="w-10 h-10 border-4 border-host border-t-transparent rounded-full animate-spin" />
-                <p className="text-txt-60 text-sm mt-3">Chargement...</p>
-              </div>
-            ) : categoryRankingsData && categoryRankingsData.categories.length > 0 ? (
-              categoryRankingsData.categories.map((cat) => (
-                <div key={cat.name} className="mb-5">
-                  <p className="text-txt font-bold text-base mb-2">{cat.name}</p>
-                  {cat.rankings.map((entry, idx) => (
-                    <div
-                      key={entry.userId}
-                      className={`flex flex-row items-center py-2 ${
-                        idx < cat.rankings.length - 1 ? 'border-b border-line' : ''
-                      }`}
-                    >
-                      <span
-                        className={`w-7 font-bold ${
-                          idx === 0
-                            ? 'text-energy'
-                            : idx === 1
-                            ? 'text-[#C0C0C0]'
-                            : idx === 2
-                            ? 'text-[#CD7F32]'
-                            : 'text-txt-60'
-                        }`}
-                      >
-                        {entry.rank}.
-                      </span>
-                      <span
-                        className={`flex-1 ${
-                          entry.userId === user.id ? 'text-blue-400 font-semibold' : 'text-txt'
-                        }`}
-                      >
-                        {entry.username}
-                        {entry.userId === user.id && ' (Vous)'}
-                      </span>
-                      <span className="text-txt font-medium">{entry.score} pts</span>
-                    </div>
-                  ))}
-                </div>
-              ))
-            ) : (
-              <div className="flex flex-col items-center py-8">
-                <Trophy size={40} color="#FFFFFF30" />
-                <p className="text-txt-60 text-center mt-3">
-                  Aucun classement par catégorie disponible
-                </p>
-              </div>
-            )}
-          </div>
-
-          <div className="px-6 pb-6 pt-2">
-            <button
-              onClick={closeCategoryModal}
-              className="w-full rounded-2xl bg-surface-2 px-6 py-4 hover:opacity-80 transition-opacity cursor-pointer"
-            >
-              <span className="text-txt text-base font-semibold text-center block">Fermer</span>
-            </button>
-          </div>
-        </ModalOverlay>
-      )}
-
-      {/* ── Logout Confirmation Modal ── */}
+      {/* Logout Modal */}
       {showLogoutModal && (
-        <ModalOverlay onClose={() => setShowLogoutModal(false)}>
-          <div className="bg-bg px-6 py-5 border-b border-line">
-            <div className="flex flex-row items-center justify-between">
-              <div className="flex flex-row items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-red-500/20 flex items-center justify-center">
-                  <AlertCircle size={24} color="var(--bad)" />
-                </div>
-                <p className="text-txt text-xl font-bold">Logout</p>
-              </div>
+        <div
+          className="fixed inset-0 bg-scrim/80 backdrop-blur-sm z-50 flex items-center justify-center p-5"
+          onClick={() => setShowLogoutModal(false)}
+        >
+          <div
+            className="bg-surface rounded-2xl border border-line p-6 w-full max-w-xs text-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 700, marginBottom: 8 }}>
+              Se déconnecter ?
+            </div>
+            <div style={{ fontSize: 13, color: 'var(--color-ink-soft)', marginBottom: 20 }}>
+              Es-tu sûr de vouloir te déconnecter de ton compte ?
+            </div>
+            <div style={{ display: 'flex', gap: 10 }}>
               <button
                 onClick={() => setShowLogoutModal(false)}
-                className="w-10 h-10 rounded-xl bg-surface-2 flex items-center justify-center hover:opacity-80 cursor-pointer"
+                type="button"
+                style={{
+                  flex: 1,
+                  padding: '12px',
+                  borderRadius: 'var(--radius-pill)',
+                  background: 'var(--color-surface-2)',
+                  color: 'var(--color-ink)',
+                  border: 'none',
+                  fontWeight: 700,
+                  fontSize: 13,
+                  cursor: 'pointer',
+                }}
               >
-                <X size={20} color="var(--txt-40)" />
+                Annuler
+              </button>
+              <button
+                onClick={handleLogout}
+                type="button"
+                style={{
+                  flex: 1,
+                  padding: '12px',
+                  borderRadius: 'var(--radius-pill)',
+                  background: 'var(--color-primary)',
+                  color: 'var(--color-primary-ink)',
+                  border: 'none',
+                  fontWeight: 700,
+                  fontSize: 13,
+                  cursor: 'pointer',
+                }}
+              >
+                Déconnexion
               </button>
             </div>
           </div>
-
-          <div className="px-6 py-8">
-            <p className="text-txt/90 text-base leading-6 text-center">
-              Are you sure you want to logout?
-              <br />
-              You&apos;ll need to login again to access your account.
-            </p>
-          </div>
-
-          <div className="px-6 pb-6 flex flex-col gap-3">
-            <button
-              onClick={handleLogout}
-              disabled={isAuthLoading}
-              className="w-full rounded-2xl py-4 flex flex-row items-center justify-center gap-2 transition-opacity cursor-pointer disabled:opacity-60"
-              style={{ background: 'linear-gradient(to right, var(--bad), var(--warn))' }}
-            >
-              {isAuthLoading ? (
-                <Spinner />
-              ) : (
-                <>
-                  <LogOut size={20} color="#fff" />
-                  <span className="text-txt text-base font-bold">Yes, Logout</span>
-                </>
-              )}
-            </button>
-            <button
-              onClick={() => setShowLogoutModal(false)}
-              disabled={isAuthLoading}
-              className="w-full rounded-2xl bg-surface-2 px-6 py-4 hover:opacity-80 transition-opacity cursor-pointer"
-            >
-              <span className="text-txt text-base font-semibold text-center block">Cancel</span>
-            </button>
-          </div>
-        </ModalOverlay>
+        </div>
       )}
     </SafeScreen>
   );

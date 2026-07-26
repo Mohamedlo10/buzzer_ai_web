@@ -25,21 +25,21 @@ function MascotRunner({
   const runStyle =
     state === 'running'
       ? {
-          leftLeg: { animation: `run-left-leg ${speed}s infinite ease-in-out` },
-          rightLeg: { animation: `run-right-leg ${speed}s infinite ease-in-out` },
-          leftArm: { animation: `run-left-arm ${speed}s infinite ease-in-out` },
-          rightArm: { animation: `run-right-arm ${speed}s infinite ease-in-out` },
-          body: { animation: `run-body ${speed}s infinite ease-in-out` },
-        }
+        leftLeg: { animation: `run-left-leg ${speed}s infinite ease-in-out` },
+        rightLeg: { animation: `run-right-leg ${speed}s infinite ease-in-out` },
+        leftArm: { animation: `run-left-arm ${speed}s infinite ease-in-out` },
+        rightArm: { animation: `run-right-arm ${speed}s infinite ease-in-out` },
+        body: { animation: `run-body ${speed}s infinite ease-in-out` },
+      }
       : state === 'celebrating'
-      ? {
+        ? {
           leftLeg: { transform: 'rotate(-10deg)', transformOrigin: '12px 14px' },
           rightLeg: { transform: 'rotate(10deg)', transformOrigin: '12px 14px' },
           leftArm: { animation: 'celebrate-left-arm 0.3s infinite alternate ease-in-out' },
           rightArm: { animation: 'celebrate-right-arm 0.3s infinite alternate ease-in-out' },
           body: { animation: 'celebrate-body 0.6s infinite ease-in-out' },
         }
-      : {
+        : {
           leftLeg: { transform: 'rotate(5deg)', transformOrigin: '12px 14px' },
           rightLeg: { transform: 'rotate(-5deg)', transformOrigin: '12px 14px' },
           leftArm: { transform: 'rotate(-10deg)', transformOrigin: '12px 9.5px' },
@@ -287,8 +287,8 @@ export default function LoadingPage() {
             {isComplete
               ? 'Questions prêtes !'
               : error
-              ? error
-              : 'Génération en cours…'}
+                ? error
+                : 'Génération en cours…'}
           </p>
         </div>
 
@@ -319,8 +319,8 @@ export default function LoadingPage() {
               {isComplete
                 ? 'Génération terminée !'
                 : totalQuestions > 0
-                ? `Génération... ${currentQuestion} / ${totalQuestions}`
-                : 'Préparation…'}
+                  ? `Génération... ${currentQuestion} / ${totalQuestions}`
+                  : 'Préparation…'}
             </span>
             {totalQuestions > 0 && currentQuestion < totalQuestions && !isComplete && !error && (
               <span className="text-txt-40">
@@ -354,12 +354,12 @@ export default function LoadingPage() {
             {isComplete
               ? 'Toutes les questions sont générées !'
               : progress < 30
-              ? "L'IA prépare vos questions personnalisées…"
-              : progress < 60
-              ? 'Encore un peu de patience…'
-              : progress < 90
-              ? 'Presque terminé !'
-              : 'Dernières vérifications…'}
+                ? "L'IA prépare vos questions personnalisées…"
+                : progress < 60
+                  ? 'Encore un peu de patience…'
+                  : progress < 90
+                    ? 'Presque terminé !'
+                    : 'Dernières vérifications…'}
           </p>
         </div>
 

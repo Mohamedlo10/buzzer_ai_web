@@ -254,6 +254,21 @@
 @keyframes scrimin   { from { opacity: 0; } to { opacity: 1; } }
 @keyframes scrimout  { from { opacity: 1; } to { opacity: 0; } }
 
+@keyframes pageFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-page-transition {
+  animation: pageFadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
 .animate-sheetup   { animation: sheetup .32s cubic-bezier(.2,.8,.2,1) both; }
 .animate-sheetdown { animation: sheetdown .24s cubic-bezier(.4,0,1,1) both; }
 .animate-scrimin   { animation: scrimin .2s ease-out both; }
