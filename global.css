@@ -96,8 +96,22 @@
   --glow-2: 6%;
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+   MODE SOMBRE — DÉSACTIVÉ POUR L'INSTANT
+   Tous les joueurs sont en thème clair (Teranga). Le bloc ci-dessous est
+   conservé tel quel : pour réactiver le sombre, il suffit de le
+   décommenter puis de rétablir les trois points de bascule —
+     · app/layout.tsx            (script inline qui pose data-theme)
+     · components/providers/ThemeProvider.tsx
+     · le bouton soleil/lune dans DashboardHeader + dashboard/page.tsx
+   Les valeurs ont déjà été calibrées en contraste (tout ≥ 4:1 sur la nuit).
+   ═══════════════════════════════════════════════════════════════════ */
+/*  (Les commentaires CSS ne s'imbriquent pas : les annotations internes de
+    ce bloc sont volontairement en texte nu, sans délimiteurs.)
+
 [data-theme='dark'] {
-  /* ── surfaces — SOMBRE (nuit Teranga) ── */
+
+  ── surfaces : nuit Teranga ──
   --bg-rgb: 26 20 16;
   --bg-deep-rgb: 18 14 10;
   --surface-rgb: 36 27 20;
@@ -110,7 +124,7 @@
   --txt-25: rgb(var(--txt-rgb) / 0.28);
   --scrim: rgb(10 7 5 / 0.66);
 
-  /* ── marque — SOMBRE (accents éclaircis pour tenir le contraste) ── */
+  ── marque : accents éclaircis pour tenir le contraste sur la nuit ──
   --primary-rgb: 209 87 58;
   --primary-d-rgb: 184 70 42;
   --primary-ink-rgb: 26 20 16;
@@ -123,12 +137,13 @@
   --violet-rgb: 155 114 212;
   --warn-rgb: 232 166 48;
 
-  /* Trame en or sur fond nuit : le terracotta y disparaîtrait. */
+  ── trame en or : le terracotta disparaîtrait sur fond nuit ──
   --pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='26'%3E%3Cpath d='M13 2 L24 13 L13 24 L2 13 Z' fill='none' stroke='%23E8A630' stroke-width='1' stroke-opacity='0.10'/%3E%3C/svg%3E");
 
   --glow-1: 14%;
   --glow-2: 8%;
 }
+*/
 
 @layer base {
   html,

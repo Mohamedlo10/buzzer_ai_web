@@ -81,7 +81,7 @@ export function FocusModePanel({
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-bg flex flex-col justify-between px-6 py-8 select-none shadow-[inset_0_0_100px_rgb(var(--txt-rgb)_/_0.2)] dark:shadow-[inset_0_0_120px_rgba(0,0,0,0.45)]"
+      className="fixed inset-0 z-50 bg-bg flex flex-col justify-between px-6 py-8 select-none shadow-[inset_0_0_100px_rgb(var(--txt-rgb)_/_0.12)]"
       style={{
         backgroundImage:
           'radial-gradient(120% 70% at 50% 0%, color-mix(in oklab, var(--accent) 18%, transparent), transparent 60%)',

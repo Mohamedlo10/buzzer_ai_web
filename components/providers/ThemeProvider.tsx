@@ -1,10 +1,19 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext } from 'react';
 
+/**
+ * MODE SOMBRE DÉSACTIVÉ — tous les joueurs sont en thème clair (Teranga).
+ *
+ * L'API du provider est conservée à l'identique pour ne rien casser chez les
+ * consommateurs : `theme` vaut toujours 'light' et les setters sont inertes.
+ * Pour réactiver le sombre :
+ *   1. décommenter le bloc [data-theme='dark'] dans global.css ;
+ *   2. restaurer la logique ci-dessous (voir le bloc commenté) ;
+ *   3. retirer le data-theme="light" en dur de app/layout.tsx ;
+ *   4. réafficher les boutons soleil/lune (DashboardHeader, dashboard/page).
+ */
 type Theme = 'dark' | 'light';
-
-const STORAGE_KEY = 'theme';
 
 interface ThemeContextValue {
   theme: Theme;
@@ -14,22 +23,32 @@ interface ThemeContextValue {
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
+const LIGHT_ONLY: ThemeContextValue = {
+  theme: 'light',
+  toggleTheme: () => {},
+  setTheme: () => {},
+};
+
+export function ThemeProvider({ children }: { children: React.ReactNode }) {
+  return <ThemeContext.Provider value={LIGHT_ONLY}>{children}</ThemeContext.Provider>;
+}
+
+/*
+// ─── Bascule clair/sombre — à restaurer quand on reprendra le mode sombre ───
+const STORAGE_KEY = 'theme';
+
 function applyTheme(theme: Theme) {
   document.documentElement.setAttribute('data-theme', theme);
 }
 
 function getInitialTheme(): Theme {
   if (typeof window === 'undefined') return 'light';
-
   const stored = window.localStorage.getItem(STORAGE_KEY);
   if (stored === 'dark' || stored === 'light') return stored;
-
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  // Xalaat est clair par défaut — doit rester aligné sur le script inline
-  // de app/layout.tsx pour éviter un flash au premier rendu.
   const [theme, setThemeState] = useState<Theme>('light');
 
   useEffect(() => {
@@ -52,6 +71,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     </ThemeContext.Provider>
   );
 }
+*/
 
 export function useTheme() {
   const ctx = useContext(ThemeContext);

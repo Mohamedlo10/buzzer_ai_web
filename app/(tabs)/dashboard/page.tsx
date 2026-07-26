@@ -11,8 +11,6 @@ import {
   QrCode,
   Bell,
   ChevronRight,
-  Sun,
-  Moon,
 } from 'lucide-react';
 
 import { SafeScreen } from '~/components/layout/SafeScreen';
@@ -20,7 +18,6 @@ import { Spinner } from '~/components/loading/Spinner';
 import { QRScannerModal } from '~/components/ui/QRScannerModal';
 import { useDashboardV2 } from '~/lib/query/hooks';
 import { NotificationsBanner } from '~/components/dashboard';
-import { useTheme } from '~/components/providers/ThemeProvider';
 import * as roomsApi from '~/lib/api/rooms';
 import * as sessionsApi from '~/lib/api/sessions';
 import { appStorage } from '~/lib/utils/storage';
@@ -365,7 +362,6 @@ export default function DashboardPage() {
   const { data, isLoading, isError, refetch } = useDashboardV2();
   const [showJoinModal, setShowJoinModal] = useState(false);
   const user = useAuthStore((s) => s.user);
-  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     if (user?.role === 'SUPER_ADMIN') {
@@ -424,13 +420,14 @@ export default function DashboardPage() {
             )}
           </button>
           <span className="text-txt font-display font-bold text-sm tracking-widest uppercase">
-            BUZZMASTER HUB
+            XALAAT HUB
           </span>
         </div>
-        
-        {/* Actions (Theme toggle + Bell notification) */}
+
+        {/* Actions (Bell notification) */}
         <div className="flex flex-row items-center gap-2">
-          {/* Day/Night Theme Toggle */}
+          {/* Bascule de thème retirée — l'app est en clair pour tous.
+              À réafficher en même temps que le mode sombre (cf. ThemeProvider).
           <button
             onClick={toggleTheme}
             className="w-10 h-10 rounded-full bg-surface border border-line flex items-center justify-center text-txt hover:text-accent transition-colors cursor-pointer"
@@ -438,6 +435,7 @@ export default function DashboardPage() {
           >
             {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
           </button>
+          */}
 
           {/* Notification Bell */}
           <button

@@ -45,16 +45,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="fr" className={`${bricolage.variable} ${manrope.variable} ${instrumentSerif.variable}`}>
-      <head>
-        {/* Xalaat est un thème clair par défaut (Teranga) ; le sombre n'est
-            servi que sur préférence explicite ou système. */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('theme');if(t!=='dark'&&t!=='light'){t=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}document.documentElement.setAttribute('data-theme',t);}catch(e){}})();`,
-          }}
-        />
-      </head>
+    // Thème clair pour tout le monde. Le mode sombre est mis de côté (voir le
+    // bloc [data-theme='dark'] commenté dans global.css) — data-theme est donc
+    // posé en dur ici, sans lire localStorage ni prefers-color-scheme.
+    <html
+      lang="fr"
+      data-theme="light"
+      className={`${bricolage.variable} ${manrope.variable} ${instrumentSerif.variable}`}
+    >
       <body className="bg-bg min-h-screen items-center justify-center md:py-2 md:px-12 md:min-w-2xl text-txt antialiased font-ui">
         <AppProviders>{children}</AppProviders>
       </body>

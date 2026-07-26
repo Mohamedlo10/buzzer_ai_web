@@ -15,16 +15,13 @@ import {
 import { XalaatMark } from '~/components/ui/XalaatMark';
 
 /**
- * L'onboarding est un écran « splash » volontairement sombre dans les deux
- * thèmes : c'est la première impression de marque. Les couleurs y sont donc
- * fixes (nuances Saaru) plutôt que liées aux tokens de surface, et les
- * accents sont désignés par leur *canal* RGB pour pouvoir en dériver des
- * halos translucides.
+ * Splash d'accueil, en clair Teranga comme le reste de l'app.
+ *
+ * Les accents sont désignés par leur *canal* RGB (`--x-rgb`) et non par leur
+ * valeur finale, ce qui permet d'en dériver des halos translucides sans
+ * dupliquer la couleur.
  */
 type AccentToken = 'primary' | 'gold' | 'bad' | 'indigo' | 'violet';
-
-const NIGHT_INK = '#F1E5C9';
-const NIGHT_INK_SOFT = 'rgba(241,229,201,0.68)';
 
 interface Slide {
   id: string;
@@ -39,6 +36,12 @@ interface Slide {
 const col = (t: AccentToken) => `rgb(var(--${t}-rgb))`;
 const colA = (t: AccentToken, a: number) => `rgb(var(--${t}-rgb) / ${a})`;
 
+// L'or « encre » est trop sombre pour un aplat décoratif : sur les pavés et
+// dégradés, on lui substitue l'or vif du design.
+const fill = (t: AccentToken) => (t === 'gold' ? 'rgb(var(--gold-bright-rgb))' : col(t));
+// Encre posée sur cet aplat : sombre sur l'or vif, crème sur le reste.
+const onFill = (t: AccentToken) => (t === 'gold' ? '#1A1410' : 'var(--primary-ink)');
+
 const slides: Slide[] = [
   {
     id: '1',
@@ -46,7 +49,7 @@ const slides: Slide[] = [
     subtitle: 'Quiz Multijoueur en Temps Réel',
     description:
       'Affrontez vos amis sur des questions générées par intelligence artificielle. Le plus rapide buzz et gagne !',
-    icon: <Zap size={80} color="#FFFFFF" strokeWidth={1.5} />,
+    icon: <Zap size={80} strokeWidth={1.5} />,
     gradient: ['primary', 'bad'],
     accent: 'primary',
   },
@@ -56,7 +59,7 @@ const slides: Slide[] = [
     subtitle: 'Parties Instantanées',
     description:
       'Créez une session avec un code à 6 chiffres ou rejoignez une partie existante en quelques secondes.',
-    icon: <Users size={80} color="#FFFFFF" strokeWidth={1.5} />,
+    icon: <Users size={80} strokeWidth={1.5} />,
     gradient: ['bad', 'primary'],
     accent: 'bad',
   },
@@ -66,7 +69,7 @@ const slides: Slide[] = [
     subtitle: 'Soyez le Premier',
     description:
       "Appuyez sur le buzzer pour répondre en premier. Le système de file gère l'ordre des réponses.",
-    icon: <Target size={80} color="#FFFFFF" strokeWidth={1.5} />,
+    icon: <Target size={80} strokeWidth={1.5} />,
     gradient: ['primary', 'gold'],
     accent: 'primary',
   },
@@ -76,7 +79,7 @@ const slides: Slide[] = [
     subtitle: 'Catégories Illimitées',
     description:
       "Histoire, Science, Sport, Culture Pop... L'IA génère des questions uniques à chaque partie.",
-    icon: <Brain size={80} color="#FFFFFF" strokeWidth={1.5} />,
+    icon: <Brain size={80} strokeWidth={1.5} />,
     gradient: ['gold', 'bad'],
     accent: 'gold',
   },
@@ -86,7 +89,7 @@ const slides: Slide[] = [
     subtitle: 'Qui Doit Quoi à Qui ?',
     description:
       'À la fin de chaque partie, découvrez qui vous doit des points et qui vous en doit par catégorie !',
-    icon: <Trophy size={80} color="#FFFFFF" strokeWidth={1.5} />,
+    icon: <Trophy size={80} strokeWidth={1.5} />,
     gradient: ['bad', 'gold'],
     accent: 'bad',
   },
@@ -111,23 +114,19 @@ export default function OnboardingPage() {
   const isLast = currentIndex === slides.length - 1;
 
   return (
-    // `data-theme="dark"` rebascule les tokens sur leur variante nuit pour ce
-    // sous-arbre : les accents y prennent leurs valeurs éclaircies, lisibles
-    // sur le fond sombre, même quand l'app est en thème clair.
     <div
-      data-theme="dark"
-      className="min-h-screen flex flex-col relative overflow-hidden"
-      style={{ background: 'linear-gradient(to bottom, #241B14, #1A1410)', color: NIGHT_INK }}
+      className="min-h-screen flex flex-col relative overflow-hidden text-txt"
+      style={{ background: 'linear-gradient(180deg, var(--surface) 0%, var(--bg) 100%)' }}
     >
       {/* Logo Header — marque + signature MouhaDev */}
       <div className="pt-10 flex flex-col items-center gap-1.5">
         <div className="flex flex-row items-center gap-2">
-          <XalaatMark size={24} color="var(--gold-bright)" accent="var(--primary)" />
+          <XalaatMark size={24} />
           <span className="font-display text-2xl font-bold tracking-[-0.02em]">Xalaat</span>
         </div>
         <span
           className="text-[10px] font-bold uppercase tracking-[0.2em]"
-          style={{ color: 'rgb(var(--gold-bright-rgb) / 0.9)' }}
+          style={{ color: 'var(--primary)' }}
         >
           Quiz by MouhaDev
         </span>
@@ -147,9 +146,10 @@ export default function OnboardingPage() {
               width: 180,
               height: 180,
               borderRadius: 40,
-              boxShadow: `0 0 30px 0 ${colA(currentSlide.accent, 0.5)}`,
-              background: `linear-gradient(135deg, ${col(currentSlide.gradient[0])}, ${col(currentSlide.gradient[1])})`,
+              boxShadow: `0 18px 34px -12px ${colA(currentSlide.accent, 0.45)}`,
+              background: `linear-gradient(135deg, ${fill(currentSlide.gradient[0])}, ${fill(currentSlide.gradient[1])})`,
               flexShrink: 0,
+              color: onFill(currentSlide.gradient[0]),
             }}
           >
             {currentSlide.icon}
@@ -166,7 +166,7 @@ export default function OnboardingPage() {
             {currentSlide.subtitle}
           </p>
 
-          <p className="text-center text-lg leading-7 px-4" style={{ color: NIGHT_INK_SOFT }}>
+          <p className="text-txt-60 text-center text-lg leading-7 px-4">
             {currentSlide.description}
           </p>
         </div>
@@ -188,7 +188,7 @@ export default function OnboardingPage() {
                 backgroundColor:
                   index === currentIndex
                     ? col(slide.accent)
-                    : 'rgba(241,229,201,0.3)',
+                    : 'var(--txt-25)',
                 transition: 'all 0.3s ease',
                 border: 'none',
                 cursor: 'pointer',
@@ -201,9 +201,9 @@ export default function OnboardingPage() {
               type="button"
               onClick={handleNext}
               className="ml-2 w-8 h-8 rounded-full flex items-center justify-center transition-opacity hover:opacity-80"
-              style={{ backgroundColor: 'rgba(241,229,201,0.12)' }}
+              style={{ backgroundColor: 'var(--surface-2)' }}
             >
-              <ChevronRight size={16} color={NIGHT_INK_SOFT} />
+              <ChevronRight size={16} color="var(--txt-60)" />
             </button>
           )}
         </div>
@@ -216,9 +216,9 @@ export default function OnboardingPage() {
             onClick={() => goTo('/register')}
             className="w-full flex flex-row items-center justify-center py-4 rounded-2xl transition-opacity hover:opacity-90 active:opacity-80"
             style={{
-              backgroundColor: col(currentSlide.accent),
-              boxShadow: `0 0 20px ${colA(currentSlide.accent, 0.5)}`,
-              color: currentSlide.accent === 'gold' ? '#1A1410' : NIGHT_INK,
+              backgroundColor: fill(currentSlide.accent),
+              boxShadow: `0 10px 24px -8px ${colA(currentSlide.accent, 0.5)}`,
+              color: onFill(currentSlide.accent),
             }}
           >
             <span className="font-bold text-lg mr-2">S&apos;inscrire</span>
@@ -231,8 +231,8 @@ export default function OnboardingPage() {
             onClick={() => goTo('/login')}
             className="w-full flex flex-row items-center justify-center py-4 rounded-2xl transition-opacity hover:opacity-90 active:opacity-80"
             style={{
-              backgroundColor: 'rgba(241,229,201,0.08)',
-              border: '1px solid rgba(241,229,201,0.18)',
+              backgroundColor: 'var(--surface)',
+              border: '1px solid var(--line)',
             }}
           >
             <span className="font-semibold text-lg">Se connecter</span>

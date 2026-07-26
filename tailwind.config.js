@@ -8,6 +8,11 @@
 const token = (name) => `rgb(var(--${name}-rgb) / <alpha-value>)`;
 
 module.exports = {
+  // Mode sombre désactivé. En 'class' (au lieu du défaut 'media'), une
+  // variante `dark:` oubliée ne peut plus se déclencher toute seule sur la
+  // préférence système d'un joueur — elle attendrait une classe .dark que
+  // personne ne pose.
+  darkMode: 'class',
   content: [
     './app/**/*.{js,jsx,ts,tsx}',
     './components/**/*.{js,jsx,ts,tsx}',

@@ -2,8 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '~/stores/useAuthStore';
-import { useTheme } from '~/components/providers/ThemeProvider';
-import { Bell, User, Sun, Moon } from 'lucide-react';
+import { Bell, User } from 'lucide-react';
 import { XalaatLogo } from '~/components/ui/XalaatMark';
 
 interface DashboardHeaderProps {
@@ -42,7 +41,6 @@ export function DashboardHeader({
 }: DashboardHeaderProps) {
   const router = useRouter();
   const user = useAuthStore((state) => state.user);
-  const { theme, toggleTheme } = useTheme();
 
   return (
     <div className="flex flex-row items-center justify-between px-4 pb-3 pt-5 bg-header-glass backdrop-blur-md border-b border-line">
@@ -51,7 +49,8 @@ export function DashboardHeader({
 
       {/* Actions */}
       <div className="flex flex-row items-center gap-2">
-        {/* Theme toggle — adaptabilité (B&S) */}
+        {/* Bascule de thème retirée — l'app est en clair pour tous.
+            À réafficher en même temps que le mode sombre (cf. ThemeProvider).
         <RoundIconButton
           onClick={toggleTheme}
           ariaLabel={theme === 'dark' ? 'Passer en mode clair' : 'Passer en mode sombre'}
@@ -59,6 +58,7 @@ export function DashboardHeader({
         >
           {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
         </RoundIconButton>
+        */}
 
         {/* Notification Bell */}
         <RoundIconButton
