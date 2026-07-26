@@ -6,7 +6,7 @@ import { Home, Grid, Trophy, Users, User } from 'lucide-react';
 
 const TABS = [
   { href: '/dashboard', icon: Home, label: 'Accueil' },
-  { href: '/rooms', icon: Grid, label: 'Salles' },
+  { href: '/rooms', icon: Grid, label: 'Multijoueur' },
   { href: '/rankings', icon: Trophy, label: 'Classement' },
   { href: '/friends', icon: Users, label: 'Amis' },
   { href: '/profile', icon: User, label: 'Profil' },

@@ -2,57 +2,20 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
-import {
-  ArrowLeft,
-  BarChart3,
-  Zap,
-  Crown,
-  Medal,
-  Trophy,
-} from 'lucide-react';
+import { Crown, Trophy } from 'lucide-react';
 
 import { SafeScreen } from '~/components/layout/SafeScreen';
-import { Avatar } from '~/components/ui/Avatar';
-import { FriendshipButton } from '~/components/ui/FriendshipButton';
 import { PlayerProfileModal } from '~/components/ui/PlayerProfileModal';
 import { Podium } from '~/components/results/Podium';
-import { TeamLeaderboard } from '~/components/game/TeamLeaderboard';
 import { useAuthStore } from '~/stores/useAuthStore';
 import { useBuzzStore } from '~/stores/useBuzzStore';
 import * as rankingsApi from '~/lib/api/rankings';
-import * as friendsApi from '~/lib/api/friends';
 import { appStorage } from '~/lib/utils/storage';
 import type { SessionRankingEntry, CategoryRankingResponse } from '~/types/api';
 
-// ── Rank label ────────────────────────────────────────────────────────────────
-function rankLabel(index: number): string {
-  if (index === 0) return 'VAINQUEUR';
-  if (index === 1) return 'CHALLENGER';
-  if (index === 2) return '3ÈME';
-  return `${index + 1}ÈME`;
-}
-
-// ── Category card helpers ─────────────────────────────────────────────────────
-const CATEGORY_COLORS = [
-  'var(--primary)', 'var(--indigo)', 'var(--violet)', 'var(--warn)', 'var(--bad)', 'var(--bad)',
-  'var(--good)', 'var(--indigo)', 'var(--violet)', 'var(--bad)', 'var(--indigo)', 'var(--good)',
-];
-
-function getCategoryIcon(name: string): string {
-  const n = name.toLowerCase();
-  if (n.includes('basket') || n.includes('sport') || n.includes('foot') || n.includes('tennis')) return '🏆';
-  if (n.includes('music') || n.includes('musique')) return '🎵';
-  if (n.includes('cinéma') || n.includes('cinema') || n.includes('film')) return '🎬';
-  if (n.includes('science') || n.includes('bio') || n.includes('chimie')) return '🔬';
-  if (n.includes('histoire') || n.includes('history')) return '📜';
-  if (n.includes('géo') || n.includes('geo') || n.includes('monde')) return '🌍';
-  if (n.includes('math')) return '📐';
-  if (n.includes('info') || n.includes('tech') || n.includes('code')) return '💻';
-  if (n.includes('culin') || n.includes('food') || n.includes('cuisine')) return '🍽️';
-  if (n.includes('animal') || n.includes('nature')) return '🦁';
-  if (n.includes('langue') || n.includes('english') || n.includes('anglais')) return '🗣️';
-  return '📚';
-}
+import { XalaatMark } from '~/components/shared/XalaatMark';
+import { PatternLozenge } from '~/components/shared/PatternLozenge';
+import { AnimatedCounter } from '~/components/shared/AnimatedCounter';
 
 // ── Team Rankings Card ────────────────────────────────────────────────────────
 interface TeamEntry {
@@ -64,13 +27,13 @@ interface TeamEntry {
 }
 
 function TeamRankingsCard({ teamRankings }: { teamRankings: TeamEntry[] }) {
-  const rankColors = ['var(--gold)', '#C0C0C0', '#CD7F32'];
+  const rankColors = ['var(--color-accent)', '#C0C0C0', '#CD7F32'];
 
   return (
-    <div className="bg-surface rounded-2xl border border-line overflow-hidden">
+    <div className="bg-surface rounded-[var(--card-radius)] border border-line overflow-hidden">
       <div className="flex items-center justify-between px-4 py-3 border-b border-line">
         <div className="flex items-center gap-2">
-          <Trophy size={16} color="var(--warn)" />
+          <Trophy size={16} className="text-accent" />
           <p className="text-txt-60 font-bold text-xs tracking-widest uppercase">Classement par équipe</p>
         </div>
         <p className="text-txt-40 text-xs font-semibold tracking-wider uppercase">Points équipe</p>
@@ -86,7 +49,7 @@ function TeamRankingsCard({ teamRankings }: { teamRankings: TeamEntry[] }) {
           >
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                {index === 0 && <Crown size={14} color="var(--gold)" />}
+                {index === 0 && <Crown size={14} className="text-accent" />}
                 <span className="font-bold text-base" style={{ color: team.color }}>{team.name}</span>
                 <span className="text-txt-40 text-xs">{team.players.length} joueur{team.players.length > 1 ? 's' : ''}</span>
               </div>
@@ -109,476 +72,255 @@ function TeamRankingsCard({ teamRankings }: { teamRankings: TeamEntry[] }) {
   );
 }
 
-// ── Category Rankings Card ────────────────────────────────────────────────────
-function CategoryRankingsCard({
-  categoryRankings,
-  userId,
-}: {
-  categoryRankings: CategoryRankingResponse;
-  userId: string;
-}) {
-  if (!categoryRankings?.categories?.length) return null;
-
-  return (
-    <div className="mb-4">
-      <p className="text-txt-60 text-xs font-bold tracking-widest uppercase px-4 mb-3">
-        Détails par catégorie
-      </p>
-
-      <div className="flex flex-row gap-3 overflow-x-auto px-4 pb-2 scrollbar-none">
-        {categoryRankings.categories.map((cat, i) => {
-          const color = CATEGORY_COLORS[i % CATEGORY_COLORS.length];
-          const icon = getCategoryIcon(cat.name);
-          const top = cat.rankings.slice(0, 5);
-          const initials = cat.name.slice(0, 2).toUpperCase();
-
-          return (
-            <div
-              key={cat.name}
-              className="flex-shrink-0 bg-surface rounded-2xl border border-line p-4"
-              style={{ width: 160 }}
-            >
-              {/* Icon */}
-              <div
-                className="w-10 h-10 rounded-xl flex items-center justify-center mb-2"
-                style={{ backgroundColor: `${color}25` }}
-              >
-                {icon === '📚' ? (
-                  <span className="text-xs font-bold" style={{ color }}>{initials}</span>
-                ) : (
-                  <span className="text-lg">{icon}</span>
-                )}
-              </div>
-
-              {/* Category name */}
-              <p className="font-bold text-sm mb-3 truncate" style={{ color }}>{cat.name}</p>
-
-              {/* Rankings */}
-              <div className="flex flex-col gap-2">
-                {top.map((entry) => {
-                  const isMe = entry.userId === userId;
-                  const score = entry.score > 0 ? `${entry.score}` : '—';
-                  return (
-                    <div key={entry.userId} className="flex items-center justify-between">
-                      <span
-                        className="text-xs truncate flex-1 mr-2"
-                        style={{ color: isMe ? color : '#FFFFFF80' }}
-                      >
-                        {entry.username.split(' ')[0]}
-                      </span>
-                      <span
-                        className="text-xs font-bold shrink-0"
-                        style={{ color: isMe ? color : '#FFFFFFCC' }}
-                      >
-                        {score}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-// ── Main Page ─────────────────────────────────────────────────────────────────
-export default function ResultsPage() {
+// ── Main Session Results Page ──────────────────────────────────────────────────
+export default function SessionResultsPage() {
   const router = useRouter();
   const params = useParams<{ code: string }>();
   const searchParams = useSearchParams();
   const code = params.code;
-  const paramSessionId = searchParams.get('sessionId') ?? undefined;
-  const paramRoomId = searchParams.get('roomId') ?? undefined;
+  const roomIdFromUrl = searchParams.get('roomId');
 
-  const [rankings, setRankings] = useState<SessionRankingEntry[] | null>(null);
+  const user = useAuthStore((s) => s.user);
+  const sessionCode = useBuzzStore((s) => s.sessionCode);
+  const leaveSession = useBuzzStore((s) => s.leaveSession);
+
+  const [rankings, setRankings] = useState<SessionRankingEntry[]>([]);
   const [categoryRankings, setCategoryRankings] = useState<CategoryRankingResponse | null>(null);
+  const [isTeamMode, setIsTeamMode] = useState(false);
+  const [resolvedRoomId, setResolvedRoomId] = useState<string | null>(roomIdFromUrl);
   const [isLoading, setIsLoading] = useState(true);
-  const [storedSessionId, setStoredSessionId] = useState<string | null>(null);
   const [profileUserId, setProfileUserId] = useState<string | null>(null);
 
-  const user = useAuthStore((state) => state.user);
-  const storeSession = useBuzzStore((state) => state.session);
-  const resolvedSessionId = paramSessionId || storeSession?.id || storedSessionId;
-
   useEffect(() => {
-    const loadStoredSession = async () => {
-      if (!paramSessionId && !storeSession?.id) {
-        const stored = await appStorage.getActiveSession();
-        if (stored?.sessionId) setStoredSessionId(stored.sessionId);
+    let isMounted = true;
+
+    async function loadData() {
+      try {
+        const storedSession = await appStorage.getActiveSession();
+        if (storedSession?.code === code && storedSession?.sessionId) {
+          if (isMounted) setResolvedRoomId(storedSession.sessionId);
+        }
+
+        const data = await rankingsApi.getSessionRankings(code);
+        if (!isMounted) return;
+
+        setRankings(Array.isArray(data) ? data : []);
+
+        if (sessionCode === code) {
+          leaveSession();
+          await appStorage.clearActiveSession();
+        }
+      } catch (err) {
+        console.error('Failed to load rankings:', err);
+      } finally {
+        if (isMounted) setIsLoading(false);
       }
-    };
-    loadStoredSession();
-  }, [paramSessionId, storeSession?.id]);
-
-  useEffect(() => {
-    if (resolvedSessionId) loadRankings();
-  }, [resolvedSessionId]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const loadRankings = async () => {
-    if (!resolvedSessionId) return;
-    try {
-      const [sessionData, categoryData] = await Promise.all([
-        rankingsApi.getSessionRankings(resolvedSessionId),
-        rankingsApi.getCategoryRankings(resolvedSessionId).catch(() => null),
-      ]);
-      setRankings(sessionData);
-      setCategoryRankings(categoryData);
-    } catch (err) {
-      console.error('Failed to load rankings:', err);
-    } finally {
-      setIsLoading(false);
     }
-  };
 
-  const handleAddFriend = async (targetUserId: string) => {
-    if (!targetUserId || targetUserId === user?.id) return;
-    try {
-      await friendsApi.sendFriendRequest(targetUserId);
-      await loadRankings();
-    } catch { /* ignore */ }
-  };
+    loadData();
+    return () => { isMounted = false; };
+  }, [code, sessionCode, leaveSession]);
 
-  const resolvedRoomId = paramRoomId || storeSession?.roomId;
   const handleBack = () => {
     if (resolvedRoomId) router.replace(`/room/${resolvedRoomId}`);
-    else router.replace('/');
+    else router.replace('/dashboard');
   };
 
-  // ── Loading ──
-  if (isLoading) {
-    return (
-      <SafeScreen>
-        <div className="flex-1 flex flex-col justify-center items-center min-h-screen">
-          <div className="w-20 h-20 rounded-full bg-accent/15 flex items-center justify-center mb-4">
-            <Trophy size={40} color="var(--primary)" />
-          </div>
-          <p className="text-txt font-semibold">Chargement des résultats…</p>
-        </div>
-      </SafeScreen>
-    );
-  }
-
-  if (!rankings || rankings.length === 0) {
-    return (
-      <SafeScreen>
-        <div className="flex-1 flex flex-col items-center justify-center px-4 min-h-screen">
-          <div className="w-24 h-24 rounded-full bg-surface flex items-center justify-center mb-4">
-            <BarChart3 size={48} color="var(--txt-40)" />
-          </div>
-          <p className="text-txt-60 text-center mb-4">Aucun résultat disponible</p>
-          <button onClick={handleBack} className="bg-accent px-8 py-4 rounded-2xl hover:bg-accent-d transition-colors">
-            <span className="text-btn-fg font-bold">Retour</span>
-          </button>
-        </div>
-      </SafeScreen>
-    );
-  }
-
-  // ── Derived data ──
   const currentUserRanking = rankings.find(
-    (r) => (r.player.userId ?? r.player.id) === user?.id,
+    (r) => (r.player.userId ?? r.player.id) === user?.id
   );
-  const correctionTotal = currentUserRanking?.corrections?.reduce((sum, c) => sum + c.amount, 0) || 0;
-  const totalOwed = currentUserRanking?.debts?.reduce((sum, d) => sum + d.amount, 0) || 0;
-  const totalReceived = currentUserRanking?.debtsReceived?.reduce((sum, d) => sum + d.amount, 0) || 0;
-  // Net debt balance: positive = you receive, negative = you owe
-  const netDebt = totalReceived - totalOwed;
 
-  // Build team rankings if session is in team mode
-  const isTeamMode = rankings.some((r) => r.teamId);
-  const teamRankings: TeamEntry[] = [];
-  if (isTeamMode) {
-    const teamMap = new Map<string, TeamEntry>();
-    rankings.forEach((entry) => {
-      if (!entry.teamId || !entry.teamName) return;
-      const existing = teamMap.get(entry.teamId);
-      if (existing) {
-        existing.players.push(entry);
-        existing.score = Math.max(existing.score, entry.teamScore ?? 0);
-      } else {
-        teamMap.set(entry.teamId, {
-          id: entry.teamId,
-          name: entry.teamName,
-          color: entry.teamColor ?? 'var(--primary)',
-          score: entry.teamScore ?? 0,
-          players: [entry],
-        });
-      }
-    });
-    teamRankings.push(...Array.from(teamMap.values()).sort((a, b) => b.score - a.score));
-  }
-
-  // Build unified debt list from all players' debts (deduplicated by debtor→creditor→category)
-  const allDebts = rankings
-    .filter((entry) => entry.debts && entry.debts.length > 0)
-    .flatMap((entry) =>
-      entry.debts.map((debt) => ({
-        debtorId: entry.player.userId ?? entry.player.id,
-        debtorName: entry.player.name,
-        debtorAvatarUrl: entry.player.avatarUrl,
-        creditorName: debt.owedTo,
-        category: debt.category,
-        amount: debt.amount,
-      }))
-    );
+  const finalScore = currentUserRanking?.finalScore ?? 0;
 
   return (
-    <SafeScreen>
-      {/* ── Header ── */}
-      <div className="flex flex-row items-center px-4 pt-6 pb-4 gap-3">
-        <button
-          onClick={handleBack}
-          className="w-10 h-10 rounded-full bg-surface flex items-center justify-center shrink-0"
-        >
-          <ArrowLeft size={20} color="#FFFFFF" />
-        </button>
-
-        <div className="flex-1">
-          <p className="text-txt font-bold text-2xl leading-tight">Résultats</p>
-          <p className="text-txt-40 text-xs">Partie #{code}</p>
-        </div>
-
-        {resolvedRoomId && (
-          <button
-            onClick={handleBack}
-            className="px-4 py-2 rounded-full shrink-0"
-            style={{ background: 'linear-gradient(135deg, var(--primary), var(--primary-d))' }}
-          >
-            <span className="text-btn-fg font-bold text-sm">Retourner à la salle</span>
-          </button>
-        )}
-
-        <div className="shrink-0">
-          <Avatar avatarUrl={user?.avatarUrl ?? null} username={user?.username ?? 'U'} size={40} />
-        </div>
+    <SafeScreen className="bg-bg min-h-[100dvh] relative overflow-hidden flex flex-col">
+      {/* Background lozenge pattern */}
+      <div style={{ position: 'absolute', inset: 0, opacity: 0.5, pointerEvents: 'none' }}>
+        <PatternLozenge color="var(--color-primary)" opacity={0.06} size={28} />
       </div>
 
-      {/* ── Scrollable content ── */}
-      <div className="overflow-y-auto pb-10 flex flex-col gap-3.5 px-4">
-
-        {/* ── Podium ── */}
-        <Podium
-          rankings={rankings}
-          currentUserId={user?.id}
-          onPlayerTap={(entry) => {
-            const uid = entry.player.userId ?? entry.player.id;
-            if (uid) setProfileUserId(uid);
-          }}
-        />
-
-        {/* ── Performance globale ── */}
-        <div className="bg-surface rounded-2xl border border-line p-3.5">
-          <div className="flex items-center gap-1.5 mb-3">
-            <Zap size={15} className="text-warn" />
-            <p className="text-warn text-[10px] font-bold tracking-widest uppercase">
-              Performance globale
-            </p>
-          </div>
-
-          <div className="grid grid-cols-4 md:grid-cols-7 gap-2">
-            {[
-              { label: 'JOUEURS', value: rankings.length, color: 'var(--txt)' },
-              { label: 'MAX', value: rankings[0]?.finalScore ?? 0, color: 'var(--gold)' },
-              { label: 'POS.', value: currentUserRanking ? `${currentUserRanking.rank}${currentUserRanking.rank === 1 ? 'er' : 'e'}` : '—', color: 'var(--primary)' },
-              { label: 'BASE', value: currentUserRanking?.score ?? '—', color: 'var(--txt)' },
-              { label: 'CORR.', value: correctionTotal !== 0 ? (correctionTotal > 0 ? `+${correctionTotal}` : correctionTotal) : '0', color: 'var(--txt)' },
-              { label: 'DETTES', value: netDebt !== 0 ? (netDebt > 0 ? `+${netDebt}` : `${netDebt}`) : '0', color: netDebt < 0 ? 'var(--bad)' : netDebt > 0 ? 'var(--primary)' : 'var(--txt)' },
-              { label: 'FINAL', value: currentUserRanking?.finalScore ?? '—', color: 'var(--primary)' },
-            ].map(({ label, value, color }) => (
-              <div key={label} className="flex flex-col items-center text-center">
-                <p className="text-txt-40 text-[8.5px] font-bold tracking-wide mb-1">{label}</p>
-                <p className="font-display font-semibold text-sm" style={{ color }}>{value}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* ── Classement par équipe ── */}
-        {isTeamMode && teamRankings.length > 0 && (
-          <TeamLeaderboard
-            teams={teamRankings.map((t) => ({
-              id: t.id,
-              name: t.name,
-              color: t.color,
-              score: t.score,
-              members: [],
-            }))}
-            players={rankings.map((r) => ({
-              id: r.player.id,
-              userId: r.player.userId,
-              name: r.player.name,
-              avatarUrl: r.player.avatarUrl,
-              score: r.finalScore,
-              isManager: false,
-              isSpectator: false,
-              teamId: r.teamId ?? null,
-              categoryScores: {},
-              selectedCategories: [],
-            }))}
-            currentUserId={user?.id}
-          />
-        )}
-
-        {/* ── Classement individuel ── */}
-        <div className="bg-surface rounded-2xl border border-line overflow-hidden">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-line">
-            <div className="flex items-center gap-2">
-              <BarChart3 size={16} className="text-accent" />
-              <p className="text-accent text-[10px] font-bold tracking-widest uppercase">
-                {isTeamMode ? 'Classement individuel' : 'Classement'}
-              </p>
-            </div>
-            <p className="text-txt-40 text-[9.5px] font-bold tracking-widest uppercase">Total points</p>
-          </div>
-
-          {rankings.map((entry, index) => {
-            const isCurrentUser = (entry.player.userId ?? entry.player.id) === user?.id;
-            const rankColors = ['var(--gold)', '#C0C0C0', '#CD7F32'];
-            const scoreColor = index < 3 ? rankColors[index] : 'var(--txt)';
-            const playerUserId = entry.player.userId ?? entry.player.id;
-
-            return (
-              <button
-                key={entry.player.id}
-                type="button"
-                onClick={() => playerUserId && setProfileUserId(playerUserId)}
-                className={`w-full flex flex-row items-center px-4 py-2.5 text-left transition-colors ${
-                  index < rankings.length - 1 ? 'border-b border-line' : ''
-                } ${isCurrentUser ? 'bg-accent/9' : 'hover:bg-surface-2/40'}`}
-              >
-                {/* Avatar with rank badge */}
-                <div className="relative mr-3">
-                  <Avatar
-                    avatarUrl={entry.player.avatarUrl}
-                    username={entry.player.name}
-                    size={40}
-                    borderColor={index === 0 ? 'var(--gold)' : index === 1 ? '#C0C0C0' : index === 2 ? '#CD7F32' : undefined}
-                  />
-                  {index === 0 && (
-                    <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-gold-bright flex items-center justify-center">
-                      <Crown size={10} className="text-btn-fg" />
-                    </div>
-                  )}
-                  {index === 1 && (
-                    <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-[#C0C0C0] flex items-center justify-center">
-                      <Medal size={10} className="text-btn-fg" />
-                    </div>
-                  )}
-                  {index === 2 && (
-                    <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-[#CD7F32] flex items-center justify-center">
-                      <Medal size={10} className="text-btn-fg" />
-                    </div>
-                  )}
-                </div>
-
-                {/* Name & label */}
-                <div className="flex-1 min-w-0">
-                  <p className={`font-bold text-sm truncate ${isCurrentUser ? 'text-accent' : 'text-txt'}`}>
-                    {entry.player.name}
-                    {isCurrentUser && <span className="text-xs font-normal opacity-60"> (Vous)</span>}
-                  </p>
-                  <p className="text-txt-40 text-[9.5px] font-bold tracking-wider">
-                    {rankLabel(index)}
-                  </p>
-                </div>
-
-                {/* Friendship */}
-                <FriendshipButton
-                  status={entry.player.friendshipStatus}
-                  isCurrentUser={isCurrentUser}
-                  onAddFriend={() => handleAddFriend(entry.player.userId ?? entry.player.id)}
-                  size="sm"
-                />
-
-                {/* Score */}
-                <div className="flex items-baseline gap-1 ml-3">
-                  <span className="font-display font-semibold text-lg" style={{ color: scoreColor }}>
-                    {entry.finalScore}
-                  </span>
-                  <span className="text-txt-40 text-[10px]">pts</span>
-                </div>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* ── Détails par catégorie ── */}
-        {categoryRankings && (
-          <div className="-mx-4">
-            <CategoryRankingsCard categoryRankings={categoryRankings} userId={user?.id || ''} />
-          </div>
-        )}
-
-        {/* ── Dettes ── */}
-        {allDebts.length > 0 && (
-          <div className="bg-surface rounded-2xl border border-line overflow-hidden">
-            <div className="flex items-center gap-2 px-4 py-3 border-b border-line">
-              <Zap size={16} className="text-warn" />
-              <p className="text-txt font-bold text-xs tracking-widest uppercase flex-1">Dettes</p>
-              <div className="w-[22px] h-[22px] rounded-full bg-warn flex items-center justify-center">
-                <span className="text-[#1A1410] text-[11px] font-bold">{allDebts.length}</span>
-              </div>
-            </div>
-
-            {allDebts.map((debt, i) => {
-              const iOwe = debt.debtorId === user?.id;
-              const owedToMe = debt.creditorName === user?.username;
-              const accentColor = iOwe ? 'var(--bad)' : owedToMe ? 'var(--primary)' : 'var(--indigo)';
-
-              return (
-                <div
-                  key={i}
-                  className={`flex items-center px-4 py-2.5 gap-2.5 ${
-                    i < allDebts.length - 1 ? 'border-b border-line' : ''
-                  }`}
-                  style={{ borderLeft: `3px solid ${accentColor}` }}
-                >
-                  <Avatar
-                    avatarUrl={debt.debtorAvatarUrl ?? null}
-                    username={debt.debtorName}
-                    size={34}
-                  />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[13px] font-semibold">
-                      <span className={iOwe ? 'text-buzz' : 'text-txt'}>
-                        {debt.debtorId === user?.id ? 'Toi' : debt.debtorName}
-                      </span>
-                      <span className="text-txt-60"> doit à </span>
-                      <span className={owedToMe ? 'text-accent' : 'text-txt'}>
-                        {owedToMe ? 'toi' : debt.creditorName}
-                      </span>
-                    </p>
-                    <p className="text-txt-40 text-[10px] uppercase tracking-wider">{debt.category}</p>
-                  </div>
-                  <span
-                    className="font-display font-semibold text-sm shrink-0"
-                    style={{ color: iOwe ? 'var(--bad)' : owedToMe ? 'var(--primary)' : 'var(--txt-60)' }}
-                  >
-                    {iOwe ? '-' : owedToMe ? '+' : '-'}{debt.amount} pts
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        {/* ── Footer actions ── */}
-        <div className="flex gap-2.5 mt-1">
-          <button
-            type="button"
-            onClick={handleBack}
-            className="flex-1 py-3.5 rounded-2xl bg-surface border border-line text-txt font-bold text-sm hover:bg-surface-2 transition-colors"
+      {/* Header */}
+      <div
+        style={{
+          position: 'relative',
+          zIndex: 2,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '16px 20px',
+          borderBottom: '1px solid var(--color-line)',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <XalaatMark size={28} color="var(--color-primary)" accent="var(--color-accent)" />
+          <span
+            style={{
+              fontFamily: 'var(--font-display)',
+              fontWeight: 'var(--font-display-weight)' as any,
+              fontSize: 20,
+              letterSpacing: '-0.02em',
+            }}
           >
-            {resolvedRoomId ? 'Retour à la salle' : 'Quitter'}
+            Xalaat
+          </span>
+        </div>
+        <button
+          onClick={handleBack}
+          type="button"
+          style={{
+            background: 'transparent',
+            border: '1px solid var(--color-line)',
+            color: 'var(--color-ink)',
+            padding: '6px 14px',
+            borderRadius: 'var(--radius-pill)',
+            fontSize: 13,
+            fontWeight: 600,
+            cursor: 'pointer',
+          }}
+        >
+          Fermer ✕
+        </button>
+      </div>
+
+      {/* Scrollable Content */}
+      <div
+        style={{
+          position: 'relative',
+          zIndex: 2,
+          flex: 1,
+          padding: '24px 20px 40px',
+          textAlign: 'center',
+        }}
+        className="overflow-y-auto"
+      >
+        <div
+          style={{
+            fontSize: 12,
+            color: 'var(--color-primary)',
+            letterSpacing: '0.14em',
+            textTransform: 'uppercase',
+            fontWeight: 700,
+            marginBottom: 8,
+          }}
+        >
+          Quiz terminé · Partie #{code}
+        </div>
+
+        <h1
+          style={{
+            fontFamily: 'var(--font-display)',
+            fontWeight: 'var(--font-display-weight)' as any,
+            fontSize: 38,
+            lineHeight: 1.05,
+            letterSpacing: '-0.03em',
+            margin: '0 0 10px',
+          }}
+        >
+          <span style={{ fontFamily: 'var(--font-accent)', fontStyle: 'italic', color: 'var(--color-ink-soft)', fontWeight: 400, fontSize: 30 }}>
+            Mashallah,{' '}
+          </span>
+          tu es <span style={{ color: 'var(--color-primary)' }}>borom xalaat</span>.
+        </h1>
+
+        <p style={{ fontSize: 14, color: 'var(--color-ink-soft)', margin: '0 0 24px' }}>
+          Tu termines à la position{' '}
+          <strong style={{ color: 'var(--color-ink)' }}>
+            #{currentUserRanking?.rank ?? 1}
+          </strong>{' '}
+          sur {rankings.length} joueur{rankings.length > 1 ? 's' : ''}.
+        </p>
+
+        {/* Big score + medal */}
+        <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', gap: 24, marginBottom: 28 }}>
+          {/* Gold medal lozenge */}
+          <div style={{ position: 'relative', width: 110, height: 110 }}>
+            <svg width="110" height="110" viewBox="0 0 160 160">
+              <path d="M80 8 L152 80 L80 152 L8 80 Z" fill="var(--color-accent)" />
+              <path d="M80 22 L138 80 L80 138 L22 80 Z" fill="none" stroke="var(--color-ink)" strokeOpacity="0.2" strokeWidth="2" />
+            </svg>
+            <div
+              style={{
+                position: 'absolute',
+                inset: 0,
+                display: 'grid',
+                placeItems: 'center',
+                fontFamily: 'var(--font-display)',
+                fontWeight: 700,
+                fontSize: 16,
+                color: 'var(--color-ink)',
+                letterSpacing: '0.04em',
+              }}
+            >
+              OR
+            </div>
+          </div>
+
+          <div style={{ textAlign: 'left' }}>
+            <div style={{ fontSize: 12, color: 'var(--color-ink-soft)', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 2 }}>
+              Score final
+            </div>
+            <div
+              style={{
+                fontFamily: 'var(--font-display)',
+                fontWeight: 'var(--font-display-weight)' as any,
+                fontSize: 64,
+                lineHeight: 1,
+                letterSpacing: '-0.04em',
+                color: 'var(--color-ink)',
+              }}
+            >
+              <AnimatedCounter to={finalScore} duration={1600} />
+            </div>
+            <div style={{ fontSize: 12, color: 'var(--color-ink-soft)', marginTop: 4 }}>
+              <span style={{ fontFamily: 'var(--font-accent)', fontStyle: 'italic' }}>xalaat-points</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Podium section */}
+        <div style={{ marginBottom: 24 }}>
+          <Podium
+            rankings={rankings}
+            currentUserId={user?.id}
+            onPlayerTap={(entry) => {
+              const uid = entry.player.userId ?? entry.player.id;
+              if (uid) setProfileUserId(uid);
+            }}
+          />
+        </div>
+
+        {/* Action Buttons */}
+        <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 20 }}>
+          <button
+            onClick={handleBack}
+            type="button"
+            style={{
+              background: 'var(--color-primary)',
+              color: 'var(--color-primary-ink)',
+              border: 'none',
+              padding: '14px 24px',
+              borderRadius: 'var(--radius-pill)',
+              fontSize: 14,
+              fontWeight: 700,
+              cursor: 'pointer',
+            }}
+          >
+            {resolvedRoomId ? 'Retour à la salle' : 'Retour à l\'accueil'}
           </button>
           {resolvedRoomId && (
             <button
-              type="button"
               onClick={() => router.replace(`/session/create?roomId=${resolvedRoomId}`)}
-              className="flex-[1.5] py-3.5 rounded-2xl bg-accent text-btn-fg font-bold text-sm hover:bg-accent-d transition-colors"
+              type="button"
+              style={{
+                background: 'var(--color-ink)',
+                color: 'var(--color-bg)',
+                border: 'none',
+                padding: '14px 24px',
+                borderRadius: 'var(--radius-pill)',
+                fontSize: 14,
+                fontWeight: 700,
+                cursor: 'pointer',
+              }}
             >
               Rejouer 🔁
             </button>
