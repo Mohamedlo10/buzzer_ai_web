@@ -2,16 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-  Plus,
-  FolderOpen,
-  LogIn,
-  X,
-  Gamepad2,
-  QrCode,
-  Bell,
-  ChevronRight,
-} from 'lucide-react';
+import { X, QrCode } from 'lucide-react';
 
 import { SafeScreen } from '~/components/layout/SafeScreen';
 import { Spinner } from '~/components/loading/Spinner';
@@ -23,63 +14,19 @@ import * as sessionsApi from '~/lib/api/sessions';
 import { appStorage } from '~/lib/utils/storage';
 import { useAuthStore } from '~/stores/useAuthStore';
 
+import { PatternLozenge } from '~/components/shared/PatternLozenge';
+import { PatternZigzag } from '~/components/shared/PatternZigzag';
+import { Avatar } from '~/components/shared/Avatar';
+
 // ──────────────────────────────────────────────
-// Room Card component for the horizontal scroll
+// Hub Progress Bar Helper
 // ──────────────────────────────────────────────
 
-function RoomCard({ room }: { room: any }) {
-  const router = useRouter();
-  
-  const formatTimeAgo = (dateStr: string) => {
-    try {
-      const diff = Date.now() - new Date(dateStr).getTime();
-      const hours = Math.floor(diff / 3600000);
-      if (hours < 1) return "Récemment";
-      if (hours < 24) return `Actif il y a ${hours}h`;
-      const days = Math.floor(hours / 24);
-      return `Actif il y a ${days}j`;
-    } catch {
-      return "Actif";
-    }
-  };
-
+function HubProgressBar({ pct, color }: { pct: number; color: string }) {
   return (
-    <button
-      onClick={() => router.push(`/room/${room.id}`)}
-      className="bg-surface border border-line rounded-3xl p-5 min-w-[250px] text-left relative overflow-hidden hover:opacity-95 active:scale-98 transition-all cursor-pointer shadow-soft flex flex-col justify-between h-[180px]"
-    >
-      <div className="w-full flex items-center justify-between mb-3">
-        <div className="w-10 h-10 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center text-accent">
-          <FolderOpen size={18} />
-        </div>
-        <span className="text-[10px] font-bold bg-surface-2 border border-line px-2.5 py-0.5 rounded-full text-txt-60 uppercase tracking-wide">
-          Salon
-        </span>
-      </div>
-      
-      <div>
-        <h4 className="text-txt font-bold text-base truncate leading-snug">{room.name}</h4>
-        <p className="text-txt-40 text-xs mt-1">{formatTimeAgo(room.joinedAt)}</p>
-      </div>
-
-      <div className="flex items-center justify-between mt-4 border-t border-line/40 pt-3">
-        {/* Avatars group mockup */}
-        <div className="flex -space-x-2 overflow-hidden">
-          <div className="inline-block h-6 w-6 rounded-full bg-accent/20 border-2 border-surface flex items-center justify-center text-[8px] font-bold text-accent uppercase">
-            {room.ownerName.charAt(0)}
-          </div>
-          <div className="inline-block h-6 w-6 rounded-full bg-surface-2 border-2 border-surface flex items-center justify-center text-[8px] font-bold text-txt-60">
-            A
-          </div>
-          {room.memberCount > 2 && (
-            <div className="inline-block h-6 w-6 rounded-full bg-surface-2 border-2 border-surface flex items-center justify-center text-[7px] font-bold text-txt-40">
-              +{room.memberCount - 2}
-            </div>
-          )}
-        </div>
-        <span className="text-txt-60 text-xs font-semibold">{room.memberCount} Membres</span>
-      </div>
-    </button>
+    <div style={{ height: 6, background: 'var(--color-surface-2)', borderRadius: 4, overflow: 'hidden' }}>
+      <div style={{ width: `${pct}%`, height: '100%', background: color, borderRadius: 4 }} />
+    </div>
   );
 }
 
@@ -262,99 +209,94 @@ function JoinModal({
         onClose={() => setShowScanner(false)}
         onScan={handleQRScan}
       />
-    <div
-      className="fixed inset-0 bg-scrim backdrop-blur-sm flex items-center justify-center z-50 p-5 animate-[fadein_.2s_ease-out_both]"
-      onClick={handleClose}
-      style={{ display: visible && !showScanner ? undefined : 'none' }}
-    >
       <div
-        className="w-full max-w-[340px] bg-surface border border-line rounded-3xl overflow-hidden animate-[pop_.3s_ease-out_both]"
-        onClick={(e) => e.stopPropagation()}
+        className="fixed inset-0 bg-scrim backdrop-blur-sm flex items-center justify-center z-50 p-5 animate-[fadein_.2s_ease-out_both]"
+        onClick={handleClose}
+        style={{ display: visible && !showScanner ? undefined : 'none' }}
       >
-        <div className="flex flex-row items-center justify-between px-[18px] pt-[18px] pb-2.5">
-          <p className="text-txt font-display font-semibold text-xl">Rejoindre</p>
-          <button
-            onClick={handleClose}
-            className="w-[34px] h-[34px] rounded-full bg-bg flex items-center justify-center text-txt-60 hover:bg-surface-2 transition-colors cursor-pointer"
-          >
-            <X size={17} />
-          </button>
-        </div>
-
-        <div className="px-[18px] pb-3.5">
-          <div className="bg-bg rounded-xl px-3 py-2.5">
-            <p className="text-txt-60 text-[11.5px] text-center leading-[1.5]">
-              Entre le code de la partie (6 chiffres) ou de la salle permanente pour la rejoindre.
-            </p>
+        <div
+          className="w-full max-w-[340px] bg-surface border border-line rounded-3xl overflow-hidden animate-[pop_.3s_ease-out_both]"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="flex flex-row items-center justify-between px-[18px] pt-[18px] pb-2.5">
+            <p className="text-txt font-display font-semibold text-xl">Rejoindre</p>
+            <button
+              onClick={handleClose}
+              className="w-[28px] h-[28px] rounded-full bg-surface-2 flex items-center justify-center text-txt-60 hover:bg-surface transition-colors cursor-pointer border-none"
+            >
+              <X size={15} />
+            </button>
           </div>
-        </div>
 
-        <div className="px-[18px] pb-1.5">
-          <p className="text-txt font-semibold text-[13px] mb-2">Code secret</p>
-          <input
-            value={code}
-            onChange={(e) => {
-              setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, ''));
-              setError(null);
-            }}
-            placeholder="Ex: ABC123"
-            className={`w-full bg-bg rounded-[14px] px-4 py-3.5 text-txt text-center font-display font-semibold text-[22px] tracking-[0.16em] border-[1.5px] outline-none transition-colors focus:border-accent ${
-              error ? 'border-buzz' : 'border-line'
-            }`}
-            maxLength={20}
-            autoCapitalize="characters"
-            autoComplete="off"
-            autoFocus
-            onKeyDown={(e) => e.key === 'Enter' && handleJoin()}
-          />
-        </div>
-
-        {error && (
-          <div className="px-[18px] pt-2.5">
-            <div className="flex items-start gap-2 px-3 py-2.5 rounded-xl bg-buzz/10 border border-buzz/30">
-              <X size={14} className="text-buzz shrink-0 mt-0.5" />
-              <p className="text-buzz-h text-[12.5px] font-semibold leading-[1.4]">{error}</p>
+          <div className="px-[18px] pb-3.5">
+            <div className="bg-bg rounded-xl px-3 py-2.5">
+              <p className="text-txt-60 text-[12.5px] text-center leading-[1.5]">
+                Entre le code de la partie (6 chiffres) ou de la salle permanente pour la rejoindre.
+              </p>
             </div>
           </div>
-        )}
 
-        <div className="px-[18px] pt-3.5 pb-2">
-          <button
-            onClick={handleJoin}
-            disabled={isJoining || !code.trim()}
-            className="w-full py-4 rounded-2xl flex items-center justify-center gap-2 font-bold text-base transition-opacity cursor-pointer disabled:cursor-not-allowed"
-            style={
-              isJoining || !code.trim()
-                ? { background: 'var(--surface-2)', color: 'var(--txt-40)' }
-                : { background: 'linear-gradient(135deg, var(--bad-h), var(--bad))', color: '#FFFFFF' }
-            }
-          >
-            {isJoining ? (
-              <Spinner text="Connexion…" />
-            ) : (
-              'Rejoindre'
-            )}
-          </button>
-        </div>
+          <div className="px-[18px] pb-1.5">
+            <p className="text-txt font-semibold text-[12px] mb-2">Code secret</p>
+            <input
+              value={code}
+              onChange={(e) => {
+                setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, ''));
+                setError(null);
+              }}
+              placeholder="Ex : ABC123"
+              className={`w-full bg-bg rounded-[12px] px-4 py-3 text-txt text-center font-display font-semibold text-[20px] tracking-[0.1em] border outline-none transition-colors focus:border-accent ${
+                error ? 'border-buzz' : 'border-line'
+              }`}
+              maxLength={20}
+              autoCapitalize="characters"
+              autoComplete="off"
+              autoFocus
+              onKeyDown={(e) => e.key === 'Enter' && handleJoin()}
+            />
+          </div>
 
-        <div className="px-[18px] pb-[18px]">
-          <button
-            onClick={() => setShowScanner(true)}
-            disabled={isJoining}
-            className="w-full py-3.5 rounded-2xl flex items-center justify-center gap-2 bg-surface border border-line hover:bg-surface-2 transition-colors cursor-pointer"
-          >
-            <QrCode size={18} className="text-accent" />
-            <span className="text-accent font-medium text-sm">Scanner un QR code</span>
-          </button>
+          {error && (
+            <div className="px-[18px] pt-2.5">
+              <div className="flex items-start gap-2 px-3 py-2.5 rounded-xl bg-buzz/10 border border-buzz/30">
+                <X size={14} className="text-buzz shrink-0 mt-0.5" />
+                <p className="text-buzz-h text-[12.5px] font-semibold leading-[1.4]">{error}</p>
+              </div>
+            </div>
+          )}
+
+          <div className="px-[18px] pt-3.5 pb-2">
+            <button
+              onClick={handleJoin}
+              disabled={isJoining || !code.trim()}
+              className="w-full py-3.5 rounded-full flex items-center justify-center gap-2 font-bold text-sm transition-opacity cursor-pointer disabled:cursor-not-allowed border-none"
+              style={
+                isJoining || !code.trim()
+                  ? { background: 'var(--color-surface-2)', color: 'var(--color-ink-soft)' }
+                  : { background: 'var(--color-primary)', color: 'var(--color-primary-ink)' }
+              }
+            >
+              {isJoining ? <Spinner text="Connexion…" /> : 'Rejoindre'}
+            </button>
+          </div>
+
+          <div className="px-[18px] pb-[18px] text-center">
+            <button
+              onClick={() => setShowScanner(true)}
+              disabled={isJoining}
+              className="text-primary font-bold text-sm bg-transparent border-none cursor-pointer"
+            >
+              ▦ Scanner un QR code
+            </button>
+          </div>
         </div>
       </div>
-    </div>
     </>
   );
 }
 
 // ──────────────────────────────────────────────
-// Main Dashboard Screen
+// Main Dashboard Screen — Xalaat Hub (03-hub-join-modal.jsx)
 // ──────────────────────────────────────────────
 
 export default function DashboardPage() {
@@ -371,7 +313,7 @@ export default function DashboardPage() {
 
   if (isLoading) {
     return (
-      <SafeScreen className="bg-bg flex items-center justify-center">
+      <SafeScreen className="bg-bg flex items-center justify-center min-h-[100dvh]">
         <Spinner size="large" text="Chargement..." />
       </SafeScreen>
     );
@@ -380,18 +322,18 @@ export default function DashboardPage() {
   if (isError || !data) {
     return (
       <SafeScreen className="bg-bg">
-        <div className="flex flex-col flex-1 items-center justify-center px-4 min-h-screen">
+        <div className="flex flex-col flex-1 items-center justify-center px-4 min-h-[100dvh]">
           <div className="w-16 h-16 rounded-full bg-surface-2 flex items-center justify-center mb-4">
             <span className="text-3xl">😵</span>
           </div>
           <p className="text-buzz text-lg font-semibold mb-2">Erreur de chargement</p>
-          <p className="text-txt-60 text-center mb-4">Impossible de charger le dashboard</p>
+          <p className="text-txt-60 text-center mb-4">Impossible de charger le hub</p>
           <button
             onClick={() => refetch()}
-            className="px-6 py-3 rounded-xl hover:opacity-90 transition-opacity cursor-pointer"
-            style={{ background: 'linear-gradient(135deg, var(--primary), var(--primary-d))' }}
+            className="px-6 py-3 rounded-xl hover:opacity-90 transition-opacity cursor-pointer border-none text-white font-bold"
+            style={{ background: 'var(--color-primary)' }}
           >
-            <span className="text-btn-fg font-bold">Réessayer</span>
+            Réessayer
           </button>
         </div>
       </SafeScreen>
@@ -399,103 +341,31 @@ export default function DashboardPage() {
   }
 
   const pendingTotal = (data.pendingInvitations || 0) + (data.pendingFriendRequests || 0);
-  const activeRooms = data.recentRooms?.filter((room) => room.hasActiveSession) || [];
+  const username = user?.username || 'Momo';
+  const recentRooms = data.recentRooms || [];
+  const topCategory = data.topCategories?.[0]?.category || 'Histoire du Sénégal';
+  const topCategoryWinRate = Math.round(data.topCategories?.[0]?.winRate || 82);
+  const rank = data.globalStats?.rank || 154;
 
   return (
-    <SafeScreen className="bg-bg">
-      <div className="overflow-y-auto pb-24">
-        {/* ── Welcome back section ── */}
-        <div className="px-5 py-4">
-          <h1 className="text-txt font-display font-bold text-2xl tracking-tight leading-tight">
-            Welcome back, {user?.username || 'Joueur'}
-          </h1>
-          <p className="text-txt-60 text-xs mt-1 leading-normal max-w-[280px]">
-            Les buzzers sont prêts. Prêt à tester votre stratégie ?
-          </p>
-        </div>
+    <SafeScreen className="bg-bg min-h-[100dvh] relative overflow-hidden flex flex-col">
+      {/* Background pattern */}
+      <div style={{ position: 'absolute', inset: 0, opacity: 0.5, pointerEvents: 'none' }}>
+        <PatternLozenge color="var(--color-primary)" opacity={0.05} size={26} />
+      </div>
 
-        {/* ── Quick Action Cards ── */}
-        <div className="px-5 mb-6">
-          <div className="grid grid-cols-2 gap-4">
-            {/* New Room */}
-            <button
-              onClick={() => router.push('/room/create')}
-              className="rounded-[24px] bg-gradient-to-br from-accent-d to-accent-d p-5 flex flex-col items-center justify-center gap-3 text-center shadow-lg hover:opacity-95 active:scale-98 transition-all cursor-pointer min-h-[140px]"
-            >
-              <div className="w-10 h-10 rounded-full border-[1.5px] border-white/40 flex items-center justify-center text-white">
-                <Plus size={20} />
-              </div>
-              <span className="text-white font-display font-bold text-base">New Room</span>
-            </button>
-
-            {/* Join Code */}
-            <button
-              onClick={() => setShowJoinModal(true)}
-              className="rounded-[24px] bg-surface border border-line p-5 flex flex-col items-center justify-center gap-3 text-center shadow-lg hover:bg-surface-2 active:scale-98 transition-all cursor-pointer min-h-[140px]"
-            >
-              <div className="w-10 h-10 rounded-full border-[1.5px] border-accent/45 flex items-center justify-center text-accent">
-                <LogIn size={18} />
-              </div>
-              <span className="text-txt font-display font-bold text-base">Join Code</span>
-            </button>
-          </div>
-        </div>
-
-        {/* ── Active Session Section ── */}
-        {activeRooms.length > 0 && (
-          <div className="px-5 mb-6">
-            <div className="relative overflow-hidden bg-surface border border-line border-l-[4px] border-l-accent rounded-3xl p-5 shadow-soft animate-[rise_0.4s_both]">
-              <div className="absolute -right-10 -bottom-10 w-28 h-28 bg-accent/5 rounded-full blur-2xl pointer-events-none" />
-              
-              <div className="flex flex-col gap-1.5 relative z-10">
-                <span className="text-accent text-[10px] font-bold uppercase tracking-wider">
-                  • ACTIVE SESSION
-                </span>
-                <h3 className="text-txt font-display font-bold text-xl leading-tight">
-                  {activeRooms[0].name}
-                </h3>
-                <p className="text-txt-60 text-xs mt-0.5 leading-normal">
-                  Hosted by <span className="text-accent font-semibold">{activeRooms[0].ownerName}</span> • {activeRooms[0].memberCount} Membres active
-                </p>
-                <button
-                  onClick={() => router.push(`/room/${activeRooms[0].id}`)}
-                  className="mt-4 w-full py-3.5 rounded-2xl bg-accent text-btn-fg font-bold text-sm tracking-wide uppercase hover:opacity-90 active:scale-[0.99] transition-all cursor-pointer"
-                >
-                  Jump In
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ── Solo Mode Section ── */}
-        <div className="px-5 mb-6">
-          <div className="relative overflow-hidden bg-surface border border-line border-l-[4px] border-l-host rounded-3xl p-5 shadow-soft animate-[rise_0.4s_both]">
-            <div className="absolute -right-10 -bottom-10 w-28 h-28 bg-host/5 rounded-full blur-2xl pointer-events-none" />
-            
-            <div className="flex flex-col gap-1.5 relative z-10">
-              <span className="text-host text-[10px] font-bold uppercase tracking-wider">
-                • SOLO MODE
-              </span>
-              <h3 className="text-txt font-display font-bold text-xl leading-tight">
-                Entraînement & Carrière
-              </h3>
-              <p className="text-txt-60 text-xs mt-0.5 leading-normal">
-                Défiez l'IA, progressez sur 12 niveaux de carrière et gagnez des points !
-              </p>
-              <button
-                onClick={() => router.push('/solo')}
-                className="mt-4 w-full py-3.5 rounded-2xl bg-host text-white font-bold text-sm tracking-wide uppercase hover:opacity-90 active:scale-[0.99] transition-all cursor-pointer"
-              >
-                Jouer en Solo
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* ── Notifications Banner ── */}
+      {/* Main Content */}
+      <div
+        style={{
+          position: 'relative',
+          zIndex: 2,
+          flex: 1,
+          padding: '10px 20px 24px',
+        }}
+      >
+        {/* Banner for pending invitations */}
         {pendingTotal > 0 && (
-          <div className="px-5 mb-6">
+          <div style={{ marginBottom: 14 }}>
             <NotificationsBanner
               pendingInvitations={data.pendingInvitations}
               pendingFriendRequests={data.pendingFriendRequests}
@@ -503,108 +373,469 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* ── Your Rooms (horizontal carousel) ── */}
-        {data.recentRooms && data.recentRooms.length > 0 && (
-          <div className="mb-6">
-            <div className="px-5 flex items-center justify-between mb-4">
-              <h3 className="text-txt font-display font-bold text-lg tracking-tight">Your Rooms</h3>
-              <button
-                onClick={() => router.push('/rooms')}
-                className="text-accent font-semibold text-xs tracking-wide hover:opacity-80 transition-opacity"
+        {/* Greeting */}
+        <div style={{ margin: '8px 0 18px' }}>
+          <h1
+            style={{
+              fontFamily: 'var(--font-display)',
+              fontWeight: 'var(--font-display-weight)' as any,
+              fontSize: 28,
+              lineHeight: 1.05,
+              letterSpacing: '-0.02em',
+              margin: '0 0 6px',
+            }}
+          >
+            Contente de te revoir, <span style={{ color: 'var(--color-primary)' }}>{username}</span>
+          </h1>
+          <p style={{ fontSize: 13.5, color: 'var(--color-ink-soft)', lineHeight: 1.4, margin: 0 }}>
+            Tes buzzers sont prêts. Prêt à tester ta stratégie ?
+          </p>
+        </div>
+
+        {/* New room / Join code Quick Cards */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 18 }}>
+          {/* Nouveau salon */}
+          <div
+            onClick={() => router.push('/room/create')}
+            style={{
+              background: 'var(--color-primary)',
+              color: 'var(--color-primary-ink)',
+              borderRadius: 'var(--card-radius)',
+              padding: '20px 16px',
+              position: 'relative',
+              overflow: 'hidden',
+              cursor: 'pointer',
+            }}
+          >
+            <div style={{ position: 'absolute', inset: 0, opacity: 0.5, pointerEvents: 'none' }}>
+              <PatternZigzag color="var(--color-primary-ink)" opacity={0.15} size={18} />
+            </div>
+            <div
+              style={{
+                position: 'relative',
+                width: 34,
+                height: 34,
+                borderRadius: 'var(--radius-pill)',
+                background: 'rgba(255,255,255,0.2)',
+                display: 'grid',
+                placeItems: 'center',
+                fontSize: 18,
+                marginBottom: 26,
+              }}
+            >
+              +
+            </div>
+            <div
+              style={{
+                position: 'relative',
+                fontFamily: 'var(--font-display)',
+                fontWeight: 'var(--font-display-weight)' as any,
+                fontSize: 16,
+                letterSpacing: '-0.01em',
+              }}
+            >
+              Nouveau salon
+            </div>
+          </div>
+
+          {/* Code d'accès */}
+          <div
+            onClick={() => setShowJoinModal(true)}
+            style={{
+              background: 'var(--color-surface)',
+              color: 'var(--color-ink)',
+              border: '1px solid var(--color-line)',
+              borderRadius: 'var(--card-radius)',
+              padding: '20px 16px',
+              cursor: 'pointer',
+            }}
+          >
+            <div
+              style={{
+                width: 34,
+                height: 34,
+                borderRadius: 'var(--radius-pill)',
+                border: '1.5px solid var(--color-line)',
+                display: 'grid',
+                placeItems: 'center',
+                fontSize: 15,
+                marginBottom: 26,
+                color: 'var(--color-primary)',
+              }}
+            >
+              →
+            </div>
+            <div
+              style={{
+                fontFamily: 'var(--font-display)',
+                fontWeight: 'var(--font-display-weight)' as any,
+                fontSize: 16,
+                letterSpacing: '-0.01em',
+              }}
+            >
+              Code d'accès
+            </div>
+          </div>
+        </div>
+
+        {/* Solo mode banner */}
+        <div
+          style={{
+            position: 'relative',
+            overflow: 'hidden',
+            background: 'var(--color-secondary)',
+            color: '#FFFFFF',
+            borderRadius: 'var(--card-radius)',
+            padding: 18,
+            marginBottom: 22,
+          }}
+        >
+          <div style={{ position: 'absolute', inset: 0, opacity: 0.6, pointerEvents: 'none' }}>
+            <PatternLozenge color="var(--color-accent)" opacity={0.2} size={22} />
+          </div>
+          <div style={{ position: 'relative', zIndex: 1 }}>
+            <div
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
+                fontSize: 10.5,
+                letterSpacing: '0.12em',
+                textTransform: 'uppercase',
+                color: 'var(--color-accent)',
+                fontWeight: 700,
+                marginBottom: 8,
+              }}
+            >
+              ◆ Mode solo
+            </div>
+            <div
+              style={{
+                fontFamily: 'var(--font-display)',
+                fontWeight: 'var(--font-display-weight)' as any,
+                fontSize: 21,
+                letterSpacing: '-0.015em',
+                marginBottom: 8,
+              }}
+            >
+              Entraînement & carrière
+            </div>
+            <p style={{ fontSize: 13, lineHeight: 1.45, opacity: 0.82, margin: '0 0 16px', maxWidth: 260 }}>
+              Défie l'IA, progresse sur 12 niveaux et gagne des xalaat-points.
+            </p>
+            <button
+              type="button"
+              onClick={() => router.push('/solo')}
+              style={{
+                width: '100%',
+                background: 'var(--color-accent)',
+                color: 'var(--color-ink)',
+                borderRadius: 'var(--radius-pill)',
+                padding: '12px 0',
+                textAlign: 'center',
+                fontSize: 13.5,
+                fontWeight: 700,
+                border: 'none',
+                cursor: 'pointer',
+              }}
+            >
+              Jouer en solo →
+            </button>
+          </div>
+        </div>
+
+        {/* Your rooms */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 10 }}>
+          <div
+            style={{
+              fontFamily: 'var(--font-display)',
+              fontWeight: 'var(--font-display-weight)' as any,
+              fontSize: 18,
+              letterSpacing: '-0.015em',
+            }}
+          >
+            Tes salons
+          </div>
+          <button
+            type="button"
+            onClick={() => router.push('/rooms')}
+            style={{ fontSize: 12, color: 'var(--color-ink-soft)', background: 'none', border: 'none', cursor: 'pointer' }}
+          >
+            Voir tout
+          </button>
+        </div>
+
+        {recentRooms.length > 0 ? (
+          <div
+            style={{
+              background: 'var(--color-surface)',
+              borderRadius: 'var(--card-radius)',
+              border: '1px solid var(--color-line)',
+              padding: 16,
+              marginBottom: 22,
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 12 }}>
+              <div
+                style={{
+                  width: 38,
+                  height: 38,
+                  borderRadius: 10,
+                  background: 'rgba(232, 166, 48, 0.14)',
+                  display: 'grid',
+                  placeItems: 'center',
+                  fontSize: 17,
+                }}
               >
-                View All
-              </button>
+                📁
+              </div>
+              <span
+                style={{
+                  fontSize: 10.5,
+                  letterSpacing: '0.1em',
+                  textTransform: 'uppercase',
+                  color: 'var(--color-ink-soft)',
+                  padding: '4px 10px',
+                  borderRadius: 'var(--radius-pill)',
+                  background: 'var(--color-surface-2)',
+                  fontWeight: 700,
+                }}
+              >
+                Salon
+              </span>
             </div>
-            
-            <div className="flex flex-row gap-4 overflow-x-auto px-5 pb-3 scrollbar-none">
-              {data.recentRooms.map((room) => (
-                <RoomCard key={room.id} room={room} />
-              ))}
+            <div
+              onClick={() => router.push(`/room/${recentRooms[0].id}`)}
+              style={{
+                fontFamily: 'var(--font-display)',
+                fontWeight: 'var(--font-display-weight)' as any,
+                fontSize: 17,
+                letterSpacing: '-0.01em',
+                marginBottom: 4,
+                cursor: 'pointer',
+              }}
+            >
+              {recentRooms[0].name}
             </div>
+            <div style={{ fontSize: 12.5, color: 'var(--color-ink-soft)', marginBottom: 14 }}>
+              Hôte: {recentRooms[0].ownerName}
+            </div>
+            <div style={{ height: 1, background: 'var(--color-line)', marginBottom: 14 }} />
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ display: 'flex' }}>
+                <Avatar name={recentRooms[0].ownerName} hue={60} size={26} ring="var(--color-surface)" />
+                <span
+                  style={{
+                    marginLeft: -8,
+                    width: 26,
+                    height: 26,
+                    borderRadius: '50%',
+                    background: 'var(--color-surface-2)',
+                    border: '2px solid var(--color-surface)',
+                    display: 'grid',
+                    placeItems: 'center',
+                    fontSize: 9.5,
+                    fontWeight: 700,
+                    color: 'var(--color-ink-soft)',
+                  }}
+                >
+                  +{recentRooms[0].memberCount - 1}
+                </span>
+              </span>
+              <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--color-ink-soft)' }}>
+                {recentRooms[0].memberCount} membres
+              </span>
+            </div>
+          </div>
+        ) : (
+          <div
+            style={{
+              background: 'var(--color-surface)',
+              borderRadius: 'var(--card-radius)',
+              border: '1px solid var(--color-line)',
+              padding: 16,
+              marginBottom: 22,
+              textAlign: 'center',
+            }}
+          >
+            <p style={{ fontSize: 13, color: 'var(--color-ink-soft)', margin: '0 0 12px' }}>
+              Aucun salon rejoint pour le moment.
+            </p>
+            <button
+              onClick={() => router.push('/room/create')}
+              style={{
+                fontSize: 12,
+                fontWeight: 700,
+                color: 'var(--color-primary-ink)',
+                background: 'var(--color-primary)',
+                padding: '8px 16px',
+                borderRadius: 'var(--radius-pill)',
+                border: 'none',
+                cursor: 'pointer',
+              }}
+            >
+              Créer mon premier salon
+            </button>
           </div>
         )}
 
-        {/* ── Personal Best (Classment & Stats) ── */}
-        <div className="px-5 mb-6">
-          <h3 className="text-txt font-display font-bold text-lg tracking-tight mb-4">Personal Best</h3>
-          
-          {/* Rank Card */}
-          <div className="bg-surface border border-line rounded-3xl p-6 flex flex-col items-center justify-center text-center relative overflow-hidden shadow-soft mb-4">
-            <div className="absolute -right-8 -bottom-8 w-24 h-24 bg-accent/5 rounded-full blur-xl pointer-events-none" />
-            
-            {/* Rank badge */}
-            <div className="w-24 h-24 rounded-full border-[3px] border-accent/20 flex items-center justify-center relative mb-4">
-              <div className="absolute inset-2 rounded-full border border-accent/30 flex items-center justify-center bg-accent/5">
-                <span className="text-accent font-display font-bold text-2xl">
-                  #{data.globalStats.rank || '--'}
-                </span>
+        {/* Global Rank Card */}
+        <div
+          style={{
+            background: 'var(--color-ink)',
+            color: 'var(--color-bg)',
+            borderRadius: 'var(--card-radius)',
+            padding: '26px 20px',
+            textAlign: 'center',
+            marginBottom: 14,
+            position: 'relative',
+            overflow: 'hidden',
+          }}
+        >
+          <div style={{ position: 'absolute', inset: 0, opacity: 0.3, pointerEvents: 'none' }}>
+            <PatternLozenge color="var(--color-accent)" opacity={0.2} size={20} />
+          </div>
+          <div
+            style={{
+              position: 'relative',
+              width: 96,
+              height: 96,
+              margin: '0 auto 12px',
+              borderRadius: '50%',
+              border: '3px solid rgba(232, 166, 48, 0.35)',
+              display: 'grid',
+              placeItems: 'center',
+            }}
+          >
+            <div
+              style={{
+                width: 78,
+                height: 78,
+                borderRadius: '50%',
+                border: '3px solid var(--color-accent)',
+                display: 'grid',
+                placeItems: 'center',
+              }}
+            >
+              <div
+                style={{
+                  fontFamily: 'var(--font-display)',
+                  fontWeight: 'var(--font-display-weight)' as any,
+                  fontSize: 20,
+                  letterSpacing: '-0.01em',
+                  color: 'var(--color-accent)',
+                }}
+              >
+                #{rank}
               </div>
             </div>
-            
-            <p className="text-txt-40 text-[10px] font-bold tracking-widest uppercase mb-1">
-              GLOBAL RANK
-            </p>
-            <p className="text-txt-60 text-xs">
-              {data.globalStats.totalGames > 0 
-                ? `Top ${Math.max(1, Math.round(100 - data.globalStats.winRate))}% des joueurs`
-                : "Aucune partie jouée"}
-            </p>
+          </div>
+          <div
+            style={{
+              position: 'relative',
+              fontSize: 10.5,
+              letterSpacing: '0.14em',
+              textTransform: 'uppercase',
+              opacity: 0.6,
+              marginBottom: 4,
+            }}
+          >
+            Classement mondial
+          </div>
+          <div style={{ position: 'relative', fontFamily: 'var(--font-accent)', fontStyle: 'italic', fontSize: 15 }}>
+            Top 1% des joueurs
+          </div>
+        </div>
+
+        {/* Stats Section */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingBottom: 24 }}>
+          {/* Catégorie forte */}
+          <div
+            style={{
+              background: 'var(--color-surface)',
+              borderRadius: 'var(--card-radius)',
+              border: '1px solid var(--color-line)',
+              padding: 16,
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+              <div
+                style={{
+                  width: 30,
+                  height: 30,
+                  borderRadius: 8,
+                  background: 'rgba(232, 166, 48, 0.14)',
+                  display: 'grid',
+                  placeItems: 'center',
+                  fontSize: 14,
+                }}
+              >
+                🏆
+              </div>
+              <div>
+                <div style={{ fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--color-ink-soft)' }}>
+                  Catégorie forte
+                </div>
+                <div
+                  style={{
+                    fontFamily: 'var(--font-display)',
+                    fontWeight: 'var(--font-display-weight)' as any,
+                    fontSize: 14.5,
+                  }}
+                >
+                  {topCategory}
+                </div>
+              </div>
+            </div>
+            <HubProgressBar pct={topCategoryWinRate} color="var(--color-primary)" />
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11.5, color: 'var(--color-ink-soft)', marginTop: 8 }}>
+              <span>Précision</span>
+              <span style={{ color: 'var(--color-primary)', fontWeight: 700 }}>{topCategoryWinRate}%</span>
+            </div>
           </div>
 
-          {/* Top category & Speed details card */}
-          <div className="bg-surface border border-line rounded-3xl p-5 flex flex-col gap-5 shadow-soft">
-            {/* Top Category */}
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-xl bg-accent/10 flex items-center justify-center text-accent shrink-0">
-                  <span className="text-sm">🏆</span>
-                </div>
-                <div>
-                  <p className="text-txt-40 text-[9px] font-bold tracking-widest uppercase leading-none">TOP CATEGORY</p>
-                  <p className="text-txt font-bold text-sm mt-1 truncate max-w-[200px]">
-                    {data.topCategories?.[0]?.category || 'Culture Générale'}
-                  </p>
-                </div>
+          {/* Facteur vitesse */}
+          <div
+            style={{
+              background: 'var(--color-surface)',
+              borderRadius: 'var(--card-radius)',
+              border: '1px solid var(--color-line)',
+              padding: 16,
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+              <div
+                style={{
+                  width: 30,
+                  height: 30,
+                  borderRadius: 8,
+                  background: 'rgba(42, 54, 86, 0.14)',
+                  display: 'grid',
+                  placeItems: 'center',
+                  fontSize: 14,
+                }}
+              >
+                ⚡
               </div>
-              {/* Progress Bar */}
-              <div className="w-full bg-surface-2 rounded-full h-1.5 overflow-hidden mt-1 relative">
-                <div 
-                  className="bg-accent h-full rounded-full transition-all duration-500" 
-                  style={{ width: `${data.topCategories?.[0]?.winRate || 80}%` }}
-                />
-              </div>
-              <div className="flex justify-between items-center text-[10px] text-txt-40">
-                <span>Précision</span>
-                <span className="text-accent font-bold">
-                  {Math.round(data.topCategories?.[0]?.winRate || 80)}%
-                </span>
+              <div>
+                <div style={{ fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--color-ink-soft)' }}>
+                  Facteur vitesse
+                </div>
+                <div
+                  style={{
+                    fontFamily: 'var(--font-display)',
+                    fontWeight: 'var(--font-display-weight)' as any,
+                    fontSize: 14.5,
+                  }}
+                >
+                  Rapide
+                </div>
               </div>
             </div>
-            
-            {/* Speed Factor */}
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-xl bg-host/10 flex items-center justify-center text-host shrink-0">
-                  <span className="text-sm">⚡</span>
-                </div>
-                <div>
-                  <p className="text-txt-40 text-[9px] font-bold tracking-widest uppercase leading-none">SPEED FACTOR</p>
-                  <p className="text-txt font-bold text-sm mt-1">
-                    {data.globalStats.avgScore > 20 ? 'Hyper-Agile' : 'Rapide'}
-                  </p>
-                </div>
-              </div>
-              {/* Progress Bar */}
-              <div className="w-full bg-surface-2 rounded-full h-1.5 overflow-hidden mt-1 relative">
-                <div 
-                  className="bg-gradient-to-r from-host to-accent h-full rounded-full transition-all duration-500" 
-                  style={{ width: '75%' }}
-                />
-              </div>
-              <div className="flex justify-between items-center text-[10px] text-txt-40">
-                <span>Temps de réponse</span>
-                <span className="text-host font-bold">1.4s avg</span>
-              </div>
+            <HubProgressBar pct={68} color="var(--color-secondary)" />
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11.5, color: 'var(--color-ink-soft)', marginTop: 8 }}>
+              <span>Temps de réponse</span>
+              <span style={{ color: 'var(--color-secondary)', fontWeight: 700 }}>1.4s moy.</span>
             </div>
           </div>
         </div>

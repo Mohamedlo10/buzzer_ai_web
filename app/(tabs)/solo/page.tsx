@@ -1,74 +1,353 @@
 'use client';
 
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Trophy, Dumbbell, ChevronRight, Gamepad2 } from 'lucide-react';
+import { Trophy, Dumbbell, Sparkles, ArrowRight } from 'lucide-react';
 import { SafeScreen } from '~/components/layout/SafeScreen';
+import { useAuthStore } from '~/stores/useAuthStore';
+import { useDashboardV2 } from '~/lib/query/hooks';
 
-export default function SoloHubPage() {
+import { PatternLozenge } from '~/components/shared/PatternLozenge';
+import { PatternZigzag } from '~/components/shared/PatternZigzag';
+import { Avatar } from '~/components/shared/Avatar';
+import { AnimatedCounter } from '~/components/shared/AnimatedCounter';
+
+export default function SoloPage() {
   const router = useRouter();
+  const user = useAuthStore((s) => s.user);
+  const { data } = useDashboardV2();
+
+  const [aiPrompt, setAiPrompt] = useState('');
+
+  const username = user?.username || 'Joueur';
+  const dayName = new Date().toLocaleDateString('fr-FR', { weekday: 'long' });
+
+  const leaderboardList = [
+    { rank: 1, name: username, score: data?.globalStats?.totalScore || 18420, hue: 60 },
+    { rank: 2, name: 'Modou Fall', score: 17105, hue: 30 },
+    { rank: 3, name: 'Fatou Ndiaye', score: 16780, hue: 350 },
+  ];
+
+  const handleAiPromptSubmit = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (aiPrompt.trim()) {
+      router.push(`/solo/training?prompt=${encodeURIComponent(aiPrompt.trim())}`);
+    } else {
+      router.push('/solo/training');
+    }
+  };
 
   return (
-    <SafeScreen className="bg-bg">
-      <div className="flex flex-col flex-1 px-4 pt-4 pb-8 overflow-y-auto">
-        
-        {/* Header */}
-        <div className="flex flex-col items-center justify-center text-center mt-6 mb-8 animate-[pop_0.4s_both]">
-          <div className="w-16 h-16 rounded-2xl bg-accent/15 flex items-center justify-center text-accent mb-4 shadow-glow-success">
-            <Gamepad2 size={36} />
+    <SafeScreen className="bg-bg min-h-[100dvh] relative overflow-hidden flex flex-col">
+      {/* Background pattern */}
+      <div style={{ position: 'absolute', inset: 0, opacity: 0.5, pointerEvents: 'none' }}>
+        <PatternLozenge color="var(--color-primary)" opacity={0.05} size={26} />
+      </div>
+
+      {/* Main Content */}
+      <div
+        style={{
+          position: 'relative',
+          zIndex: 2,
+          flex: 1,
+          padding: '8px 20px 24px',
+        }}
+      >
+        {/* Greeting */}
+        <div style={{ marginTop: 6, marginBottom: 18 }}>
+          <div style={{ fontSize: 13, color: 'var(--color-ink-soft)', marginBottom: 4 }}>
+            Salaam, {username} <span style={{ fontFamily: 'var(--font-accent)', fontStyle: 'italic' }}>·</span> {dayName}
           </div>
-          <h1 className="text-txt font-display font-bold text-3xl tracking-tight">Mode Solo</h1>
-          <p className="text-txt-60 text-sm mt-2 max-w-xs leading-relaxed">
-            Défiez l'IA, progressez à votre rythme et testez vos connaissances sans stress.
-          </p>
+          <h1
+            style={{
+              fontFamily: 'var(--font-display)',
+              fontWeight: 'var(--font-display-weight)' as any,
+              fontSize: 34,
+              lineHeight: 1,
+              letterSpacing: '-0.025em',
+              margin: 0,
+            }}
+          >
+            Que veux-tu<br />
+            <span style={{ color: 'var(--color-primary)' }}>deviner</span> aujourd'hui ?
+          </h1>
         </div>
 
-        {/* Choice Cards */}
-        <div className="flex flex-col gap-4 flex-1 justify-center max-w-sm mx-auto w-full">
-          
-          {/* Card: Career Mode */}
+        {/* AI Prompt Input Bar */}
+        <form
+          onSubmit={handleAiPromptSubmit}
+          style={{
+            background: 'var(--color-surface)',
+            borderRadius: 18,
+            border: '1px solid var(--color-line)',
+            padding: '12px 14px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+            marginBottom: 14,
+          }}
+        >
+          <span style={{ fontSize: 18 }}>✨</span>
+          <input
+            type="text"
+            value={aiPrompt}
+            onChange={(e) => setAiPrompt(e.target.value)}
+            placeholder="Tape un sujet…"
+            style={{
+              flex: 1,
+              fontSize: 14,
+              color: 'var(--color-ink)',
+              background: 'transparent',
+              border: 'none',
+              outline: 'none',
+            }}
+          />
           <button
+            type="submit"
+            style={{
+              width: 32,
+              height: 32,
+              borderRadius: 'var(--radius-pill)',
+              background: 'var(--color-primary)',
+              display: 'grid',
+              placeItems: 'center',
+              color: 'var(--color-primary-ink)',
+              fontSize: 14,
+              fontWeight: 700,
+              border: 'none',
+              cursor: 'pointer',
+            }}
+          >
+            →
+          </button>
+        </form>
+
+        {/* Chips */}
+        <div
+          style={{
+            display: 'flex',
+            gap: 6,
+            overflowX: 'auto',
+            flexWrap: 'nowrap',
+            marginBottom: 22,
+            paddingBottom: 4,
+          }}
+          className="scrollbar-hide"
+        >
+          {[
+            { label: 'Mbalax', action: () => router.push('/solo/training?prompt=Mbalax'), active: true },
+            { label: 'Carrière 🏆', action: () => router.push('/solo/career'), active: false },
+            { label: 'Entraînement 🎯', action: () => router.push('/solo/training'), active: false },
+            { label: 'Cinéma', action: () => router.push('/solo/training?prompt=Cinema'), active: false },
+            { label: 'Histoire 🇸🇳', action: () => router.push('/solo/training?prompt=Histoire'), active: false },
+            { label: 'Géo', action: () => router.push('/solo/training?prompt=Geo'), active: false },
+          ].map((chip) => (
+            <button
+              key={chip.label}
+              type="button"
+              onClick={chip.action}
+              style={{
+                fontSize: 12,
+                padding: '6px 12px',
+                borderRadius: 'var(--radius-pill)',
+                background: chip.active ? 'var(--color-primary)' : 'transparent',
+                color: chip.active ? 'var(--color-primary-ink)' : 'var(--color-ink)',
+                border: chip.active ? 'none' : '1px solid var(--color-line)',
+                fontWeight: 500,
+                whiteSpace: 'nowrap',
+                cursor: 'pointer',
+              }}
+            >
+              {chip.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Quick Access Cards: Mode Carrière & Entraînement */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 18 }}>
+          <button
+            type="button"
             onClick={() => router.push('/solo/career')}
-            className="group relative overflow-hidden bg-surface border border-line rounded-3xl p-5 flex flex-row items-center justify-between hover:border-accent/40 active:scale-[0.99] transition-all duration-150 text-left shadow-soft cursor-pointer animate-[rise_0.4s_both]"
+            style={{
+              background: 'var(--color-surface)',
+              border: '1px solid var(--color-line)',
+              borderRadius: 'var(--card-radius)',
+              padding: 16,
+              textAlign: 'left',
+              cursor: 'pointer',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              minHeight: 120,
+            }}
           >
-            <div className="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-energy/10 to-transparent pointer-events-none" />
-            <div className="flex flex-row items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-energy/15 flex items-center justify-center text-energy shrink-0">
-                <Trophy size={24} />
+            <div style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(232, 166, 48, 0.15)', display: 'grid', placeItems: 'center' }}>
+              <Trophy size={18} className="text-accent" />
+            </div>
+            <div>
+              <div style={{ fontFamily: 'var(--font-display)', fontWeight: 'var(--font-display-weight)' as any, fontSize: 15, color: 'var(--color-ink)' }}>
+                Carrière
               </div>
-              <div>
-                <h2 className="text-txt font-bold text-[17px] tracking-tight">Mode Carrière</h2>
-                <p className="text-txt-60 text-xs mt-1 max-w-[200px] leading-normal">
-                  Progressez à travers 12 niveaux de difficulté croissante par thème.
-                </p>
+              <div style={{ fontSize: 11.5, color: 'var(--color-ink-soft)', marginTop: 2 }}>
+                12 niveaux de difficulté
               </div>
             </div>
-            <ChevronRight size={20} className="text-txt-40 group-hover:text-txt transition-colors shrink-0 ml-2" />
           </button>
 
-          {/* Card: Training Mode */}
           <button
+            type="button"
             onClick={() => router.push('/solo/training')}
-            className="group relative overflow-hidden bg-surface border border-line rounded-3xl p-5 flex flex-row items-center justify-between hover:border-accent/40 active:scale-[0.99] transition-all duration-150 text-left shadow-soft cursor-pointer animate-[rise_0.5s_both]"
+            style={{
+              background: 'var(--color-surface)',
+              border: '1px solid var(--color-line)',
+              borderRadius: 'var(--card-radius)',
+              padding: 16,
+              textAlign: 'left',
+              cursor: 'pointer',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              minHeight: 120,
+            }}
           >
-            <div className="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-accent/10 to-transparent pointer-events-none" />
-            <div className="flex flex-row items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-accent/15 flex items-center justify-center text-accent shrink-0">
-                <Dumbbell size={24} />
+            <div style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(184, 70, 42, 0.15)', display: 'grid', placeItems: 'center' }}>
+              <Dumbbell size={18} style={{ color: 'var(--color-primary)' }} />
+            </div>
+            <div>
+              <div style={{ fontFamily: 'var(--font-display)', fontWeight: 'var(--font-display-weight)' as any, fontSize: 15, color: 'var(--color-ink)' }}>
+                Entraînement
               </div>
-              <div>
-                <h2 className="text-txt font-bold text-[17px] tracking-tight">Entraînement</h2>
-                <p className="text-txt-60 text-xs mt-1 max-w-[200px] leading-normal">
-                  Générez un thème sur-mesure grâce à l'IA ou jouez aux sets prédéfinis.
-                </p>
+              <div style={{ fontSize: 11.5, color: 'var(--color-ink-soft)', marginTop: 2 }}>
+                Sets IA & thèmes libre
               </div>
             </div>
-            <ChevronRight size={20} className="text-txt-40 group-hover:text-txt transition-colors shrink-0 ml-2" />
           </button>
-
         </div>
 
-        {/* Bottom spacing for TabBar */}
-        <div className="h-12" />
+        {/* Featured Card (Quiz du jour) */}
+        <div
+          style={{
+            position: 'relative',
+            overflow: 'hidden',
+            background: 'var(--color-secondary)',
+            color: '#FFFFFF',
+            borderRadius: 'var(--card-radius)',
+            padding: 18,
+            marginBottom: 18,
+          }}
+        >
+          <div style={{ position: 'absolute', inset: 0, opacity: 0.7, pointerEvents: 'none' }}>
+            <PatternZigzag color="var(--color-accent)" opacity={0.22} size={20} />
+          </div>
+          <div style={{ position: 'relative', zIndex: 1 }}>
+            <div style={{ fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', opacity: 0.75 }}>
+              Quiz du jour
+            </div>
+            <div
+              style={{
+                fontFamily: 'var(--font-display)',
+                fontWeight: 'var(--font-display-weight)' as any,
+                fontSize: 24,
+                lineHeight: 1.05,
+                letterSpacing: '-0.02em',
+                margin: '8px 0 14px',
+              }}
+            >
+              Lutte sénégalaise
+              <br />
+              <span style={{ fontFamily: 'var(--font-accent)', fontStyle: 'italic', fontWeight: 400, opacity: 0.85 }}>
+                les années d'or
+              </span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, opacity: 0.85 }}>
+                <span>10 questions</span>·<span>4 min</span>·<span>+1 200 pts max</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => router.push('/solo/training?prompt=Lutte%20senegalaise')}
+                style={{
+                  background: 'var(--color-accent)',
+                  color: 'var(--color-ink)',
+                  padding: '8px 14px',
+                  borderRadius: 'var(--radius-pill)',
+                  fontSize: 13,
+                  fontWeight: 700,
+                  border: 'none',
+                  cursor: 'pointer',
+                }}
+              >
+                Jouer →
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Mini Leaderboard */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 10 }}>
+          <div
+            style={{
+              fontFamily: 'var(--font-display)',
+              fontWeight: 'var(--font-display-weight)' as any,
+              fontSize: 18,
+              letterSpacing: '-0.015em',
+            }}
+          >
+            Top de la semaine
+          </div>
+          <button
+            type="button"
+            onClick={() => router.push('/rankings')}
+            style={{ fontSize: 12, color: 'var(--color-ink-soft)', background: 'none', border: 'none', cursor: 'pointer' }}
+          >
+            Voir tout
+          </button>
+        </div>
+
+        <div
+          style={{
+            background: 'var(--color-surface)',
+            borderRadius: 'var(--card-radius)',
+            border: '1px solid var(--color-line)',
+            overflow: 'hidden',
+            marginBottom: 20,
+          }}
+        >
+          {leaderboardList.map((p, i, arr) => (
+            <div
+              key={p.rank}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 12,
+                padding: '11px 14px',
+                borderBottom: i < arr.length - 1 ? '1px solid var(--color-line)' : 'none',
+              }}
+            >
+              <div
+                style={{
+                  fontFamily: 'var(--font-display)',
+                  fontWeight: 'var(--font-display-weight)' as any,
+                  fontSize: 14,
+                  width: 18,
+                  color:
+                    p.rank === 1
+                      ? 'var(--color-accent)'
+                      : p.rank === 2
+                      ? 'var(--color-primary)'
+                      : 'var(--color-secondary)',
+                }}
+              >
+                {p.rank}
+              </div>
+              <Avatar name={p.name} hue={p.hue} size={30} ring={p.rank === 1 ? 'var(--color-accent)' : undefined} />
+              <div style={{ flex: 1, fontSize: 14, fontWeight: 600 }}>{p.name}</div>
+              <div style={{ fontSize: 13, fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>
+                <AnimatedCounter to={p.score} motion="subtle" duration={1100 + i * 80} /> pts
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </SafeScreen>
   );
