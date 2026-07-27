@@ -17,6 +17,7 @@ import * as qrcodeApi from '~/lib/api/qrcode';
 import * as roomsApi from '~/lib/api/rooms';
 import * as friendsApi from '~/lib/api/friends';
 import * as sessionsApi from '~/lib/api/sessions';
+import { UserProfileModal } from '~/components/shared/UserProfileModal';
 import { Avatar } from '~/components/shared/Avatar';
 import type { FriendResponse, RoomDetailResponse, RoomSessionResponse, SessionStatus } from '~/types/api';
 
@@ -211,11 +212,13 @@ function MembersWithStats({
   rankings,
   currentUserId,
   onAddFriend,
+  onSelectUser,
 }: {
   members: RoomDetailResponse['members'];
   rankings: RoomDetailResponse['rankings'];
   currentUserId: string;
   onAddFriend: (userId: string, username: string) => void;
+  onSelectUser?: (member: RoomDetailResponse['members'][number]) => void;
 }) {
   // Merge: for each member find their ranking stats, sort by ratio pts/partie desc
   const merged = members
@@ -247,7 +250,8 @@ function MembersWithStats({
         return (
           <div
             key={member.id}
-            className={`flex items-center py-3 px-4 border-b border-line last:border-b-0 ${isCurrentUser ? 'bg-accent/5' : ''}`}
+            onClick={() => onSelectUser?.(member)}
+            className={`flex items-center py-3 px-4 border-b border-line last:border-b-0 cursor-pointer hover:bg-white/5 transition-colors ${isCurrentUser ? 'bg-accent/5' : ''}`}
           >
             {/* Rank badge */}
             <div className="w-8 flex items-center justify-center mr-2 shrink-0">
@@ -292,12 +296,14 @@ function MembersWithStats({
               </div>
             )}
 
-            <FriendshipButton
-              status={member.friendshipStatus}
-              isCurrentUser={isCurrentUser}
-              onAddFriend={() => onAddFriend(member.userId, member.username)}
-              size="sm"
-            />
+            <div onClick={(e) => e.stopPropagation()}>
+              <FriendshipButton
+                status={member.friendshipStatus}
+                isCurrentUser={isCurrentUser}
+                onAddFriend={() => onAddFriend(member.userId, member.username)}
+                size="sm"
+              />
+            </div>
           </div>
         );
       })}
@@ -559,6 +565,7 @@ export default function RoomDetailPage() {
   const [showConfigModal, setShowConfigModal] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [selectedUserModal, setSelectedUserModal] = useState<RoomDetailResponse['members'][number] | null>(null);
   const [qrImage, setQrImage] = useState<string | null>(null);
   const [qrLoading, setQrLoading] = useState(false);
   // Real-time presence overrides: userId → isOnline
@@ -839,6 +846,7 @@ export default function RoomDetailPage() {
           rankings={rankings}
           currentUserId={user?.id ?? ''}
           onAddFriend={handleSendFriendRequest}
+          onSelectUser={(m) => setSelectedUserModal(m)}
         />
 
         {/* Danger zone */}
@@ -932,6 +940,14 @@ export default function RoomDetailPage() {
           </div>
         </div>
       )}
+      {/* User Profile Modal */}
+      <UserProfileModal
+        visible={!!selectedUserModal}
+        userId={selectedUserModal?.userId ?? null}
+        username={selectedUserModal?.username}
+        avatarUrl={selectedUserModal?.avatarUrl}
+        onClose={() => setSelectedUserModal(null)}
+      />
     </div>
   );
 }
