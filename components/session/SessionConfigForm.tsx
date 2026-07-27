@@ -908,7 +908,7 @@ export function SessionConfigForm({ onSuccess, onClose, roomId, initialMaxPlayer
   };
 
   return (
-    <div className="flex flex-col h-full bg-bg text-txt overflow-hidden relative">
+    <div className="flex flex-col h-[85dvh] bg-bg text-txt overflow-hidden relative">
       {/* Sticky Header */}
       <div className="bg-bg/85 backdrop-blur-md pt-5 pb-3 px-4 border-b border-line sticky top-0 z-10 flex flex-col gap-3 shrink-0">
         <div className="flex flex-row items-center justify-between">
