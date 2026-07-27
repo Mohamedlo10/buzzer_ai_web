@@ -275,7 +275,8 @@ export default function SessionResultsPage() {
     teamRankings.push(...Array.from(teamMap.values()).sort((a, b) => b.score - a.score));
   }
 
-  // Build unified debt list from all players' debts (deduplicated by debtor→creditor→category)
+  // Unified debt list. The server persists one row per applied debt, so every entry
+  // here corresponds to points that actually moved — no client-side recomputation.
   const allDebts = rankings
     .filter((entry) => entry.debts && entry.debts.length > 0)
     .flatMap((entry) =>
@@ -283,6 +284,7 @@ export default function SessionResultsPage() {
         debtorId: entry.player.userId ?? entry.player.id,
         debtorName: entry.player.name,
         debtorAvatarUrl: entry.player.avatarUrl,
+        creditorId: debt.owedToUserId,
         creditorName: debt.owedTo,
         category: debt.category,
         amount: debt.amount,
@@ -487,8 +489,11 @@ export default function SessionResultsPage() {
             </div>
 
             {allDebts.map((debt, i) => {
+              // Compare on ids: the stored creditor name is a snapshot of the pseudo at
+              // sign-up, so matching it against the current username mislabelled the row
+              // (and flipped its +/- sign) for anyone who had renamed themselves.
               const iOwe = debt.debtorId === user?.id;
-              const owedToMe = debt.creditorName === user?.username;
+              const owedToMe = debt.creditorId === user?.id;
               const accentColor = iOwe ? 'var(--bad)' : owedToMe ? 'var(--primary)' : 'var(--indigo)';
 
               return (

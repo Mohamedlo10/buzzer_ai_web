@@ -421,13 +421,17 @@ export interface SessionRankingEntry {
 }
 
 export interface DebtEntry {
-  owedTo: string;   // username of the creditor
+  owedTo: string;         // display name of the creditor — snapshot, may be stale
+  owedToPlayerId: string; // use these for comparisons, not the name
+  owedToUserId: string;
   category: string;
   amount: number;
 }
 
 export interface DebtReceivedEntry {
-  owedBy: string;   // username of the debtor
+  owedBy: string;         // display name of the debtor — snapshot, may be stale
+  owedByPlayerId: string; // use these for comparisons, not the name
+  owedByUserId: string;
   category: string;
   amount: number;
 }
