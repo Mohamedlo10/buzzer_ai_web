@@ -27,6 +27,9 @@ export function AllRoomsModal({ visible, onClose }: AllRoomsModalProps) {
   const [passcodeError, setPasscodeError] = useState<string | null>(null);
   const [isSubmittingPasscode, setIsSubmittingPasscode] = useState(false);
 
+  const [fetchedRooms, setFetchedRooms] = useState<any[]>([]);
+  const [isFetchingRooms, setIsFetchingRooms] = useState(false);
+
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -42,9 +45,47 @@ export function AllRoomsModal({ visible, onClose }: AllRoomsModalProps) {
     };
   }, [visible]);
 
+  // Fetch rooms dynamically when modal opens
+  useEffect(() => {
+    if (!visible) return;
+    let isMounted = true;
+
+    async function loadRoomsData() {
+      setIsFetchingRooms(true);
+      try {
+        const [userRooms, searchRes] = await Promise.all([
+          roomsApi.getUserRooms().catch(() => []),
+          roomsApi.searchRooms({ size: 50 }).catch(() => null),
+        ]);
+
+        if (!isMounted) return;
+
+        const publicRooms = searchRes?.content || [];
+        const roomMap = new Map<string, any>();
+
+        (data?.recentRooms || []).forEach((r) => roomMap.set(r.id, r));
+        userRooms.forEach((r) => roomMap.set(r.id, { ...r, isMember: true }));
+        publicRooms.forEach((r) => {
+          if (!roomMap.has(r.id)) roomMap.set(r.id, r);
+        });
+
+        setFetchedRooms(Array.from(roomMap.values()));
+      } catch (err) {
+        console.error('Failed to load rooms in modal:', err);
+      } finally {
+        if (isMounted) setIsFetchingRooms(false);
+      }
+    }
+
+    loadRoomsData();
+    return () => {
+      isMounted = false;
+    };
+  }, [visible, data?.recentRooms]);
+
   if (!mounted || !visible) return null;
 
-  const allRooms = data?.recentRooms || [];
+  const allRooms = fetchedRooms.length > 0 ? fetchedRooms : (data?.recentRooms || []);
 
   const filteredRooms = allRooms.filter((room) => {
     const query = searchQuery.toLowerCase().trim();
@@ -58,7 +99,7 @@ export function AllRoomsModal({ visible, onClose }: AllRoomsModalProps) {
 
     if (activeFilter === 'active') return !!room.hasActiveSession;
     if (activeFilter === 'public') return !(room as any).isPrivate;
-    if (activeFilter === 'my') return (room as any).isOwner;
+    if (activeFilter === 'my') return (room as any).isOwner || (room as any).isMember;
     return true;
   });
 
@@ -114,9 +155,8 @@ export function AllRoomsModal({ visible, onClose }: AllRoomsModalProps) {
         inset: 0,
         zIndex: 9999,
         display: 'flex',
-        alignItems: 'center',
+        alignItems: 'flex-end',
         justifyContent: 'center',
-        padding: 16,
         background: 'var(--scrim)',
         backdropFilter: 'blur(6px)',
       }}
@@ -125,35 +165,42 @@ export function AllRoomsModal({ visible, onClose }: AllRoomsModalProps) {
       <div
         style={{
           width: '100%',
-          maxWidth: 440,
-          maxHeight: '85vh',
+          maxWidth: 600,
+          height: '88vh',
+          maxHeight: '92vh',
           background: 'var(--color-surface)',
-          border: '1px solid var(--color-line)',
-          borderRadius: 'var(--card-radius)',
+          borderTop: '1px solid var(--color-line)',
+          borderLeft: '1px solid var(--color-line)',
+          borderRight: '1px solid var(--color-line)',
+          borderTopLeftRadius: 28,
+          borderTopRightRadius: 28,
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
-          boxShadow: '0 20px 50px rgba(0,0,0,0.3)',
+          boxShadow: '0 -10px 40px rgba(0,0,0,0.4)',
         }}
         onClick={(e) => e.stopPropagation()}
-        className="animate-[pop_.25s_ease-out_both]"
+        className="animate-[slideUp_0.3s_ease-out_both]"
       >
+        {/* Handle indicator bar */}
+        <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--color-line)', margin: '10px auto 4px', opacity: 0.8 }} className="shrink-0" />
+
         {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 18px', borderBottom: '1px solid var(--color-line)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 20px 14px', borderBottom: '1px solid var(--color-line)' }} className="shrink-0">
           <div>
-            <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 19, margin: 0 }}>
-              Rechercher un salon
+            <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 20, margin: 0 }}>
+              Tous les salons
             </h3>
-            <div style={{ fontSize: 11.5, color: 'var(--color-ink-soft)', marginTop: 2 }}>
-              Rejoins ou consulte les salons de la communauté
+            <div style={{ fontSize: 12, color: 'var(--color-ink-soft)', marginTop: 2 }}>
+              Rejoins ou consulte les salons de la communauté ({filteredRooms.length})
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
             style={{
-              width: 30,
-              height: 30,
+              width: 32,
+              height: 32,
               borderRadius: 'var(--radius-pill)',
               background: 'var(--color-surface-2)',
               border: 'none',
@@ -163,12 +210,12 @@ export function AllRoomsModal({ visible, onClose }: AllRoomsModalProps) {
               color: 'var(--color-ink-soft)',
             }}
           >
-            <X size={16} />
+            <X size={18} />
           </button>
         </div>
 
-        {/* Content body */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '16px 18px' }}>
+        {/* Content body - scrollable list */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px 30px' }} className="flex-1 overflow-y-auto">
           {/* Search Bar */}
           <div
             style={{
@@ -178,7 +225,7 @@ export function AllRoomsModal({ visible, onClose }: AllRoomsModalProps) {
               background: 'var(--color-bg)',
               border: '1px solid var(--color-line)',
               borderRadius: 'var(--radius-pill)',
-              padding: '10px 14px',
+              padding: '11px 16px',
               marginBottom: 14,
             }}
           >
@@ -187,10 +234,10 @@ export function AllRoomsModal({ visible, onClose }: AllRoomsModalProps) {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Nom, hôte ou code…"
+              placeholder="Nom du salon, hôte ou code…"
               style={{
                 flex: 1,
-                fontSize: 13.5,
+                fontSize: 14,
                 color: 'var(--color-ink)',
                 background: 'transparent',
                 border: 'none',
@@ -209,7 +256,7 @@ export function AllRoomsModal({ visible, onClose }: AllRoomsModalProps) {
           </div>
 
           {/* Filter Pills */}
-          <div style={{ display: 'flex', gap: 6, marginBottom: 16, overflowX: 'auto', paddingBottom: 4 }} className="scrollbar-hide">
+          <div style={{ display: 'flex', gap: 8, marginBottom: 16, overflowX: 'auto', paddingBottom: 4 }} className="scrollbar-hide">
             {[
               { id: 'all', label: 'Tous' },
               { id: 'active', label: 'En direct 🔴' },
@@ -221,13 +268,13 @@ export function AllRoomsModal({ visible, onClose }: AllRoomsModalProps) {
                 type="button"
                 onClick={() => setActiveFilter(f.id as any)}
                 style={{
-                  fontSize: 11.5,
-                  padding: '5px 12px',
+                  fontSize: 12,
+                  padding: '6px 14px',
                   borderRadius: 'var(--radius-pill)',
-                  background: activeFilter === f.id ? 'var(--color-primary)' : 'transparent',
+                  background: activeFilter === f.id ? 'var(--color-primary)' : 'var(--color-surface-2)',
                   color: activeFilter === f.id ? 'var(--color-primary-ink)' : 'var(--color-ink)',
                   border: activeFilter === f.id ? 'none' : '1px solid var(--color-line)',
-                  fontWeight: 500,
+                  fontWeight: 600,
                   whiteSpace: 'nowrap',
                   cursor: 'pointer',
                 }}
@@ -239,38 +286,40 @@ export function AllRoomsModal({ visible, onClose }: AllRoomsModalProps) {
 
           {/* Rooms List */}
           {filteredRooms.length > 0 ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {filteredRooms.map((room) => (
                 <div
                   key={room.id}
                   onClick={() => handleJoinClick(room)}
                   style={{
                     background: 'var(--color-bg)',
-                    borderRadius: 14,
+                    borderRadius: 16,
                     border: '1px solid var(--color-line)',
-                    padding: 14,
+                    padding: 16,
                     cursor: 'pointer',
+                    transition: 'all 0.2s ease',
                   }}
+                  className="hover:opacity-95 hover:border-primary/50"
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <Avatar name={room.ownerName} size={34} />
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <Avatar name={room.ownerName || 'Owner'} size={38} />
                       <div>
-                        <div style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 15 }}>
+                        <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 16 }}>
                           {room.name}
                         </div>
-                        <div style={{ fontSize: 11, color: 'var(--color-ink-soft)' }}>
-                          Hôte: {room.ownerName}
+                        <div style={{ fontSize: 12, color: 'var(--color-ink-soft)', marginTop: 1 }}>
+                          Hôte: {room.ownerName || 'Anonyme'}
                         </div>
                       </div>
                     </div>
                     <span
                       style={{
-                        fontSize: 10,
+                        fontSize: 11,
                         letterSpacing: '0.08em',
                         textTransform: 'uppercase',
                         color: 'var(--color-accent)',
-                        padding: '3px 8px',
+                        padding: '4px 10px',
                         borderRadius: 'var(--radius-pill)',
                         background: 'rgba(232, 166, 48, 0.12)',
                         fontWeight: 700,
@@ -280,16 +329,16 @@ export function AllRoomsModal({ visible, onClose }: AllRoomsModalProps) {
                     </span>
                   </div>
 
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 11.5, color: 'var(--color-ink-soft)' }}>
-                    <span>👥 {room.memberCount} membres {room.hasActiveSession ? '· 🔴 En direct' : ''}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 12.5, color: 'var(--color-ink-soft)', paddingTop: 6, borderTop: '1px solid var(--color-line)' }}>
+                    <span>👥 {room.memberCount ?? 1} membre{(room.memberCount ?? 1) > 1 ? 's' : ''} {room.hasActiveSession ? '· 🔴 En direct' : ''}</span>
                     <span style={{ color: 'var(--color-primary)', fontWeight: 700 }}>Rejoindre →</span>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <div style={{ textAlign: 'center', padding: '30px 10px', color: 'var(--color-ink-soft)', fontSize: 13 }}>
-              Aucun salon correspondant
+            <div style={{ textAlign: 'center', padding: '40px 10px', color: 'var(--color-ink-soft)', fontSize: 14 }}>
+              {isFetchingRooms || isLoading ? 'Chargement des salons…' : 'Aucun salon correspondant'}
             </div>
           )}
         </div>
@@ -302,51 +351,51 @@ export function AllRoomsModal({ visible, onClose }: AllRoomsModalProps) {
               inset: 0,
               zIndex: 10,
               background: 'var(--color-surface)',
-              padding: 20,
+              padding: 24,
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'center',
             }}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-              <h4 style={{ margin: 0, fontSize: 17, fontFamily: 'var(--font-display)' }}>Salon privé #{selectedPrivateRoom.code}</h4>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <h4 style={{ margin: 0, fontSize: 18, fontFamily: 'var(--font-display)' }}>Salon privé #{selectedPrivateRoom.code}</h4>
               <button
                 type="button"
                 onClick={() => setSelectedPrivateRoom(null)}
                 style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-ink-soft)' }}
               >
-                <X size={18} />
+                <X size={20} />
               </button>
             </div>
-            <form onSubmit={handlePasscodeSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <form onSubmit={handlePasscodeSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               <input
                 type="password"
                 value={passcode}
                 onChange={(e) => setPasscode(e.target.value)}
                 placeholder="Mot de passe du salon"
                 style={{
-                  padding: '12px 14px',
-                  borderRadius: 12,
+                  padding: '14px 16px',
+                  borderRadius: 14,
                   background: 'var(--color-bg)',
                   border: '1px solid var(--color-line)',
                   color: 'var(--color-ink)',
-                  fontSize: 14,
+                  fontSize: 15,
                   outline: 'none',
                 }}
               />
               {passcodeError && (
-                <div style={{ color: 'var(--color-primary)', fontSize: 12 }}>{passcodeError}</div>
+                <div style={{ color: 'var(--color-primary)', fontSize: 13 }}>{passcodeError}</div>
               )}
               <button
                 type="submit"
                 disabled={isSubmittingPasscode || !passcode.trim()}
                 style={{
-                  padding: '12px 0',
+                  padding: '14px 0',
                   borderRadius: 'var(--radius-pill)',
                   background: 'var(--color-primary)',
                   color: 'var(--color-primary-ink)',
                   fontWeight: 700,
-                  fontSize: 14,
+                  fontSize: 15,
                   border: 'none',
                   cursor: 'pointer',
                 }}

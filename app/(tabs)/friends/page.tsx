@@ -14,6 +14,7 @@ import type { UserResponse } from '~/types/api';
 
 import { PatternLozenge } from '~/components/shared/PatternLozenge';
 import { Avatar } from '~/components/shared/Avatar';
+import { UserProfileModal } from '~/components/shared/UserProfileModal';
 
 type TabType = 'friends' | 'requests' | 'search';
 
@@ -23,6 +24,7 @@ export default function FriendsPage() {
   const [searchResults, setSearchResults] = useState<UserResponse[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [sentRequests, setSentRequests] = useState<Set<string>>(new Set());
+  const [selectedUserModal, setSelectedUserModal] = useState<{ id: string; username: string; avatarUrl?: string | null } | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const {
@@ -209,6 +211,7 @@ export default function FriendsPage() {
                   {friends.map((friend, i) => (
                     <div
                       key={friend.id}
+                      onClick={() => setSelectedUserModal({ id: friend.id, username: friend.username, avatarUrl: friend.avatarUrl })}
                       style={{
                         display: 'flex',
                         alignItems: 'center',
@@ -217,7 +220,9 @@ export default function FriendsPage() {
                         border: '1px solid var(--color-line)',
                         borderRadius: 'var(--card-radius)',
                         padding: 14,
+                        cursor: 'pointer',
                       }}
+                      className="hover:bg-surface-2/40 transition-colors"
                     >
                       <Avatar name={friend.username} avatarUrl={friend.avatarUrl} hue={30 + i * 40} size={42} />
                       <div style={{ flex: 1, minWidth: 0 }}>
@@ -315,6 +320,7 @@ export default function FriendsPage() {
                 {searchResults.map((u, i) => (
                   <div
                     key={u.id}
+                    onClick={() => setSelectedUserModal({ id: u.id, username: u.username, avatarUrl: u.avatarUrl })}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
@@ -324,7 +330,9 @@ export default function FriendsPage() {
                       borderRadius: 12,
                       padding: 12,
                       marginBottom: 8,
+                      cursor: 'pointer',
                     }}
+                    className="hover:bg-surface-2/40 transition-colors"
                   >
                     <Avatar name={u.username} avatarUrl={u.avatarUrl} hue={20 + i * 35} size={36} />
                     <div style={{ flex: 1, minWidth: 0, fontSize: 14, fontWeight: 700 }}>
@@ -332,7 +340,10 @@ export default function FriendsPage() {
                     </div>
                     <button
                       type="button"
-                      onClick={() => handleSendRequest(u.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleSendRequest(u.id);
+                      }}
                       style={{
                         background: 'var(--color-primary)',
                         color: 'var(--color-primary-ink)',
@@ -353,6 +364,13 @@ export default function FriendsPage() {
           </>
         )}
       </div>
+      <UserProfileModal
+        visible={!!selectedUserModal}
+        userId={selectedUserModal?.id ?? null}
+        username={selectedUserModal?.username}
+        avatarUrl={selectedUserModal?.avatarUrl}
+        onClose={() => setSelectedUserModal(null)}
+      />
     </SafeScreen>
   );
 }

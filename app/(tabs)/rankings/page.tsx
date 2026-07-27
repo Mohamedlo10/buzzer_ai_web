@@ -198,7 +198,12 @@ export default function RankingsPage() {
               const score = Math.round(p?.glickoRating ?? p?.totalScore ?? 0);
 
               return (
-                <div key={p?.userId || rankNum} style={{ textAlign: 'center' }}>
+                <div
+                  key={p?.userId || rankNum}
+                  onClick={() => p && setSelectedUser(p)}
+                  style={{ textAlign: 'center', minWidth: 0, width: '100%', cursor: p ? 'pointer' : 'default' }}
+                  className="hover:opacity-90 transition-opacity"
+                >
                   <div style={{ position: 'relative', width: isFirst ? 64 : 52, height: isFirst ? 64 : 52, margin: '0 auto 8px' }}>
                     <Avatar
                       name={name}
@@ -219,6 +224,9 @@ export default function RankingsPage() {
                       border: '1px solid var(--color-line)',
                       borderRadius: 'var(--card-radius)',
                       padding: '10px 6px',
+                      minWidth: 0,
+                      width: '100%',
+                      overflow: 'hidden',
                     }}
                   >
                     <div style={{ fontSize: 16 }}>{isFirst ? '🥇' : isSecond ? '🥈' : '🥉'}</div>
@@ -230,7 +238,9 @@ export default function RankingsPage() {
                         whiteSpace: 'nowrap',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
+                        maxWidth: '100%',
                       }}
+                      title={name}
                     >
                       {name}
                     </div>

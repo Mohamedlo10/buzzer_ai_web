@@ -35,7 +35,7 @@ export function Podium({ rankings, currentUserId, onPlayerTap }: PodiumProps) {
             key={entry.player.id}
             type="button"
             onClick={() => onPlayerTap?.(entry)}
-            className="flex-1 flex flex-col items-center gap-1.5 bg-transparent border-0 cursor-pointer p-0 animate-[rise_0.55s_both]"
+            className="flex-1 min-w-0 flex flex-col items-center gap-1.5 bg-transparent border-0 cursor-pointer p-0 animate-[rise_0.55s_both]"
           >
             {rank === 1 && (
               <span className="text-[22px] leading-none animate-[float_3s_ease-in-out_infinite]">👑</span>
