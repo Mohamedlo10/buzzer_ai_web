@@ -231,7 +231,7 @@ function MembersWithStats({
   const rankColors = ['var(--gold)', '#C0C0C0', '#CD7F32'];
 
   return (
-    <div className="bg-surface rounded-3xl border border-line overflow-hidden">
+    <div className="bg-surface rounded-3xl border border-line">
       <div className="flex items-center justify-between px-4 py-3 border-b border-line">
         <p className="text-txt-40 text-[10px] font-bold tracking-widest uppercase">Membres</p>
         <div className="bg-accent/15 px-3 py-1 rounded-full">
@@ -498,8 +498,8 @@ function InviteFriendsModal({
                   ) : (
                     <div
                       className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${isSelected
-                          ? 'bg-accent border-accent'
-                          : 'border-line bg-transparent'
+                        ? 'bg-accent border-accent'
+                        : 'border-line bg-transparent'
                         }`}
                     >
                       {isSelected && (
@@ -522,10 +522,10 @@ function InviteFriendsModal({
               onClick={handleSend}
               disabled={selected.size === 0 || isSending || sent}
               className={`w-full py-4 rounded-2xl flex items-center justify-center transition-colors font-bold text-base ${sent
-                  ? 'bg-accent/25 cursor-default'
-                  : selected.size === 0 || isSending
-                    ? 'bg-surface-2 cursor-not-allowed'
-                    : 'bg-accent hover:opacity-90 cursor-pointer'
+                ? 'bg-accent/25 cursor-default'
+                : selected.size === 0 || isSending
+                  ? 'bg-surface-2 cursor-not-allowed'
+                  : 'bg-accent hover:opacity-90 cursor-pointer'
                 }`}
             >
               {sent ? (
@@ -765,7 +765,7 @@ export default function RoomDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-bg flex flex-col">
+    <div className="flex-1 min-h-0 bg-bg flex flex-col overflow-hidden relative">
       {/* ── Header ── */}
       <div className="flex items-center px-4 pt-4 pb-3 gap-3 shrink-0 bg-bg border-b border-line z-10">
         <button
@@ -785,11 +785,11 @@ export default function RoomDetailPage() {
         )}
       </div>
 
-      {/* ── Scrollable content area ── */}
-      <div className={`flex-1 px-4 py-4 flex flex-col gap-4 pb-[180px]${showConfigModal ? ' overflow-hidden' : ''}`}>
+      {/* ── Scrollable main content area (QR code + Code + Invite + Members table + Danger zone) ── */}
+      <div className={`flex-1 min-h-0 px-4 pt-4 pb-[160px] flex flex-col gap-4${showConfigModal ? ' overflow-hidden' : ' overflow-y-auto'}`}>
 
         {/* QR + Code */}
-        <div className="bg-surface rounded-3xl border border-line p-5 flex flex-col items-center">
+        <div className="bg-surface rounded-3xl border border-line p-4 flex flex-col items-center shrink-0">
           {qrLoading ? (
             <div className="w-36 h-36 rounded-2xl bg-bg flex items-center justify-center mb-4">
               <div className="w-6 h-6 border-2 border-accent border-t-transparent rounded-full animate-spin" />
@@ -811,7 +811,7 @@ export default function RoomDetailPage() {
         {/* Invite button */}
         <button
           onClick={() => setShowInviteModal(true)}
-          className="w-full py-4 rounded-2xl flex items-center justify-center bg-accent hover:opacity-90 transition-opacity"
+          className="w-full py-4 rounded-2xl flex items-center justify-center bg-accent hover:opacity-90 transition-opacity shrink-0"
         >
           <UserPlus size={20} className="text-btn-fg" />
           <span className="text-btn-fg font-bold text-base ml-2">Inviter des amis</span>
@@ -819,7 +819,7 @@ export default function RoomDetailPage() {
 
         {/* Active Sessions */}
         {activeSessions.length > 0 && (
-          <div>
+          <div className="shrink-0">
             <p className="text-txt-40 text-[10px] font-bold tracking-widest uppercase mb-2">Session active</p>
             {activeSessions.map((session) => (
               <ActiveSessionCard
@@ -842,7 +842,7 @@ export default function RoomDetailPage() {
         />
 
         {/* Danger zone */}
-        <div className="bg-surface rounded-3xl border border-line overflow-hidden mb-2">
+        <div className="bg-surface rounded-3xl border border-line overflow-hidden mb-2 shrink-0">
           {!isOwner ? (
             <button
               onClick={handleLeaveRoom}
@@ -864,7 +864,7 @@ export default function RoomDetailPage() {
       </div>
 
       {/* ── Floating Sticky Action Bar ── */}
-      <div className="fixed bottom-[calc(80px+24px)] left-4 right-4 bg-surface border border-line px-4 py-3 flex items-center justify-between gap-3 z-[60] rounded-[24px] shadow-[0_12px_40px_rgba(0,0,0,0.25)]">
+      <div className="absolute bottom-[84px] left-4 right-4 bg-surface/95 backdrop-blur-md border border-line px-4 py-3 flex items-center justify-between gap-3 rounded-[24px] shadow-[0_12px_40px_rgba(0,0,0,0.35)] z-30">
         {/* Invite */}
         <button
           onClick={() => setShowInviteModal(true)}
