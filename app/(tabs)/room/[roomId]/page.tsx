@@ -772,7 +772,7 @@ export default function RoomDetailPage() {
   }
 
   return (
-    <div className="flex-1 min-h-0 bg-bg flex flex-col overflow-hidden relative">
+    <div className="h-full max-h-[100dvh] min-h-0 bg-bg flex flex-col overflow-hidden relative">
       {/* ── Header ── */}
       <div className="flex items-center px-4 pt-4 pb-3 gap-3 shrink-0 bg-bg border-b border-line z-10">
         <button
