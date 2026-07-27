@@ -15,6 +15,8 @@ import { QuizOfTheDayCard } from '~/components/shared/QuizOfTheDayCard';
 import { GlobalRankCard } from '~/components/shared/GlobalRankCard';
 import { UserProfileModal } from '~/components/shared/UserProfileModal';
 import * as rankingsApi from '~/lib/api/rankings';
+import * as sessionsApi from '~/lib/api/sessions';
+import { appStorage } from '~/lib/utils/storage';
 import type { GlobalRanking } from '~/types/api';
 
 export default function DashboardPage() {
@@ -25,6 +27,7 @@ export default function DashboardPage() {
   const [aiPrompt, setAiPrompt] = useState('');
   const [topRankings, setTopRankings] = useState<GlobalRanking[]>([]);
   const [selectedUserModal, setSelectedUserModal] = useState<GlobalRanking | null>(null);
+  const [activeSessionInfo, setActiveSessionInfo] = useState<{ code: string; status?: string; roomId?: string } | null>(null);
 
   useEffect(() => {
     if (user?.role === 'SUPER_ADMIN') {
@@ -44,11 +47,64 @@ export default function DashboardPage() {
         console.error('Failed to load top 3 rankings on dashboard:', err);
       }
     }
+
+    async function checkActiveSession() {
+      try {
+        const stored = await appStorage.getActiveSession();
+        if (stored?.code) {
+          const resData = await sessionsApi.joinCheck(stored.code).catch(() => null);
+          if (!isMounted) return;
+          const status = resData?.session?.status;
+          if (status && ['LOBBY', 'GENERATING', 'PLAYING', 'PAUSED'].includes(status)) {
+            setActiveSessionInfo({
+              code: stored.code,
+              status,
+              roomId: resData.session.roomId ?? undefined,
+            });
+            return;
+          }
+        }
+
+        const roomWithActiveSession = data?.recentRooms?.find((r) => r.hasActiveSession);
+        if (roomWithActiveSession && isMounted) {
+          setActiveSessionInfo({
+            code: roomWithActiveSession.code,
+            status: 'PLAYING',
+            roomId: String(roomWithActiveSession.id),
+          });
+        }
+      } catch (err) {
+        console.error('Failed to check active session on dashboard:', err);
+      }
+    }
+
     loadTopRankings();
+    checkActiveSession();
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [data?.recentRooms]);
+
+  const handleReconnectSession = async () => {
+    if (!activeSessionInfo?.code) return;
+    const code = activeSessionInfo.code;
+    const status = activeSessionInfo.status;
+
+    await appStorage.setActiveSession({
+      code,
+      sessionId: activeSessionInfo.roomId || '',
+    });
+
+    if (status === 'LOBBY') {
+      router.push(`/session/${code}/categories`);
+    } else if (status === 'GENERATING') {
+      router.push(`/session/${code}/loading`);
+    } else if (['PLAYING', 'PAUSED'].includes(status || '')) {
+      router.push(`/session/${code}/game`);
+    } else {
+      router.push(`/session/${code}/lobby`);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -134,6 +190,72 @@ export default function DashboardPage() {
             <span style={{ color: 'var(--color-primary)' }}>deviner</span> aujourd'hui ?
           </h1>
         </div>
+
+        {/* Banner Partie Active / Reconnexion Directe */}
+        {activeSessionInfo && (
+          <div
+            style={{
+              background: 'linear-gradient(135deg, rgba(232, 166, 48, 0.18), rgba(184, 70, 42, 0.15))',
+              border: '1.5px solid var(--color-gold)',
+              borderRadius: 'var(--card-radius)',
+              padding: '14px 16px',
+              marginBottom: 18,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 12,
+            }}
+            className="animate-pulse shadow-md"
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1, minWidth: 0 }}>
+              <div
+                style={{
+                  width: 38,
+                  height: 38,
+                  borderRadius: 'var(--radius-pill)',
+                  background: 'rgba(232, 166, 48, 0.25)',
+                  display: 'grid',
+                  placeItems: 'center',
+                  fontSize: 18,
+                  flexShrink: 0,
+                }}
+              >
+                ⚡
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span className="w-2 h-2 rounded-full bg-accent animate-ping shrink-0" />
+                  <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-gold)' }}>
+                    Session en cours #{activeSessionInfo.code}
+                  </span>
+                </div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-ink)', marginTop: 2 }} className="truncate">
+                  Une partie est toujours active !
+                </div>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleReconnectSession}
+              style={{
+                background: 'var(--color-primary)',
+                color: 'var(--color-primary-ink)',
+                padding: '9px 16px',
+                borderRadius: 'var(--radius-pill)',
+                fontSize: 12.5,
+                fontWeight: 700,
+                border: 'none',
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+                flexShrink: 0,
+              }}
+              className="hover:opacity-90 transition-opacity shadow-sm"
+            >
+              Rejoindre →
+            </button>
+          </div>
+        )}
 
         {/* AI Prompt Input Bar */}
         <form

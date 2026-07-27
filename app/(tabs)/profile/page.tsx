@@ -43,15 +43,42 @@ export default function ProfilePage() {
     enabled: !!user,
   });
 
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [passwordSuccess, setPasswordSuccess] = useState(false);
+
   const changePasswordMutation = useMutation({
     mutationFn: usersApi.changePassword,
     onSuccess: () => {
-      setShowPasswordModal(false);
+      setPasswordSuccess(true);
+      setPasswordError(null);
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
     },
+    onError: (err: any) => {
+      const msg = err?.response?.data?.message || 'Erreur lors de la modification du mot de passe (vérifie ton mot de passe actuel).';
+      setPasswordError(msg);
+    },
   });
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPasswordError(null);
+
+    if (newPassword !== confirmPassword) {
+      setPasswordError('Les deux mots de passe ne correspondent pas.');
+      return;
+    }
+    if (newPassword.length < 6) {
+      setPasswordError('Le nouveau mot de passe doit faire au moins 6 caractères.');
+      return;
+    }
+
+    changePasswordMutation.mutate({
+      currentPassword,
+      newPassword,
+    });
+  };
 
   const onRefresh = useCallback(() => {
     refetchRank();
@@ -452,6 +479,118 @@ export default function ProfilePage() {
                 Déconnexion
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Password Change Modal */}
+      {showPasswordModal && (
+        <div
+          className="fixed inset-0 bg-scrim/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          onClick={() => {
+            setShowPasswordModal(false);
+            setPasswordError(null);
+            setPasswordSuccess(false);
+          }}
+        >
+          <div
+            className="bg-surface rounded-3xl border border-line p-6 w-full max-w-sm flex flex-col gap-4 animate-[pop_.25s_ease-out_both]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between">
+              <p className="font-display font-bold text-xl text-txt">Changer le mot de passe</p>
+              <button
+                onClick={() => {
+                  setShowPasswordModal(false);
+                  setPasswordError(null);
+                  setPasswordSuccess(false);
+                }}
+                className="w-8 h-8 rounded-full bg-surface-2 flex items-center justify-center text-txt-60 hover:bg-surface-2/80 transition-colors border-none cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            {passwordSuccess ? (
+              <div className="bg-good/15 border border-good/30 rounded-2xl p-4 text-center flex flex-col items-center gap-2">
+                <span className="text-2xl">✓</span>
+                <p className="text-good font-bold text-sm">Mot de passe modifié avec succès !</p>
+                <button
+                  onClick={() => {
+                    setShowPasswordModal(false);
+                    setPasswordSuccess(false);
+                  }}
+                  className="mt-2 bg-primary text-primary-ink font-bold text-xs px-5 py-2.5 rounded-full border-none cursor-pointer"
+                >
+                  Fermer
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleChangePassword} className="flex flex-col gap-3">
+                {passwordError && (
+                  <div className="bg-bad/15 border border-bad/30 rounded-xl p-3 text-bad text-xs font-semibold">
+                    {passwordError}
+                  </div>
+                )}
+
+                <div>
+                  <label className="text-txt-60 text-xs font-semibold mb-1 block text-left">Mot de passe actuel</label>
+                  <input
+                    type="password"
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    placeholder="••••••••"
+                    required
+                    className="w-full bg-bg border border-line rounded-xl px-3.5 py-2.5 text-txt text-sm outline-none focus:border-accent transition-colors"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-txt-60 text-xs font-semibold mb-1 block text-left">Nouveau mot de passe</label>
+                  <input
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="Au moins 6 caractères"
+                    required
+                    minLength={6}
+                    className="w-full bg-bg border border-line rounded-xl px-3.5 py-2.5 text-txt text-sm outline-none focus:border-accent transition-colors"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-txt-60 text-xs font-semibold mb-1 block text-left">Confirmer le nouveau mot de passe</label>
+                  <input
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="••••••••"
+                    required
+                    className="w-full bg-bg border border-line rounded-xl px-3.5 py-2.5 text-txt text-sm outline-none focus:border-accent transition-colors"
+                  />
+                </div>
+
+                <div className="flex gap-2 mt-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowPasswordModal(false);
+                      setPasswordError(null);
+                    }}
+                    className="flex-1 py-3 rounded-full bg-surface-2 text-txt font-bold text-xs border-none cursor-pointer hover:bg-surface-2/80 transition-colors"
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={changePasswordMutation.isPending || !currentPassword || !newPassword || !confirmPassword}
+                    className="flex-1 py-3 rounded-full bg-primary text-primary-ink font-bold text-xs border-none cursor-pointer disabled:opacity-50 hover:opacity-90 transition-opacity"
+                  >
+                    {changePasswordMutation.isPending ? 'Enregistrement…' : 'Valider'}
+                  </button>
+                </div>
+              </form>
+            )}
           </div>
         </div>
       )}
