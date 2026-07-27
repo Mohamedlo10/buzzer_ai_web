@@ -13,6 +13,9 @@ import { Avatar } from '~/components/shared/Avatar';
 import { AnimatedCounter } from '~/components/shared/AnimatedCounter';
 import { QuizOfTheDayCard } from '~/components/shared/QuizOfTheDayCard';
 import { GlobalRankCard } from '~/components/shared/GlobalRankCard';
+import { UserProfileModal } from '~/components/shared/UserProfileModal';
+import * as rankingsApi from '~/lib/api/rankings';
+import type { GlobalRanking } from '~/types/api';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -20,12 +23,32 @@ export default function DashboardPage() {
   const { data, isLoading, isError, refetch } = useDashboardV2();
 
   const [aiPrompt, setAiPrompt] = useState('');
+  const [topRankings, setTopRankings] = useState<GlobalRanking[]>([]);
+  const [selectedUserModal, setSelectedUserModal] = useState<GlobalRanking | null>(null);
 
   useEffect(() => {
     if (user?.role === 'SUPER_ADMIN') {
       router.replace('/admin');
     }
   }, [user, router]);
+
+  useEffect(() => {
+    let isMounted = true;
+    async function loadTopRankings() {
+      try {
+        const res = await rankingsApi.getGlobalRankings({ page: 0, size: 3 });
+        if (isMounted && res?.content) {
+          setTopRankings(res.content);
+        }
+      } catch (err) {
+        console.error('Failed to load top 3 rankings on dashboard:', err);
+      }
+    }
+    loadTopRankings();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   if (isLoading) {
     return (
@@ -297,45 +320,67 @@ export default function DashboardPage() {
             marginBottom: 20,
           }}
         >
-          {leaderboardList.map((p, i, arr) => (
-            <div
-              key={p.rank}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 12,
-                padding: '11px 14px',
-                borderBottom: i < arr.length - 1 ? '1px solid var(--color-line)' : 'none',
-              }}
-            >
-              <div
-                style={{
-                  fontFamily: 'var(--font-display)',
-                  fontWeight: 'var(--font-display-weight)' as any,
-                  fontSize: 14,
-                  width: 18,
-                  color:
-                    p.rank === 1
-                      ? 'var(--color-accent)'
-                      : p.rank === 2
-                      ? 'var(--color-primary)'
-                      : 'var(--color-secondary)',
-                }}
-              >
-                {p.rank}
-              </div>
-              <Avatar name={p.name} hue={p.hue} size={30} ring={p.rank === 1 ? 'var(--color-accent)' : undefined} />
-              <div style={{ flex: 1, fontSize: 14, fontWeight: 600 }}>{p.name}</div>
-              <div style={{ fontSize: 13, fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>
-                <AnimatedCounter to={p.score} motion="subtle" duration={1100 + i * 80} /> pts
-              </div>
+          {topRankings.length > 0 ? (
+            topRankings.map((p, i, arr) => {
+              const score = Math.round(p.glickoRating ?? p.totalScore ?? 0);
+              const rank = i + 1;
+              return (
+                <div
+                  key={p.userId || i}
+                  onClick={() => setSelectedUserModal(p)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 12,
+                    padding: '11px 14px',
+                    borderBottom: i < arr.length - 1 ? '1px solid var(--color-line)' : 'none',
+                    cursor: 'pointer',
+                  }}
+                  className="hover:bg-surface-2/40 transition-colors"
+                >
+                  <div
+                    style={{
+                      fontFamily: 'var(--font-display)',
+                      fontWeight: 'var(--font-display-weight)' as any,
+                      fontSize: 14,
+                      width: 18,
+                      color:
+                        rank === 1
+                          ? 'var(--color-accent)'
+                          : rank === 2
+                          ? 'var(--color-primary)'
+                          : 'var(--color-secondary)',
+                    }}
+                  >
+                    {rank}
+                  </div>
+                  <Avatar name={p.username} avatarUrl={p.avatarUrl} size={30} ring={rank === 1 ? 'var(--color-accent)' : undefined} />
+                  <div style={{ flex: 1, fontSize: 14, fontWeight: 600 }} className="truncate">
+                    {p.username}
+                  </div>
+                  <div style={{ fontSize: 13, fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>
+                    <AnimatedCounter to={score} motion="subtle" duration={1100 + i * 80} /> pts
+                  </div>
+                </div>
+              );
+            })
+          ) : (
+            <div style={{ padding: '16px 14px', fontSize: 13, color: 'var(--color-ink-soft)', textAlign: 'center' }}>
+              Chargement du classement…
             </div>
-          ))}
+          )}
         </div>
 
         {/* Classement mondial — clôture la section « Top de la semaine » */}
         <GlobalRankCard rank={globalRank} style={{ marginBottom: 4 }} />
       </div>
+      <UserProfileModal
+        visible={!!selectedUserModal}
+        userId={selectedUserModal?.userId ?? null}
+        username={selectedUserModal?.username}
+        avatarUrl={selectedUserModal?.avatarUrl}
+        onClose={() => setSelectedUserModal(null)}
+      />
     </SafeScreen>
   );
 }

@@ -21,7 +21,7 @@ export function AllRoomsModal({ visible, onClose }: AllRoomsModalProps) {
   const { data, isLoading } = useDashboardV2();
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeFilter, setActiveFilter] = useState<'all' | 'active' | 'public' | 'my'>('all');
+  const [activeFilter, setActiveFilter] = useState<'all' | 'active'>('all');
   const [selectedPrivateRoom, setSelectedPrivateRoom] = useState<any>(null);
   const [passcode, setPasscode] = useState('');
   const [passcodeError, setPasscodeError] = useState<string | null>(null);
@@ -98,8 +98,6 @@ export function AllRoomsModal({ visible, onClose }: AllRoomsModalProps) {
     if (!matchesQuery) return false;
 
     if (activeFilter === 'active') return !!room.hasActiveSession;
-    if (activeFilter === 'public') return !(room as any).isPrivate;
-    if (activeFilter === 'my') return (room as any).isOwner || (room as any).isMember;
     return true;
   });
 
@@ -260,8 +258,6 @@ export function AllRoomsModal({ visible, onClose }: AllRoomsModalProps) {
             {[
               { id: 'all', label: 'Tous' },
               { id: 'active', label: 'En direct 🔴' },
-              { id: 'public', label: 'Publics 🌐' },
-              { id: 'my', label: 'Mes salons 🔑' },
             ].map((f) => (
               <button
                 key={f.id}
