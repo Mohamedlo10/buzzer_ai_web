@@ -45,12 +45,12 @@ const STATUS_OPTIONS: { value: string; label: string }[] = [
 ];
 
 const STATUS_CONFIG: Record<AdminSessionStatus, { label: string; color: string; bg: string }> = {
-  LOBBY:      { label: 'Lobby',      color: 'var(--primary)', bg: 'rgb(var(--primary-rgb) / 0.125)' },
+  LOBBY: { label: 'Lobby', color: 'var(--primary)', bg: 'rgb(var(--primary-rgb) / 0.125)' },
   GENERATING: { label: 'Génération', color: 'var(--gold)', bg: 'rgb(var(--gold-rgb) / 0.125)' },
-  PLAYING:    { label: 'En cours',   color: 'var(--indigo)', bg: 'rgb(var(--indigo-rgb) / 0.125)' },
-  PAUSED:     { label: 'Pause',      color: 'var(--warn)', bg: 'rgb(var(--warn-rgb) / 0.125)' },
-  RESULTS:    { label: 'Terminée',   color: '#C0C0C0', bg: '#C0C0C020' },
-  CANCELLED:  { label: 'Annulée',    color: 'var(--bad)', bg: 'rgb(var(--bad-rgb) / 0.125)' },
+  PLAYING: { label: 'En cours', color: 'var(--indigo)', bg: 'rgb(var(--indigo-rgb) / 0.125)' },
+  PAUSED: { label: 'Pause', color: 'var(--warn)', bg: 'rgb(var(--warn-rgb) / 0.125)' },
+  RESULTS: { label: 'Terminée', color: '#C0C0C0', bg: '#C0C0C020' },
+  CANCELLED: { label: 'Annulée', color: 'var(--bad)', bg: 'rgb(var(--bad-rgb) / 0.125)' },
 };
 
 function formatShortDate(iso: string | null) {
@@ -184,11 +184,10 @@ export default function AdminSessionsPage() {
       header: 'Mode',
       width: '110px',
       render: (row) => (
-        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-semibold ${
-          row.sessionMode === 'WITHOUT_MODERATOR'
+        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-semibold ${row.sessionMode === 'WITHOUT_MODERATOR'
             ? 'bg-team/15 text-team'
             : 'bg-warn/15 text-warn'
-        }`}>
+          }`}>
           {row.sessionMode === 'WITHOUT_MODERATOR' ? 'Sans modérateur' : 'Avec modérateur'}
         </span>
       ),
@@ -255,33 +254,7 @@ export default function AdminSessionsPage() {
         </div>
       </div>
 
-      {/* Active Sessions */}
-      <div>
-        <div className="flex items-center gap-2 mb-3">
-          <Activity size={18} color="var(--primary)" />
-          <h2 className="text-txt font-bold">Sessions actives</h2>
-          <span className="ml-auto px-2 py-0.5 bg-accent/15 text-accent text-xs rounded-full font-semibold">
-            {activeSessions?.length ?? 0} live
-          </span>
-        </div>
-        {activeLoading ? (
-          <div className="text-txt-60 text-sm">Chargement...</div>
-        ) : activeSessions?.length === 0 ? (
-          <Card className="flex items-center justify-center py-8">
-            <p className="text-txt-40 text-sm">Aucune session active</p>
-          </Card>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {activeSessions?.map((s) => (
-              <ActiveSessionCard
-                key={s.id}
-                session={s}
-                onClick={() => router.push(`/admin/sessions/${s.id}`)}
-              />
-            ))}
-          </div>
-        )}
-      </div>
+
 
       {/* Filters */}
       <div className="bg-surface rounded-2xl border border-line p-4">
@@ -356,6 +329,35 @@ export default function AdminSessionsPage() {
       <div className="text-txt-40 text-xs">
         Total : {sessionsData?.totalElements ?? 0} session{sessionsData?.totalElements !== 1 ? 's' : ''}
       </div>
+
+
+      {/* Active Sessions */}
+      <div>
+        <div className="flex items-center gap-2 mb-3">
+          <Activity size={18} color="var(--primary)" />
+          <h2 className="text-txt font-bold">Sessions actives</h2>
+          <span className="ml-auto px-2 py-0.5 bg-accent/15 text-accent text-xs rounded-full font-semibold">
+            {activeSessions?.length ?? 0} live
+          </span>
+        </div>
+        {activeLoading ? (
+          <div className="text-txt-60 text-sm">Chargement...</div>
+        ) : activeSessions?.length === 0 ? (
+          <Card className="flex items-center justify-center py-8">
+            <p className="text-txt-40 text-sm">Aucune session active</p>
+          </Card>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {activeSessions?.map((s) => (
+              <ActiveSessionCard
+                key={s.id}
+                session={s}
+                onClick={() => router.push(`/admin/sessions/${s.id}`)}
+              />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -371,10 +373,10 @@ function ActiveSessionCard({
     session.status === 'PLAYING'
       ? 'var(--primary)'
       : session.status === 'PAUSED'
-      ? 'var(--warn)'
-      : session.status === 'LOBBY'
-      ? 'var(--indigo)'
-      : 'var(--violet)';
+        ? 'var(--warn)'
+        : session.status === 'LOBBY'
+          ? 'var(--indigo)'
+          : 'var(--violet)';
 
   return (
     <Card
