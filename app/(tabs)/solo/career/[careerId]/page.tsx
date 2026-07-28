@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { Trophy, ArrowLeft, Lock, Play, CheckCircle, AlertCircle, X } from 'lucide-react';
+import { Trophy, ArrowLeft, Lock, Play, CheckCircle, AlertCircle, X, Trash2 } from 'lucide-react';
 import { SafeScreen } from '~/components/layout/SafeScreen';
 import { Spinner } from '~/components/loading/Spinner';
 import * as soloApi from '~/lib/api/solo';
@@ -19,6 +19,7 @@ export default function CareerDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedLevel, setSelectedLevel] = useState<LevelInfo | null>(null);
   const [isStartingLevel, setIsStartingLevel] = useState(false);
+  const [isAbandoning, setIsAbandoning] = useState(false);
 
   useEffect(() => {
     const fetchCareerDetail = async () => {
@@ -33,6 +34,21 @@ export default function CareerDetailPage() {
     };
     fetchCareerDetail();
   }, [careerId]);
+
+  const handleAbandon = async () => {
+    if (!confirm('Êtes-vous sûr de vouloir abandonner cette carrière ? Tous vos progrès seront définitivement perdus.')) {
+      return;
+    }
+    setIsAbandoning(true);
+    try {
+      await soloApi.abandonCareer(careerId);
+      router.push('/solo/career');
+    } catch (error) {
+      console.error('Failed to abandon career', error);
+      alert('Erreur lors de l\'abandon de la carrière.');
+      setIsAbandoning(false);
+    }
+  };
 
   const handleStartLevel = async (levelNumber: number) => {
     setIsStartingLevel(true);
@@ -92,6 +108,14 @@ export default function CareerDetailPage() {
             </h1>
             <p className="text-txt-60 text-xs mt-0.5">Score total : <strong className="text-accent">{career.totalScore} pts</strong></p>
           </div>
+          <button
+            onClick={handleAbandon}
+            disabled={isAbandoning}
+            className="w-10 h-10 rounded-full bg-buzz/10 hover:bg-buzz/20 text-buzz flex items-center justify-center transition-colors border border-buzz/20 cursor-pointer shrink-0 disabled:opacity-50"
+            title="Abandonner cette carrière"
+          >
+            <Trash2 size={17} />
+          </button>
         </div>
 
         {/* Levels Grid */}

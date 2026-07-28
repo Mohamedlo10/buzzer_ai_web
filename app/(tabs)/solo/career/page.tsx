@@ -17,7 +17,8 @@ export default function SoloCareersPage() {
   const fetchCareers = async () => {
     try {
       const data = await soloApi.listCareers();
-      setCareers(data);
+      // Filter out ABANDONED careers
+      setCareers((data || []).filter((c) => c.status !== 'ABANDONED'));
     } catch (error) {
       console.error('Failed to fetch careers', error);
     } finally {
@@ -38,6 +39,8 @@ export default function SoloCareersPage() {
     setIsAbandoning(careerId);
     try {
       await soloApi.abandonCareer(careerId);
+      // Optimistically remove from state so the card vanishes immediately
+      setCareers((prev) => prev.filter((c) => c.careerId !== careerId));
       await fetchCareers();
     } catch (error) {
       console.error('Failed to abandon career', error);
