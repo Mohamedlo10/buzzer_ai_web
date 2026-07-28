@@ -149,9 +149,9 @@ export default function DashboardPage() {
   const handleAiPromptSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (aiPrompt.trim()) {
-      router.push(`/solo/training?prompt=${encodeURIComponent(aiPrompt.trim())}`);
+      router.push(`/solo/career/new?theme=${encodeURIComponent(aiPrompt.trim())}`);
     } else {
-      router.push('/solo/training');
+      router.push('/solo/career/new');
     }
   };
 
@@ -319,13 +319,13 @@ export default function DashboardPage() {
           className="scrollbar-hide"
         >
           {[
-            { label: 'Mbalax', action: () => router.push('/solo/training?prompt=Mbalax'), active: true },
+            { label: 'Mbalax', action: () => router.push('/solo/career/new?theme=Mbalax'), active: true },
             { label: 'Carrière 🏆', action: () => router.push('/solo/career'), active: false },
             { label: 'Entraînement 🎯', action: () => router.push('/solo/training'), active: false },
             { label: 'Multijoueur 👥', action: () => router.push('/rooms?join=1'), active: false },
-            { label: 'Cinéma', action: () => router.push('/solo/training?prompt=Cinema'), active: false },
-            { label: 'Histoire 🇸🇳', action: () => router.push('/solo/training?prompt=Histoire'), active: false },
-            { label: 'Géo', action: () => router.push('/solo/training?prompt=Geo'), active: false },
+            { label: 'Cinéma', action: () => router.push('/solo/career/new?theme=Cinema'), active: false },
+            { label: 'Histoire 🇸🇳', action: () => router.push('/solo/career/new?theme=Histoire'), active: false },
+            { label: 'Géo', action: () => router.push('/solo/career/new?theme=Geo'), active: false },
           ].map((chip) => (
             <button
               key={chip.label}

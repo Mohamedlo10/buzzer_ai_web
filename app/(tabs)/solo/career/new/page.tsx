@@ -1,17 +1,26 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Trophy, ArrowLeft, Send } from 'lucide-react';
 import { SafeScreen } from '~/components/layout/SafeScreen';
 import { Spinner } from '~/components/loading/Spinner';
 import * as soloApi from '~/lib/api/solo';
 
-export default function NewSoloCareerPage() {
+function NewSoloCareerForm() {
   const router = useRouter();
-  const [category, setCategory] = useState('');
+  const searchParams = useSearchParams();
+  const initialCategory =
+    searchParams.get('theme') || searchParams.get('prompt') || searchParams.get('category') || '';
+  const [category, setCategory] = useState(initialCategory);
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (initialCategory) {
+      setCategory(initialCategory);
+    }
+  }, [initialCategory]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -125,5 +134,19 @@ export default function NewSoloCareerPage() {
         <div className="h-12" />
       </div>
     </SafeScreen>
+  );
+}
+
+export default function NewSoloCareerPage() {
+  return (
+    <Suspense
+      fallback={
+        <SafeScreen className="bg-bg flex items-center justify-center min-h-[100dvh]">
+          <Spinner size="large" text="Chargement..." />
+        </SafeScreen>
+      }
+    >
+      <NewSoloCareerForm />
+    </Suspense>
   );
 }
