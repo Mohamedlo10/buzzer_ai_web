@@ -1,7 +1,9 @@
 'use client';
 
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { PatternZigzag } from './PatternZigzag';
+import { ComingSoonModal } from '~/components/ui/ComingSoonModal';
 
 /**
  * Carte vedette « Quiz du jour ».
@@ -36,74 +38,91 @@ export function QuizOfTheDayCard({
   style,
 }: QuizOfTheDayCardProps) {
   const router = useRouter();
+  const [showComingSoon, setShowComingSoon] = useState(false);
   const isLive = !!activeRoom;
 
   return (
-    <div
-      style={{
-        position: 'relative',
-        overflow: 'hidden',
-        background: 'var(--color-secondary)',
-        color: '#FFFFFF',
-        borderRadius: 'var(--card-radius)',
-        padding: 18,
-        ...style,
-      }}
-    >
-      <div style={{ position: 'absolute', inset: 0, opacity: 0.7, pointerEvents: 'none' }}>
-        <PatternZigzag color="var(--color-accent)" opacity={0.22} size={20} />
-      </div>
-
-      <div style={{ position: 'relative', zIndex: 1 }}>
-        <div style={{ fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', opacity: 0.75 }}>
-          {isLive ? 'Partie active' : 'Quiz du jour'}
+    <>
+      <div
+        onClick={() => {
+          if (!isLive) {
+            setShowComingSoon(true);
+          }
+        }}
+        style={{
+          position: 'relative',
+          overflow: 'hidden',
+          background: 'var(--color-secondary)',
+          color: '#FFFFFF',
+          borderRadius: 'var(--card-radius)',
+          padding: 18,
+          cursor: !isLive ? 'pointer' : 'default',
+          ...style,
+        }}
+      >
+        <div style={{ position: 'absolute', inset: 0, opacity: 0.7, pointerEvents: 'none' }}>
+          <PatternZigzag color="var(--color-accent)" opacity={0.22} size={20} />
         </div>
 
-        <div
-          style={{
-            fontFamily: 'var(--font-display)',
-            fontWeight: 'var(--font-display-weight)' as any,
-            fontSize: 24,
-            lineHeight: 1.05,
-            letterSpacing: '-0.02em',
-            margin: '8px 0 14px',
-          }}
-        >
-          {isLive ? activeRoom!.name : title}
-          <br />
-          <span style={{ fontFamily: 'var(--font-accent)', fontStyle: 'italic', fontWeight: 400, opacity: 0.85 }}>
-            {isLive ? `Hôte: ${activeRoom!.ownerName}` : subtitle}
-          </span>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, opacity: 0.85 }}>
-            <span>{isLive ? `${activeRoom!.memberCount} membres` : '10 questions'}</span>·
-            <span>{isLive ? 'En direct' : '4 min'}</span>·<span>+1 200 pts max</span>
+        <div style={{ position: 'relative', zIndex: 1 }}>
+          <div style={{ fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', opacity: 0.75 }}>
+            {isLive ? 'Partie active' : 'Quiz du jour'}
           </div>
-          <button
-            type="button"
-            onClick={() =>
-              isLive
-                ? router.push(`/room/${activeRoom!.id}`)
-                : router.push(`/solo/training?prompt=${encodeURIComponent(title)}`)
-            }
+
+          <div
             style={{
-              background: 'var(--color-accent)',
-              color: 'var(--color-ink)',
-              padding: '8px 14px',
-              borderRadius: 'var(--radius-pill)',
-              fontSize: 13,
-              fontWeight: 700,
-              border: 'none',
-              cursor: 'pointer',
-              whiteSpace: 'nowrap',
+              fontFamily: 'var(--font-display)',
+              fontWeight: 'var(--font-display-weight)' as any,
+              fontSize: 24,
+              lineHeight: 1.05,
+              letterSpacing: '-0.02em',
+              margin: '8px 0 14px',
             }}
           >
-            {isLive ? 'Rejoindre →' : 'Jouer →'}
-          </button>
+            {isLive ? activeRoom!.name : title}
+            <br />
+            <span style={{ fontFamily: 'var(--font-accent)', fontStyle: 'italic', fontWeight: 400, opacity: 0.85 }}>
+              {isLive ? `Hôte: ${activeRoom!.ownerName}` : subtitle}
+            </span>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, opacity: 0.85 }}>
+              <span>{isLive ? `${activeRoom!.memberCount} membres` : '10 questions'}</span>·
+              <span>{isLive ? 'En direct' : '4 min'}</span>·<span>+1 200 pts max</span>
+            </div>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (isLive) {
+                  router.push(`/room/${activeRoom!.id}`);
+                } else {
+                  setShowComingSoon(true);
+                }
+              }}
+              style={{
+                background: 'var(--color-accent)',
+                color: 'var(--color-ink)',
+                padding: '8px 14px',
+                borderRadius: 'var(--radius-pill)',
+                fontSize: 13,
+                fontWeight: 700,
+                border: 'none',
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {isLive ? 'Rejoindre →' : 'Jouer →'}
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+
+      <ComingSoonModal
+        visible={showComingSoon}
+        onClose={() => setShowComingSoon(false)}
+      />
+    </>
   );
 }

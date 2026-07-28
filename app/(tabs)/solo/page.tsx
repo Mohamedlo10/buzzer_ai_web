@@ -8,7 +8,7 @@ import { useAuthStore } from '~/stores/useAuthStore';
 import { useDashboardV2 } from '~/lib/query/hooks';
 
 import { PatternLozenge } from '~/components/shared/PatternLozenge';
-import { PatternZigzag } from '~/components/shared/PatternZigzag';
+import { QuizOfTheDayCard } from '~/components/shared/QuizOfTheDayCard';
 import { Avatar } from '~/components/shared/Avatar';
 import { AnimatedCounter } from '~/components/shared/AnimatedCounter';
 
@@ -225,63 +225,7 @@ export default function SoloPage() {
         </div>
 
         {/* Featured Card (Quiz du jour) */}
-        <div
-          style={{
-            position: 'relative',
-            overflow: 'hidden',
-            background: 'var(--color-secondary)',
-            color: '#FFFFFF',
-            borderRadius: 'var(--card-radius)',
-            padding: 18,
-            marginBottom: 18,
-          }}
-        >
-          <div style={{ position: 'absolute', inset: 0, opacity: 0.7, pointerEvents: 'none' }}>
-            <PatternZigzag color="var(--color-accent)" opacity={0.22} size={20} />
-          </div>
-          <div style={{ position: 'relative', zIndex: 1 }}>
-            <div style={{ fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', opacity: 0.75 }}>
-              Quiz du jour
-            </div>
-            <div
-              style={{
-                fontFamily: 'var(--font-display)',
-                fontWeight: 'var(--font-display-weight)' as any,
-                fontSize: 24,
-                lineHeight: 1.05,
-                letterSpacing: '-0.02em',
-                margin: '8px 0 14px',
-              }}
-            >
-              Lutte sénégalaise
-              <br />
-              <span style={{ fontFamily: 'var(--font-accent)', fontStyle: 'italic', fontWeight: 400, opacity: 0.85 }}>
-                les années d'or
-              </span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, opacity: 0.85 }}>
-                <span>10 questions</span>·<span>4 min</span>·<span>+1 200 pts max</span>
-              </div>
-              <button
-                type="button"
-                onClick={() => router.push('/solo/training?prompt=Lutte%20senegalaise')}
-                style={{
-                  background: 'var(--color-accent)',
-                  color: 'var(--color-ink)',
-                  padding: '8px 14px',
-                  borderRadius: 'var(--radius-pill)',
-                  fontSize: 13,
-                  fontWeight: 700,
-                  border: 'none',
-                  cursor: 'pointer',
-                }}
-              >
-                Jouer →
-              </button>
-            </div>
-          </div>
-        </div>
+        <QuizOfTheDayCard style={{ marginBottom: 18 }} />
 
         {/* Mini Leaderboard */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 10 }}>
