@@ -180,10 +180,8 @@ export default function SessionResultsPage() {
       setRankings(sessionData);
       setCategoryRankings(categoryData);
 
-      if (sessionCode === code) {
-        leaveSession();
-        await appStorage.clearActiveSession();
-      }
+      leaveSession();
+      await appStorage.clearActiveSession();
     } catch (err) {
       console.error('Failed to load rankings:', err);
     } finally {

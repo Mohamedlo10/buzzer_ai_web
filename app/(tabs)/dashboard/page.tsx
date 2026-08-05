@@ -62,6 +62,9 @@ export default function DashboardPage() {
               roomId: resData.session.roomId ?? undefined,
             });
             return;
+          } else {
+            // Stale or expired session code in storage — clear it so 404 isn't retried on every load
+            await appStorage.clearActiveSession();
           }
         }
 
@@ -72,6 +75,8 @@ export default function DashboardPage() {
             status: 'PLAYING',
             roomId: String(roomWithActiveSession.id),
           });
+        } else if (isMounted) {
+          setActiveSessionInfo(null);
         }
       } catch (err) {
         console.error('Failed to check active session on dashboard:', err);

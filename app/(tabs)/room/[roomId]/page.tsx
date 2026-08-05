@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useRouter, useParams } from 'next/navigation';
 import {
   Crown, Users, Trophy, Play, Settings, Trash2, X,
@@ -559,6 +560,11 @@ export default function RoomDetailPage() {
   const router = useRouter();
   const { roomId } = useParams<{ roomId: string }>();
 
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const [roomData, setRoomData] = useState<RoomDetailResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -932,27 +938,29 @@ export default function RoomDetailPage() {
       </div>
 
       {/* History Modal */}
-      {showHistoryModal && (
+      {showHistoryModal && mounted && createPortal(
         <HistoryModal
           sessions={pastSessions}
           onNavigate={navigateToSession}
           onClose={() => setShowHistoryModal(false)}
-        />
+        />,
+        document.body
       )}
 
       {/* Invite Friends Modal */}
-      {showInviteModal && (
+      {showInviteModal && mounted && createPortal(
         <InviteFriendsModal
           roomId={roomId}
           memberUserIds={members.map((m) => m.userId)}
           pendingInvitationUserIds={roomData?.pendingInvitationUserIds ?? []}
           onClose={() => setShowInviteModal(false)}
-        />
+        />,
+        document.body
       )}
 
       {/* Session Config Modal */}
-      {showConfigModal && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-end justify-center z-[100] overscroll-contain">
+      {showConfigModal && mounted && createPortal(
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-end justify-center z-[9999] overscroll-contain">
           <div
             className="absolute inset-0"
             onClick={() => setShowConfigModal(false)}
@@ -965,8 +973,10 @@ export default function RoomDetailPage() {
               initialMaxPlayers={members.length || undefined}
             />
           </div>
-        </div>
+        </div>,
+        document.body
       )}
+
       {/* User Profile Modal */}
       <UserProfileModal
         visible={!!selectedUserModal}
