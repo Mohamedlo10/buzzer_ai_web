@@ -343,6 +343,11 @@ function RoomsContent() {
   const [showAllRoomsModal, setShowAllRoomsModal] = useState(false);
   const [showAllRooms, setShowAllRooms] = useState(false);
   const user = useAuthStore((s) => s.user);
+  const [activeSessionInfo, setActiveSessionInfo] = useState<{
+    code: string;
+    status?: string;
+    roomId?: string;
+  } | null>(null);
 
   // Arrivée depuis l'onglet Multijoueur (`/rooms?join=1`) : on ouvre le modal
   // de code puis on retire le paramètre. Sans ce nettoyage, un rafraîchissement
@@ -354,6 +359,69 @@ function RoomsContent() {
     setShowJoinModal(true);
     router.replace('/rooms', { scroll: false });
   }, [wantsJoin, router]);
+
+  useEffect(() => {
+    let isMounted = true;
+    async function checkActiveSession() {
+      try {
+        const stored = await appStorage.getActiveSession();
+        if (stored?.code) {
+          const resData = await sessionsApi.joinCheck(stored.code).catch(() => null);
+          if (!isMounted) return;
+          const status = resData?.session?.status;
+          if (status && ['LOBBY', 'GENERATING', 'PLAYING', 'PAUSED'].includes(status)) {
+            setActiveSessionInfo({
+              code: stored.code,
+              status,
+              roomId: resData.session.roomId ?? undefined,
+            });
+            return;
+          } else {
+            await appStorage.clearActiveSession();
+          }
+        }
+
+        const roomWithActiveSession = data?.recentRooms?.find((r) => r.hasActiveSession);
+        if (roomWithActiveSession && isMounted) {
+          setActiveSessionInfo({
+            code: roomWithActiveSession.code,
+            status: 'PLAYING',
+            roomId: String(roomWithActiveSession.id),
+          });
+        } else if (isMounted) {
+          setActiveSessionInfo(null);
+        }
+      } catch (err) {
+        console.error('Failed to check active session on rooms page:', err);
+      }
+    }
+
+    checkActiveSession();
+    return () => {
+      isMounted = false;
+    };
+  }, [data?.recentRooms]);
+
+  const handleReconnectSession = async () => {
+    if (!activeSessionInfo?.code) return;
+    const code = activeSessionInfo.code;
+    const status = activeSessionInfo.status;
+
+    await appStorage.setActiveSession({
+      code,
+      sessionId: activeSessionInfo.roomId || '',
+    });
+
+    if (status === 'LOBBY') {
+      router.push(`/session/${code}/categories`);
+    } else if (status === 'GENERATING') {
+      router.push(`/session/${code}/loading`);
+    } else if (['PLAYING', 'PAUSED'].includes(status || '')) {
+      router.push(`/session/${code}/game`);
+    } else {
+      router.push(`/session/${code}/lobby`);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -420,6 +488,72 @@ function RoomsContent() {
             Tes buzzers sont prêts. Prêt à tester ta stratégie ?
           </p>
         </div>
+
+        {/* Active Session Banner */}
+        {activeSessionInfo && (
+          <div
+            style={{
+              background: 'var(--color-surface)',
+              borderRadius: 18,
+              border: '1px solid var(--color-line)',
+              padding: '12px 14px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 12,
+              marginBottom: 16,
+            }}
+            className="animate-pulse shadow-md"
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1, minWidth: 0 }}>
+              <div
+                style={{
+                  width: 38,
+                  height: 38,
+                  borderRadius: 'var(--radius-pill)',
+                  background: 'rgba(232, 166, 48, 0.25)',
+                  display: 'grid',
+                  placeItems: 'center',
+                  fontSize: 18,
+                  flexShrink: 0,
+                }}
+              >
+                ⚡
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span className="w-2 h-2 rounded-full bg-accent animate-ping shrink-0" />
+                  <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-gold)' }}>
+                    Session en cours #{activeSessionInfo.code}
+                  </span>
+                </div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-ink)', marginTop: 2 }} className="truncate">
+                  Une partie est toujours active !
+                </div>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleReconnectSession}
+              style={{
+                background: 'var(--color-primary)',
+                color: 'var(--color-primary-ink)',
+                padding: '9px 16px',
+                borderRadius: 'var(--radius-pill)',
+                fontSize: 12.5,
+                fontWeight: 700,
+                border: 'none',
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+                flexShrink: 0,
+              }}
+              className="hover:opacity-90 transition-opacity shadow-sm"
+            >
+              Rejoindre →
+            </button>
+          </div>
+        )}
 
         {/* New room / Join code Quick Cards */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 18 }}>
