@@ -568,6 +568,7 @@ export default function RoomDetailPage() {
   const [selectedUserModal, setSelectedUserModal] = useState<RoomDetailResponse['members'][number] | null>(null);
   const [qrImage, setQrImage] = useState<string | null>(null);
   const [qrLoading, setQrLoading] = useState(false);
+  const [showQrExpanded, setShowQrExpanded] = useState(false);
   // Real-time presence overrides: userId → isOnline
   const [memberPresence, setMemberPresence] = useState<Record<string, boolean>>({});
 
@@ -795,25 +796,51 @@ export default function RoomDetailPage() {
       {/* ── Scrollable main content area (QR code + Code + Invite + Members table + Danger zone) ── */}
       <div className={`flex-1 min-h-0 px-4 pt-4 pb-[160px] flex flex-col gap-4${showConfigModal ? ' overflow-hidden' : ' overflow-y-auto'}`}>
 
-        {/* QR + Code */}
-        <div className="bg-surface rounded-3xl border border-line p-4 flex flex-col items-center shrink-0">
-          {qrLoading ? (
-            <div className="w-36 h-36 rounded-2xl bg-bg flex items-center justify-center mb-4">
-              <div className="w-6 h-6 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+        {/* QR + Code (Dynamic: large when 1 member/alone, compact banner when 2+ members) */}
+        {members.length <= 1 || showQrExpanded ? (
+          <div className="bg-surface rounded-3xl border border-line p-4 flex flex-col items-center shrink-0 transition-all">
+            {qrLoading ? (
+              <div className="w-36 h-36 rounded-2xl bg-bg flex items-center justify-center mb-4">
+                <div className="w-6 h-6 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : qrImage ? (
+              <div className="bg-white p-2.5 rounded-2xl shadow-lg mb-4">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={qrImage} alt="QR Code" className="w-36 h-36 object-contain" />
+              </div>
+            ) : (
+              <div className="w-36 h-36 rounded-2xl bg-bg flex flex-col items-center justify-center border border-dashed border-line mb-4">
+                <QrCode size={32} color="#FFFFFF20" />
+              </div>
+            )}
+            <p className="text-txt-40 text-[10px] font-bold tracking-widest uppercase mb-1">Code de la salle</p>
+            <p className="text-accent text-3xl font-bold tracking-[6px] select-all mb-1">{room.code}</p>
+            {members.length > 1 && (
+              <button
+                type="button"
+                onClick={() => setShowQrExpanded(false)}
+                className="text-txt-60 hover:text-txt text-xs font-semibold underline mt-2 cursor-pointer"
+              >
+                Masquer le QR Code
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="bg-surface rounded-2xl border border-line px-4 py-3 flex items-center justify-between gap-3 shrink-0">
+            <div>
+              <p className="text-txt-40 text-[9px] font-bold tracking-widest uppercase">Code de la salle</p>
+              <p className="text-accent text-xl font-bold tracking-[4px] select-all">{room.code}</p>
             </div>
-          ) : qrImage ? (
-            <div className="bg-white p-2.5 rounded-2xl shadow-lg mb-4">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={qrImage} alt="QR Code" className="w-36 h-36 object-contain" />
-            </div>
-          ) : (
-            <div className="w-36 h-36 rounded-2xl bg-bg flex flex-col items-center justify-center border border-dashed border-line mb-4">
-              <QrCode size={32} color="#FFFFFF20" />
-            </div>
-          )}
-          <p className="text-txt-40 text-[10px] font-bold tracking-widest uppercase mb-1">Code de la salle</p>
-          <p className="text-accent text-3xl font-bold tracking-[6px] select-all">{room.code}</p>
-        </div>
+            <button
+              type="button"
+              onClick={() => setShowQrExpanded(true)}
+              className="px-3.5 py-2 rounded-xl bg-surface-2 border border-line text-txt font-bold text-xs hover:bg-surface-3 transition-colors flex items-center gap-1.5 cursor-pointer"
+            >
+              <QrCode size={16} className="text-accent" />
+              <span>Afficher le QR Code</span>
+            </button>
+          </div>
+        )}
 
         {/* Invite button */}
         <button
@@ -890,7 +917,7 @@ export default function RoomDetailPage() {
         >
           <Play size={18} className="text-btn-fg" fill="currentColor" />
           <span className="text-btn-fg font-bold text-sm tracking-wider uppercase">
-            {hasActiveSession ? 'Rejoindre' : 'Start Game'}
+            {hasActiveSession ? 'Rejoindre' : 'Lancer la partie'}
           </span>
         </button>
 

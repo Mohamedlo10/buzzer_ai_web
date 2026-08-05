@@ -1,8 +1,15 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Bricolage_Grotesque, Manrope, Instrument_Serif } from 'next/font/google';
 import { AppProviders } from '~/components/providers/AppProviders';
 import '~/theme.css';
 import '~/global.css';
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
 
 const bricolage = Bricolage_Grotesque({
   subsets: ['latin'],

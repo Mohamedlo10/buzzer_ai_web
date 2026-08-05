@@ -434,6 +434,14 @@ export function SessionConfigForm({ onSuccess, onClose, roomId, initialMaxPlayer
 
   const totalSteps = config.isTeamMode ? 4 : 3;
 
+  // Body scroll lock effect on mobile
+  useEffect(() => {
+    document.body.classList.add('modal-open');
+    return () => {
+      document.body.classList.remove('modal-open');
+    };
+  }, []);
+
   // Sync back current step index if total steps collapses and user is out of bounds
   useEffect(() => {
     if (currentStep >= totalSteps) {
@@ -465,6 +473,33 @@ export function SessionConfigForm({ onSuccess, onClose, roomId, initialMaxPlayer
       return config.isTeamMode ? 'Équipes' : 'Récapitulatif';
     }
     return 'Récapitulatif';
+  };
+
+  const handleQuickStart = async () => {
+    setError(null);
+    try {
+      const withoutModeratorExtras = sessionMode === 'WITHOUT_MODERATOR'
+        ? { answerTimeSeconds, globalQuestionSeconds, answerChoicesCount }
+        : {};
+      const quickConfig: CreateSessionRequest = {
+        ...config,
+        sessionMode,
+        questionMode: 'AI',
+        buzzCountdownSeconds: 10,
+        questionsPerCategory: 5,
+        pointsPerCorrectAnswer: 5,
+        ...withoutModeratorExtras,
+      };
+      const result = await createSession(quickConfig);
+
+      if (onSuccess) {
+        onSuccess(result.sessionId, result.code);
+      } else {
+        router.push(`/session/${result.code}/lobby`);
+      }
+    } catch (err: any) {
+      setError(err?.response?.data?.message || 'Erreur lors de la création rapide.');
+    }
   };
 
   const handleCreate = async () => {
@@ -515,6 +550,43 @@ export function SessionConfigForm({ onSuccess, onClose, roomId, initialMaxPlayer
   const renderStep1 = () => {
     return (
       <div className="flex flex-col gap-5">
+        {/* Quick Launch Banner */}
+        <div className="bg-gradient-to-br from-accent/15 via-surface to-surface border border-accent/30 rounded-2xl p-4 flex flex-col gap-3">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-accent/20 flex items-center justify-center shrink-0">
+              <Zap size={20} className="text-accent fill-current" />
+            </div>
+            <div>
+              <p className="text-txt font-bold text-sm">Lancement Rapide</p>
+              <p className="text-txt-60 text-xs">Paramètres recommandés (IA, 10s buzz, 5 questions)</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={handleQuickStart}
+            disabled={isCreating}
+            className="w-full py-3 rounded-xl bg-accent hover:bg-accent-d text-btn-fg font-bold text-sm transition-all active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer"
+          >
+            {isCreating ? (
+              <>
+                <div className="w-4 h-4 border-2 border-btn-fg border-t-transparent rounded-full animate-spin" />
+                <span>Création...</span>
+              </>
+            ) : (
+              <>
+                <Zap size={16} className="fill-current" />
+                <span>Lancer directement ⚡</span>
+              </>
+            )}
+          </button>
+        </div>
+
+        <div className="flex items-center gap-3 my-1">
+          <div className="flex-1 h-px bg-line" />
+          <span className="text-txt-40 text-[10px] font-bold uppercase tracking-widest">Ou sur-mesure</span>
+          <div className="flex-1 h-px bg-line" />
+        </div>
+
         {/* Modération */}
         <div className="flex flex-col">
           <p className="text-txt-40 text-[9.5px] font-bold tracking-widest uppercase mb-3 leading-none">Modération</p>
