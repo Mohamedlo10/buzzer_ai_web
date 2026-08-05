@@ -148,6 +148,10 @@
 @layer base {
   html,
   body {
+    height: 100%;
+    max-height: 100dvh;
+    overflow: hidden;
+    overscroll-behavior: none;
     /* Trame de losanges tissés + dégradé chaud : la signature Xalaat. */
     background-image:
       var(--pattern),

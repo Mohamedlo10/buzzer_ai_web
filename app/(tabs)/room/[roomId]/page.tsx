@@ -774,8 +774,8 @@ export default function RoomDetailPage() {
 
   return (
     <div className="h-full max-h-[100dvh] min-h-0 bg-bg flex flex-col overflow-hidden relative">
-      {/* ── Header ── */}
-      <div className="flex items-center px-4 pt-4 pb-3 gap-3 shrink-0 bg-bg border-b border-line z-10">
+      {/* ── Header (Fixed shrink-0) ── */}
+      <div className="flex items-center px-4 pt-4 pb-3 gap-3 shrink-0 bg-bg border-b border-line z-20">
         <button
           onClick={() => router.back()}
           className="w-10 h-10 rounded-full bg-surface flex items-center justify-center shrink-0"
@@ -794,7 +794,7 @@ export default function RoomDetailPage() {
       </div>
 
       {/* ── Scrollable main content area (QR code + Code + Invite + Members table + Danger zone) ── */}
-      <div className={`flex-1 min-h-0 px-4 pt-4 pb-[160px] flex flex-col gap-4${showConfigModal ? ' overflow-hidden' : ' overflow-y-auto'}`}>
+      <div className={`flex-1 min-h-0 px-4 pt-4 pb-[140px] flex flex-col gap-4 overscroll-contain touch-pan-y${showConfigModal ? ' overflow-hidden' : ' overflow-y-auto'}`}>
 
         {/* QR + Code (Dynamic: large when 1 member/alone, compact banner when 2+ members) */}
         {members.length <= 1 || showQrExpanded ? (
@@ -898,8 +898,8 @@ export default function RoomDetailPage() {
         </div>
       </div>
 
-      {/* ── Floating Sticky Action Bar ── */}
-      <div className="absolute bottom-[84px] left-4 right-4 bg-surface/95 backdrop-blur-md border border-line px-4 py-3 flex items-center justify-between gap-3 rounded-[24px] shadow-[0_12px_40px_rgba(0,0,0,0.35)] z-30">
+      {/* ── Floating Sticky Action Bar (Fixed Dock above TabBar) ── */}
+      <div className="fixed bottom-[74px] left-4 right-4 bg-surface/95 backdrop-blur-md border border-line px-4 py-3 flex items-center justify-between gap-3 rounded-[24px] shadow-[0_12px_40px_rgba(0,0,0,0.35)] z-30 pointer-events-auto">
         {/* Invite */}
         <button
           onClick={() => setShowInviteModal(true)}

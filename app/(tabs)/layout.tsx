@@ -21,9 +21,9 @@ export default function TabsLayout({
 
   return (
     <AuthGuard>
-      <div className={`flex flex-col ${isRoom ? 'h-[100dvh] max-h-[100dvh] overflow-hidden' : 'min-h-[100dvh]'}`}>
+      <div className="flex flex-col h-[100dvh] max-h-[100dvh] w-full overflow-hidden relative">
         {!isRoom && <DashboardHeader notificationCount={pendingRequests.length} />}
-        <main key={pathname} className={`flex-1 ${isRoom ? 'h-full min-h-0 flex flex-col pb-0 overflow-hidden' : 'pb-[78px]'} animate-page-transition`}>
+        <main key={pathname} className={`flex-1 min-h-0 h-full flex flex-col ${isRoom ? 'pb-0' : 'pb-[76px]'} overflow-hidden animate-page-transition`}>
           {children}
         </main>
         <TabBar />

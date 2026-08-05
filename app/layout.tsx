@@ -61,7 +61,7 @@ export default function RootLayout({
       data-theme="light"
       className={`${bricolage.variable} ${manrope.variable} ${instrumentSerif.variable}`}
     >
-      <body className="bg-bg min-h-screen items-center justify-center md:py-2 md:px-12 md:min-w-2xl text-txt antialiased font-ui">
+      <body className="bg-bg h-[100dvh] max-h-[100dvh] w-full overflow-hidden items-center justify-center md:py-2 md:px-12 md:min-w-2xl text-txt antialiased font-ui">
         <AppProviders>{children}</AppProviders>
       </body>
     </html>

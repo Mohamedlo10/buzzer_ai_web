@@ -174,21 +174,59 @@ export default function ProfilePage() {
         >
           {username}
         </div>
-        <div
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 6,
-            padding: '5px 12px',
-            borderRadius: 'var(--radius-pill)',
-            background: 'var(--color-surface-2)',
-            fontSize: 12,
-            fontWeight: 600,
-            color: 'var(--color-ink-soft)',
-            marginBottom: 18,
-          }}
-        >
-          👤 Joueur
+        <div className="flex items-center justify-center gap-2 mb-4 flex-wrap">
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              padding: '5px 12px',
+              borderRadius: 'var(--radius-pill)',
+              background: 'var(--color-surface-2)',
+              fontSize: 12,
+              fontWeight: 600,
+              color: 'var(--color-ink-soft)',
+            }}
+          >
+            👤 Joueur
+          </div>
+
+          {(!user.email || !user.emailVerified) ? (
+            <div
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
+                padding: '5px 12px',
+                borderRadius: 'var(--radius-pill)',
+                background: 'rgba(184, 70, 42, 0.15)',
+                border: '1px solid rgba(184, 70, 42, 0.3)',
+                fontSize: 12,
+                fontWeight: 600,
+                color: 'var(--color-primary)',
+              }}
+            >
+              <span className="w-2 h-2 rounded-full bg-bad animate-pulse shrink-0" />
+              <span>Email non confirmé</span>
+            </div>
+          ) : (
+            <div
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
+                padding: '5px 12px',
+                borderRadius: 'var(--radius-pill)',
+                background: 'rgba(45, 133, 89, 0.15)',
+                border: '1px solid rgba(45, 133, 89, 0.3)',
+                fontSize: 12,
+                fontWeight: 600,
+                color: 'var(--good)',
+              }}
+            >
+              <span>✓ Email confirmé</span>
+            </div>
+          )}
         </div>
 
         {/* Email verification alert banner */}

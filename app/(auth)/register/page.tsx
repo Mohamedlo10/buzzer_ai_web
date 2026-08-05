@@ -58,7 +58,7 @@ export default function RegisterPage() {
 
     try {
       await register(username.trim(), email.trim(), password);
-      router.replace('/confirm-email');
+      router.replace('/rooms');
     } catch (err: any) {
       const message =
         err?.response?.data?.message ?? "Échec de l'inscription. Veuillez réessayer.";
