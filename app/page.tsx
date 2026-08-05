@@ -11,7 +11,7 @@ export default function HomePage() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      router.replace('/dashboard');
+      router.replace('/rooms');
       return;
     }
     // Si onboarding déjà vu → login, sinon → onboarding

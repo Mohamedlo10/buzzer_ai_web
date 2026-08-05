@@ -2,17 +2,17 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Grid, Trophy, Users, User } from 'lucide-react';
+import { Grid, Gamepad2, Trophy, Users, User } from 'lucide-react';
 
 const TABS = [
-  { href: '/dashboard', icon: Home, label: 'Accueil' },
   { href: '/rooms', icon: Grid, label: 'Multijoueur' },
+  { href: '/dashboard', icon: Gamepad2, label: 'Solo' },
   { href: '/rankings', icon: Trophy, label: 'Classement' },
   { href: '/friends', icon: Users, label: 'Amis' },
   { href: '/profile', icon: User, label: 'Profil' },
 ] satisfies ReadonlyArray<{
   href: string;
-  icon: typeof Home;
+  icon: typeof Grid;
   label: string;
 }>;
 
@@ -25,7 +25,8 @@ export function TabBar() {
         const isActive =
           pathname === href ||
           pathname.startsWith(href + '/') ||
-          (href === '/rooms' && pathname.startsWith('/room'));
+          (href === '/rooms' && pathname.startsWith('/room')) ||
+          (href === '/dashboard' && pathname.startsWith('/solo'));
 
         return (
           <Link

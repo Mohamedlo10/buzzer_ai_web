@@ -13,8 +13,8 @@ export function BottomTabBar({
   const inkSoftColor = t?.inkSoft || 'var(--color-ink-soft)';
 
   const tabs = [
-    { k: 'accueil', ic: '◆', l: 'Accueil' },
-    { k: 'salles', ic: '▦', l: 'Salles' },
+    { k: 'multijoueur', ic: '▦', l: 'Multijoueur' },
+    { k: 'solo', ic: '⚡', l: 'Solo' },
     { k: 'classement', ic: '★', l: 'Classement' },
     { k: 'amis', ic: '◯', l: 'Amis' },
     { k: 'profil', ic: '●', l: 'Profil' },
