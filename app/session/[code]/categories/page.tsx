@@ -364,9 +364,9 @@ export default function CategorySelectionPage() {
   if (currentStep === 'team') {
     const sortedTeams = [...sessionTeams].sort((a, b) => b.score - a.score);
     return (
-      <SafeScreen>
+      <SafeScreen className="h-[100dvh] max-h-[100dvh] w-full flex flex-col overflow-hidden relative bg-transparent">
         {/* Header */}
-        <div className="bg-bg pt-6 pb-4 px-4 border-b border-line sticky top-0 z-10">
+        <div className="shrink-0 z-20 bg-bg pt-4 pb-4 px-4 border-b border-line">
           <div className="flex flex-row items-center gap-3">
             <button
               onClick={() => {
@@ -376,7 +376,7 @@ export default function CategorySelectionPage() {
                   setCurrentStep('categories');
                 }
               }}
-              className="w-10 h-10 rounded-full bg-surface flex items-center justify-center hover:bg-surface-2 transition-colors shrink-0"
+              className="w-10 h-10 rounded-full bg-surface flex items-center justify-center hover:bg-surface-2 transition-colors shrink-0 cursor-pointer"
             >
               <ArrowLeft size={20} className="text-txt" />
             </button>
@@ -387,7 +387,7 @@ export default function CategorySelectionPage() {
           </div>
         </div>
 
-        <div className="overflow-y-auto p-4 pt-6 flex flex-col gap-4 flex-1">
+        <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y p-4 pt-6 flex flex-col gap-4 pb-28">
           {sortedTeams.length === 0 ? (
             <div className="flex flex-col items-center py-12">
               <p className="text-txt-60">Aucune équipe disponible</p>
@@ -506,13 +506,13 @@ export default function CategorySelectionPage() {
   }
 
   return (
-    <SafeScreen>
+    <SafeScreen className="h-[100dvh] max-h-[100dvh] w-full flex flex-col overflow-hidden relative bg-transparent">
       {/* Header */}
-      <div className="bg-bg pt-6 pb-4 px-4 border-b border-line sticky top-0 z-10">
+      <div className="shrink-0 z-20 bg-bg pt-4 pb-4 px-4 border-b border-line">
         <div className="flex flex-row items-center gap-3">
           <button
             onClick={() => router.back()}
-            className="w-10 h-10 rounded-full bg-surface flex items-center justify-center hover:bg-surface-2 transition-colors shrink-0"
+            className="w-10 h-10 rounded-full bg-surface flex items-center justify-center hover:bg-surface-2 transition-colors shrink-0 cursor-pointer"
           >
             <ArrowLeft size={20} className="text-txt" />
           </button>
@@ -527,7 +527,7 @@ export default function CategorySelectionPage() {
         </div>
       </div>
 
-      <div className="overflow-y-auto pb-10 flex flex-col gap-[18px] px-4 pt-4">
+      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y pb-28 flex flex-col gap-[18px] px-4 pt-4">
         {/* Progress bar */}
         <div className="bg-surface rounded-2xl p-3.5 border border-line">
           <div className="flex flex-row items-center justify-between mb-2 text-[13px]">

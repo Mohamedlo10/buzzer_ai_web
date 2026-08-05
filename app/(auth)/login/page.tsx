@@ -57,8 +57,8 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-bg">
-      <div className="flex-1 flex flex-col items-center justify-center px-6 py-12">
+    <div className="h-[100dvh] max-h-[100dvh] w-full flex flex-col overflow-hidden relative bg-transparent">
+      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y flex flex-col items-center justify-center px-6 py-8 pb-20">
         {/* Logo / Branding */}
         <div className="flex flex-col items-center mb-10">
           {/* Outer Glow Ring */}

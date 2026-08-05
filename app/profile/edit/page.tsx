@@ -86,38 +86,37 @@ export default function EditProfilePage() {
   if (!user) return null;
 
   return (
-    <SafeScreen>
-      <div className="flex flex-col min-h-screen bg-bg">
-        {/* Header */}
-        <div className="flex flex-row items-center px-4 pt-12 pb-4 bg-bg border-b border-line">
-          <button
-            onClick={() => router.back()}
-            className="w-10 h-10 rounded-full bg-surface flex items-center justify-center mr-3 hover:bg-surface-2 transition-colors text-txt"
-          >
-            <ArrowLeft size={20} />
-          </button>
-          <p className="text-txt font-bold text-xl flex-1">Modifier le profil</p>
-          <button
-            onClick={() => updateProfileMutation.mutate()}
-            disabled={updateProfileMutation.isPending || !username.trim() || !hasChanges}
-            className={`flex flex-row items-center gap-2 px-4 py-2 rounded-xl transition-opacity disabled:opacity-40 disabled:cursor-not-allowed ${
-              hasChanges && username.trim()
-                ? 'bg-gradient-to-r from-indigo-500 to-violet-500'
-                : 'bg-surface-2'
-            }`}
-          >
-            {updateProfileMutation.isPending ? (
-              <Spinner />
-            ) : (
-              <>
-                <Save size={16} className="text-white" />
-                <span className="text-txt text-sm font-semibold">Sauvegarder</span>
-              </>
-            )}
-          </button>
-        </div>
+    <SafeScreen className="h-[100dvh] max-h-[100dvh] w-full flex flex-col overflow-hidden relative bg-transparent">
+      {/* Header */}
+      <div className="shrink-0 z-20 flex flex-row items-center px-4 pt-6 pb-4 bg-bg border-b border-line">
+        <button
+          onClick={() => router.back()}
+          className="w-10 h-10 rounded-full bg-surface flex items-center justify-center mr-3 hover:bg-surface-2 transition-colors text-txt cursor-pointer"
+        >
+          <ArrowLeft size={20} />
+        </button>
+        <p className="text-txt font-bold text-xl flex-1">Modifier le profil</p>
+        <button
+          onClick={() => updateProfileMutation.mutate()}
+          disabled={updateProfileMutation.isPending || !username.trim() || !hasChanges}
+          className={`flex flex-row items-center gap-2 px-4 py-2 rounded-xl transition-opacity cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
+            hasChanges && username.trim()
+              ? 'bg-gradient-to-r from-indigo-500 to-violet-500'
+              : 'bg-surface-2'
+          }`}
+        >
+          {updateProfileMutation.isPending ? (
+            <Spinner />
+          ) : (
+            <>
+              <Save size={16} className="text-white" />
+              <span className="text-txt text-sm font-semibold">Sauvegarder</span>
+            </>
+          )}
+        </button>
+      </div>
 
-        <div className="overflow-y-auto flex-1">
+      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y pb-24">
           {/* Avatar preview */}
           <div className="flex flex-col items-center py-6">
             <div className="relative group">
@@ -270,7 +269,6 @@ export default function EditProfilePage() {
             </div>
           )}
         </div>
-      </div>
     </SafeScreen>
   );
 }

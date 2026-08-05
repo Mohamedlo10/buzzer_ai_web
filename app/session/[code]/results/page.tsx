@@ -290,9 +290,9 @@ export default function SessionResultsPage() {
     );
 
   return (
-    <SafeScreen className="bg-bg min-h-screen flex flex-col">
+    <SafeScreen className="h-[100dvh] max-h-[100dvh] w-full flex flex-col overflow-hidden relative bg-transparent">
       {/* ── Header ── */}
-      <div className="flex flex-row items-center px-4 pt-6 pb-4 gap-3 bg-bg border-b border-line shrink-0 z-10">
+      <div className="flex flex-row items-center px-4 pt-4 pb-3 gap-3 bg-bg border-b border-line shrink-0 z-20">
         <button
           onClick={handleBack}
           className="w-10 h-10 rounded-full bg-surface flex items-center justify-center shrink-0 hover:bg-surface-2 transition-colors cursor-pointer"
@@ -320,7 +320,7 @@ export default function SessionResultsPage() {
       </div>
 
       {/* ── Scrollable content ── */}
-      <div className="flex-1 overflow-y-auto pb-12 flex flex-col gap-4 px-4 pt-4">
+      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y pb-28 flex flex-col gap-4 px-4 pt-4">
 
         {/* ── Podium ── */}
         <Podium

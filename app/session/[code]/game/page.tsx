@@ -731,9 +731,9 @@ export default function GamePage() {
     !answeredWrongThisQuestion;
 
   return (
-    <SafeScreen>
+    <SafeScreen className="h-[100dvh] max-h-[100dvh] w-full flex flex-col overflow-hidden relative bg-transparent">
       {/* Header */}
-      <div className="bg-bg pt-6 pb-3 px-4 border-b border-line sticky top-0 z-10">
+      <div className="shrink-0 z-20 bg-bg pt-4 pb-3 px-4 border-b border-line">
         <div className="flex items-center gap-2.5">
           <button
             type="button"
@@ -954,7 +954,7 @@ export default function GamePage() {
       )}
 
       {/* Scrollable Content */}
-      <div className="overflow-y-auto">
+      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y pb-28">
         {/* Question Display — MANAGER ONLY (not in without-moderator mode) */}
         {isManager && !isWithoutModerator && (
           <div className="px-4 pt-4">

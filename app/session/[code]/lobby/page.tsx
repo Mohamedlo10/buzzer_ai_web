@@ -443,14 +443,14 @@ export default function LobbyPage() {
   }
 
   return (
-    <SafeScreen>
+    <SafeScreen className="h-[100dvh] max-h-[100dvh] w-full flex flex-col overflow-hidden relative bg-transparent">
       {/* ── Header ── */}
-      <div className="sticky top-0 z-20 bg-bg/95 backdrop-blur-sm border-b border-line px-4 pt-6 pb-3">
+      <div className="shrink-0 z-20 bg-bg/95 backdrop-blur-sm border-b border-line px-4 pt-4 pb-3">
         <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={() => { if (session?.roomId) router.replace(`/room/${session.roomId}`); else router.replace('/'); }}
-            className="w-9 h-9 rounded-full bg-surface border border-line flex items-center justify-center shrink-0"
+            className="w-9 h-9 rounded-full bg-surface border border-line flex items-center justify-center shrink-0 hover:bg-surface-2 transition-colors cursor-pointer"
           >
             <ArrowLeft size={18} className="text-txt" />
           </button>
@@ -488,7 +488,7 @@ export default function LobbyPage() {
               type="button"
               onClick={handleRefresh}
               disabled={isRefreshing}
-              className="w-8 h-8 rounded-full bg-surface border border-line flex items-center justify-center"
+              className="w-8 h-8 rounded-full bg-surface border border-line flex items-center justify-center cursor-pointer"
             >
               <RefreshCw size={13} className={`text-txt ${isRefreshing ? 'animate-spin text-accent' : ''}`} />
             </button>
@@ -497,7 +497,7 @@ export default function LobbyPage() {
       </div>
 
       {/* ── Scrollable Content ── */}
-      <div className="overflow-y-auto pb-8 px-4">
+      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y pb-28 px-4">
 
         {/* ── Hero ── */}
         <div className="text-center mt-4 mb-4 animate-[pop_0.5s_both]">

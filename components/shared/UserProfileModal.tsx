@@ -112,21 +112,22 @@ export function UserProfileModal({
         backdropFilter: 'blur(6px)',
       }}
       onClick={onClose}
+      className="overscroll-contain"
     >
       <div
         style={{
           width: '100%',
           maxWidth: 360,
-          maxHeight: '90vh',
+          maxHeight: '85dvh',
           background: 'var(--color-surface)',
           border: '1px solid var(--color-line)',
           borderRadius: 'var(--card-radius)',
-          padding: 20,
+          padding: '20px 20px 32px',
           position: 'relative',
           boxShadow: '0 20px 50px rgba(0,0,0,0.3)',
         }}
         onClick={(e) => e.stopPropagation()}
-        className="animate-[pop_.25s_ease-out_both] overflow-y-auto flex flex-col"
+        className="animate-[pop_.25s_ease-out_both] overflow-y-auto overscroll-contain touch-pan-y flex flex-col"
       >
         {/* Close Button */}
         <button

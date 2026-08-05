@@ -51,19 +51,19 @@ function NewSoloCareerForm() {
   };
 
   return (
-    <SafeScreen className="bg-bg">
-      <div className="flex flex-col flex-1 px-4 pt-4 pb-8 overflow-y-auto">
-        
-        {/* Header */}
-        <div className="flex flex-row items-center gap-3.5 mb-6">
-          <button
-            onClick={() => router.push('/solo/career')}
-            className="w-10 h-10 rounded-full bg-surface hover:bg-surface-2 flex items-center justify-center text-txt transition-colors border border-line cursor-pointer"
-          >
-            <ArrowLeft size={18} />
-          </button>
-          <h1 className="text-txt font-display font-bold text-2xl tracking-tight">Nouvelle Carrière</h1>
-        </div>
+    <SafeScreen className="h-[100dvh] max-h-[100dvh] w-full flex flex-col overflow-hidden relative bg-transparent">
+      {/* Header */}
+      <div className="shrink-0 z-20 flex flex-row items-center gap-3.5 px-4 pt-4 pb-4 bg-bg border-b border-line">
+        <button
+          onClick={() => router.push('/solo/career')}
+          className="w-10 h-10 rounded-full bg-surface hover:bg-surface-2 flex items-center justify-center text-txt transition-colors border border-line cursor-pointer"
+        >
+          <ArrowLeft size={18} />
+        </button>
+        <h1 className="text-txt font-display font-bold text-2xl tracking-tight">Nouvelle Carrière</h1>
+      </div>
+
+      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y px-4 pt-4 pb-28">
 
         {/* Info card */}
         <div className="bg-surface border border-line rounded-3xl p-5 mb-6 animate-[rise_0.4s_both]">

@@ -276,8 +276,8 @@ export default function LoadingPage() {
   }, [session?.id, fetchSession, isConnected]);
 
   return (
-    <SafeScreen>
-      <div className="flex flex-col flex-1 min-h-screen items-center justify-center px-7 text-center">
+    <SafeScreen className="h-[100dvh] max-h-[100dvh] w-full flex flex-col overflow-hidden relative bg-transparent">
+      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y flex flex-col items-center justify-center px-7 py-8 pb-20 text-center">
         {/* Large Percentage */}
         <div className="flex flex-col items-center mb-7">
           <p className="text-accent font-display text-7xl font-semibold leading-none">
