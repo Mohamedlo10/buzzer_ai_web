@@ -472,7 +472,7 @@ function RoomsContent() {
             </div>
           </div>
 
-          {/* Code d'accès */}
+          {/* Rejoindre */}
           <div
             onClick={() => setShowJoinModal(true)}
             style={{
@@ -493,7 +493,7 @@ function RoomsContent() {
                 display: 'grid',
                 placeItems: 'center',
                 fontSize: 15,
-                marginBottom: 26,
+                marginBottom: 16,
                 color: 'var(--color-primary)',
               }}
             >
@@ -507,7 +507,16 @@ function RoomsContent() {
                 letterSpacing: '-0.01em',
               }}
             >
-              Code d'accès
+              Rejoindre
+            </div>
+            <div
+              style={{
+                fontSize: 11.5,
+                color: 'var(--color-ink-soft)',
+                marginTop: 2,
+              }}
+            >
+              scan & code
             </div>
           </div>
         </div>

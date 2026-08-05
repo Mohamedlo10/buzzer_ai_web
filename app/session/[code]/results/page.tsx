@@ -312,7 +312,7 @@ export default function SessionResultsPage() {
             onClick={handleBack}
             className="px-4 py-2 rounded-full shrink-0 bg-accent hover:opacity-90 transition-opacity cursor-pointer"
           >
-            <span className="text-btn-fg font-bold text-xs">Retour à la salle</span>
+            <span className="text-btn-fg font-bold text-xs">Retourner à la salle</span>
           </button>
         )}
 
@@ -540,7 +540,7 @@ export default function SessionResultsPage() {
             onClick={handleBack}
             className="flex-1 py-3.5 rounded-2xl bg-surface border border-line text-txt font-bold text-sm hover:bg-surface-2 transition-colors cursor-pointer"
           >
-            {resolvedRoomId ? 'Retour à la salle' : 'Quitter'}
+            Retourner à la salle
           </button>
           {resolvedRoomId && (
             <button
