@@ -207,11 +207,15 @@ export default function CategorySelectionPage() {
     const exists = selectedCategories.find((c) => c.name === name);
     if (exists) {
       setSelectedCategories((prev) => prev.filter((c) => c.name !== name));
+      setError(null);
     } else if (canAddMore) {
       setSelectedCategories((prev) => [
         ...prev,
         { name, difficulty: 'INTERMEDIAIRE' },
       ]);
+      setError(null);
+    } else {
+      setError(`Maximum ${maxCategories} catégories permises`);
     }
   };
 
@@ -221,9 +225,59 @@ export default function CategorySelectionPage() {
     );
   };
 
-  const handleCustomCategoryChange = (text: string) => {
-    setCustomCategory(text);
+  const commitCustomCategory = (textToCommit?: string): boolean => {
+    const raw = textToCommit !== undefined ? textToCommit : customCategory;
+    const trimmed = raw.replace(/[,;\n]/g, '').trim();
+    if (!trimmed) return false;
+
+    if (trimmed.length < 2) {
+      setError('Minimum 2 caractères pour une catégorie');
+      return false;
+    }
+
+    const exists = selectedCategories.some(
+      (c) => c.name.toLowerCase() === trimmed.toLowerCase()
+    );
+    if (exists) {
+      setError(`Catégorie "${trimmed}" déjà sélectionnée`);
+      setCustomCategory('');
+      return false;
+    }
+
+    if (selectedCategories.length >= maxCategories) {
+      setError(`Maximum ${maxCategories} catégories permises`);
+      return false;
+    }
+
+    const difficultyToUse = customDifficulty || 'INTERMEDIAIRE';
+    setSelectedCategories((prev) => [
+      ...prev,
+      { name: trimmed, difficulty: difficultyToUse },
+    ]);
+    setCustomCategory('');
+    setCustomDifficulty(null);
+    setSearchResults([]);
+    setShowDropdown(false);
     setError(null);
+    return true;
+  };
+
+  const handleCustomCategoryChange = (text: string) => {
+    setError(null);
+
+    // Déclencheur automatique sur séparateurs (Virgule, Point-virgule, Saut de ligne)
+    if (text.includes(',') || text.includes(';') || text.includes('\n')) {
+      const parts = text.split(/[,;\n]/);
+      for (const part of parts) {
+        if (part.trim().length >= 2) {
+          commitCustomCategory(part.trim());
+        }
+      }
+      setCustomCategory('');
+      return;
+    }
+
+    setCustomCategory(text);
 
     if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
 
@@ -249,64 +303,29 @@ export default function CategorySelectionPage() {
   };
 
   const selectSuggestion = (name: string) => {
-    setShowDropdown(false);
-    setSearchResults([]);
-    const exists = selectedCategories.find(
-      (c) => c.name.toLowerCase() === name.toLowerCase()
-    );
-    if (exists) {
-      setError('Catégorie déjà sélectionnée');
-      return;
-    }
-    if (!canAddMore) {
-      setError(`Maximum ${maxCategories} catégories`);
-      return;
-    }
-    setSelectedCategories((prev) => [...prev, { name, difficulty: customDifficulty ?? 'INTERMEDIAIRE' }]);
-    setCustomCategory('');
-    setCustomDifficulty(null);
-    setError(null);
-  };
-
-  const addCustomCategory = () => {
-    const trimmed = customCategory.trim();
-    if (!trimmed || !customDifficulty) return;
-
-    if (trimmed.length < 3) {
-      setError('Minimum 3 caractères');
-      return;
-    }
-
-    const exists = selectedCategories.find(
-      (c) => c.name.toLowerCase() === trimmed.toLowerCase()
-    );
-    if (exists) {
-      setError('Catégorie déjà sélectionnée');
-      return;
-    }
-
-    if (!canAddMore) {
-      setError(`Maximum ${maxCategories} catégories`);
-      return;
-    }
-
-    setSelectedCategories((prev) => [
-      ...prev,
-      { name: trimmed, difficulty: customDifficulty },
-    ]);
-    setCustomCategory('');
-    setCustomDifficulty(null);
-    setSearchResults([]);
-    setShowDropdown(false);
-    setError(null);
+    commitCustomCategory(name);
   };
 
   const removeCategory = (name: string) => {
     setSelectedCategories((prev) => prev.filter((c) => c.name !== name));
+    setError(null);
   };
 
   const handleSubmit = async () => {
-    if (!isManualMode && selectedCategories.length === 0) {
+    // 🛡️ Safety Flow : Si du texte est présent dans le champ lors du clic sur "Continuer",
+    // on l'ajoute automatiquement avant la validation de la page !
+    let targetList = [...selectedCategories];
+    if (customCategory.trim().length >= 2 && targetList.length < maxCategories) {
+      const trimmed = customCategory.trim().replace(/[,;\n]/g, '');
+      const exists = targetList.some((c) => c.name.toLowerCase() === trimmed.toLowerCase());
+      if (!exists) {
+        targetList.push({ name: trimmed, difficulty: customDifficulty || 'INTERMEDIAIRE' });
+        setSelectedCategories(targetList);
+        setCustomCategory('');
+      }
+    }
+
+    if (!isManualMode && targetList.length === 0) {
       setError('Sélectionnez au moins une catégorie');
       return;
     }
@@ -326,10 +345,10 @@ export default function CategorySelectionPage() {
 
     try {
       if (isEditMode && playerId) {
-        await sessionsApi.updatePlayerCategories(actualSessionId, playerId, selectedCategories);
+        await sessionsApi.updatePlayerCategories(actualSessionId, playerId, targetList);
         router.back();
       } else {
-        await joinSession(actualSessionId, selectedCategories, isSpectator === '1', false, selectedTeamId);
+        await joinSession(actualSessionId, targetList, isSpectator === '1', false, selectedTeamId);
         router.replace(`/session/${code}/lobby`);
       }
     } catch (err: any) {
@@ -632,22 +651,47 @@ export default function CategorySelectionPage() {
 
         {/* Custom Category */}
         <div>
-          <p className="text-host text-[10px] font-bold tracking-widest uppercase mb-2.5">
-            Catégorie sur mesure
-          </p>
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-host text-[10px] font-bold tracking-widest uppercase">
+              Catégorie sur mesure (saisie libre)
+            </p>
+            <span className="text-txt-40 text-[10px]">Entrée / Virgule / Clic extérieur</span>
+          </div>
+
           <div className="bg-surface rounded-2xl border border-line p-3.5">
-            <textarea
-              value={customCategory}
-              onChange={(e) => handleCustomCategoryChange(e.target.value)}
-              placeholder="Ex: Marvel, années 90, histoire de France…"
-              rows={2}
-              className={`w-full bg-bg rounded-xl px-3.5 py-3 text-txt text-sm font-medium border outline-none resize-none transition-colors focus:border-accent ${
-                error ? 'border-buzz' : 'border-line'
-              }`}
-            />
+            <div className="flex items-center gap-2 bg-bg rounded-xl px-3.5 py-2.5 border border-line focus-within:border-accent transition-colors">
+              <Sparkles size={16} className="text-accent shrink-0" />
+              <input
+                type="text"
+                value={customCategory}
+                onChange={(e) => handleCustomCategoryChange(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    commitCustomCategory();
+                  }
+                }}
+                onBlur={() => {
+                  if (customCategory.trim().length >= 2) {
+                    commitCustomCategory();
+                  }
+                }}
+                placeholder="Tape ton thème puis 'Entrée' ou ',' (ex: Manga, Histoire, Pop)"
+                className="w-full bg-transparent text-txt text-sm font-medium outline-none"
+              />
+              {customCategory.trim() && (
+                <button
+                  type="button"
+                  onClick={() => commitCustomCategory()}
+                  className="px-3 py-1.5 rounded-lg bg-accent text-btn-fg text-xs font-bold shrink-0 hover:bg-accent-d transition-colors cursor-pointer"
+                >
+                  Ajouter
+                </button>
+              )}
+            </div>
 
             {showDropdown && customCategory.trim().length >= 2 && (
-              <div className="mt-2 flex flex-wrap gap-1.5">
+              <div className="mt-2.5 flex flex-wrap gap-1.5 animate-[fadeIn_0.2s_ease-out]">
                 {isSearching ? (
                   <div className="w-full py-2 flex justify-center">
                     <div className="w-5 h-5 border-2 border-accent border-t-transparent rounded-full animate-spin" />
@@ -659,53 +703,16 @@ export default function CategorySelectionPage() {
                         key={result}
                         type="button"
                         onClick={() => selectSuggestion(result)}
-                        className="px-2.5 py-1 rounded-full bg-bg border border-line text-txt text-xs hover:bg-surface-2 transition-colors"
+                        className="px-3 py-1.5 rounded-full bg-surface-2 border border-line text-txt text-xs font-semibold hover:bg-accent/15 hover:border-accent transition-colors flex items-center gap-1.5 cursor-pointer"
                       >
+                        <Plus size={12} className="text-accent" />
                         {result}
                       </button>
                     ))}
-                    <button
-                      type="button"
-                      onClick={addCustomCategory}
-                      className="px-2.5 py-1 rounded-full bg-bg border border-line text-host text-xs hover:bg-surface-2 transition-colors flex items-center gap-1"
-                    >
-                      <Plus size={12} />
-                      Utiliser &quot;{customCategory.trim()}&quot;
-                    </button>
                   </>
                 )}
               </div>
             )}
-
-            <div className="flex items-center gap-1.5 mt-2.5">
-              {DIFFICULTIES.map((diff) => (
-                <button
-                  key={diff.value}
-                  type="button"
-                  onClick={() => setCustomDifficulty(diff.value)}
-                  className="px-2.5 py-1.5 rounded-lg text-[11.5px] font-bold border transition-colors"
-                  style={{
-                    backgroundColor: customDifficulty === diff.value ? diff.color : 'var(--bg)',
-                    borderColor: customDifficulty === diff.value ? diff.color : 'var(--line)',
-                    color: customDifficulty === diff.value ? '#1A1410' : 'var(--txt-60)',
-                  }}
-                >
-                  {diff.label}
-                </button>
-              ))}
-              <button
-                type="button"
-                onClick={addCustomCategory}
-                disabled={!customCategory.trim() || !customDifficulty || !canAddMore}
-                className={`w-[38px] h-[38px] rounded-[11px] flex items-center justify-center ml-auto transition-colors ${
-                  customCategory.trim() && customDifficulty && canAddMore
-                    ? 'bg-accent text-btn-fg hover:bg-accent-d'
-                    : 'bg-surface-2 text-txt-40 cursor-not-allowed'
-                }`}
-              >
-                <Plus size={18} strokeWidth={2.5} />
-              </button>
-            </div>
           </div>
         </div>
 
@@ -721,26 +728,30 @@ export default function CategorySelectionPage() {
         <button
           type="button"
           onClick={handleSubmit}
-          disabled={isSubmitting || selectedCategories.length === 0 || isJoining}
-          className={`w-full rounded-2xl py-4 px-6 flex flex-row items-center justify-center gap-2 transition-colors ${
-            isSubmitting || selectedCategories.length === 0 || isJoining
-              ? 'bg-surface-2 cursor-not-allowed'
-              : 'bg-accent hover:bg-accent-d'
+          disabled={isSubmitting || (selectedCategories.length === 0 && !customCategory.trim()) || isJoining}
+          className={`w-full rounded-2xl py-4 px-6 flex flex-row items-center justify-center gap-2 transition-colors cursor-pointer ${
+            isSubmitting || (selectedCategories.length === 0 && !customCategory.trim()) || isJoining
+              ? 'bg-surface-2 cursor-not-allowed opacity-60'
+              : 'bg-accent hover:bg-accent-d shadow-glow-success'
           }`}
         >
           {isSubmitting || isJoining ? (
             <>
               <div className="w-5 h-5 border-2 border-btn-fg border-t-transparent rounded-full animate-spin" />
-              <span className="text-txt font-bold text-lg">
+              <span className="text-btn-fg font-bold text-lg">
                 {isEditMode ? 'Enregistrement...' : 'Connexion...'}
               </span>
             </>
           ) : (
             <>
-              <span className={`font-bold text-lg ${selectedCategories.length > 0 ? 'text-btn-fg' : 'text-txt-40'}`}>
-                {isEditMode ? 'Enregistrer' : 'Rejoindre la session'}
+              <span className={`font-bold text-lg ${selectedCategories.length > 0 || customCategory.trim() ? 'text-btn-fg' : 'text-txt-40'}`}>
+                {isEditMode
+                  ? `Enregistrer ${selectedCategories.length + (customCategory.trim() ? 1 : 0)} catégorie${selectedCategories.length + (customCategory.trim() ? 1 : 0) > 1 ? 's' : ''}`
+                  : (selectedCategories.length === 0 && !customCategory.trim())
+                    ? 'Sélectionnez au moins 1 catégorie'
+                    : `Continuer avec ${selectedCategories.length + (customCategory.trim() ? 1 : 0)} catégorie${selectedCategories.length + (customCategory.trim() ? 1 : 0) > 1 ? 's' : ''}`}
               </span>
-              <ChevronRight size={22} className={selectedCategories.length > 0 ? 'text-btn-fg' : 'text-txt-40'} strokeWidth={2.5} />
+              <ChevronRight size={22} className={selectedCategories.length > 0 || customCategory.trim() ? 'text-btn-fg' : 'text-txt-40'} strokeWidth={2.5} />
             </>
           )}
         </button>
