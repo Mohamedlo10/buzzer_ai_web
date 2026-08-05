@@ -792,9 +792,10 @@ export default function RoomDetailPage() {
         {isOwner && (
           <button
             onClick={() => router.push(`/room/${roomId}/edit`)}
-            className="w-10 h-10 rounded-full bg-surface flex items-center justify-center"
+            className="w-10 h-10 rounded-full bg-surface flex items-center justify-center hover:bg-surface-2 transition-colors cursor-pointer"
+            title="Paramètres de la salle"
           >
-            <Settings size={20} color="#FFFFFF80" />
+            <Settings size={20} className="text-txt-60 hover:text-txt transition-colors" />
           </button>
         )}
       </div>

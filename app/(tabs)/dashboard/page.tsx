@@ -161,19 +161,14 @@ export default function DashboardPage() {
   };
 
   return (
-    <SafeScreen className="bg-bg min-h-[100dvh] relative overflow-hidden flex flex-col">
-      {/* Background pattern */}
-      <div style={{ position: 'absolute', inset: 0, opacity: 0.5, pointerEvents: 'none' }}>
-        <PatternLozenge color="var(--color-primary)" opacity={0.05} size={26} />
-      </div>
-
+    <SafeScreen className="bg-transparent relative flex flex-col flex-1">
       {/* Main Content Area */}
       <div
         style={{
           position: 'relative',
           zIndex: 2,
           flex: 1,
-          padding: '8px 20px 24px',
+          padding: '8px 20px 120px',
         }}
       >
         {/* Greeting */}
@@ -340,7 +335,7 @@ export default function DashboardPage() {
                 fontSize: 12,
                 padding: '6px 12px',
                 borderRadius: 'var(--radius-pill)',
-                background: chip.active ? 'var(--color-primary)' : 'transparent',
+                background: chip.active ? 'var(--color-primary)' : 'var(--color-surface)',
                 color: chip.active ? 'var(--color-primary-ink)' : 'var(--color-ink)',
                 border: chip.active ? 'none' : '1px solid var(--color-line)',
                 fontWeight: 500,

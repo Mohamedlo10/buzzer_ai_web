@@ -150,7 +150,7 @@ export default function SoloPage() {
                 fontSize: 12,
                 padding: '6px 12px',
                 borderRadius: 'var(--radius-pill)',
-                background: chip.active ? 'var(--color-primary)' : 'transparent',
+                background: chip.active ? 'var(--color-primary)' : 'var(--color-surface)',
                 color: chip.active ? 'var(--color-primary-ink)' : 'var(--color-ink)',
                 border: chip.active ? 'none' : '1px solid var(--color-line)',
                 fontWeight: 500,

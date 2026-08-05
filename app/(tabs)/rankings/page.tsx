@@ -132,12 +132,7 @@ export default function RankingsPage() {
     : top3;
 
   return (
-    <SafeScreen className="bg-bg min-h-[100dvh] relative overflow-hidden flex flex-col">
-      {/* Background lozenge pattern */}
-      <div style={{ position: 'absolute', inset: 0, opacity: 0.5, pointerEvents: 'none' }}>
-        <PatternLozenge color="var(--color-primary)" opacity={0.05} size={26} />
-      </div>
-
+    <SafeScreen className="bg-transparent relative flex flex-col flex-1">
       {showInfoModal && <RankingInfoModal onClose={() => setShowInfoModal(false)} />}
 
       {/* Main Content Area */}
@@ -146,9 +141,8 @@ export default function RankingsPage() {
           position: 'relative',
           zIndex: 2,
           flex: 1,
-          padding: '12px 20px 24px',
+          padding: '12px 20px 120px',
         }}
-        className="overflow-y-auto"
       >
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 18 }}>

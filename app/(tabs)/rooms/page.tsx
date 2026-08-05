@@ -392,19 +392,14 @@ function RoomsContent() {
   const rank = data.globalStats?.rank || 154;
 
   return (
-    <SafeScreen className="bg-bg min-h-[100dvh] relative overflow-hidden flex flex-col">
-      {/* Background pattern */}
-      <div style={{ position: 'absolute', inset: 0, opacity: 0.5, pointerEvents: 'none' }}>
-        <PatternLozenge color="var(--color-primary)" opacity={0.05} size={26} />
-      </div>
-
+    <SafeScreen className="bg-transparent relative flex flex-col flex-1">
       {/* Main Content */}
       <div
         style={{
           position: 'relative',
           zIndex: 2,
           flex: 1,
-          padding: '10px 20px 24px',
+          padding: '10px 20px 120px',
         }}
       >
         {/* Header Title */}

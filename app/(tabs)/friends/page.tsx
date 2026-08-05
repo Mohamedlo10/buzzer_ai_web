@@ -96,21 +96,15 @@ export default function FriendsPage() {
   const totalRequests = pendingRequests.length + storeSentRequests.length;
 
   return (
-    <SafeScreen className="bg-bg min-h-[100dvh] relative overflow-hidden flex flex-col">
-      {/* Background pattern */}
-      <div style={{ position: 'absolute', inset: 0, opacity: 0.5, pointerEvents: 'none' }}>
-        <PatternLozenge color="var(--color-primary)" opacity={0.05} size={26} />
-      </div>
-
+    <SafeScreen className="bg-transparent relative flex flex-col flex-1">
       {/* Main Content Area */}
       <div
         style={{
           position: 'relative',
           zIndex: 2,
           flex: 1,
-          padding: '12px 20px 24px',
+          padding: '12px 20px 120px',
         }}
-        className="overflow-y-auto"
       >
         <h1
           style={{

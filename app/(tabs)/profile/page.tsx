@@ -90,7 +90,7 @@ export default function ProfilePage() {
     try {
       await logout();
       router.replace('/login');
-    } catch {}
+    } catch { }
   }
 
   async function handleResendVerification() {
@@ -98,7 +98,7 @@ export default function ProfilePage() {
     try {
       await usersApi.resendVerificationEmail();
       setEmailBannerSent(true);
-    } catch {} finally {
+    } catch { } finally {
       setEmailBannerLoading(false);
     }
   }
@@ -119,22 +119,16 @@ export default function ProfilePage() {
   const glickoRating = myRank?.glickoRating != null ? Math.round(myRank.glickoRating) : 1500;
 
   return (
-    <SafeScreen className="bg-bg min-h-[100dvh] relative overflow-hidden flex flex-col">
-      {/* Background pattern */}
-      <div style={{ position: 'absolute', inset: 0, opacity: 0.5, pointerEvents: 'none' }}>
-        <PatternLozenge color="var(--color-primary)" opacity={0.05} size={26} />
-      </div>
-
+    <SafeScreen className="bg-transparent relative flex flex-col flex-1">
       {/* Main Content Area */}
       <div
         style={{
           position: 'relative',
           zIndex: 2,
           flex: 1,
-          padding: '12px 20px 32px',
+          padding: '12px 20px 120px',
           textAlign: 'center',
         }}
-        className="overflow-y-auto"
       >
         {/* Avatar with edit icon */}
         <div style={{ position: 'relative', width: 88, height: 88, margin: '12px auto 12px' }}>
