@@ -571,7 +571,7 @@ function RoomsContent() {
             }}
           >
             <div style={{ position: 'absolute', inset: 0, opacity: 0.5, pointerEvents: 'none' }}>
-              <PatternZigzag color="var(--color-primary-ink)" opacity={0.08} size={18} />
+              <PatternZigzag color="var(--color-primary-ink)" opacity={0.15} size={18} />
             </div>
             <div
               style={{

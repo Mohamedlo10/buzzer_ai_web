@@ -152,13 +152,8 @@
     max-height: 100dvh;
     overflow: hidden;
     overscroll-behavior: none;
-    /* Fond uni chaud & dégradé d'ambiance (sans motif pour lisibilité 100% & zéro scintillement) */
-    background-image:
-      radial-gradient(115% 75% at 50% -8%, rgb(var(--gold-rgb) / var(--glow-1)) 0%, transparent 52%),
-      radial-gradient(95% 60% at 50% 112%, rgb(var(--primary-rgb) / var(--glow-2)) 0%, transparent 50%),
-      linear-gradient(180deg, var(--bg) 0%, var(--bg-deep) 100%);
-    background-size: var(--pattern-size) var(--pattern-size), auto, auto, auto;
-    background-attachment: fixed;
+    /* Fond de couleur unique */
+    background: var(--bg);
     background-color: var(--bg);
     color: var(--txt);
     font-family: var(--font-ui), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
