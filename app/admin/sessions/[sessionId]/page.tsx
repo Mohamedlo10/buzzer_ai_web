@@ -40,7 +40,7 @@ const STATUS_CONFIG: Record<
   GENERATING: { label: 'Génération', color: 'var(--gold)', bg: 'rgb(var(--gold-rgb) / 0.125)', icon: Zap },
   PLAYING:    { label: 'En cours',   color: 'var(--indigo)', bg: 'rgb(var(--indigo-rgb) / 0.125)', icon: Swords },
   PAUSED:     { label: 'Pause',      color: 'var(--warn)', bg: 'rgb(var(--warn-rgb) / 0.125)', icon: Clock },
-  RESULTS:    { label: 'Terminée',   color: '#C0C0C0', bg: '#C0C0C020', icon: Trophy },
+  RESULTS:    { label: 'Terminée',   color: 'var(--silver)', bg: '#C0C0C020', icon: Trophy },
   CANCELLED:  { label: 'Annulée',    color: 'var(--bad)', bg: 'rgb(var(--bad-rgb) / 0.125)', icon: XCircle },
 };
 
@@ -126,8 +126,8 @@ export default function AdminSessionDetailPage() {
       render: (row) => (
         <span className={`text-xs font-bold ${
           row.rank === 1 ? 'text-energy' :
-          row.rank === 2 ? 'text-[#C0C0C0]' :
-          row.rank === 3 ? 'text-[#CD7F32]' :
+          row.rank === 2 ? 'text-silver' :
+          row.rank === 3 ? 'text-bronze' :
           'text-txt-60'
         }`}>
           #{row.rank}
@@ -144,7 +144,7 @@ export default function AdminSessionDetailPage() {
             <span className="text-xs px-1.5 py-0.5 rounded bg-energy/15 text-energy">Manager</span>
           )}
           {row.isSpectator && (
-            <span className="text-xs px-1.5 py-0.5 rounded bg-[#FFFFFF10] text-txt-60">Spectateur</span>
+            <span className="text-xs px-1.5 py-0.5 rounded bg-surface-2 text-txt-60">Spectateur</span>
           )}
         </div>
       ),
@@ -239,11 +239,11 @@ export default function AdminSessionDetailPage() {
             onClick={() => router.push('/admin/sessions')}
             className="w-10 h-10 rounded-full bg-surface flex items-center justify-center hover:bg-surface-2 transition-colors"
           >
-            <ArrowLeft size={20} color="#FFFFFF" />
+            <ArrowLeft size={20} color="var(--txt)" />
           </button>
           <div>
             <div className="flex items-center gap-3 flex-wrap">
-              <h1 className="text-txt text-2xl font-bold tracking-wider">#{session.code}</h1>
+              <h1 className="text-txt text-2xl font-bold tracking-wider font-display">#{session.code}</h1>
               <span
                 className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold"
                 style={{ backgroundColor: cfg.bg, color: cfg.color }}
@@ -255,7 +255,7 @@ export default function AdminSessionDetailPage() {
                 <span className="text-xs px-2 py-0.5 rounded-full bg-team/15 text-team">Équipes</span>
               )}
               {session.isPrivate && (
-                <span className="text-xs px-2 py-0.5 rounded-full bg-[#FFFFFF10] text-txt-60">Privée</span>
+                <span className="text-xs px-2 py-0.5 rounded-full bg-surface-2 text-txt-60">Privée</span>
               )}
             </div>
             <p className="text-txt-60 text-sm mt-0.5">

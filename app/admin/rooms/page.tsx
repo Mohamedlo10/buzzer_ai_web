@@ -97,7 +97,7 @@ export default function AdminRoomsPage() {
       header: 'Membres',
       render: (row: AdminRoomResponse) => (
         <div className="flex items-center gap-1">
-          <Users size={14} color="#FFFFFF60" />
+          <Users size={14} color="var(--txt-60)" />
           <span>{row.memberCount}</span>
         </div>
       ),
@@ -107,7 +107,7 @@ export default function AdminRoomsPage() {
       header: 'Sessions',
       render: (row: AdminRoomResponse) => (
         <div className="flex items-center gap-1">
-          <Gamepad2 size={14} color="#FFFFFF60" />
+          <Gamepad2 size={14} color="var(--txt-60)" />
           <span>{row.sessionCount}</span>
         </div>
       ),
@@ -176,10 +176,10 @@ export default function AdminRoomsPage() {
             onClick={() => router.back()}
             className="w-10 h-10 rounded-full bg-surface flex items-center justify-center mr-3 hover:bg-surface-2 transition-colors"
           >
-            <ArrowLeft size={20} color="#FFFFFF" />
+            <ArrowLeft size={20} color="var(--txt)" />
           </button>
           <div className="flex-1">
-            <p className="text-txt font-bold text-xl">Salles</p>
+            <p className="text-txt font-bold text-xl font-display">Salles</p>
             <p className="text-txt-60 text-xs">
               {data?.totalElements ?? 0} salle{(data?.totalElements ?? 0) !== 1 ? 's' : ''}
             </p>

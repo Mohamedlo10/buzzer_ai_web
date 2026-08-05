@@ -119,7 +119,7 @@ export default function AdminAuditLogsPage() {
             <ArrowLeft size={20} color="#FFFFFF" />
           </button>
           <div className="flex-1">
-            <p className="text-txt font-bold text-xl">Audit Logs</p>
+            <p className="text-txt font-bold text-xl font-display">Audit Logs</p>
             <p className="text-txt-60 text-xs">
               {data?.totalElements ?? 0} entrée{(data?.totalElements ?? 0) !== 1 ? 's' : ''}
             </p>

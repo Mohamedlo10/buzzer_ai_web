@@ -24,7 +24,7 @@ const STATUS_CONFIG: Record<AdminSessionStatus, { label: string; color: string }
   GENERATING: { label: 'Génération...', color: 'var(--gold)' },
   PLAYING:    { label: 'En cours',      color: 'var(--indigo)' },
   PAUSED:     { label: 'Pause',         color: 'var(--warn)' },
-  RESULTS:    { label: 'Terminée',      color: '#C0C0C0' },
+  RESULTS:    { label: 'Terminée',      color: 'var(--silver)' },
   CANCELLED:  { label: 'Annulée',       color: 'var(--bad)' },
 };
 

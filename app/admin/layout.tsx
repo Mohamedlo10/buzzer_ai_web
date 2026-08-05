@@ -29,11 +29,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   if (!user || user.role !== 'SUPER_ADMIN') return null;
 
   return (
-    <div className="min-h-screen bg-bg flex">
+    <div className="h-screen bg-bg flex overflow-hidden">
       <AdminSidebar />
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Header desktop only — mobile header is inside AdminSidebar */}
-        <div className="hidden lg:block">
+        <div className="hidden lg:block flex-shrink-0">
           <AdminHeader />
         </div>
         {/* Mobile: padding top for header, padding bottom for bottom tab bar */}

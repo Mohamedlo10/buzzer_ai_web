@@ -49,7 +49,7 @@ const STATUS_CONFIG: Record<AdminSessionStatus, { label: string; color: string; 
   GENERATING: { label: 'Génération', color: 'var(--gold)', bg: 'rgb(var(--gold-rgb) / 0.125)' },
   PLAYING: { label: 'En cours', color: 'var(--indigo)', bg: 'rgb(var(--indigo-rgb) / 0.125)' },
   PAUSED: { label: 'Pause', color: 'var(--warn)', bg: 'rgb(var(--warn-rgb) / 0.125)' },
-  RESULTS: { label: 'Terminée', color: '#C0C0C0', bg: '#C0C0C020' },
+  RESULTS: { label: 'Terminée', color: 'var(--silver)', bg: '#C0C0C020' },
   CANCELLED: { label: 'Annulée', color: 'var(--bad)', bg: 'rgb(var(--bad-rgb) / 0.125)' },
 };
 
@@ -224,7 +224,7 @@ export default function AdminSessionsPage() {
             className="p-1.5 rounded-lg bg-surface-2 hover:bg-surface-2 transition-colors"
             title="Voir détail"
           >
-            <Eye size={14} color="#FFFFFF" />
+            <Eye size={14} color="var(--txt)" />
           </button>
           {isStopable(row.status) && (
             <button
@@ -249,7 +249,7 @@ export default function AdminSessionsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-txt text-2xl font-bold">Sessions</h1>
+          <h1 className="text-txt text-2xl font-bold font-display">Sessions</h1>
           <p className="text-txt-60 text-sm">Gestion des sessions de jeu</p>
         </div>
       </div>
@@ -260,7 +260,7 @@ export default function AdminSessionsPage() {
       <div className="bg-surface rounded-2xl border border-line p-4">
         <div className="flex flex-col lg:flex-row gap-3">
           <div className="flex items-center gap-2 flex-1 min-w-0">
-            <Search size={16} color="#FFFFFF60" />
+            <Search size={16} color="var(--txt-60)" />
             <input
               type="text"
               value={searchQuery}
@@ -272,7 +272,7 @@ export default function AdminSessionsPage() {
           <div className="h-px lg:h-auto lg:w-px bg-surface-2" />
           <div className="flex flex-col sm:flex-row gap-2">
             <div className="flex items-center gap-2">
-              <Filter size={16} color="#FFFFFF60" />
+              <Filter size={16} color="var(--txt-60)" />
               <select
                 value={statusFilter}
                 onChange={(e) => {
@@ -289,7 +289,7 @@ export default function AdminSessionsPage() {
               </select>
             </div>
             <div className="flex items-center gap-2">
-              <Calendar size={16} color="#FFFFFF60" />
+              <Calendar size={16} color="var(--txt-60)" />
               <input
                 type="date"
                 value={fromDate}
@@ -393,7 +393,7 @@ function ActiveSessionCard({
         </div>
         <ChevronRight
           size={16}
-          color="#FFFFFF40"
+          color="var(--txt-40)"
           className="group-hover:text-txt transition-colors"
         />
       </div>

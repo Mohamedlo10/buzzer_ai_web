@@ -37,15 +37,15 @@ export function AdminSidebar() {
     <>
       {/* ─── Desktop Sidebar ─── */}
       <aside
-        className={`hidden lg:flex flex-col h-screen bg-bg-deep border-r border-line transition-all duration-300 sticky top-0 ${
+        className={`hidden lg:flex flex-col h-full bg-bg-deep border-r border-line transition-all duration-300 flex-shrink-0 ${
           collapsed ? 'w-20' : 'w-64'
         }`}
       >
         {/* Logo */}
-        <div className="flex items-center gap-3 px-5 h-16 border-b border-line">
+        <div className="flex items-center gap-3 px-5 h-16 border-b border-line flex-shrink-0">
           <Crown size={24} color="var(--gold)" />
           {!collapsed && (
-            <span className="text-txt font-bold text-lg whitespace-nowrap">Admin</span>
+            <span className="text-txt font-bold text-lg whitespace-nowrap font-display">Admin</span>
           )}
         </div>
 
@@ -73,7 +73,7 @@ export function AdminSidebar() {
         </nav>
 
         {/* Bottom */}
-        <div className="p-3 border-t border-line">
+        <div className="p-3 border-t border-line flex-shrink-0">
           <button
             onClick={() => setCollapsed(!collapsed)}
             className="flex items-center justify-center w-full py-2 rounded-xl text-txt-40 hover:bg-surface-2 hover:text-txt transition-colors"
@@ -85,10 +85,10 @@ export function AdminSidebar() {
       </aside>
 
       {/* ─── Mobile Header (hamburger + logo) ─── */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-bg-deep border-b border-line h-14 flex items-center justify-between px-4">
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-bg-deep border-b border-line h-14 flex items-center justify-between px-4 flex-shrink-0">
         <div className="flex items-center gap-2">
           <Crown size={20} color="var(--gold)" />
-          <span className="text-txt font-bold">Admin</span>
+          <span className="text-txt font-bold font-display">Admin</span>
         </div>
         <button
           onClick={() => setMobileOpen(!mobileOpen)}
@@ -127,7 +127,7 @@ export function AdminSidebar() {
       )}
 
       {/* ─── Mobile Bottom Tab Bar ─── */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-bg-deep border-t border-line px-2 pb-safe">
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-bg-deep border-t border-line px-2 pb-safe flex-shrink-0">
         <div className="flex items-center justify-around h-16">
           {NAV_ITEMS.slice(0, 5).map((item) => {
             const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);

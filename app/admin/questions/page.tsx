@@ -167,7 +167,7 @@ export default function AdminQuestionsPage() {
               <ArrowLeft size={20} color="#FFFFFF" />
             </button>
             <div className="flex-1 min-w-0">
-              <p className="text-txt font-bold text-lg truncate">{selectedCategory}</p>
+              <p className="text-txt font-bold text-lg truncate font-display">{selectedCategory}</p>
               <p className="text-txt-60 text-xs">
                 {questionsData?.totalElements ?? 0} question{(questionsData?.totalElements ?? 0) !== 1 ? 's' : ''}
               </p>
@@ -380,7 +380,7 @@ export default function AdminQuestionsPage() {
             <ArrowLeft size={20} color="#FFFFFF" />
           </button>
           <div className="flex-1">
-            <p className="text-txt font-bold text-xl">Historique questions</p>
+            <p className="text-txt font-bold text-xl font-display">Historique questions</p>
             <p className="text-txt-60 text-xs">
               {categoriesData?.totalElements ?? 0} catégorie{(categoriesData?.totalElements ?? 0) !== 1 ? 's' : ''}
             </p>

@@ -47,10 +47,10 @@ export default function AdminSettingsPage() {
             onClick={() => router.back()}
             className="w-10 h-10 rounded-full bg-surface flex items-center justify-center mr-3 hover:bg-surface-2 transition-colors"
           >
-            <ArrowLeft size={20} color="#FFFFFF" />
+            <ArrowLeft size={20} color="var(--txt)" />
           </button>
           <div className="flex-1">
-            <p className="text-txt font-bold text-xl">Paramètres</p>
+            <p className="text-txt font-bold text-xl font-display">Paramètres</p>
             <p className="text-txt-60 text-xs">Maintenance et statistiques</p>
           </div>
         </div>
@@ -59,7 +59,7 @@ export default function AdminSettingsPage() {
       <div className="flex-1 overflow-y-auto px-4 py-6 space-y-6">
         {/* Maintenance */}
         <div>
-          <h2 className="text-txt font-bold text-lg mb-4 flex items-center gap-2">
+          <h2 className="text-txt font-bold text-lg mb-4 flex items-center gap-2 font-display">
             <RefreshCw size={20} color="var(--violet)" />
             Maintenance
           </h2>
@@ -102,7 +102,7 @@ export default function AdminSettingsPage() {
 
         {/* Quick Stats */}
         <div>
-          <h2 className="text-txt font-bold text-lg mb-4 flex items-center gap-2">
+          <h2 className="text-txt font-bold text-lg mb-4 flex items-center gap-2 font-display">
             <BarChart3 size={20} color="var(--primary)" />
             Statistiques rapides
           </h2>

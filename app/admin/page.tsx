@@ -84,7 +84,7 @@ export default function AdminDashboardPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-txt text-2xl font-bold">Dashboard</h1>
+          <h1 className="text-txt text-2xl font-bold font-display">Dashboard</h1>
           <p className="text-txt-60 text-sm">Vue d'ensemble de la plateforme</p>
         </div>
         <div className="flex items-center gap-2">
@@ -97,7 +97,7 @@ export default function AdminDashboardPage() {
           </button>
           <button
             onClick={async () => { await logout(); router.replace('/'); }}
-            className="flex items-center gap-2 px-4 py-2 bg-surface-2 rounded-xl text-red-400 hover:text-red-300 hover:bg-surface-2 transition-colors text-sm"
+            className="flex items-center gap-2 px-4 py-2 bg-surface-2 rounded-xl text-bad hover:text-bad-h hover:bg-surface-2 transition-colors text-sm"
             title="Déconnexion"
           >
             <LogOut size={16} />
@@ -168,7 +168,7 @@ export default function AdminDashboardPage() {
       {/* Main Chart */}
       <div className="bg-surface rounded-2xl border border-line p-5">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-          <h2 className="text-txt font-bold text-lg">Évolution temporelle</h2>
+          <h2 className="text-txt font-bold text-lg font-display">Évolution temporelle</h2>
           <div className="flex items-center gap-2">
             {PERIOD_TABS.map((t) => (
               <button
@@ -176,7 +176,7 @@ export default function AdminDashboardPage() {
                 onClick={() => setPeriod(t.value)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                   period === t.value
-                    ? 'bg-host text-white'
+                    ? 'bg-host text-primary-ink'
                     : 'bg-surface-2 text-txt-60 hover:text-txt'
                 }`}
               >
@@ -254,7 +254,7 @@ export default function AdminDashboardPage() {
               {topStats?.topPlayers.slice(0, 5).map((p, i) => (
                 <div key={p.userId} className="flex items-center gap-3">
                   <span className={`w-6 text-center font-bold text-sm ${
-                    i === 0 ? 'text-energy' : i === 1 ? 'text-[#C0C0C0]' : i === 2 ? 'text-[#CD7F32]' : 'text-txt-40'
+                    i === 0 ? 'text-energy' : i === 1 ? 'text-silver' : i === 2 ? 'text-bronze' : 'text-txt-40'
                   }`}>
                     {i + 1}
                   </span>

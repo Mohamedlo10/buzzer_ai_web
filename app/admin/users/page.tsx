@@ -265,7 +265,7 @@ export default function AdminUsersPage() {
                             : 'text-txt hover:bg-surface-2'
                         }`}
                       >
-                        <Icon size={14} color={row.role === r ? '#FFFFFF30' : m.color} />
+                        <Icon size={14} color={row.role === r ? 'var(--txt-25)' : m.color} />
                         {m.label}
                       </button>
                     );
@@ -317,7 +317,7 @@ export default function AdminUsersPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-txt text-2xl font-bold flex items-center gap-2">
+          <h1 className="text-txt text-2xl font-bold flex items-center gap-2 font-display">
             <Users size={24} color="var(--violet)" />
             Utilisateurs
           </h1>

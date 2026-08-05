@@ -164,7 +164,7 @@ export default function AdminUserDetailPage({ params }: PageProps) {
 
           <div className="flex-1 min-w-0">
             <div className="flex flex-wrap items-center gap-3 mb-1">
-              <h1 className="text-txt text-2xl font-bold">{user.username}</h1>
+              <h1 className="text-txt text-2xl font-bold font-display">{user.username}</h1>
               <div
                 className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold"
                 style={{ backgroundColor: role.bg, color: role.color }}
@@ -238,7 +238,7 @@ export default function AdminUserDetailPage({ params }: PageProps) {
                               : 'text-txt hover:bg-surface-2'
                           }`}
                         >
-                          <Icon size={14} color={user.role === r ? '#FFFFFF30' : m.color} />
+                          <Icon size={14} color={user.role === r ? 'var(--txt-25)' : m.color} />
                           {m.label}
                         </button>
                       );
@@ -381,7 +381,7 @@ export default function AdminUserDetailPage({ params }: PageProps) {
                   />
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-txt text-2xl font-bold">
+                  <span className="text-txt text-2xl font-bold font-display">
                     {((user.globalAccuracyRate || 0) * 100).toFixed(0)}%
                   </span>
                   <span className="text-txt-40 text-xs">précision globale</span>

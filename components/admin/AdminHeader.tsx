@@ -32,15 +32,15 @@ export function AdminHeader() {
   const crumbs = getBreadcrumbs(pathname);
 
   return (
-    <header className="flex items-center justify-between h-16 px-6 bg-bg-deep border-b border-line">
+    <header className="flex items-center justify-between h-16 px-6 bg-bg-deep border-b border-line flex-shrink-0">
       {/* Breadcrumb */}
       <nav className="flex items-center gap-2 text-sm">
         {crumbs.map((crumb, i) => (
           <div key={crumb.href} className="flex items-center gap-2">
-            {i > 0 && <ChevronRight size={14} color="#FFFFFF40" />}
+            {i > 0 && <ChevronRight size={14} color="var(--txt-40)" />}
             <Link
               href={crumb.href}
-              className={`${i === crumbs.length - 1 ? 'text-txt font-semibold' : 'text-txt-60 hover:text-txt'} transition-colors`}
+              className={`${i === crumbs.length - 1 ? 'text-txt font-semibold font-display' : 'text-txt-60 hover:text-txt'} transition-colors`}
             >
               {crumb.label}
             </Link>
@@ -52,10 +52,10 @@ export function AdminHeader() {
       <div className="flex items-center gap-4">
         <button className="relative text-txt-60 hover:text-txt transition-colors">
           <Bell size={20} />
-          <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full" />
+          <span className="absolute -top-1 -right-1 w-2 h-2 bg-bad rounded-full" />
         </button>
         <div className="w-8 h-8 rounded-full bg-host flex items-center justify-center">
-          <User size={16} color="white" />
+          <User size={16} color="var(--primary-ink)" />
         </div>
       </div>
     </header>
