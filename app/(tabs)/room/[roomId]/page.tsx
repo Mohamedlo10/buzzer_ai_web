@@ -106,101 +106,156 @@ function RoomCodeCard({
 
 function ActiveSessionCard({
   session,
+  members = [],
   onPress,
   onDelete,
   canDelete,
+  isOwner,
 }: {
   session: RoomSessionResponse;
+  members?: Array<{ userId: string; username: string; avatarUrl?: string | null }>;
   onPress: () => void;
   onDelete?: () => void;
   canDelete?: boolean;
+  isOwner?: boolean;
 }) {
+  const user = useAuthStore((s) => s.user);
   const config = STATUS_CONFIG[session.status] || STATUS_CONFIG.LOBBY;
-  const StatusIcon = config.icon;
+  const isLobby = session.status === 'LOBBY';
+  const isReady = isLobby && session.playerCount >= 2;
 
-  const getButtonLabel = (status: SessionStatus) => {
-    switch (status) {
-      case 'LOBBY': return 'Rejoindre';
-      case 'PLAYING': return 'Reprendre';
-      case 'PAUSED': return 'Reprendre';
-      case 'RESULTS': return 'Voir résultats';
-      default: return 'Voir';
-    }
-  };
+  // Human readable title
+  const sessionTitle = `Quiz Général — Session #${session.code}`;
+
+  // Avatars overlay of members
+  const memberAvatars = members.slice(0, 4);
+  const extraCount = Math.max(0, session.playerCount - memberAvatars.length);
+  const fillPct = Math.min(100, Math.round((session.playerCount / Math.max(1, session.maxPlayers)) * 100));
 
   return (
-    <div className="mb-3">
+    <div className="mb-4">
       <div
-        className="bg-surface rounded-3xl border overflow-hidden cursor-pointer"
-        style={{ borderColor: config.color + '40' }}
+        className="bg-surface rounded-3xl border border-line overflow-hidden cursor-pointer shadow-lg hover:border-accent/40 transition-all group"
         onClick={onPress}
       >
-        {/* Gradient header */}
+        {/* Top Ticket Header Bar */}
         <div
-          className="px-5 py-4"
-          style={{ background: `linear-gradient(to bottom, ${config.bg}, transparent)` }}
+          className="px-5 py-3.5 flex items-center justify-between border-b border-line/60"
+          style={{ background: `linear-gradient(135deg, ${config.bg}, transparent)` }}
         >
-          <div className="flex p-2 items-center justify-between">
-            <div className="flex items-center">
-              <div
-                className="w-12 h-12 rounded-2xl flex items-center justify-center mr-3"
-                style={{ backgroundColor: config.bg }}
-              >
-                <StatusIcon size={24} color={config.color} />
-              </div>
-              <div>
-                <p className="text-txt font-bold text-xl tracking-wider">{session.code}</p>
-                <p className="text-txt-60 text-xs">par {session.managerName}</p>
-              </div>
-            </div>
-            <div
-              className="px-3 py-1.5 rounded-full"
-              style={{ backgroundColor: config.bg }}
+          {/* Status Badge */}
+          <div className="flex items-center gap-2">
+            <span
+              className={`w-2.5 h-2.5 rounded-full ${
+                isReady ? 'bg-accent animate-ping' : isLobby ? 'bg-accent' : 'bg-gold animate-pulse'
+              }`}
+            />
+            <span className="text-xs font-bold uppercase tracking-wider" style={{ color: config.color }}>
+              {isReady ? '⚡ PRÊT À DÉMARRER' : isLobby ? '🟢 SALON OUVERT' : config.label}
+            </span>
+          </div>
+
+          {/* Discrete Trash Button */}
+          {canDelete && onDelete && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete();
+              }}
+              className="w-8 h-8 rounded-full bg-buzz/10 hover:bg-buzz/25 text-buzz flex items-center justify-center transition-colors cursor-pointer"
+              title="Supprimer la session"
             >
-              <span className="text-xs font-bold" style={{ color: config.color }}>
-                {config.label}
+              <Trash2 size={15} color="var(--bad)" />
+            </button>
+          )}
+        </div>
+
+        {/* Main Ticket Content */}
+        <div className="p-5">
+          {/* Title & Host */}
+          <div className="mb-3">
+            <h3 className="text-txt font-display font-bold text-lg leading-tight group-hover:text-accent transition-colors">
+              {sessionTitle}
+            </h3>
+            <p className="text-txt-60 text-xs mt-1">
+              Créé par <strong className="text-txt font-semibold">{session.managerName}</strong>
+            </p>
+          </div>
+
+          {/* Rule Summary Tags */}
+          <div className="flex flex-wrap gap-1.5 mb-4">
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-2 border border-line text-txt-60 text-xs font-semibold">
+              <Clock size={12} className="text-accent" />
+              10s / quest.
+            </span>
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-2 border border-line text-txt-60 text-xs font-semibold">
+              <Sparkles size={12} className="text-gold" />
+              IA Sur mesure
+            </span>
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-2 border border-line text-txt-60 text-xs font-semibold">
+              <Crown size={12} className="text-energy" />
+              Avec modérateur
+            </span>
+          </div>
+
+          {/* Connected Players Stack & Progress Bar */}
+          <div className="bg-bg/60 rounded-2xl p-3 border border-line/60 mb-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-txt-40 text-[11px] font-bold uppercase tracking-wider">
+                Joueurs connectés ({session.playerCount}/{session.maxPlayers})
               </span>
+              <span className="text-txt-60 text-xs font-bold">{fillPct}%</span>
+            </div>
+
+            <div className="flex items-center justify-between gap-3">
+              {/* Avatars Stack */}
+              <div className="flex items-center -space-x-2 shrink-0">
+                {memberAvatars.length > 0 ? (
+                  memberAvatars.map((m, idx) => (
+                    <div key={m.userId || idx} className="relative rounded-full border-2 border-surface bg-surface">
+                      <Avatar avatarUrl={m.avatarUrl} name={m.username} size={28} />
+                    </div>
+                  ))
+                ) : (
+                  <div className="w-7 h-7 rounded-full bg-surface-2 border border-line flex items-center justify-center text-xs">
+                    👤
+                  </div>
+                )}
+                {extraCount > 0 && (
+                  <div className="w-7 h-7 rounded-full bg-surface-2 border border-line text-txt text-[10px] font-bold flex items-center justify-center shrink-0">
+                    +{extraCount}
+                  </div>
+                )}
+              </div>
+
+              {/* Progress Bar */}
+              <div className="flex-1 h-2 bg-surface-2 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-accent to-gold rounded-full transition-all duration-300"
+                  style={{ width: `${fillPct}%` }}
+                />
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="px-5 pb-4 flex items-center gap-6">
-          <div className="flex items-center">
-            <Users size={16} color="#FFFFFF60" />
-            <span className="text-txt-60 text-sm ml-1.5">
-              {session.playerCount}/{session.maxPlayers} joueurs
-            </span>
-          </div>
-          <div className="flex items-center">
-            <Target size={16} color="#FFFFFF60" />
-            <span className="text-txt-60 text-sm ml-1.5">{session.maxPlayers} max</span>
-          </div>
-        </div>
-
-        <button
-          onClick={(e) => { e.stopPropagation(); onPress(); }}
-          className="mx-5 mb-3 py-3.5 rounded-2xl flex items-center justify-center w-[calc(100%-40px)]"
-          style={{ backgroundColor: config.color }}
-        >
-          <div className="flex items-center">
-            <Play size={18} className="text-btn-fg" fill="currentColor" />
-            <span className="text-btn-fg font-bold text-base ml-2">
-              {getButtonLabel(session.status)}
-            </span>
-          </div>
-        </button>
-
-        {canDelete && onDelete && (
+          {/* Primary Action Button */}
           <button
-            onClick={(e) => { e.stopPropagation(); onDelete(); }}
-            className="mx-5 mb-4 py-3 rounded-2xl flex items-center justify-center w-[calc(100%-40px)] bg-red-500/20 border border-red-500/40 hover:bg-red-500/30 transition-colors"
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onPress();
+            }}
+            className="w-full py-3.5 px-4 rounded-2xl flex items-center justify-center gap-2 bg-accent hover:bg-accent-d text-btn-fg font-bold text-base shadow-glow-success transition-all cursor-pointer"
           >
-            <div className="flex items-center">
-              <Trash2 size={18} color="var(--bad)" />
-              <span className="text-red-400 font-bold text-base ml-2">Supprimer la session</span>
-            </div>
+            <Play size={18} className="fill-current text-btn-fg" />
+            <span>
+              {isOwner || session.managerId === user?.id
+                ? (isLobby ? `🚀 LANCER LA PARTIE (${session.playerCount}/${session.maxPlayers})` : '⚡ REPRENDRE LA SESSION')
+                : (isLobby ? '✅ REJOINDRE LE SALON' : 'Voir la partie')}
+            </span>
           </button>
-        )}
+        </div>
       </div>
     </div>
   );
@@ -784,11 +839,18 @@ export default function RoomDetailPage() {
       <div className="flex items-center px-4 pt-4 pb-3 gap-3 shrink-0 bg-bg border-b border-line z-20">
         <button
           onClick={() => router.back()}
-          className="w-10 h-10 rounded-full bg-surface flex items-center justify-center shrink-0"
+          className="w-10 h-10 rounded-full bg-surface flex items-center justify-center shrink-0 hover:bg-surface-2 transition-colors cursor-pointer"
         >
           <ChevronRight size={20} color="var(--primary)" className="rotate-180" />
         </button>
         <p className="text-txt font-bold text-xl flex-1 truncate">Room #{room.name}</p>
+        <button
+          onClick={() => setShowHistoryModal(true)}
+          className="w-10 h-10 rounded-full bg-surface flex items-center justify-center hover:bg-surface-2 transition-colors cursor-pointer text-txt-60 hover:text-txt"
+          title="Historique des sessions"
+        >
+          <History size={18} />
+        </button>
         {isOwner && (
           <button
             onClick={() => router.push(`/room/${roomId}/edit`)}
@@ -801,7 +863,7 @@ export default function RoomDetailPage() {
       </div>
 
       {/* ── Scrollable main content area (QR code + Code + Invite + Members table + Danger zone) ── */}
-      <div className={`flex-1 min-h-0 px-4 pt-4 pb-48 flex flex-col gap-4 overscroll-contain touch-pan-y${showConfigModal ? ' overflow-hidden' : ' overflow-y-auto'}`}>
+      <div className={`flex-1 min-h-0 px-4 pt-4 pb-16 flex flex-col gap-4 overscroll-contain touch-pan-y${showConfigModal ? ' overflow-hidden' : ' overflow-y-auto'}`}>
 
         {/* QR + Code (Dynamic: large when 1 member/alone, compact banner when 2+ members) */}
         {members.length <= 1 || showQrExpanded ? (
@@ -852,26 +914,38 @@ export default function RoomDetailPage() {
         {/* Invite button */}
         <button
           onClick={() => setShowInviteModal(true)}
-          className="w-full py-4 rounded-2xl flex items-center justify-center bg-accent hover:opacity-90 transition-opacity shrink-0"
+          className="w-full py-4 rounded-2xl flex items-center justify-center bg-accent hover:opacity-90 transition-opacity shrink-0 cursor-pointer shadow-sm"
         >
           <UserPlus size={20} className="text-btn-fg" />
           <span className="text-btn-fg font-bold text-base ml-2">Inviter des amis</span>
         </button>
 
         {/* Active Sessions */}
-        {activeSessions.length > 0 && (
+        {activeSessions.length > 0 ? (
           <div className="shrink-0">
             <p className="text-txt-40 text-[10px] font-bold tracking-widest uppercase mb-2">Session active</p>
             {activeSessions.map((session) => (
               <ActiveSessionCard
                 key={session.id}
                 session={session}
+                members={members}
                 onPress={() => navigateToSession(session)}
                 onDelete={() => handleDeleteSession(session.id, session.code)}
                 canDelete={isOwner || session.managerId === user?.id}
+                isOwner={isOwner}
               />
             ))}
           </div>
+        ) : (
+          isOwner && (
+            <button
+              onClick={handleCreateSession}
+              className="w-full py-4 rounded-2xl flex items-center justify-center bg-gradient-to-r from-accent to-gold text-btn-fg font-bold text-base shadow-glow-success hover:opacity-95 transition-all cursor-pointer shrink-0"
+            >
+              <Play size={20} className="text-btn-fg fill-current" />
+              <span className="ml-2">🚀 CRÉER & LANCER UNE SESSION</span>
+            </button>
+          )
         )}
 
         {/* Members + Rankings fusionnés */}
@@ -888,7 +962,7 @@ export default function RoomDetailPage() {
           {!isOwner ? (
             <button
               onClick={handleLeaveRoom}
-              className="flex items-center px-5 py-4 hover:bg-white/5 w-full text-left transition-colors"
+              className="flex items-center px-5 py-4 hover:bg-white/5 w-full text-left transition-colors cursor-pointer"
             >
               <LogOut size={18} color="var(--bad)" className="mr-3" />
               <span className="text-red-400 font-medium">Quitter la salle</span>
@@ -896,46 +970,13 @@ export default function RoomDetailPage() {
           ) : (
             <button
               onClick={handleDeleteRoom}
-              className="flex items-center px-5 py-4 hover:bg-white/5 w-full text-left transition-colors"
+              className="flex items-center px-5 py-4 hover:bg-white/5 w-full text-left transition-colors cursor-pointer"
             >
               <Trash2 size={18} color="var(--bad)" className="mr-3" />
               <span className="text-red-400 font-medium">Supprimer la salle</span>
             </button>
           )}
         </div>
-      </div>
-
-      {/* ── Floating Sticky Action Bar (Fixed Dock above TabBar) ── */}
-      <div className="fixed bottom-[88px] left-4 right-4 bg-surface/95 backdrop-blur-md border border-line px-4 py-3 flex items-center justify-between gap-3 rounded-[24px] shadow-[0_12px_40px_rgba(0,0,0,0.35)] z-30 pointer-events-auto">
-        {/* Invite */}
-        <button
-          onClick={() => setShowInviteModal(true)}
-          className="flex flex-col items-center gap-1 flex-1 group cursor-pointer"
-        >
-          <UserPlus size={19} className="text-txt-60 group-hover:text-txt transition-colors" />
-          <span className="text-txt-60 group-hover:text-txt text-[10px] font-medium uppercase tracking-wider transition-colors">Invite</span>
-        </button>
-
-        {/* Start Game — center pill */}
-        <button
-          onClick={hasActiveSession ? () => navigateToSession(activeSessions[0]) : handleCreateSession}
-          className="flex items-center gap-2 px-4 py-3.5 rounded-full hover:opacity-95 active:scale-[0.98] transition-all cursor-pointer shadow-md"
-          style={{ background: 'linear-gradient(135deg, var(--primary), var(--primary-d))' }}
-        >
-          <Play size={18} className="text-btn-fg" fill="currentColor" />
-          <span className="text-btn-fg font-bold text-sm tracking-wider uppercase">
-            {hasActiveSession ? 'Rejoindre' : 'Lancer la partie'}
-          </span>
-        </button>
-
-        {/* Historique */}
-        <button
-          onClick={() => setShowHistoryModal(true)}
-          className="flex flex-col items-center gap-1 flex-1 group cursor-pointer"
-        >
-          <History size={19} className="text-txt-60 group-hover:text-txt transition-colors" />
-          <span className="text-txt-60 group-hover:text-txt text-[10px] font-medium uppercase tracking-wider transition-colors">Historique</span>
-        </button>
       </div>
 
       {/* History Modal */}
