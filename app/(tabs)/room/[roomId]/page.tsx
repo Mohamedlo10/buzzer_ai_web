@@ -794,7 +794,7 @@ export default function RoomDetailPage() {
       </div>
 
       {/* ── Scrollable main content area (QR code + Code + Invite + Members table + Danger zone) ── */}
-      <div className={`flex-1 min-h-0 px-4 pt-4 pb-[140px] flex flex-col gap-4 overscroll-contain touch-pan-y${showConfigModal ? ' overflow-hidden' : ' overflow-y-auto'}`}>
+      <div className={`flex-1 min-h-0 px-4 pt-4 pb-48 flex flex-col gap-4 overscroll-contain touch-pan-y${showConfigModal ? ' overflow-hidden' : ' overflow-y-auto'}`}>
 
         {/* QR + Code (Dynamic: large when 1 member/alone, compact banner when 2+ members) */}
         {members.length <= 1 || showQrExpanded ? (
@@ -899,20 +899,20 @@ export default function RoomDetailPage() {
       </div>
 
       {/* ── Floating Sticky Action Bar (Fixed Dock above TabBar) ── */}
-      <div className="fixed bottom-[74px] left-4 right-4 bg-surface/95 backdrop-blur-md border border-line px-4 py-3 flex items-center justify-between gap-3 rounded-[24px] shadow-[0_12px_40px_rgba(0,0,0,0.35)] z-30 pointer-events-auto">
+      <div className="fixed bottom-[88px] left-4 right-4 bg-surface/95 backdrop-blur-md border border-line px-4 py-3 flex items-center justify-between gap-3 rounded-[24px] shadow-[0_12px_40px_rgba(0,0,0,0.35)] z-30 pointer-events-auto">
         {/* Invite */}
         <button
           onClick={() => setShowInviteModal(true)}
-          className="flex flex-col items-center gap-1 flex-1"
+          className="flex flex-col items-center gap-1 flex-1 group cursor-pointer"
         >
-          <UserPlus size={22} color="#FFFFFF80" />
-          <span className="text-txt-60 text-[10px] font-medium uppercase tracking-wider">Invite</span>
+          <UserPlus size={19} className="text-txt-60 group-hover:text-txt transition-colors" />
+          <span className="text-txt-60 group-hover:text-txt text-[10px] font-medium uppercase tracking-wider transition-colors">Invite</span>
         </button>
 
         {/* Start Game — center pill */}
         <button
           onClick={hasActiveSession ? () => navigateToSession(activeSessions[0]) : handleCreateSession}
-          className="flex items-center gap-2 px-8 py-3.5 rounded-full"
+          className="flex items-center gap-2 px-4 py-3.5 rounded-full hover:opacity-95 active:scale-[0.98] transition-all cursor-pointer shadow-md"
           style={{ background: 'linear-gradient(135deg, var(--primary), var(--primary-d))' }}
         >
           <Play size={18} className="text-btn-fg" fill="currentColor" />
@@ -924,10 +924,10 @@ export default function RoomDetailPage() {
         {/* Historique */}
         <button
           onClick={() => setShowHistoryModal(true)}
-          className="flex flex-col items-center gap-1 flex-1"
+          className="flex flex-col items-center gap-1 flex-1 group cursor-pointer"
         >
-          <History size={22} color="#FFFFFF80" />
-          <span className="text-txt-60 text-[10px] font-medium uppercase tracking-wider">Historique</span>
+          <History size={19} className="text-txt-60 group-hover:text-txt transition-colors" />
+          <span className="text-txt-60 group-hover:text-txt text-[10px] font-medium uppercase tracking-wider transition-colors">Historique</span>
         </button>
       </div>
 
