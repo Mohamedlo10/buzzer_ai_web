@@ -260,7 +260,11 @@ export default function LobbyPage() {
     if (session?.status === 'GENERATING') router.replace(`/session/${code}/loading`);
     else if (session?.status === 'PLAYING') router.replace(`/session/${code}/game`);
     else if (session?.status === 'RESULTS') router.replace(`/session/${code}/results`);
-  }, [session?.status, code]); // eslint-disable-line react-hooks/exhaustive-deps
+    else if (session?.status === 'CANCELLED') {
+      if (session?.roomId) router.replace(`/room/${session.roomId}`);
+      else router.replace('/rooms');
+    }
+  }, [session?.status, session?.roomId, code]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!players.length) return;
@@ -348,7 +352,12 @@ export default function LobbyPage() {
     if (!session?.id || isDeletingSession) return;
     if (window.confirm('Supprimer la session ? Cette action est irréversible. Tous les joueurs seront expulsés.')) {
       setIsDeletingSession(true);
-      try { await deleteSession(session.id); router.replace('/'); }
+      const roomId = session.roomId;
+      try {
+        await deleteSession(session.id);
+        if (roomId) router.replace(`/room/${roomId}`);
+        else router.replace('/rooms');
+      }
       catch (err: any) { window.alert(err?.message || 'Impossible de supprimer la session'); setIsDeletingSession(false); }
     }
   };

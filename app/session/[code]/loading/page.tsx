@@ -260,8 +260,11 @@ export default function LoadingPage() {
       router.replace(`/session/${code}/lobby`);
     } else if (session.status === 'RESULTS') {
       router.replace(`/session/${code}/results`);
+    } else if (session.status === 'CANCELLED') {
+      if (session?.roomId) router.replace(`/room/${session.roomId}`);
+      else router.replace('/rooms');
     }
-  }, [session?.status, code]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [session?.status, session?.roomId, code]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Adaptive polling
   useEffect(() => {

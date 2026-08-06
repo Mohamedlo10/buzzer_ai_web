@@ -252,8 +252,11 @@ export default function GamePage() {
       router.replace(`/session/${code}/loading`);
     } else if (session?.status === 'RESULTS') {
       router.replace(`/session/${code}/results`);
+    } else if (session?.status === 'CANCELLED') {
+      if (session?.roomId) router.replace(`/room/${session.roomId}`);
+      else router.replace('/rooms');
     }
-  }, [session?.status, sessionFetched, code]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [session?.status, session?.roomId, sessionFetched, code]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Fallback word-advance au rythme du serveur (600ms/mot) quand WS est déconnecté
   useEffect(() => {
