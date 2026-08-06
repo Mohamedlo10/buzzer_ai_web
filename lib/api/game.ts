@@ -13,15 +13,26 @@ export async function buzz(
   timestamp: number,
   isFullyDisplayed: boolean = false,
 ): Promise<BuzzResponse> {
-  // N'envoyer isFullyDisplayed que quand true pour rester compatible avec
-  // les anciens backends qui lisent Map<String, Long> (boolean false planterait).
-  const payload: Record<string, unknown> = { timestampMs: timestamp };
+  // `timestamp` est déjà exprimé dans le référentiel serveur (voir serverNow()).
+  // On l'envoie sous les deux clés : clientBuzzAtEpochMs est celle que le
+  // serveur borne et utilise pour le classement, timestampMs reste lue par les
+  // déploiements non encore migrés.
+  const payload: Record<string, unknown> = {
+    clientBuzzAtEpochMs: timestamp,
+    timestampMs: timestamp,
+  };
   if (isFullyDisplayed) payload.isFullyDisplayed = true;
   const res = await apiClientFast.post<BuzzResponse>(
     `/api/games/${sessionId}/buzz`,
     payload,
   );
   return res.data;
+}
+
+/** Horloge serveur brute — utilisée par la synchronisation d'horloge. */
+export async function getServerTime(): Promise<number> {
+  const res = await apiClient.get<{ serverEpochMs: number }>('/api/games/time');
+  return res.data.serverEpochMs;
 }
 
 export async function validateAnswer(

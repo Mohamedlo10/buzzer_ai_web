@@ -2,10 +2,26 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { CheckCircle, XCircle } from 'lucide-react';
+import { useDeadlineSeconds } from '~/lib/game/useDeadline';
+import { serverNow } from '~/lib/game/clock';
 
 interface AnswerChoicesPanelProps {
   choices: string[];
+  /** Durée nominale du tour, pour les seuils de couleur du chrono. */
   answerTimeSeconds: number;
+  /**
+   * Échéance absolue en temps serveur.
+   *
+   * Quand elle est fournie (multijoueur sans modérateur), c'est le serveur qui
+   * tranche l'expiration : le panneau se contente d'afficher le décompte et
+   * n'auto-soumet jamais. Une auto-soumission côté client entrait autrement en
+   * course avec le clic du joueur, l'une marquant faux pendant que l'autre
+   * marquait juste.
+   *
+   * Absente (mode solo, sans moteur serveur), le panneau retombe sur un
+   * décompte local et auto-soumet `__timeout__` à zéro.
+   */
+  deadlineEpochMs?: number | null;
   onSubmit: (chosenAnswer: string) => void;
   isSubmitting?: boolean;
   result?: 'correct' | 'wrong' | null;
@@ -16,52 +32,53 @@ const CHOICE_LABELS = ['A', 'B', 'C', 'D', 'E', 'F'];
 export function AnswerChoicesPanel({
   choices,
   answerTimeSeconds,
+  deadlineEpochMs,
   onSubmit,
   isSubmitting = false,
   result = null,
 }: AnswerChoicesPanelProps) {
-  const [remaining, setRemaining] = useState(answerTimeSeconds);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
   const hasSubmittedRef = useRef(false);
+  const serverDriven = deadlineEpochMs != null;
 
+  const onSubmitRef = useRef(onSubmit);
+  onSubmitRef.current = onSubmit;
+
+  // Mode local (solo) : une échéance est fabriquée une fois par tour. Elle est
+  // recalculée uniquement quand les propositions changent, jamais sur un simple
+  // re-render — c'était la cause du réarmement du garde en pleine soumission.
+  const [localDeadline, setLocalDeadline] = useState<number | null>(null);
+  const choicesKey = choices.join('|');
   useEffect(() => {
-    setRemaining(answerTimeSeconds);
+    if (serverDriven) {
+      setLocalDeadline(null);
+      return;
+    }
+    setLocalDeadline(serverNow() + answerTimeSeconds * 1000);
+  }, [serverDriven, answerTimeSeconds, choicesKey]);
+
+  const effectiveDeadline = serverDriven ? deadlineEpochMs : localDeadline;
+  const remaining = useDeadlineSeconds(effectiveDeadline);
+
+  // Le garde ne se réarme qu'au changement de tour, jamais sur un re-render.
+  useEffect(() => {
     setSelectedIndex(null);
     hasSubmittedRef.current = false;
+  }, [effectiveDeadline]);
 
-    timerRef.current = setInterval(() => {
-      setRemaining((prev) => {
-        if (prev <= 1) {
-          clearInterval(timerRef.current!);
-          timerRef.current = null;
-          if (!hasSubmittedRef.current) {
-            hasSubmittedRef.current = true;
-            onSubmit('__timeout__');
-          }
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
-  }, [answerTimeSeconds, onSubmit]);
-
+  // Auto-soumission au temps écoulé : uniquement en mode local. En multijoueur
+  // c'est le serveur qui décide de l'expiration.
   useEffect(() => {
-    if ((result || isSubmitting) && timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
-  }, [result, isSubmitting]);
+    if (serverDriven || !localDeadline) return;
+    if (remaining > 0 || hasSubmittedRef.current || isSubmitting || result) return;
+    hasSubmittedRef.current = true;
+    onSubmitRef.current('__timeout__');
+  }, [serverDriven, localDeadline, remaining, isSubmitting, result]);
 
   const handleSelect = (index: number, answer: string) => {
     if (hasSubmittedRef.current || isSubmitting || result) return;
     hasSubmittedRef.current = true;
     setSelectedIndex(index);
-    if (timerRef.current) clearInterval(timerRef.current);
     onSubmit(answer);
   };
 

@@ -11,6 +11,12 @@ import type {
 } from '~/types/api';
 import * as sessionsApi from '~/lib/api/sessions';
 import { appStorage } from '~/lib/utils/storage';
+import {
+  applyPacket,
+  initialGameStateSlice,
+  type GameStatePacket,
+  type GameStateSlice,
+} from '~/lib/game/packet';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // STATE INTERFACE
@@ -56,6 +62,14 @@ interface BuzzState {
   globalTimerPaused: boolean;
   answerReveal: { correctAnswer: string; winnerId: string | null; winnerName: string | null; allAnswersWrong?: boolean } | null;
 
+  /**
+   * État autoritaire du mode sans modérateur, projeté depuis le dernier
+   * `GameStatePacket` reçu. Écrit exclusivement par `applyStatePacket` : c'est
+   * la garde de version qui rend impossible qu'un snapshot périmé (WebSocket
+   * réordonné ou poll REST tardif) écrase un état plus frais.
+   */
+  game: GameStateSlice;
+
   // Loading states
   isCreating: boolean;
   isJoining: boolean;
@@ -98,6 +112,8 @@ interface BuzzActions {
   setDisplayRunning: (running: boolean) => void;
   setIsSubmittingAnswer: (submitting: boolean) => void;
   clearAnswerChoices: () => void;
+  /** Unique écrivain de `game`. Ignore silencieusement les paquets périmés. */
+  applyStatePacket: (packet: GameStatePacket | null | undefined) => void;
 
   // Cleanup
   resetGame: () => void;
@@ -137,6 +153,7 @@ const initialState: BuzzState = {
   globalTimerTotal: 0,
   globalTimerPaused: false,
   answerReveal: null,
+  game: initialGameStateSlice,
   isCreating: false,
   isJoining: false,
   isStarting: false,
@@ -359,6 +376,52 @@ export const useBuzzStore = create<BuzzState & BuzzActions>((set, get) => ({
   setDisplayRunning: (running) => set({ displayRunning: running }),
   setIsSubmittingAnswer: (submitting) => set({ isSubmittingAnswer: submitting }),
   clearAnswerChoices: () => set({ myAnswerChoices: null, myAnswerQuestionId: null }),
+
+  applyStatePacket: (packet) => {
+    const next = applyPacket(get().game, packet);
+    if (!next) return; // paquet périmé ou dupliqué — ne rien écrire
+
+    set((state) => {
+      const patch: Partial<BuzzState> = { game: next };
+
+      // Nouvelle question : purger ce qui appartenait à la précédente. Le
+      // paquet fait autorité, donc c'est lui qui déclenche la remise à zéro —
+      // et non un effet React qui pouvait s'exécuter après coup.
+      if (next.packetQuestionId && next.packetQuestionId !== state.game.packetQuestionId) {
+        patch.myAnswerChoices = null;
+        patch.myAnswerQuestionId = null;
+        patch.answeredWrongThisQuestion = false;
+        patch.answerReveal = null;
+      }
+
+      // La révélation est portée par la phase : plus de setTimeout local pour
+      // la faire disparaître, c'est le serveur qui décide quand elle s'efface.
+      patch.answerReveal = next.reveal
+        ? {
+            correctAnswer: next.reveal.correctAnswer,
+            winnerId: next.reveal.winnerId,
+            winnerName: next.reveal.winnerName,
+            allAnswersWrong: next.reveal.allAnswersWrong,
+          }
+        : null;
+
+      // Le joueur n'a plus la main : ses choix ne doivent plus être affichés.
+      if (next.phase !== 'ANSWERING') {
+        patch.myAnswerChoices = null;
+        patch.myAnswerQuestionId = null;
+      }
+
+      // Scores : le paquet est indexé par identifiant de Player.
+      if (packet?.scores) {
+        patch.players = state.players.map((p) => ({
+          ...p,
+          score: packet.scores[p.id] ?? p.score,
+        }));
+      }
+
+      return patch;
+    });
+  },
 
   addPlayer: (player) =>
     set((state) => {

@@ -32,7 +32,7 @@ import { AnswerRevealOverlay } from '~/components/game/AnswerRevealOverlay';
 import { IdentificationQuestionDisplay } from '~/components/game/IdentificationQuestionDisplay';
 import { LiveLeaderboard } from '~/components/game/LiveLeaderboard';
 import { TeamLeaderboard } from '~/components/game/TeamLeaderboard';
-import { FocusModePanel } from '~/components/game/FocusModePanel';
+import { ModeratorFreeGame } from '~/components/game/moderator-free/ModeratorFreeGame';
 import { ScoreCorrectionSheet } from '~/components/game/ScoreCorrectionSheet';
 import { PlayerProfileModal } from '~/components/ui/PlayerProfileModal';
 import { useBuzzStore } from '~/stores/useBuzzStore';
@@ -308,7 +308,16 @@ export default function GamePage() {
         }
       }
 
-      setBuzzQueue(gameState.buzzQueue ?? []);
+      // Mode sans modérateur : le paquet versionné est la seule source de
+      // vérité. Il passe par la même garde que les paquets WebSocket, donc
+      // cette réponse — partie il y a peut-être plusieurs secondes — ne peut
+      // plus écraser un état plus frais. Les écritures directes ci-dessous
+      // sont réservées au mode avec modérateur.
+      if (gameState.statePacket) {
+        useBuzzStore.getState().applyStatePacket(gameState.statePacket);
+      } else {
+        setBuzzQueue(gameState.buzzQueue ?? []);
+      }
 
       // Restore pending answer choices only if none are showing yet (reconnect case only, not during polls)
       if (gameState.pendingChoices?.length && !useBuzzStore.getState().myAnswerChoices) {
@@ -331,9 +340,9 @@ export default function GamePage() {
         useBuzzStore.getState().setHasBuzzed(true);
       } else if (user?.id) {
         const queue: BuzzQueueItem[] = gameState.buzzQueue ?? [];
-        const myDirectBuzz = queue.some((b) => b.playerId === myPlayer?.id);
         const storeState = useBuzzStore.getState();
         const myPlayer = storeState.players.find((p) => p.userId === user.id);
+        const myDirectBuzz = queue.some((b) => b.playerId === myPlayer?.id);
         const myTeamBuzz =
           !myDirectBuzz &&
           storeState.session?.isTeamMode === true &&
@@ -701,23 +710,6 @@ export default function GamePage() {
     );
   }
 
-  if (answerPanelVisible && myAnswerChoices && currentQuestion) {
-    const words = currentQuestion.text.split(' ');
-    const partialText = words.slice(0, displayWordIndex + 1).join(' ');
-
-    return (
-      <FocusModePanel
-        questionText={partialText}
-        category={currentQuestion.category}
-        choices={myAnswerChoices}
-        answerTimeSeconds={answerTimeSeconds}
-        onSubmit={handleSubmitAnswer}
-        isSubmitting={isSubmittingAnswer}
-        result={answerSubmitResult}
-      />
-    );
-  }
-
   // playerId dans buzzQueue = Player entity ID (pas User entity ID)
   const queuePosition = buzzQueue.findIndex((item) => item.playerId === currentPlayer?.id);
   const actualHasBuzzed = hasBuzzed || queuePosition >= 0;
@@ -811,16 +803,8 @@ export default function GamePage() {
       </div>
 
 
-      {/* Global Timer — Sans Modérateur, sticky sous le header */}
-      {isWithoutModerator && globalTimerTotal > 0 && (
-        <div className="sticky top-[88px] z-10 px-4 py-1.5 bg-bg border-b border-line">
-          <GlobalTimerBar
-            totalSeconds={globalTimerTotal}
-            remainingSeconds={globalTimerRemaining}
-            paused={globalTimerPaused}
-          />
-        </div>
-      )}
+      {/* Le timer global du mode sans modérateur est rendu par ModeratorFreeGame,
+          à partir de l'échéance absolue du state packet. */}
 
       {/* PAUSE Overlay */}
       {isPaused && (
@@ -1023,115 +1007,15 @@ export default function GamePage() {
         {(!isManager || isWithoutModerator) && !isSpectator && (
           <div className="px-4 pt-4">
             {isWithoutModerator ? (
-              <div className="flex flex-col gap-3">
-
-                {/* Info manager en mode sans modérateur */}
-                {isManager && isWithoutModerator && (
-                  <div className="bg-host/15 border border-host/25 rounded-xl px-3 py-2">
-                    <p className="text-host text-xs font-medium text-center">
-                      🎮 Vous êtes aussi un joueur dans ce mode
-                    </p>
-                  </div>
-                )}
-
-                {/* ── Question display (progressive or identification) ── */}
-                {currentQuestion?.questionType === 'IDENTIFICATION' && currentQuestion.imageUrl ? (
-                  <IdentificationQuestionDisplay
-                    imageUrl={currentQuestion.imageUrl}
-                    category={currentQuestion.category}
-                    text={currentQuestion.text}
-                  />
-                ) : (
-                  <div className="relative">
-                    <ProgressiveQuestionDisplay
-                      text={currentQuestion.text}
-                      wordIndex={displayWordIndex}
-                      isRunning={displayRunning && !someoneIsAnswering}
-                    />
-                    {/* Indicateur pause quand quelqu'un répond */}
-                    {someoneIsAnswering && (
-                      <div className="absolute top-2 right-2 flex items-center gap-1.5 bg-bg/80 px-2 py-1 rounded-full">
-                        <div className="w-1.5 h-1.5 rounded-full bg-gold-bright" />
-                        <span className="text-energy text-[10px] font-bold tracking-widest uppercase">Pause</span>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* ── C'est votre tour : chargement des choix ── */}
-                {amIFirstInQueue && !myAnswerChoices && (
-                  <div className="bg-accent/5 border border-accent/25 rounded-2xl p-4 flex items-center gap-3">
-                    <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin shrink-0" />
-                    <div>
-                      <p className="text-accent font-bold text-sm">C'est votre tour !</p>
-                      <p className="text-accent/60 text-xs">Chargement des choix...</p>
-                    </div>
-                  </div>
-                )}
-
-                {/* ── Choix de réponse pour le 1er de la file ── */}
-                {answerPanelVisible && myAnswerChoices && (
-                  <div>
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />
-                      <p className="text-accent text-xs font-bold tracking-widest uppercase">
-                        C'est votre tour — choisissez
-                      </p>
-                    </div>
-                    <AnswerChoicesPanel
-                      choices={myAnswerChoices}
-                      answerTimeSeconds={answerTimeSeconds}
-                      onSubmit={handleSubmitAnswer}
-                      isSubmitting={isSubmittingAnswer}
-                      result={answerSubmitResult}
-                    />
-                  </div>
-                )}
-
-                {/* ── En file d'attente (position 2+) ── */}
-                {queuePosition > 0 && (
-                  <div className="bg-surface border border-line rounded-2xl p-4 flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-full bg-surface-2 flex items-center justify-center shrink-0">
-                      <span className="text-txt font-bold text-sm">#{queuePosition + 1}</span>
-                    </div>
-                    <div>
-                      <p className="text-txt font-semibold text-sm">En file d'attente</p>
-                      <p className="text-txt-60 text-xs">
-                        Vous répondrez si {buzzQueue[0]?.playerName} se trompe
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                {/* ── Quelqu'un répond (pas dans la file) ── */}
-                {someoneIsAnswering && !actualHasBuzzed && !answeredWrongThisQuestion && (
-                  <div className="bg-surface border border-line rounded-2xl px-4 py-3 flex items-center gap-3">
-                    <div className="flex gap-1 shrink-0">
-                      {[0,1,2].map((i) => (
-                        <div
-                          key={i}
-                          className="w-1.5 h-1.5 rounded-full bg-white/40 animate-bounce"
-                          style={{ animationDelay: `${i * 0.15}s` }}
-                        />
-                      ))}
-                    </div>
-                    <p className="text-txt-60 text-sm">
-                      <span className="text-txt font-semibold">{buzzQueue[0].playerName}</span> répond...
-                    </p>
-                  </div>
-                )}
-
-                {/* ── A déjà faux ce tour ── */}
-                {answeredWrongThisQuestion && (
-                  <div className="bg-buzz/5 border border-buzz/20 rounded-2xl px-4 py-3 flex items-center gap-3">
-                    <XCircle size={16} className="text-buzz shrink-0" />
-                    <p className="text-buzz/80 text-sm font-medium">
-                      Vous avez déjà répondu faux pour cette question
-                    </p>
-                  </div>
-                )}
-
-              </div>
+              <ModeratorFreeGame
+                sessionId={session.id}
+                myPlayer={currentPlayer}
+                players={players}
+                teams={teams}
+                isManager={isManager}
+                isSpectator={isSpectator}
+                onAdvanceAfterAllWrong={handleAdvanceAfterAllWrong}
+              />
             ) : (
               <div className="flex flex-col gap-3">
                 {/* WITH_MODERATOR: écoute ou statut post-buzz */}
@@ -1182,9 +1066,12 @@ export default function GamePage() {
           </div>
         )}
 
-        {/* Buzzer — Players + manager in without-moderator mode */}
+        {/* Buzzer — mode avec modérateur uniquement.
+            En sans modérateur, buzzer, file et révélation sont rendus par
+            ModeratorFreeGame à partir du state packet : les dupliquer ici
+            réintroduirait deux affichages divergents du même état. */}
         {/* Caché si le joueur a ses choix affichés (l'AnswerChoicesPanel les remplace) */}
-        {!isSpectator && (!isManager || isWithoutModerator) && !answerPanelVisible && (
+        {!isSpectator && !isManager && !isWithoutModerator && (
           <div className="px-4 py-3 flex flex-col items-center">
             <BuzzerButton
               onBuzz={handleBuzz}
@@ -1223,7 +1110,8 @@ export default function GamePage() {
           </div>
         )}
 
-        {/* Buzz Queue */}
+        {/* Buzz Queue — mode avec modérateur (ModeratorFreeGame rend la sienne) */}
+        {!isWithoutModerator && (
         <div className="px-4 pt-2">
           <div className={`rounded-3xl border overflow-hidden ${buzzQueue.length > 0 ? 'border-accent bg-accent/5' : 'border-line bg-surface'}`}>
             {/* Queue Header */}
@@ -1415,6 +1303,7 @@ export default function GamePage() {
             )}
           </div>
         </div>
+        )}
 
         {/* Manager Secondary Controls */}
         {isManager && (
@@ -1512,8 +1401,9 @@ export default function GamePage() {
         currentUserId={user?.id}
       />
 
-      {/* Answer Reveal Overlay — mode sans modérateur */}
-      {answerReveal && (
+      {/* Révélation — mode avec modérateur. En sans modérateur c'est
+          ModeratorFreeGame qui la rend, pilotée par la phase du paquet. */}
+      {answerReveal && !isWithoutModerator && (
         <AnswerRevealOverlay
           correctAnswer={answerReveal.correctAnswer}
           winnerId={answerReveal.winnerId}

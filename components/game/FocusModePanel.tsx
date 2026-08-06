@@ -2,12 +2,19 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { CheckCircle, XCircle } from 'lucide-react';
+import { useDeadlineSeconds } from '~/lib/game/useDeadline';
 
 interface FocusModePanelProps {
   questionText: string;
   category: string;
   choices: string[];
+  /** Durée nominale du tour, pour les seuils de couleur du chrono. */
   answerTimeSeconds: number;
+  /**
+   * Échéance absolue en temps serveur. Le décompte en dérive directement : le
+   * client n'auto-soumet plus à zéro, c'est le serveur qui tranche l'expiration.
+   */
+  deadlineEpochMs: number | null;
   onSubmit: (chosenAnswer: string) => void;
   isSubmitting?: boolean;
   result?: 'correct' | 'wrong' | null;
@@ -20,52 +27,30 @@ export function FocusModePanel({
   category,
   choices,
   answerTimeSeconds,
+  deadlineEpochMs,
   onSubmit,
   isSubmitting = false,
   result = null,
 }: FocusModePanelProps) {
-  const [remaining, setRemaining] = useState(answerTimeSeconds);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
   const hasSubmittedRef = useRef(false);
 
+  // Le chrono se déduit de l'échéance serveur : il ne peut plus être réarmé par
+  // un simple re-render, ni dériver quand l'onglet passe en arrière-plan.
+  const remaining = useDeadlineSeconds(deadlineEpochMs);
+
+  // Un nouveau tour = une nouvelle échéance. C'est le seul moment où le garde
+  // anti-double-soumission se réarme — la version précédente le réarmait à
+  // chaque changement d'identité de `onSubmit`, donc pendant la soumission.
   useEffect(() => {
-    setRemaining(answerTimeSeconds);
     setSelectedIndex(null);
     hasSubmittedRef.current = false;
-
-    timerRef.current = setInterval(() => {
-      setRemaining((prev) => {
-        if (prev <= 1) {
-          clearInterval(timerRef.current!);
-          timerRef.current = null;
-          if (!hasSubmittedRef.current) {
-            hasSubmittedRef.current = true;
-            onSubmit('__timeout__');
-          }
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
-  }, [answerTimeSeconds, onSubmit]);
-
-  useEffect(() => {
-    if ((result || isSubmitting) && timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
-  }, [result, isSubmitting]);
+  }, [deadlineEpochMs]);
 
   const handleSelect = (index: number, answer: string) => {
     if (hasSubmittedRef.current || isSubmitting || result) return;
     hasSubmittedRef.current = true;
     setSelectedIndex(index);
-    if (timerRef.current) clearInterval(timerRef.current);
     onSubmit(answer);
   };
 

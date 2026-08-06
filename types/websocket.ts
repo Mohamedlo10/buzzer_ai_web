@@ -274,6 +274,21 @@ export interface AnswerRevealEvent extends BaseWSMessage {
   correctAnswer: string;
   winnerId: string | null;
   winnerName: string | null;
+  /** Tous les joueurs se sont trompés : la partie attend le manager. */
+  allAnswersWrong?: boolean;
+}
+
+/**
+ * Snapshot versionné du mode sans modérateur.
+ * Topic: /topic/session/{id}/state
+ *
+ * Seul message porteur d'état de jeu dans ce mode. Le payload n'est pas
+ * remodelé au passage : il est transmis tel quel à `applyStatePacket`, qui
+ * applique la garde de version.
+ */
+export interface GameStatePacketEvent extends BaseWSMessage {
+  type: 'game_state_packet';
+  packet: import('~/lib/game/packet').GameStatePacket;
 }
 
 export interface GameChoicesEvent extends BaseWSMessage {
@@ -337,4 +352,5 @@ export type WSEvent =
   | QuestionTimerEvent
   | AnswerRevealEvent
   | GameChoicesEvent
-  | WordAdvanceEvent;
+  | WordAdvanceEvent
+  | GameStatePacketEvent;

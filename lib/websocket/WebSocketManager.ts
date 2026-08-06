@@ -317,6 +317,9 @@ function mapTopicMessageToWSEvent(
         correctAnswer: payload.correctAnswer ?? '',
         winnerId: payload.winnerId ?? null,
         winnerName: payload.winnerName ?? null,
+        // Sans ce champ l'overlay s'auto-ferme et le manager n'a jamais le bouton
+        // « continuer » → partie figée quand tout le monde s'est trompé.
+        allAnswersWrong: payload.allAnswersWrong ?? false,
       } as any;
 
     case 'game-choices':
@@ -326,6 +329,19 @@ function mapTopicMessageToWSEvent(
         questionId: payload.questionId ?? '',
         choices: payload.choices ?? [],
         answerTimeSeconds: payload.answerTimeSeconds ?? 15,
+        startedAtMs: payload.startedAtMs ?? null,
+      } as any;
+
+    // ─── Canal d'état versionné (sans modérateur) ───
+    case 'state':
+      // Transmis brut : `handlers.ts` le passe à applyStatePacket, qui possède
+      // la garde de version. Surtout ne rien reformater ici — c'est en jetant
+      // des champs au passage (allAnswersWrong, startedAtMs) que les mappings
+      // précédents ont figé des parties.
+      return {
+        type: 'game_state_packet',
+        sessionId,
+        packet: payload,
       } as any;
 
     default:
@@ -381,6 +397,10 @@ export class WebSocketManager {
     'word-advance',
     'question-timer',
     'answer-reveal',
+    // Canal d'état unique du mode sans modérateur. Un seul message, versionné,
+    // qui remplace la diffusion éclatée sur buzz / score / question-timer /
+    // word-advance / answer-reveal / sync — dont rien n'ordonnait les arrivées.
+    'state',
   ] as const;
 
   /**

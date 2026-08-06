@@ -305,6 +305,12 @@ export interface GameStateResponse {
   teams?: TeamResponse[];
   pendingChoices?: string[] | null;
   pendingAnswerTimeSeconds?: number | null;
+  /**
+   * Snapshot versionné du mode sans modérateur, identique à celui du canal
+   * WebSocket. Appliqué via la même garde de version, ce qui empêche une
+   * réponse REST tardive d'écraser un état plus frais.
+   */
+  statePacket?: import('~/lib/game/packet').GameStatePacket | null;
 }
 
 // ──────────────────────────────────────────────
@@ -1041,6 +1047,12 @@ export interface AdminRoomResponse extends AdminRoomSummaryResponse {}
 
 export interface SubmitAnswerRequest {
   chosenAnswer: string;
+  /**
+   * Question à laquelle le joueur répond. Le serveur rejette (409) une
+   * soumission qui ne porte pas sur le tour courant, au lieu de la comparer à
+   * la réponse attendue de la question suivante.
+   */
+  questionId?: string | null;
 }
 
 export interface SubmitAnswerResponse {

@@ -8,8 +8,47 @@ import { useFriendStore } from '~/stores/useFriendStore';
  * Central dispatcher that routes incoming WebSocket events
  * to the correct Zustand store actions.
  */
+/**
+ * Le moteur autoritaire pilote-t-il cette session ?
+ *
+ * En mode sans modérateur, l'état de jeu vient exclusivement du canal `state`.
+ * Les anciens topics (`buzz`, `score`, `question-timer`, `word-advance`,
+ * `answer-reveal`, `sync`) continuent d'être émis pour le mode avec
+ * modérateur ; les laisser écrire ici recréerait la concurrence d'écrivains
+ * que la version des paquets sert justement à éliminer.
+ */
+function isEngineDriven(): boolean {
+  return useBuzzStore.getState().session?.sessionMode === 'WITHOUT_MODERATOR';
+}
+
+/** Événements dont le moteur est seul propriétaire quand il pilote la session. */
+const ENGINE_OWNED_EVENTS = new Set([
+  'buzzer_pressed',
+  'buzzer_reset',
+  'answer_validated',
+  'score_updated',
+  'answer_reveal',
+  'question_timer',
+  'word_advance',
+  'question_display_resume',
+  'game_choices',
+  'game_state_sync',
+]);
+
 export function handleWSEvent(event: WSEvent, currentUserId?: string): void {
+  // `game_choices` reste nécessaire : les propositions transitent par une queue
+  // privée et ne peuvent pas voyager dans un paquet diffusé à tous.
+  if (event.type !== 'game_choices' && ENGINE_OWNED_EVENTS.has(event.type) && isEngineDriven()) {
+    return;
+  }
+
   switch (event.type) {
+    // ─── Canal d'état autoritaire (sans modérateur) ───
+    case 'game_state_packet': {
+      useBuzzStore.getState().applyStatePacket((event as any).packet);
+      break;
+    }
+
     // ─── Lobby ────────────────────────────────
     case 'player_joined': {
       const player: PlayerResponse = {
@@ -338,14 +377,23 @@ export function handleWSEvent(event: WSEvent, currentUserId?: string): void {
     }
 
     case 'game_choices': {
-      // Calculer le temps restant réel en tenant compte du délai réseau
-      const startedAtMs = (event as any).startedAtMs ?? Date.now();
-      const networkDelayMs = Date.now() - startedAtMs;
-      const actualRemaining = Math.max(3, event.answerTimeSeconds - Math.floor(networkDelayMs / 1000));
+      // Les propositions arrivent par la queue privée du joueur ; l'échéance,
+      // elle, vient du state packet (`phaseEndsAtEpochMs`, un instant absolu).
+      // On ne recalcule plus de durée restante à partir d'un délai réseau
+      // estimé — c'était une source de chronos amputés quand l'horloge du
+      // client s'écartait de celle du serveur.
+      const state = useBuzzStore.getState();
+      const currentQuestionId = state.game.packetQuestionId;
+
+      // Propositions d'une question déjà passée : à ignorer.
+      if (currentQuestionId && event.questionId && event.questionId !== currentQuestionId) {
+        break;
+      }
+
       useBuzzStore.setState({
         myAnswerChoices: event.choices,
         myAnswerQuestionId: event.questionId,
-        answerTimeSeconds: actualRemaining,
+        answerTimeSeconds: event.answerTimeSeconds,
       });
       break;
     }
