@@ -54,7 +54,7 @@ export default function GamePage() {
   const isManager = session?.managerId === user?.id;
   const isTeamMode = session?.isTeamMode ?? false;
   const currentPlayer = players.find((p) => p.userId === user?.id);
-  const isSpectator = currentPlayer?.isSpectator ?? false;
+  const isSpectator = currentPlayer ? currentPlayer.isSpectator : !isManager;
 
   const sessionMode = session?.sessionMode ?? 'WITH_MODERATOR';
   const isWithoutModerator = sessionMode === 'WITHOUT_MODERATOR';

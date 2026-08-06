@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { XCircle, Users, Zap } from 'lucide-react';
+import { XCircle, Users, Zap, Eye } from 'lucide-react';
 
 import { Avatar } from '~/components/ui/Avatar';
 import { BuzzerButton } from '~/components/game/BuzzerButton';
@@ -186,6 +186,15 @@ export function ModeratorFreeGame({
         <div className="bg-host/15 border border-host/25 rounded-xl px-3 py-2">
           <p className="text-host text-xs font-medium text-center">
             🎮 Vous êtes aussi un joueur dans ce mode
+          </p>
+        </div>
+      )}
+
+      {isSpectator && (
+        <div className="bg-energy/10 border border-energy/30 rounded-xl px-4 py-2.5 flex items-center justify-center gap-2">
+          <Eye size={16} className="text-energy shrink-0" />
+          <p className="text-energy text-xs font-semibold text-center">
+            Mode spectateur — Vous observez la partie en cours
           </p>
         </div>
       )}
