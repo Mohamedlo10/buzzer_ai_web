@@ -18,6 +18,7 @@ import * as qrcodeApi from '~/lib/api/qrcode';
 import * as roomsApi from '~/lib/api/rooms';
 import * as friendsApi from '~/lib/api/friends';
 import * as sessionsApi from '~/lib/api/sessions';
+import { appStorage } from '~/lib/utils/storage';
 import { UserProfileModal } from '~/components/shared/UserProfileModal';
 import { Avatar } from '~/components/shared/Avatar';
 import type { FriendResponse, RoomDetailResponse, RoomSessionResponse, SessionStatus } from '~/types/api';
@@ -714,8 +715,10 @@ export default function RoomDetailPage() {
     setIsRefreshing(false);
   };
 
-  const navigateToSession = (session: RoomSessionResponse) => {
+  const navigateToSession = async (session: RoomSessionResponse) => {
     const { code, status, id: sessionId } = session;
+
+    await appStorage.setActiveSession({ sessionId, code });
 
     if (status === 'LOBBY') {
       router.push(`/session/${code}/categories?sessionId=${sessionId}`);

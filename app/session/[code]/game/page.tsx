@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { Zap } from 'lucide-react';
 
 import { SafeScreen } from '~/components/layout/SafeScreen';
@@ -25,7 +25,9 @@ const POLL_WS_DISCONNECTED_MS = 2000;
 export default function GamePage() {
   const router = useRouter();
   const params = useParams<{ code: string }>();
+  const searchParams = useSearchParams();
   const code = params.code;
+  const paramSessionId = searchParams.get('sessionId');
 
   const [isPauseToggling, setIsPauseToggling] = useState(false);
   const [sessionFetched, setSessionFetched] = useState(false);
@@ -197,6 +199,16 @@ export default function GamePage() {
 
     const loadSession = async () => {
       try {
+        if (paramSessionId) {
+          await fetchSession(paramSessionId);
+          await appStorage.setActiveSession({
+            sessionId: paramSessionId,
+            code,
+          });
+          setSessionFetched(true);
+          return;
+        }
+
         const activeSession = await appStorage.getActiveSession();
 
         if (activeSession?.sessionId && activeSession?.code === code) {
@@ -223,7 +235,7 @@ export default function GamePage() {
     };
 
     loadSession();
-  }, [code]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [code, paramSessionId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Initial game state load
   useEffect(() => {
