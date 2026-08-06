@@ -15,6 +15,7 @@ import { useBuzzStore } from '~/stores/useBuzzStore';
 import * as gameApi from '~/lib/api/game';
 import { serverNow, syncClock } from '~/lib/game/clock';
 import { isAnswering, isBuzzerOpen, queuePositionOf } from '~/lib/game/packet';
+import { teamColor, teamColorTint } from '~/lib/game/teamColors';
 import { useDeadlineSeconds } from '~/lib/game/useDeadline';
 import type { PlayerResponse, TeamResponse } from '~/types/api';
 
@@ -370,10 +371,10 @@ export function ModeratorFreeGame({
                       <span
                         className="text-[11px] font-bold px-2 py-0.5 rounded-full"
                         style={{
-                          backgroundColor: `color-mix(in oklab, ${
-                            teams.find((t) => t.id === item.teamId)?.color ?? 'var(--indigo)'
-                          } 22%, transparent)`,
-                          color: teams.find((t) => t.id === item.teamId)?.color ?? 'var(--indigo)',
+                          backgroundColor: teamColorTint(
+                            teams.find((t) => t.id === item.teamId)?.color,
+                          ),
+                          color: teamColor(teams.find((t) => t.id === item.teamId)?.color),
                         }}
                       >
                         <Users size={10} className="inline mr-1" />

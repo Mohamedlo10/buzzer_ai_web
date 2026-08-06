@@ -19,16 +19,22 @@ import {
   Award,
 } from 'lucide-react';
 import { useBuzzStore } from '~/stores/useBuzzStore';
+import {
+  TEAM_COLOR_TOKENS,
+  teamColor,
+  teamColorByIndex,
+  toTeamColorToken,
+} from '~/lib/game/teamColors';
 import type { CreateSessionRequest, QuestionMode, SessionMode, TeamRequest } from '~/types/api';
 
-const TEAM_PRESET_COLORS = [
-  'var(--bad)', 'var(--indigo)', 'var(--good)', 'var(--warn)',
-  'var(--violet)', 'var(--good)', 'var(--bad)', 'var(--bad)',
-];
-
+// Le serveur persiste un JETON de palette, pas une couleur CSS : envoyer
+// `var(--indigo)` faisait échouer la création de session (colonne VARCHAR(7)).
+// La conversion en couleur affichable se fait au rendu, via teamColor().
+// L'ancienne liste contenait aussi des doublons — « bad » trois fois, « good »
+// deux fois — donc les équipes 6 à 8 étaient indistinguables.
 const DEFAULT_TEAMS: TeamRequest[] = [
-  { name: 'Rouge', color: 'var(--bad)' },
-  { name: 'Bleu', color: 'var(--indigo)' },
+  { name: 'Rouge', color: 'red' },
+  { name: 'Bleu', color: 'blue' },
 ];
 
 interface SessionConfigFormProps {
@@ -265,9 +271,11 @@ function TeamEditor({
   onChange: (teams: TeamRequest[]) => void;
 }) {
   const addTeam = () => {
-    if (teams.length >= 8) return;
-    const nextColor = TEAM_PRESET_COLORS[teams.length % TEAM_PRESET_COLORS.length];
-    onChange([...teams, { name: `Équipe ${teams.length + 1}`, color: nextColor }]);
+    if (teams.length >= TEAM_COLOR_TOKENS.length) return;
+    onChange([
+      ...teams,
+      { name: `Équipe ${teams.length + 1}`, color: teamColorByIndex(teams.length) },
+    ]);
   };
 
   const removeTeam = (index: number) => {
@@ -280,9 +288,8 @@ function TeamEditor({
   };
 
   const cycleColor = (index: number) => {
-    const current = teams[index].color ?? TEAM_PRESET_COLORS[0];
-    const colorIndex = TEAM_PRESET_COLORS.indexOf(current);
-    const nextColor = TEAM_PRESET_COLORS[(colorIndex + 1) % TEAM_PRESET_COLORS.length];
+    const current = toTeamColorToken(teams[index].color);
+    const nextColor = teamColorByIndex(TEAM_COLOR_TOKENS.indexOf(current) + 1);
     onChange(teams.map((t, i) => (i === index ? { ...t, color: nextColor } : t)));
   };
 
@@ -298,7 +305,7 @@ function TeamEditor({
             type="button"
             onClick={() => cycleColor(index)}
             className="w-[42px] h-[42px] rounded-[12px] flex items-center justify-center shrink-0 transition-opacity hover:opacity-85"
-            style={{ backgroundColor: team.color ?? 'var(--surface-2)' }}
+            style={{ backgroundColor: teamColor(team.color) }}
           >
             <Palette size={17} className="text-white" />
           </button>

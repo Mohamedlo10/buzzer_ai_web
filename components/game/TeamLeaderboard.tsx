@@ -2,6 +2,7 @@
 
 import { Users } from 'lucide-react';
 import { Avatar } from '~/components/ui/Avatar';
+import { teamColor as resolveTeamColor } from '~/lib/game/teamColors';
 import type { PlayerResponse, TeamResponse } from '~/types/api';
 
 interface TeamLeaderboardProps {
@@ -57,7 +58,8 @@ export function TeamLeaderboard({
       <div className="flex flex-col">
         {teamStandings.map((team, index) => {
           const isMyTeam = team.members.some((m) => m.userId === currentUserId);
-          const teamColor = team.color ?? 'var(--indigo)';
+          // team.color est un jeton de palette, pas une couleur CSS.
+          const teamColor = resolveTeamColor(team.color);
           // Width percentage for the progress bar background indicator
           const widthPercent = Math.min(100, Math.round((team.totalScore / maxTotal) * 100));
 
