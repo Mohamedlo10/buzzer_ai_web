@@ -145,7 +145,7 @@ export function AnswerRevealOverlay({
         </div>
 
         {/* Manager Action / Auto-advance */}
-        {allAnswersWrong && isManager ? (
+        {allAnswersWrong && onAdvance ? (
           <button
             onClick={onAdvance}
             style={{

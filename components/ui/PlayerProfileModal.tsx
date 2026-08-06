@@ -120,9 +120,10 @@ export function PlayerProfileModal({ userId, onClose }: PlayerProfileModalProps)
 
       {/* Sheet */}
       <div
-        className={`relative w-full max-w-lg max-h-[88vh] bg-surface rounded-t-3xl border-t border-line overflow-hidden flex flex-col ${
+        className={`relative w-full max-w-lg max-h-[72dvh] bg-surface rounded-t-3xl border-t border-line overflow-hidden flex flex-col ${
           isClosing ? 'animate-sheetdown' : 'animate-sheetup'
         }`}
+        onClick={(e) => e.stopPropagation()}
       >
         {/* Drag handle + close */}
         <div className="relative flex items-center justify-center pt-3 pb-2 shrink-0">
