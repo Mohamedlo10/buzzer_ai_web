@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { PatternLozenge } from '~/components/shared/PatternLozenge';
 
 interface AnswerRevealOverlayProps {
@@ -27,6 +27,13 @@ export function AnswerRevealOverlay({
   const isWinner = !!winnerId;
   const goodColor = '#2D8559';
   const badColor = 'var(--color-primary)';
+  const [isAdvancing, setIsAdvancing] = useState(false);
+
+  const handleAdvance = () => {
+    if (isAdvancing || !onAdvance) return;
+    setIsAdvancing(true);
+    onAdvance();
+  };
 
   useEffect(() => {
     if (allAnswersWrong) return;
@@ -144,23 +151,26 @@ export function AnswerRevealOverlay({
           </div>
         </div>
 
-        {/* Manager Action / Auto-advance */}
+        {/* Advance action — visible for any player when all answers are wrong */}
         {allAnswersWrong && onAdvance ? (
           <button
-            onClick={onAdvance}
+            onClick={handleAdvance}
+            disabled={isAdvancing}
             style={{
               width: '100%',
-              background: 'var(--color-primary)',
+              background: isAdvancing ? 'var(--color-line)' : 'var(--color-primary)',
               color: 'var(--color-primary-ink)',
               border: 'none',
               borderRadius: 'var(--radius-pill)',
               padding: '14px 20px',
               fontSize: 15,
               fontWeight: 700,
-              cursor: 'pointer',
+              cursor: isAdvancing ? 'not-allowed' : 'pointer',
+              opacity: isAdvancing ? 0.7 : 1,
+              transition: 'opacity 0.15s',
             }}
           >
-            Question suivante →
+            {isAdvancing ? 'Passage en cours…' : 'Question suivante →'}
           </button>
         ) : (
           <div className="flex items-center justify-center gap-2 text-txt-60 text-xs font-semibold">
