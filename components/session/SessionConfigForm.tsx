@@ -416,7 +416,10 @@ export function SessionConfigForm({ onSuccess, onClose, roomId, initialMaxPlayer
   const [answerChoicesCount, setAnswerChoicesCount] = useState<number | null>(null);
   const [teams, setTeams] = useState<TeamRequest[]>(DEFAULT_TEAMS);
   const [config, setConfig] = useState<CreateSessionRequest>({
-    debtAmount: 0,
+    // 0 désactivait les dettes sur toutes les parties créées depuis l'app, alors
+    // qu'aucun champ ne permettait de changer cette valeur (voir le stepper
+    // « Dette / rubrique » plus bas).
+    debtAmount: 5,
     pointsPerCorrectAnswer: 5,
     questionsPerCategory: 5,
     maxPlayers: 20,
@@ -784,6 +787,18 @@ export function SessionConfigForm({ onSuccess, onClose, roomId, initialMaxPlayer
               step={5}
               onChange={(v) => setConfig((c) => ({ ...c, pointsPerCorrectAnswer: v }))}
             />
+            {/* Les dettes se jouent sur les rubriques, qui n'existent qu'en mode IA. */}
+            {questionMode === 'AI' && (
+              <StepperField
+                label="Dette / rubrique"
+                value={config.debtAmount}
+                suffix=" pts"
+                min={0}
+                max={50}
+                step={5}
+                onChange={(v) => setConfig((c) => ({ ...c, debtAmount: v }))}
+              />
+            )}
           </div>
         </div>
       </div>
