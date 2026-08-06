@@ -225,13 +225,16 @@ export default function LobbyPage() {
     const loadSession = async () => {
       try {
         const activeSession = await appStorage.getActiveSession();
-        if (activeSession?.sessionId) { await fetchSession(activeSession.sessionId); return; }
+        if (activeSession?.sessionId && activeSession?.code === code) {
+          await fetchSession(activeSession.sessionId);
+          return;
+        }
         const checkResult = await useBuzzStore.getState().joinCheck(code);
         if (checkResult?.sessionId) {
           await fetchSession(checkResult.sessionId);
           await appStorage.setActiveSession({ sessionId: checkResult.sessionId, code: checkResult.code });
-        } else { router.replace('/'); }
-      } catch { router.replace('/'); }
+        } else { router.replace('/rooms'); }
+      } catch { router.replace('/rooms'); }
     };
     loadSession();
   }, [code]); // eslint-disable-line react-hooks/exhaustive-deps

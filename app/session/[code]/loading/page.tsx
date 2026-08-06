@@ -237,13 +237,24 @@ export default function LoadingPage() {
     const loadSession = async () => {
       try {
         const activeSession = await appStorage.getActiveSession();
-        if (activeSession?.sessionId) {
+        if (activeSession?.sessionId && activeSession?.code === code) {
           await fetchSession(activeSession.sessionId);
-        } else {
-          router.replace('/');
+          return;
         }
+
+        const checkResult = await useBuzzStore.getState().joinCheck(code);
+        if (checkResult?.sessionId) {
+          await fetchSession(checkResult.sessionId);
+          await appStorage.setActiveSession({
+            sessionId: checkResult.sessionId,
+            code: checkResult.code,
+          });
+          return;
+        }
+
+        router.replace('/rooms');
       } catch {
-        router.replace('/');
+        router.replace('/rooms');
       }
     };
 
