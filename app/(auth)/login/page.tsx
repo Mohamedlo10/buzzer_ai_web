@@ -47,7 +47,7 @@ export default function LoginPage() {
     try {
       await login(u.trim(), p);
       const user = useAuthStore.getState().user;
-      const redirect = user?.role === 'SUPER_ADMIN' ? '/admin' : '/dashboard';
+      const redirect = user?.role === 'SUPER_ADMIN' ? '/admin' : '/rooms';
       window.location.replace(redirect);
     } catch (err: any) {
       const message =

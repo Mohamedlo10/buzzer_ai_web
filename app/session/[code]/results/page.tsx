@@ -206,7 +206,7 @@ export default function SessionResultsPage() {
   const resolvedRoomId = paramRoomId || storeSession?.roomId;
   const handleBack = () => {
     if (resolvedRoomId) router.replace(`/room/${resolvedRoomId}`);
-    else router.replace('/dashboard');
+    else router.replace('/rooms');
   };
 
   // ── Loading ──

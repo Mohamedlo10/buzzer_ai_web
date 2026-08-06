@@ -94,7 +94,7 @@ function ConfirmEmailContent() {
     } catch {
       // avatar update failure is non-blocking
     }
-    router.replace('/dashboard');
+    router.replace('/rooms');
   }
 
   // ── Render ────────────────────────────────────────────────────────────────
