@@ -17,6 +17,7 @@ export type GamePhase =
   | 'READING'
   | 'BUZZ_WINDOW'
   | 'ANSWERING'
+  | 'AWAITING_VALIDATION'
   | 'REVEAL'
   | 'ADVANCING'
   | 'FINISHED';
@@ -41,10 +42,14 @@ export interface GameStatePacket {
   version: number;
   phase: GamePhase;
   sessionId: string;
+  sessionMode: 'WITH_MODERATOR' | 'WITHOUT_MODERATOR';
   questionId: string;
   questionIndex: number;
   totalQuestions: number;
   revealedWordCount: number;
+  totalWordCount: number;
+  wordRevealStartedAtEpochMs: number | null;
+  wordRevealIntervalMs: number;
   serverNowEpochMs: number;
   phaseEndsAtEpochMs: number | null;
   queue: QueueEntry[];
@@ -57,10 +62,15 @@ export interface GameStatePacket {
 export interface GameStateSlice {
   stateVersion: number;
   phase: GamePhase;
+  sessionMode: 'WITH_MODERATOR' | 'WITHOUT_MODERATOR';
   packetQuestionId: string | null;
   buzzQueue: QueueEntry[];
   answeringPlayerId: string | null;
   phaseEndsAtEpochMs: number | null;
+  revealedWordCount: number;
+  totalWordCount: number;
+  wordRevealStartedAtEpochMs: number | null;
+  wordRevealIntervalMs: number;
   reveal: PacketReveal | null;
 }
 
@@ -69,10 +79,15 @@ export const initialGameStateSlice: GameStateSlice = {
   // paquet reçu est toujours strictement supérieur.
   stateVersion: 0,
   phase: 'READING',
+  sessionMode: 'WITH_MODERATOR',
   packetQuestionId: null,
   buzzQueue: [],
   answeringPlayerId: null,
   phaseEndsAtEpochMs: null,
+  revealedWordCount: 0,
+  totalWordCount: 0,
+  wordRevealStartedAtEpochMs: null,
+  wordRevealIntervalMs: 600,
   reveal: null,
 };
 
@@ -95,10 +110,15 @@ export function applyPacket(
   return {
     stateVersion: packet.version,
     phase: packet.phase,
+    sessionMode: packet.sessionMode,
     packetQuestionId: packet.questionId ?? null,
     buzzQueue: normalizeQueue(packet.queue),
     answeringPlayerId: packet.answeringPlayerId ?? null,
     phaseEndsAtEpochMs: packet.phaseEndsAtEpochMs ?? null,
+    revealedWordCount: packet.revealedWordCount ?? 0,
+    totalWordCount: packet.totalWordCount ?? 0,
+    wordRevealStartedAtEpochMs: packet.wordRevealStartedAtEpochMs ?? null,
+    wordRevealIntervalMs: packet.wordRevealIntervalMs ?? 600,
     reveal: packet.reveal ?? null,
   };
 }
@@ -114,7 +134,7 @@ function normalizeQueue(queue: QueueEntry[] | null | undefined): QueueEntry[] {
 /** Le joueur a-t-il la main pour répondre ? Autorité : le serveur, pas `queue[0]`. */
 export function isAnswering(slice: GameStateSlice, myPlayerId: string | undefined): boolean {
   return (
-    slice.phase === 'ANSWERING' &&
+    (slice.phase === 'ANSWERING' || slice.phase === 'AWAITING_VALIDATION') &&
     !!myPlayerId &&
     slice.answeringPlayerId === myPlayerId
   );

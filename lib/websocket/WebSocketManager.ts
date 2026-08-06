@@ -182,70 +182,6 @@ function mapTopicMessageToWSEvent(
     }
 
     // ─── Buzz queue ───────────────────────
-    case 'buzz': {
-      // Backend sends full buzz queue: { buzzQueue: [{playerId, playerName, timeDiffMs}] }
-      const queue: Array<{
-        playerId: string;
-        playerName: string;
-        timeDiffMs: number;
-      }> = payload.buzzQueue ?? [];
-
-      if (queue.length === 0) {
-        // Empty queue = buzzer reset
-        return { type: 'buzzer_reset', sessionId } as WSEvent;
-      }
-
-      // Emit buzzer_pressed for the LAST entry (newest buzz)
-      const lastBuzz = queue[queue.length - 1];
-      return {
-        type: 'buzzer_pressed',
-        sessionId,
-        userId: lastBuzz.playerId,
-        username: lastBuzz.playerName,
-        timestamp: lastBuzz.timeDiffMs,
-        queuePosition: queue.length,
-        // Attach full queue so handler can sync
-        _fullQueue: queue,
-      } as any;
-    }
-
-    // ─── Score updates ────────────────────
-    case 'score': {
-      // { playerId, newScore, event: "CORRECT"|"WRONG"|"CORRECTION" }
-      const scoreEvent = payload.event;
-      if (scoreEvent === 'CORRECT' || scoreEvent === 'WRONG') {
-        return {
-          type: 'answer_validated',
-          sessionId,
-          playerId: payload.playerId,
-          isCorrect: scoreEvent === 'CORRECT',
-          updatedScores: { [payload.playerId]: payload.newScore },
-        } as WSEvent;
-      }
-      // CORRECTION or generic score update
-      return {
-        type: 'score_updated',
-        sessionId,
-        scores: { [payload.playerId]: payload.newScore },
-        reason: scoreEvent === 'CORRECTION' ? 'correction' : 'validation',
-      } as WSEvent;
-    }
-
-    // ─── Buzz countdown ───────────────────
-    case 'buzz-countdown':
-      return {
-        type: 'buzz_countdown',
-        sessionId,
-        playerId: payload.playerId,
-        playerName: payload.playerName,
-        durationSeconds: payload.durationSeconds ?? 10,
-      } as any;
-
-    // ─── Buzzer reset ─────────────────────
-    case 'buzzer-reset':
-      return { type: 'buzzer_reset', sessionId } as WSEvent;
-
-    // ─── Game over ────────────────────────
     case 'game-over':
       return {
         type: 'game_over',
@@ -276,63 +212,6 @@ function mapTopicMessageToWSEvent(
       } as any;
 
     // ─── Full state sync (server-push snapshot) ───
-    case 'sync':
-      return {
-        type: 'game_state_sync',
-        sessionId,
-        session: payload.session ?? {},
-        currentQuestion: payload.currentQuestion ?? null,
-        players: payload.players ?? [],
-        buzzQueue: payload.buzzQueue ?? [],
-      } as WSEvent;
-
-    case 'question-display-resume':
-      return {
-        type: 'question_display_resume',
-        sessionId,
-        wordIndex: payload.wordIndex ?? 0,
-      } as any;
-
-    case 'word-advance':
-      return {
-        type: 'word_advance',
-        sessionId,
-        wordIndex: payload.wordIndex ?? 0,
-        fullyDisplayed: payload.fullyDisplayed ?? false,
-        questionId: payload.questionId ?? null,
-      } as any;
-
-    case 'question-timer':
-      return {
-        type: 'question_timer',
-        sessionId,
-        remainingSeconds: payload.remainingSeconds ?? 0,
-        paused: payload.paused ?? false,
-      } as any;
-
-    case 'answer-reveal':
-      return {
-        type: 'answer_reveal',
-        sessionId,
-        correctAnswer: payload.correctAnswer ?? '',
-        winnerId: payload.winnerId ?? null,
-        winnerName: payload.winnerName ?? null,
-        // Sans ce champ l'overlay s'auto-ferme et le manager n'a jamais le bouton
-        // « continuer » → partie figée quand tout le monde s'est trompé.
-        allAnswersWrong: payload.allAnswersWrong ?? false,
-      } as any;
-
-    case 'game-choices':
-      return {
-        type: 'game_choices',
-        sessionId,
-        questionId: payload.questionId ?? '',
-        choices: payload.choices ?? [],
-        answerTimeSeconds: payload.answerTimeSeconds ?? 15,
-        startedAtMs: payload.startedAtMs ?? null,
-      } as any;
-
-    // ─── Canal d'état versionné (sans modérateur) ───
     case 'state':
       // Transmis brut : `handlers.ts` le passe à applyStatePacket, qui possède
       // la garde de version. Surtout ne rien reformater ici — c'est en jetant
@@ -385,21 +264,10 @@ export class WebSocketManager {
     'teams',
     'team-scores',
     'question',
-    'buzz',
-    'buzz-countdown',
-    'score',
-    'buzzer-reset',
     'game-over',
     'generating',
     'countdown',
-    'sync',
-    'question-display-resume',
-    'word-advance',
-    'question-timer',
-    'answer-reveal',
-    // Canal d'état unique du mode sans modérateur. Un seul message, versionné,
-    // qui remplace la diffusion éclatée sur buzz / score / question-timer /
-    // word-advance / answer-reveal / sync — dont rien n'ordonnait les arrivées.
+    // Canal d'état unique du mode sans modérateur et avec modérateur.
     'state',
   ] as const;
 

@@ -16,6 +16,10 @@ import * as gameApi from '~/lib/api/game';
 import { serverNow, syncClock } from '~/lib/game/clock';
 import { isAnswering, isBuzzerOpen, queuePositionOf } from '~/lib/game/packet';
 import { teamColor, teamColorTint } from '~/lib/game/teamColors';
+import { GameHeader } from '~/components/game/shared/GameHeader';
+import { PauseOverlay } from '~/components/game/shared/PauseOverlay';
+import { CategoryChangeOverlay } from '~/components/game/shared/CategoryChangeOverlay';
+import { GameFooter } from '~/components/game/shared/GameFooter';
 import { useDeadlineSeconds } from '~/lib/game/useDeadline';
 import type { PlayerResponse, TeamResponse } from '~/types/api';
 
@@ -54,7 +58,13 @@ export function ModeratorFreeGame({
     answerTimeSeconds,
     answerReveal,
     isPaused,
+    session,
+    questionIndex,
+    pauseSession,
+    resumeSession,
   } = useBuzzStore();
+
+  const [isPauseToggling, setIsPauseToggling] = useState(false);
 
   const [isBuzzing, setIsBuzzing] = useState(false);
   const [isSubmittingAnswer, setIsSubmittingAnswer] = useState(false);
@@ -145,23 +155,31 @@ export function ModeratorFreeGame({
     [sessionId, isSubmittingAnswer, game.packetQuestionId],
   );
 
-  if (!currentQuestion) return null;
+  const handlePause = useCallback(async () => {
+    if (!session?.id || isPauseToggling) return;
+    setIsPauseToggling(true);
+    try {
+      await pauseSession(session.id);
+    } catch (err: any) {
+      window.alert(err?.message || 'Impossible de mettre en pause');
+    } finally {
+      setIsPauseToggling(false);
+    }
+  }, [session?.id, isPauseToggling, pauseSession]);
 
-  // ── Mode focus : le joueur a la main ────────────────────────────────────
-  if (amIAnswering && myAnswerChoices) {
-    return (
-      <FocusModePanel
-        questionText={currentQuestion.text}
-        category={currentQuestion.category}
-        choices={myAnswerChoices}
-        answerTimeSeconds={answerTimeSeconds}
-        deadlineEpochMs={game.phaseEndsAtEpochMs}
-        onSubmit={handleSubmitAnswer}
-        isSubmitting={isSubmittingAnswer}
-        result={answerResult}
-      />
-    );
-  }
+  const handleResume = useCallback(async () => {
+    if (!session?.id || isPauseToggling) return;
+    setIsPauseToggling(true);
+    try {
+      await resumeSession(session.id);
+    } catch (err: any) {
+      window.alert(err?.message || 'Impossible de reprendre');
+    } finally {
+      setIsPauseToggling(false);
+    }
+  }, [session?.id, isPauseToggling, resumeSession]);
+
+  if (!session || !currentQuestion) return null;
 
   const firstBuzzer = game.buzzQueue[0];
   const answeredWrong =
@@ -171,8 +189,71 @@ export function ModeratorFreeGame({
     myQueuePosition === null &&
     buzzLockRef.current;
 
+  // ── Mode focus : le joueur a la main ────────────────────────────────────
+  if (amIAnswering && myAnswerChoices) {
+    return (
+      <>
+        <GameHeader
+          session={session}
+          currentQuestion={currentQuestion}
+          questionIndex={questionIndex}
+          isConnected={true}
+          isManager={isManager}
+          isSpectator={isSpectator}
+          currentPlayer={myPlayer}
+          teams={teams}
+        />
+        <PauseOverlay
+          isPaused={isPaused}
+          isManager={isManager}
+          isPauseToggling={isPauseToggling}
+          onResume={handleResume}
+        />
+        <CategoryChangeOverlay currentQuestion={currentQuestion} />
+        <div className="flex flex-col gap-6">
+          <FocusModePanel
+            questionText={currentQuestion.text}
+            category={currentQuestion.category}
+            choices={myAnswerChoices}
+            answerTimeSeconds={answerTimeSeconds}
+            deadlineEpochMs={game.phaseEndsAtEpochMs}
+            onSubmit={handleSubmitAnswer}
+            isSubmitting={isSubmittingAnswer}
+            result={answerResult}
+          />
+        </div>
+        <GameFooter
+          sessionId={sessionId}
+          players={players}
+          teams={teams}
+          isTeamMode={session?.isTeamMode ?? false}
+          isManager={isManager}
+          currentUserId={myPlayer?.id}
+        />
+      </>
+    );
+  }
+
   return (
-    <div className="flex flex-col gap-3">
+    <>
+      <GameHeader
+        session={session}
+        currentQuestion={currentQuestion}
+        questionIndex={questionIndex}
+        isConnected={true}
+        isManager={isManager}
+        isSpectator={isSpectator}
+        currentPlayer={myPlayer}
+        teams={teams}
+      />
+      <PauseOverlay
+        isPaused={isPaused}
+        isManager={isManager}
+        isPauseToggling={isPauseToggling}
+        onResume={handleResume}
+      />
+      <CategoryChangeOverlay currentQuestion={currentQuestion} />
+      <div className="flex flex-col gap-3 px-4 pt-4">
       {/* Timer global — visible uniquement quand le buzzer est ouvert */}
       {game.phase === 'READING' && game.phaseEndsAtEpochMs && (
         <GlobalTimerBar
@@ -430,7 +511,6 @@ export function ModeratorFreeGame({
         <div className="fixed inset-0 z-30 bg-accent mix-blend-overlay animate-flash pointer-events-none" />
       )}
 
-      {/* Révélation — portée par la phase, plus par un setTimeout local */}
       {answerReveal && game.phase === 'REVEAL' && (
         <AnswerRevealOverlay
           correctAnswer={answerReveal.correctAnswer}
@@ -445,6 +525,15 @@ export function ModeratorFreeGame({
           autoDismissMs={0}
         />
       )}
-    </div>
+      </div>
+      <GameFooter
+        sessionId={sessionId}
+        players={players}
+        teams={teams}
+        isTeamMode={session?.isTeamMode ?? false}
+        isManager={isManager}
+        currentUserId={myPlayerId}
+      />
+    </>
   );
 }

@@ -1,34 +1,41 @@
 'use client';
 
-import { useEffect, useState, useCallback, useRef, type ReactNode } from 'react';
+import { useCallback, useEffect, useState, useRef, type ReactNode } from 'react';
 import {
-  Crown,
+  Mic,
   Eye,
   EyeOff,
-  Users,
-  Hand,
-  Zap,
-  CheckCircle,
-  XCircle,
-  Mic,
   Target,
+  XCircle,
+  CheckCircle,
   PlayCircle,
   PauseCircle,
   SkipForward,
+  Zap,
+  Users,
+  Hand,
 } from 'lucide-react';
 
 import { Avatar } from '~/components/ui/Avatar';
 import { ConfirmModal } from '~/components/ui/ConfirmModal';
 import { BuzzerButton } from '~/components/game/BuzzerButton';
 import { AnswerRevealOverlay } from '~/components/game/AnswerRevealOverlay';
+import { GameHeader } from '~/components/game/shared/GameHeader';
+import { PauseOverlay } from '~/components/game/shared/PauseOverlay';
+import { CategoryChangeOverlay } from '~/components/game/shared/CategoryChangeOverlay';
+import { GameFooter } from '~/components/game/shared/GameFooter';
 import { useBuzzStore } from '~/stores/useBuzzStore';
-import { getManualQuestions, getSession } from '~/lib/api/sessions';
 import * as gameApi from '~/lib/api/game';
-import { wsManager } from '~/lib/websocket/WebSocketManager';
-import type { ManualQuestion, PlayerResponse, TeamResponse } from '~/types/api';
+import { getManualQuestions, getSession } from '~/lib/api/sessions';
+import { serverNow, syncClock } from '~/lib/game/clock';
+import { isAnswering, isBuzzerOpen, queuePositionOf } from '~/lib/game/packet';
 import { teamColor } from '~/lib/game/teamColors';
+import { useDeadlineSeconds } from '~/lib/game/useDeadline';
+import { useWordReveal } from '~/lib/game/useWordReveal';
+import type { ManualQuestion, PlayerResponse, TeamResponse } from '~/types/api';
+import { ProgressiveQuestionDisplay } from '~/components/game/ProgressiveQuestionDisplay';
+import { IdentificationQuestionDisplay } from '~/components/game/IdentificationQuestionDisplay';
 
-// Expandable Card Component
 interface ExpandableCardProps {
   icon: ReactNode;
   label: string;
@@ -63,7 +70,9 @@ function ExpandableCard({
       </div>
 
       <p
-        className={`text-txt text-base leading-relaxed ${isBold ? 'font-bold' : ''} ${!expanded ? 'line-clamp-6' : ''}`}
+        className={`text-txt text-base leading-relaxed ${isBold ? 'font-bold' : ''} ${
+          !expanded ? 'line-clamp-6' : ''
+        }`}
       >
         {content}
       </p>
@@ -72,18 +81,6 @@ function ExpandableCard({
         <p className={`text-txt-60 text-xs mt-2 leading-relaxed ${!expanded ? 'line-clamp-4' : ''}`}>
           {subContent}
         </p>
-      )}
-
-      {!expanded && (subContent || content.length > 200) && (
-        <div className="flex flex-row items-center mt-2">
-          <span className="text-accent text-xs font-medium">Voir plus ↓</span>
-        </div>
-      )}
-
-      {expanded && (
-        <div className="flex flex-row items-center mt-2">
-          <span className="text-txt-40 text-xs">Cliquez pour réduire ↑</span>
-        </div>
       )}
     </button>
   );
@@ -114,120 +111,57 @@ export function ModeratedGame({
   handleResume,
   isPauseToggling,
 }: ModeratedGameProps) {
+  const {
+    session,
+    currentQuestion,
+    questionIndex,
+    isPaused,
+    hasBuzzed,
+    answeredWrongThisQuestion,
+    setHasBuzzed,
+    game,
+  } = useBuzzStore();
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSkipping, setIsSkipping] = useState(false);
   const [showSkipConfirm, setShowSkipConfirm] = useState(false);
   const [pendingWrong, setPendingWrong] = useState<{ applyPenalty: boolean } | null>(null);
   const [isValidating, setIsValidating] = useState(false);
   const [isResettingBuzzer, setIsResettingBuzzer] = useState(false);
-  const [showBuzzOverlay, setShowBuzzOverlay] = useState(false);
-  const buzzLockRef = useRef(false);
-  const buzzOverlayTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [manualQuestions, setManualQuestions] = useState<ManualQuestion[]>([]);
   const [showAnswer, setShowAnswer] = useState(true);
 
-  // Buzz countdown state
-  const [countdown, setCountdown] = useState<{ playerId: string; seconds: number } | null>(null);
-  const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  // Verrou local anti-double-appui
+  const buzzLockRef = useRef(false);
 
-  const {
-    session,
-    currentQuestion,
-    questionIndex,
-    buzzQueue,
-    isPaused,
-    hasBuzzed,
-    answeredWrongThisQuestion,
-    setHasBuzzed,
-    answerReveal,
-    setQuestionFullyDisplayed,
-  } = useBuzzStore();
-
-  const startCountdown = useCallback((playerId: string, durationSeconds: number) => {
-    if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
-    setCountdown({ playerId, seconds: durationSeconds });
-    countdownIntervalRef.current = setInterval(() => {
-      setCountdown((prev) => {
-        if (!prev || prev.seconds <= 1) {
-          clearInterval(countdownIntervalRef.current!);
-          countdownIntervalRef.current = null;
-          return prev ? { ...prev, seconds: 0 } : null;
-        }
-        return { ...prev, seconds: prev.seconds - 1 };
-      });
-    }, 1000);
-  }, []);
-
-  const stopCountdown = useCallback(() => {
-    if (countdownIntervalRef.current) {
-      clearInterval(countdownIntervalRef.current);
-      countdownIntervalRef.current = null;
-    }
-    setCountdown(null);
-  }, []);
-
-  // Cleanup timers
+  // Sync clock for accurate buzz timestamps
   useEffect(() => {
-    return () => {
-      if (buzzOverlayTimeoutRef.current) clearTimeout(buzzOverlayTimeoutRef.current);
-      if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
-    };
+    void syncClock();
   }, []);
 
-  const isManagerRef = useRef(isManager);
-  isManagerRef.current = isManager;
-  const buzzQueueRef = useRef(buzzQueue);
-  buzzQueueRef.current = buzzQueue;
+  const myPlayerId = currentPlayer?.id;
+  const amIAnswering = isAnswering(game, myPlayerId);
+  const myQueuePosition = queuePositionOf(game, myPlayerId);
+  const buzzerOpen = isBuzzerOpen(game) && !isPaused;
 
-  useEffect(() => {
-    const unsubscribe = wsManager.subscribe((event: any) => {
-      if (event.type === '_reconnected') {
-        const state = useBuzzStore.getState();
-        if (state.buzzQueue.length > 0) {
-          const duration = state.session?.buzzCountdownSeconds ?? 10;
-          startCountdown(state.buzzQueue[0].playerId, duration);
-        }
-        return;
-      }
-      switch (event.type) {
-        case 'buzz_countdown':
-          startCountdown(event.playerId, event.durationSeconds);
-          break;
-        case 'buzzer_pressed':
-          if (isManagerRef.current && buzzQueueRef.current.length === 0) {
-            setShowBuzzOverlay(true);
-            if (buzzOverlayTimeoutRef.current) clearTimeout(buzzOverlayTimeoutRef.current);
-            buzzOverlayTimeoutRef.current = setTimeout(() => setShowBuzzOverlay(false), 1500);
-          }
-          break;
-        case 'buzzer_reset':
-          stopCountdown();
-          buzzLockRef.current = false;
-          setShowBuzzOverlay(false);
-          if (buzzOverlayTimeoutRef.current) {
-            clearTimeout(buzzOverlayTimeoutRef.current);
-            buzzOverlayTimeoutRef.current = null;
-          }
-          break;
-        case 'answer_validated':
-          if (event.isCorrect) stopCountdown();
-          break;
-      }
-    });
-    return () => unsubscribe();
-  }, [startCountdown, stopCountdown]);
+  const answeringPlayer = players.find((p) => p.id === game.answeringPlayerId);
 
-  // Reset buzz lock and countdown when question changes
+  // Countdown when someone is answering
+  const countdownSeconds = useDeadlineSeconds(
+    game.phase === 'AWAITING_VALIDATION' ? game.phaseEndsAtEpochMs : null
+  );
+
+  const displayedWordCount = useWordReveal(
+    game.revealedWordCount,
+    game.totalWordCount,
+    game.wordRevealStartedAtEpochMs,
+    game.wordRevealIntervalMs
+  );
+
+  // Reset buzz lock when question changes
   useEffect(() => {
     buzzLockRef.current = false;
-    stopCountdown();
-  }, [currentQuestion?.id, stopCountdown]);
-
-  useEffect(() => {
-    if (currentQuestion) {
-      setQuestionFullyDisplayed(currentQuestion.questionType === 'IDENTIFICATION');
-    }
-  }, [currentQuestion?.id, currentQuestion, setQuestionFullyDisplayed]);
+  }, [game.packetQuestionId]);
 
   // Load questions with answers for manager
   useEffect(() => {
@@ -243,7 +177,7 @@ export function ModeratedGame({
               text: q.text,
               answer: q.answer ?? '',
               explanation: q.explanation ?? '',
-            })),
+            }))
           );
         })
         .catch(() => {});
@@ -251,22 +185,18 @@ export function ModeratedGame({
   }, [sessionId, isManager, session?.questionMode]);
 
   const handleBuzz = useCallback(async () => {
-    if (!sessionId || buzzLockRef.current || isSpectator) return;
-
-    const isInQueue = buzzQueue.some((item) => item.playerId === currentPlayer?.id);
-    if (isInQueue) return;
+    if (!buzzerOpen || buzzLockRef.current || isSpectator || !myPlayerId) return;
+    if (game.buzzQueue.some((item) => item.playerId === myPlayerId)) return;
 
     buzzLockRef.current = true;
     setIsSubmitting(true);
 
     try {
-      const timestamp = Date.now();
-      const fullyDisplayed = useBuzzStore.getState().questionFullyDisplayed;
-      await gameApi.buzz(sessionId, timestamp, fullyDisplayed);
+      await gameApi.buzz(sessionId, serverNow(), true);
       setHasBuzzed(true);
     } catch (err: any) {
       if (err?.response?.status === 409) {
-        setHasBuzzed(true);
+        // State mismatch, let the packet sync it
       } else {
         buzzLockRef.current = false;
         window.alert(err?.message || 'Impossible de buzzer');
@@ -274,26 +204,28 @@ export function ModeratedGame({
     } finally {
       setIsSubmitting(false);
     }
-  }, [sessionId, buzzQueue, currentPlayer?.id, isSpectator, setHasBuzzed]);
+  }, [sessionId, buzzerOpen, isSpectator, myPlayerId, game.buzzQueue, setHasBuzzed]);
 
   const handleValidate = useCallback(
     async (isCorrect: boolean, applyPenalty: boolean = true) => {
-      if (!sessionId || !buzzQueue[0] || isValidating) return;
+      if (!sessionId || !game.answeringPlayerId || isValidating) return;
 
       setIsValidating(true);
       try {
         await gameApi.validateAnswer(sessionId, {
-          playerId: buzzQueue[0].playerId,
+          playerId: game.answeringPlayerId,
           isCorrect,
           applyPenalty,
         });
       } catch (err: any) {
-        window.alert(err?.message || 'Action impossible');
+        if (err?.response?.status !== 409) {
+          window.alert(err?.message || 'Action impossible');
+        }
       } finally {
         setIsValidating(false);
       }
     },
-    [sessionId, buzzQueue, isValidating],
+    [sessionId, game.answeringPlayerId, isValidating]
   );
 
   const handleSkip = useCallback(async () => {
@@ -313,7 +245,6 @@ export function ModeratedGame({
     if (!sessionId) return;
     try {
       await gameApi.advanceAfterAllWrong(sessionId);
-      useBuzzStore.setState({ answerReveal: null });
     } catch (err: any) {
       window.alert(err?.message || 'Action impossible');
     }
@@ -332,21 +263,37 @@ export function ModeratedGame({
     }
   }, [sessionId, isResettingBuzzer]);
 
-  if (!currentQuestion) return null;
+  if (!session || !currentQuestion) return null;
 
-  const hasBuzzes = buzzQueue.length > 0;
-  const firstBuzzer = buzzQueue[0];
-  const queuePosition = buzzQueue.findIndex((item) => item.playerId === currentPlayer?.id);
-  const actualHasBuzzed = hasBuzzed || queuePosition >= 0;
-  const amIFirstInQueue = buzzQueue.length > 0 && buzzQueue[0].playerId === currentPlayer?.id;
-
-  const teamBuzzed =
-    isTeamMode && actualHasBuzzed && queuePosition < 0 && !answeredWrongThisQuestion;
+  const actualHasBuzzed = hasBuzzed || myQueuePosition !== null;
+  const amIFirstInQueue = game.buzzQueue.length > 0 && game.buzzQueue[0].playerId === myPlayerId;
+  const teamBuzzed = isTeamMode && actualHasBuzzed && myQueuePosition === null && !answeredWrongThisQuestion;
+  const firstBuzzer = game.buzzQueue[0];
 
   return (
     <>
+      <GameHeader
+        session={session}
+        currentQuestion={currentQuestion}
+        questionIndex={questionIndex}
+        isConnected={true}
+        isManager={isManager}
+        isSpectator={isSpectator}
+        currentPlayer={currentPlayer}
+        teams={teams}
+      />
+
+      <PauseOverlay
+        isPaused={isPaused}
+        isManager={isManager}
+        isPauseToggling={isPauseToggling}
+        onResume={handleResume}
+      />
+
+      <CategoryChangeOverlay currentQuestion={currentQuestion} />
+
       {/* BUZZ ALERT Overlay — manager only */}
-      {isManager && showBuzzOverlay && hasBuzzes && firstBuzzer && (
+      {isManager && game.phase === 'AWAITING_VALIDATION' && firstBuzzer && (
         <div className="fixed inset-0 z-40 bg-buzz/90 flex flex-col">
           <div className="flex-1 flex items-center justify-center px-6">
             <div className="flex flex-col items-center animate-in zoom-in-95 duration-200">
@@ -357,13 +304,13 @@ export function ModeratedGame({
               <p className="text-txt-60 text-2xl font-semibold mt-3">{firstBuzzer.playerName}</p>
               <p className="text-txt-60 text-base mt-1">
                 A buzzé en{' '}
-                {firstBuzzer.timeDiffMs < 1000
-                  ? `${firstBuzzer.timeDiffMs}ms`
-                  : `${(firstBuzzer.timeDiffMs / 1000).toFixed(1)}s`}
+                {firstBuzzer.deltaMs < 1000
+                  ? `${firstBuzzer.deltaMs}ms`
+                  : `${(firstBuzzer.deltaMs / 1000).toFixed(1)}s`}
               </p>
-              {buzzQueue.length > 1 && (
+              {game.buzzQueue.length > 1 && (
                 <p className="text-txt-60 text-sm mt-2">
-                  +{buzzQueue.length - 1} autre{buzzQueue.length > 2 ? 's' : ''} en attente
+                  +{game.buzzQueue.length - 1} autre{game.buzzQueue.length > 2 ? 's' : ''} en attente
                 </p>
               )}
             </div>
@@ -375,7 +322,7 @@ export function ModeratedGame({
               <div className="px-4 py-3 bg-black/30">
                 <p className="text-txt font-semibold text-center">File d'attente</p>
               </div>
-              {buzzQueue.slice(0, 3).map((item, index) => {
+              {game.buzzQueue.slice(0, 3).map((item, index) => {
                 const qPlayer = players.find((p) => p.id === item.playerId);
                 return (
                   <div
@@ -401,17 +348,17 @@ export function ModeratedGame({
                     <div className="flex-1 flex flex-row items-center gap-2 flex-wrap">
                       <span
                         className={`font-medium ${
-                          item.playerId === currentPlayer?.id ? 'text-energy' : 'text-txt'
+                          item.playerId === myPlayerId ? 'text-energy' : 'text-txt'
                         }`}
                       >
                         {item.playerName}
-                        {item.playerId === currentPlayer?.id ? ' (Vous)' : ''}
+                        {item.playerId === myPlayerId ? ' (Vous)' : ''}
                       </span>
                       {isTeamMode &&
                         item.teamName &&
                         (() => {
                           const itemTeamColor = teamColor(
-                            teams.find((t) => t.id === item.teamId)?.color,
+                            teams.find((t) => t.id === item.teamId)?.color
                           );
                           return (
                             <span
@@ -427,17 +374,17 @@ export function ModeratedGame({
                         })()}
                     </div>
                     <span className="text-txt-60 text-sm">
-                      {item.timeDiffMs < 1000
-                        ? `${item.timeDiffMs}ms`
-                        : `${(item.timeDiffMs / 1000).toFixed(1)}s`}
+                      {item.deltaMs < 1000
+                        ? `${item.deltaMs}ms`
+                        : `${(item.deltaMs / 1000).toFixed(1)}s`}
                     </span>
                   </div>
                 );
               })}
-              {buzzQueue.length > 3 && (
+              {game.buzzQueue.length > 3 && (
                 <div className="px-4 py-2 bg-black/20">
                   <p className="text-txt-40 text-center text-sm">
-                    +{buzzQueue.length - 3} autres joueurs...
+                    +{game.buzzQueue.length - 3} autres joueurs...
                   </p>
                 </div>
               )}
@@ -446,8 +393,8 @@ export function ModeratedGame({
         </div>
       )}
 
-      {/* Question Display — MANAGER ONLY */}
-      {isManager && (
+      {/* Question Display */}
+      {isManager ? (
         <div className="px-4 pt-4">
           <div className="flex flex-row gap-3 mb-4">
             <ExpandableCard
@@ -494,19 +441,80 @@ export function ModeratedGame({
             </div>
           </div>
         </div>
+      ) : (
+        <div className="px-4 pt-4">
+          {currentQuestion.questionType === 'IDENTIFICATION' && currentQuestion.imageUrl ? (
+            <IdentificationQuestionDisplay
+              imageUrl={currentQuestion.imageUrl}
+              category={currentQuestion.category}
+              text={currentQuestion.text}
+            />
+          ) : (
+            <ProgressiveQuestionDisplay
+              wordIndex={displayedWordCount - 1}
+              text={currentQuestion.text}
+              isRunning={game.phase === 'READING' && displayedWordCount < game.totalWordCount}
+            />
+          )}
+        </div>
       )}
 
-      {/* Player View */}
+      {/* Player Action View */}
       {!isManager && !isSpectator && (
         <div className="px-4 pt-4">
           <div className="flex flex-col gap-3">
-            {amIFirstInQueue && !answeredWrongThisQuestion ? (
-              <div className="bg-surface rounded-2xl border border-accent p-3.5 flex items-center gap-3">
-                <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin shrink-0" />
-                <div>
-                  <p className="text-txt font-bold text-sm">Tu as buzzé ! Réponds à voix haute</p>
-                  <p className="text-txt-60 text-xs">En attente de la validation du modérateur…</p>
+            {amIAnswering ? (
+              <div className="bg-surface rounded-2xl border border-accent p-3.5 flex flex-col gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin shrink-0" />
+                  <div>
+                    <p className="text-txt font-bold text-sm">Tu as buzzé ! Réponds à voix haute</p>
+                    <p className="text-txt-60 text-xs">En attente de la validation du modérateur…</p>
+                  </div>
                 </div>
+                {countdownSeconds !== null && countdownSeconds > 0 && (
+                  <div className="mt-2 flex flex-row items-center gap-3">
+                    <div className="flex-1 h-1.5 rounded-full bg-surface-2 overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-all duration-1000 ease-linear"
+                        style={{
+                          width: `${(countdownSeconds / 10) * 100}%`,
+                          backgroundColor:
+                            countdownSeconds <= 3
+                              ? 'var(--bad)'
+                              : countdownSeconds <= 6
+                                ? 'var(--gold)'
+                                : 'var(--primary)',
+                        }}
+                      />
+                    </div>
+                    <span
+                      className="text-sm font-bold tabular-nums w-6 text-right"
+                      style={{
+                        color:
+                          countdownSeconds <= 3
+                            ? 'var(--bad)'
+                            : countdownSeconds <= 6
+                              ? 'var(--gold)'
+                              : 'var(--primary)',
+                      }}
+                    >
+                      {countdownSeconds}
+                    </span>
+                  </div>
+                )}
+              </div>
+            ) : game.phase === 'AWAITING_VALIDATION' && answeringPlayer ? (
+              <div className="bg-surface rounded-2xl p-4 border border-line flex items-center justify-between">
+                <div>
+                  <p className="text-txt-60 text-xs">En train de répondre</p>
+                  <p className="text-txt font-bold">{answeringPlayer.name}</p>
+                </div>
+                {countdownSeconds !== null && countdownSeconds > 0 && (
+                  <div className="w-10 h-10 rounded-full border-2 border-accent flex items-center justify-center">
+                    <span className="text-accent font-bold tabular-nums">{countdownSeconds}</span>
+                  </div>
+                )}
               </div>
             ) : answeredWrongThisQuestion ? (
               <div className="bg-buzz/12 border border-buzz/30 rounded-2xl p-3.5 flex items-center gap-3">
@@ -547,45 +555,37 @@ export function ModeratedGame({
         <div className="px-4 py-3 flex flex-col items-center">
           <BuzzerButton
             onBuzz={handleBuzz}
-            disabled={isSubmitting || isPaused || actualHasBuzzed || answeredWrongThisQuestion}
+            disabled={isSubmitting || !buzzerOpen || actualHasBuzzed || answeredWrongThisQuestion}
             hasBuzzed={actualHasBuzzed}
-            queuePosition={queuePosition >= 0 ? queuePosition + 1 : null}
+            queuePosition={myQueuePosition}
             teamBuzzed={teamBuzzed}
           />
-          {teamBuzzed &&
-            firstBuzzer &&
-            (() => {
-              const itemTeamColor = teamColor(
-                teams.find((t) => t.id === firstBuzzer.teamId)?.color,
-              );
-              return (
-                <div
-                  className="mt-2 w-full max-w-sm rounded-2xl p-4 border flex items-center gap-3 animate-[rise_0.25s_both]"
-                  style={{
-                    backgroundColor: `color-mix(in oklab, ${itemTeamColor} 10%, var(--surface))`,
-                    borderColor: itemTeamColor,
-                  }}
-                >
-                  <div
-                    className="w-[30px] h-[30px] rounded-full flex items-center justify-center shrink-0"
-                    style={{
-                      backgroundColor: `color-mix(in oklab, ${itemTeamColor} 20%, transparent)`,
-                    }}
-                  >
-                    <Users size={14} style={{ color: itemTeamColor }} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-txt font-bold text-[13.5px] leading-tight">
-                      Votre équipe a déjà buzzé
-                    </p>
-                    <p className="text-txt-60 text-xs mt-0.5 truncate">
-                      <strong>{firstBuzzer.playerName}</strong> répond pour{' '}
-                      {firstBuzzer.teamName || 'votre équipe'}
-                    </p>
-                  </div>
-                </div>
-              );
-            })()}
+          {teamBuzzed && firstBuzzer && (
+            <div
+              className="mt-2 w-full max-w-sm rounded-2xl p-4 border flex items-center gap-3 animate-[rise_0.25s_both]"
+              style={{
+                backgroundColor: `color-mix(in oklab, ${teamColor(teams.find((t) => t.id === firstBuzzer.teamId)?.color)} 10%, var(--surface))`,
+                borderColor: teamColor(teams.find((t) => t.id === firstBuzzer.teamId)?.color),
+              }}
+            >
+              <div
+                className="w-[30px] h-[30px] rounded-full flex items-center justify-center shrink-0"
+                style={{
+                  backgroundColor: `color-mix(in oklab, ${teamColor(teams.find((t) => t.id === firstBuzzer.teamId)?.color)} 20%, transparent)`,
+                }}
+              >
+                <Users size={14} style={{ color: teamColor(teams.find((t) => t.id === firstBuzzer.teamId)?.color) }} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-txt font-bold text-[13.5px] leading-tight">
+                  Votre équipe a déjà buzzé
+                </p>
+                <p className="text-txt-60 text-xs mt-0.5 truncate">
+                  <strong>{firstBuzzer.playerName}</strong> répond pour {firstBuzzer.teamName || 'votre équipe'}
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -593,40 +593,40 @@ export function ModeratedGame({
       <div className="px-4 pt-2">
         <div
           className={`rounded-3xl border overflow-hidden ${
-            buzzQueue.length > 0 ? 'border-accent bg-accent/5' : 'border-line bg-surface'
+            game.buzzQueue.length > 0 ? 'border-accent bg-accent/5' : 'border-line bg-surface'
           }`}
         >
           {/* Queue Header */}
           <div
             className={`px-4 py-3 border-b ${
-              buzzQueue.length > 0 ? 'border-accent/25 bg-accent/10' : 'border-line'
+              game.buzzQueue.length > 0 ? 'border-accent/25 bg-accent/10' : 'border-line'
             }`}
           >
             <div className="flex flex-row items-center justify-between">
               <div className="flex flex-row items-center">
                 <div
                   className={`w-8 h-8 rounded-full flex items-center justify-center mr-2 ${
-                    buzzQueue.length > 0 ? 'bg-accent' : 'bg-surface-2'
+                    game.buzzQueue.length > 0 ? 'bg-accent' : 'bg-surface-2'
                   }`}
                 >
-                  <Zap size={16} className={buzzQueue.length > 0 ? 'text-btn-fg' : 'text-txt-40'} />
+                  <Zap size={16} className={game.buzzQueue.length > 0 ? 'text-btn-fg' : 'text-txt-40'} />
                 </div>
                 <p className="text-txt font-bold text-base">File d'attente</p>
                 <div
                   className={`px-2.5 py-0.5 rounded-full ml-2 ${
-                    buzzQueue.length > 0 ? 'bg-accent' : 'bg-surface-2'
+                    game.buzzQueue.length > 0 ? 'bg-accent' : 'bg-surface-2'
                   }`}
                 >
                   <span
                     className={`font-semibold text-sm ${
-                      buzzQueue.length > 0 ? 'text-btn-fg' : 'text-txt'
+                      game.buzzQueue.length > 0 ? 'text-btn-fg' : 'text-txt'
                     }`}
                   >
-                    {buzzQueue.length}
+                    {game.buzzQueue.length}
                   </span>
                 </div>
               </div>
-              {buzzQueue.length > 0 && (
+              {game.buzzQueue.length > 0 && (
                 <div className="flex flex-row items-center bg-accent/15 px-3 py-1 rounded-full">
                   <div className="w-2 h-2 rounded-full bg-accent mr-2 animate-pulse" />
                   <span className="text-accent text-sm font-medium">En cours</span>
@@ -636,7 +636,7 @@ export function ModeratedGame({
           </div>
 
           {/* Queue List */}
-          {buzzQueue.length > 0 ? (
+          {game.buzzQueue.length > 0 ? (
             <div>
               {/* First buzzer */}
               <div className="px-4 py-3 bg-accent/10 border-b border-accent/20">
@@ -646,12 +646,12 @@ export function ModeratedGame({
                   </div>
                   <div className="flex-1">
                     <div className="flex flex-row items-center gap-2 flex-wrap">
-                      <p className="text-txt font-bold text-lg">{buzzQueue[0].playerName}</p>
+                      <p className="text-txt font-bold text-lg">{game.buzzQueue[0].playerName}</p>
                       {isTeamMode &&
-                        buzzQueue[0].teamName &&
+                        game.buzzQueue[0].teamName &&
                         (() => {
                           const itemTeamColor = teamColor(
-                            teams.find((t) => t.id === buzzQueue[0].teamId)?.color,
+                            teams.find((t) => t.id === game.buzzQueue[0].teamId)?.color
                           );
                           return (
                             <span
@@ -661,19 +661,19 @@ export function ModeratedGame({
                                 color: itemTeamColor,
                               }}
                             >
-                              {buzzQueue[0].teamName}
+                              {game.buzzQueue[0].teamName}
                             </span>
                           );
                         })()}
                     </div>
                     <p className="text-accent text-sm">En train de répondre</p>
                   </div>
-                  {buzzQueue[0].timeDiffMs >= 0 && (
+                  {game.buzzQueue[0].deltaMs >= 0 && (
                     <div className="flex flex-col items-end">
                       <p className="text-txt font-bold text-base">
-                        {buzzQueue[0].timeDiffMs < 1000
-                          ? `${buzzQueue[0].timeDiffMs}ms`
-                          : `${(buzzQueue[0].timeDiffMs / 1000).toFixed(1)}s`}
+                        {game.buzzQueue[0].deltaMs < 1000
+                          ? `${game.buzzQueue[0].deltaMs}ms`
+                          : `${(game.buzzQueue[0].deltaMs / 1000).toFixed(1)}s`}
                       </p>
                       <p className="text-txt-40 text-xs">réaction</p>
                     </div>
@@ -681,17 +681,17 @@ export function ModeratedGame({
                 </div>
 
                 {/* Buzz countdown */}
-                {countdown && countdown.playerId === buzzQueue[0].playerId && (
+                {game.phase === 'AWAITING_VALIDATION' && countdownSeconds !== null && countdownSeconds > 0 && (
                   <div className="mt-3 flex flex-row items-center gap-3">
                     <div className="flex-1 h-1.5 rounded-full bg-surface-2 overflow-hidden">
                       <div
                         className="h-full rounded-full transition-all duration-1000 ease-linear"
                         style={{
-                          width: `${(countdown.seconds / 10) * 100}%`,
+                          width: `${(countdownSeconds / 10) * 100}%`,
                           backgroundColor:
-                            countdown.seconds <= 3
+                            countdownSeconds <= 3
                               ? 'var(--bad)'
-                              : countdown.seconds <= 6
+                              : countdownSeconds <= 6
                                 ? 'var(--gold)'
                                 : 'var(--primary)',
                         }}
@@ -701,21 +701,21 @@ export function ModeratedGame({
                       className="text-sm font-bold tabular-nums w-6 text-right"
                       style={{
                         color:
-                          countdown.seconds <= 3
+                          countdownSeconds <= 3
                             ? 'var(--bad)'
-                            : countdown.seconds <= 6
+                            : countdownSeconds <= 6
                               ? 'var(--gold)'
                               : 'var(--primary)',
                       }}
                     >
-                      {countdown.seconds}
+                      {countdownSeconds}
                     </span>
                   </div>
                 )}
 
                 {/* Quick Validation — Manager only */}
-                {isManager && (
-                  <div className="flex flex-row gap-2 mt-3">
+                {isManager && game.phase === 'AWAITING_VALIDATION' && (
+                  <div className="flex flex-row gap-2 mt-3 relative z-50">
                     <button
                       onClick={() => handleValidate(true)}
                       disabled={isValidating}
@@ -733,18 +733,18 @@ export function ModeratedGame({
                     <button
                       onClick={() => setPendingWrong({ applyPenalty: false })}
                       disabled={isValidating}
-                      className="flex-1 py-3 rounded-xl bg-buzz flex items-center justify-center hover:bg-accent-d transition-colors disabled:opacity-60"
+                      className="flex-1 py-3 rounded-xl bg-buzz flex items-center justify-center hover:bg-buzz/90 transition-colors disabled:opacity-60"
                     >
-                      <span className="text-txt-60 text-xs">Sans pénalité</span>
+                      <span className="text-white font-bold text-sm">Sans pénalité</span>
                     </button>
                     <button
                       onClick={() => setPendingWrong({ applyPenalty: true })}
                       disabled={isValidating}
-                      className="px-3 py-3 rounded-xl bg-surface-2 flex items-center justify-center hover:bg-surface-2 transition-colors disabled:opacity-60"
+                      className="px-3 py-3 rounded-xl bg-surface-2 flex items-center justify-center hover:bg-surface-3 transition-colors disabled:opacity-60"
                     >
                       <div className="flex flex-row items-center">
                         <XCircle size={18} color="#FFFFFF" />
-                        <span className="text-txt font-bold ml-1.5">Faux avec - </span>
+                        <span className="text-txt font-bold ml-1.5">Faux avec -</span>
                       </div>
                     </button>
                   </div>
@@ -752,7 +752,7 @@ export function ModeratedGame({
               </div>
 
               {/* Other buzzers */}
-              {buzzQueue.slice(1).map((item, index) => {
+              {game.buzzQueue.slice(1).map((item, index) => {
                 const qPlayer = players.find((p) => p.id === item.playerId);
                 return (
                   <div
@@ -768,17 +768,17 @@ export function ModeratedGame({
                     <div className="flex-1 flex flex-row items-center gap-2 flex-wrap">
                       <span
                         className={`font-medium ${
-                          item.playerId === currentPlayer?.id ? 'text-accent' : 'text-txt-60'
+                          item.playerId === myPlayerId ? 'text-accent' : 'text-txt-60'
                         }`}
                       >
                         {item.playerName}
-                        {item.playerId === currentPlayer?.id && ' (Vous)'}
+                        {item.playerId === myPlayerId && ' (Vous)'}
                       </span>
                       {isTeamMode &&
                         item.teamName &&
                         (() => {
                           const itemTeamColor = teamColor(
-                            teams.find((t) => t.id === item.teamId)?.color,
+                            teams.find((t) => t.id === item.teamId)?.color
                           );
                           return (
                             <span
@@ -794,9 +794,9 @@ export function ModeratedGame({
                         })()}
                     </div>
                     <span className="text-txt-60 text-sm">
-                      {item.timeDiffMs < 1000
-                        ? `${item.timeDiffMs}ms`
-                        : `${(item.timeDiffMs / 1000).toFixed(1)}s`}
+                      {item.deltaMs < 1000
+                        ? `${item.deltaMs}ms`
+                        : `${(item.deltaMs / 1000).toFixed(1)}s`}
                     </span>
                   </div>
                 );
@@ -820,7 +820,7 @@ export function ModeratedGame({
             <button
               onClick={() => setShowSkipConfirm(true)}
               disabled={isSkipping}
-              className="flex-1 py-3 rounded-xl bg-surface-2 flex items-center justify-center hover:bg-surface-2 transition-colors disabled:opacity-60"
+              className="flex-1 py-3 rounded-xl bg-surface-2 flex items-center justify-center hover:bg-surface-3 transition-colors disabled:opacity-60"
             >
               {isSkipping ? (
                 <div className="w-4 h-4 border-2 border-white/60 border-t-transparent rounded-full animate-spin" />
@@ -830,9 +830,9 @@ export function ModeratedGame({
             </button>
             <button
               onClick={handleResetBuzzer}
-              disabled={buzzQueue.length === 0 || isResettingBuzzer}
+              disabled={game.buzzQueue.length === 0 || isResettingBuzzer}
               className={`flex-1 py-3 rounded-xl flex items-center justify-center transition-colors ${
-                buzzQueue.length > 0 && !isResettingBuzzer
+                game.buzzQueue.length > 0 && !isResettingBuzzer
                   ? 'bg-buzz/20 hover:bg-buzz/30'
                   : 'bg-surface-2 opacity-50 cursor-not-allowed'
               }`}
@@ -842,7 +842,7 @@ export function ModeratedGame({
               ) : (
                 <span
                   className={`font-medium text-sm ${
-                    buzzQueue.length > 0 ? 'text-buzz' : 'text-txt-40'
+                    game.buzzQueue.length > 0 ? 'text-buzz' : 'text-txt-40'
                   }`}
                 >
                   Reset
@@ -883,14 +883,13 @@ export function ModeratedGame({
       )}
 
       {/* Révélation */}
-      {answerReveal && (
+      {game.reveal && (
         <AnswerRevealOverlay
-          correctAnswer={answerReveal.correctAnswer}
-          winnerId={answerReveal.winnerId}
-          winnerName={answerReveal.winnerName}
-          allAnswersWrong={answerReveal.allAnswersWrong}
+          correctAnswer={game.reveal.correctAnswer}
+          winnerId={game.reveal.winnerId}
+          winnerName={game.reveal.winnerName}
+          allAnswersWrong={game.reveal.allAnswersWrong}
           isManager={isManager}
-          onDismiss={() => useBuzzStore.setState({ answerReveal: null })}
           onAdvance={handleAdvanceAfterAllWrong}
         />
       )}
@@ -900,8 +899,8 @@ export function ModeratedGame({
         title={pendingWrong?.applyPenalty ? 'Faux avec pénalité ?' : 'Faux sans pénalité ?'}
         message={
           pendingWrong?.applyPenalty
-            ? `${buzzQueue[0]?.playerName ?? 'Le joueur'} sera pénalisé et retiré de la file d'attente.`
-            : `${buzzQueue[0]?.playerName ?? 'Le joueur'} sera retiré de la file sans perdre de points.`
+            ? `${firstBuzzer?.playerName ?? 'Le joueur'} sera pénalisé et retiré de la file d'attente.`
+            : `${firstBuzzer?.playerName ?? 'Le joueur'} sera retiré de la file sans perdre de points.`
         }
         confirmLabel={pendingWrong?.applyPenalty ? 'Faux' : 'Sans pénalité'}
         cancelLabel="Annuler"
@@ -927,6 +926,15 @@ export function ModeratedGame({
           handleSkip();
         }}
         onCancel={() => setShowSkipConfirm(false)}
+      />
+
+      <GameFooter
+        sessionId={sessionId}
+        players={players}
+        teams={teams}
+        isTeamMode={isTeamMode}
+        isManager={isManager}
+        currentUserId={myPlayerId}
       />
     </>
   );

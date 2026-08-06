@@ -48,18 +48,10 @@ interface BuzzState {
   isPaused: boolean;
   isGameOver: boolean;
 
-  // Mode Sans Modérateur
-  displayWordIndex: number;
-  displayResumeWordIndex: number | null;
-  displayRunning: boolean;
-  questionFullyDisplayed: boolean;
   myAnswerChoices: string[] | null;
   myAnswerQuestionId: string | null;
   answerTimeSeconds: number;
   isSubmittingAnswer: boolean;
-  globalTimerRemaining: number;
-  globalTimerTotal: number;
-  globalTimerPaused: boolean;
   answerReveal: { correctAnswer: string; winnerId: string | null; winnerName: string | null; allAnswersWrong?: boolean } | null;
 
   /**
@@ -107,9 +99,6 @@ interface BuzzActions {
   updateStatus: (status: SessionStatus) => void;
 
   // Mode Sans Modérateur
-  setDisplayWordIndex: (index: number) => void;
-  setQuestionFullyDisplayed: (fully: boolean) => void;
-  setDisplayRunning: (running: boolean) => void;
   setIsSubmittingAnswer: (submitting: boolean) => void;
   clearAnswerChoices: () => void;
   /** Unique écrivain de `game`. Ignore silencieusement les paquets périmés. */
@@ -141,17 +130,10 @@ const initialState: BuzzState = {
   buzzerEnabled: false,
   isPaused: false,
   isGameOver: false,
-  displayWordIndex: 0,
-  displayResumeWordIndex: null,
-  displayRunning: false,
-  questionFullyDisplayed: false,
   myAnswerChoices: null,
   myAnswerQuestionId: null,
   answerTimeSeconds: 15,
   isSubmittingAnswer: false,
-  globalTimerRemaining: 0,
-  globalTimerTotal: 0,
-  globalTimerPaused: false,
   answerReveal: null,
   game: initialGameStateSlice,
   isCreating: false,
@@ -318,8 +300,6 @@ export const useBuzzStore = create<BuzzState & BuzzActions>((set, get) => ({
 
   // ── Game State Updates (WebSocket) ──
   setCurrentQuestion: (question, index, total) => {
-    const isWithoutMod = get().session?.sessionMode === 'WITHOUT_MODERATOR';
-    const totalWords = question.text ? question.text.split(' ').length : 1;
     set({
       currentQuestion: question,
       questionIndex: index,
@@ -329,10 +309,6 @@ export const useBuzzStore = create<BuzzState & BuzzActions>((set, get) => ({
       answeredWrongThisQuestion: false,
       myQueuePosition: null,
       buzzerEnabled: true,
-      displayWordIndex: isWithoutMod ? totalWords - 1 : 0,
-      displayResumeWordIndex: null,
-      displayRunning: !isWithoutMod,
-      questionFullyDisplayed: isWithoutMod,
       myAnswerChoices: null,
       myAnswerQuestionId: null,
       answerReveal: null,
@@ -371,9 +347,6 @@ export const useBuzzStore = create<BuzzState & BuzzActions>((set, get) => ({
   setGameOver: (isOver) => set({ isGameOver: isOver, buzzerEnabled: false }),
 
   // Mode Sans Modérateur
-  setDisplayWordIndex: (index) => set({ displayWordIndex: index }),
-  setQuestionFullyDisplayed: (fully) => set({ questionFullyDisplayed: fully }),
-  setDisplayRunning: (running) => set({ displayRunning: running }),
   setIsSubmittingAnswer: (submitting) => set({ isSubmittingAnswer: submitting }),
   clearAnswerChoices: () => set({ myAnswerChoices: null, myAnswerQuestionId: null }),
 
@@ -460,6 +433,11 @@ export const useBuzzStore = create<BuzzState & BuzzActions>((set, get) => ({
       buzzerEnabled: false,
       isPaused: false,
       isGameOver: false,
+      myAnswerChoices: null,
+      myAnswerQuestionId: null,
+      isSubmittingAnswer: false,
+      answerReveal: null,
+      game: initialGameStateSlice,
     }),
 
   leaveSession: () => {
