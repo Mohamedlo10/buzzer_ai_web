@@ -42,6 +42,7 @@ import { getManualQuestions, getSession } from '~/lib/api/sessions';
 import * as gameApi from '~/lib/api/game';
 import { appStorage } from '~/lib/utils/storage';
 import type { BuzzQueueItem, ManualQuestion } from '~/types/api';
+import { teamColor, teamColorTint } from '~/lib/game/teamColors';
 
 // Adaptive polling constants
 const POLL_WS_CONNECTED_MS = 3000;
@@ -190,7 +191,7 @@ export default function GamePage() {
           .filter((p) => p.teamId)
           .map((p) => {
             const team = teams.find((t) => t.id === p.teamId);
-            return [p.teamId!, { teamId: p.teamId!, teamName: team?.name ?? 'Équipe', teamColor: team?.color ?? null }];
+            return [p.teamId!, { teamId: p.teamId!, teamName: team?.name ?? 'Équipe', teamColor: teamColor(team?.color) }];
           })
       ).values()].map(({ teamId, teamName, teamColor }) => {
         const members = players.filter((p) => p.teamId === teamId);
@@ -789,9 +790,9 @@ export default function GamePage() {
               <span
                 className="px-2 py-1 rounded-full text-[11px] font-bold border flex items-center gap-1"
                 style={{
-                  backgroundColor: `color-mix(in oklab, ${myTeam.color ?? 'var(--indigo)'} 12%, transparent)`,
-                  borderColor: `color-mix(in oklab, ${myTeam.color ?? 'var(--indigo)'} 35%, transparent)`,
-                  color: myTeam.color ?? 'var(--indigo)',
+                  backgroundColor: teamColorTint(myTeam.color, 12),
+                  borderColor: teamColorTint(myTeam.color, 35),
+                  color: teamColor(myTeam.color),
                 }}
               >
                 <Users size={11} />
@@ -904,13 +905,13 @@ export default function GamePage() {
                         {item.playerId === currentPlayer?.id ? ' (Vous)' : ''}
                       </span>
                       {isTeamMode && item.teamName && (() => {
-                        const teamColor = teams.find((t) => t.id === item.teamId)?.color ?? 'var(--indigo)';
+                        const itemTeamColor = teamColor(teams.find((t) => t.id === item.teamId)?.color);
                       return (
                         <span
                           className="text-[11px] font-bold px-2 py-0.5 rounded-full"
                           style={{
-                            backgroundColor: `color-mix(in oklab, ${teamColor} 22%, transparent)`,
-                            color: teamColor,
+                            backgroundColor: `color-mix(in oklab, ${itemTeamColor} 22%, transparent)`,
+                            color: itemTeamColor,
                           }}
                         >
                           {item.teamName}
@@ -1081,20 +1082,20 @@ export default function GamePage() {
               teamBuzzed={teamBuzzed}
             />
             {teamBuzzed && firstBuzzer && (() => {
-              const teamColor = teams.find((t) => t.id === firstBuzzer.teamId)?.color ?? 'var(--indigo)';
+              const itemTeamColor = teamColor(teams.find((t) => t.id === firstBuzzer.teamId)?.color);
               return (
                 <div
                   className="mt-2 w-full max-w-sm rounded-2xl p-4 border flex items-center gap-3 animate-[rise_0.25s_both]"
                   style={{
-                    backgroundColor: `color-mix(in oklab, ${teamColor} 10%, var(--surface))`,
-                    borderColor: teamColor,
+                    backgroundColor: `color-mix(in oklab, ${itemTeamColor} 10%, var(--surface))`,
+                    borderColor: itemTeamColor,
                   }}
                 >
                   <div
                     className="w-[30px] h-[30px] rounded-full flex items-center justify-center shrink-0"
-                    style={{ backgroundColor: `color-mix(in oklab, ${teamColor} 20%, transparent)` }}
+                    style={{ backgroundColor: `color-mix(in oklab, ${itemTeamColor} 20%, transparent)` }}
                   >
-                    <Users size={14} style={{ color: teamColor }} />
+                    <Users size={14} style={{ color: itemTeamColor }} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-txt font-bold text-[13.5px] leading-tight">
@@ -1150,13 +1151,13 @@ export default function GamePage() {
                           {buzzQueue[0].playerName}
                         </p>
                         {isTeamMode && buzzQueue[0].teamName && (() => {
-                          const teamColor = teams.find((t) => t.id === buzzQueue[0].teamId)?.color ?? 'var(--indigo)';
+                          const itemTeamColor = teamColor(teams.find((t) => t.id === buzzQueue[0].teamId)?.color);
                           return (
                             <span
                               className="text-[11px] font-bold px-2 py-0.5 rounded-full"
                               style={{
-                                backgroundColor: `color-mix(in oklab, ${teamColor} 22%, transparent)`,
-                                color: teamColor,
+                                backgroundColor: `color-mix(in oklab, ${itemTeamColor} 22%, transparent)`,
+                                color: itemTeamColor,
                               }}
                             >
                               {buzzQueue[0].teamName}
@@ -1269,13 +1270,13 @@ export default function GamePage() {
                           {item.playerId === currentPlayer?.id && ' (Vous)'}
                         </span>
                         {isTeamMode && item.teamName && (() => {
-                          const teamColor = teams.find((t) => t.id === item.teamId)?.color ?? 'var(--indigo)';
+                          const itemTeamColor = teamColor(teams.find((t) => t.id === item.teamId)?.color);
                         return (
                           <span
                             className="text-[11px] font-bold px-2 py-0.5 rounded-full"
                             style={{
-                              backgroundColor: `color-mix(in oklab, ${teamColor} 22%, transparent)`,
-                              color: teamColor,
+                              backgroundColor: `color-mix(in oklab, ${itemTeamColor} 22%, transparent)`,
+                              color: itemTeamColor,
                             }}
                           >
                             {item.teamName}

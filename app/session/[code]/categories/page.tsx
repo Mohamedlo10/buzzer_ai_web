@@ -22,6 +22,7 @@ import * as categoriesApi from '~/lib/api/categories';
 import * as roomsApi from '~/lib/api/rooms';
 import { appStorage } from '~/lib/utils/storage';
 import type { CategoryRequest, Difficulty, TeamResponse } from '~/types/api';
+import { teamColor as resolveTeamColor } from '~/lib/game/teamColors';
 
 const PREDEFINED_CATEGORIES = [
   { name: 'Histoire', emoji: '📜', color: 'var(--gold)' },
@@ -414,7 +415,8 @@ export default function CategorySelectionPage() {
           ) : (
             sortedTeams.map((team) => {
               const isSelected = selectedTeamId === team.id;
-              const teamColor = team.color ?? 'var(--indigo)';
+              // team.color est un jeton de palette, pas une couleur CSS.
+              const teamColor = resolveTeamColor(team.color);
               return (
                 <button
                   key={team.id}

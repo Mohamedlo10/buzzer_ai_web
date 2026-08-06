@@ -23,6 +23,7 @@ import * as rankingsApi from '~/lib/api/rankings';
 import * as friendsApi from '~/lib/api/friends';
 import { appStorage } from '~/lib/utils/storage';
 import type { SessionRankingEntry, CategoryRankingResponse } from '~/types/api';
+import { teamColor as resolveTeamColor } from '~/lib/game/teamColors';
 
 // ── Rank label ────────────────────────────────────────────────────────────────
 function rankLabel(index: number): string {
@@ -264,7 +265,7 @@ export default function SessionResultsPage() {
         teamMap.set(entry.teamId, {
           id: entry.teamId,
           name: entry.teamName,
-          color: entry.teamColor ?? 'var(--primary)',
+          color: resolveTeamColor(entry.teamColor),
           score: entry.teamScore ?? 0,
           players: [entry],
         });
@@ -365,7 +366,7 @@ export default function SessionResultsPage() {
             teams={teamRankings.map((t) => ({
               id: t.id,
               name: t.name,
-              color: t.color,
+              color: resolveTeamColor(t.color),
               score: t.score,
               members: [],
             }))}

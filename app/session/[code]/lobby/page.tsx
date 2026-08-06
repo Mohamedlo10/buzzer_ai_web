@@ -44,6 +44,7 @@ import * as sessionsApi from '~/lib/api/sessions';
 import { getUserProfile } from '~/lib/api/users';
 import { Slider } from '~/components/ui/Slider';
 import type { RoomInfo, PlayerResponse, TeamResponse } from '~/types/api';
+import { teamColor, teamColorTint } from '~/lib/game/teamColors';
 
 const orbitron = Orbitron({ subsets: ['latin'], weight: ['400', '700', '900'] });
 const rajdhani = Rajdhani({ subsets: ['latin'], weight: ['400', '500', '600', '700'] });
@@ -139,8 +140,8 @@ function ArcadeTeamsSection({
               <div
                 className="w-2 h-2 rounded-full shrink-0"
                 style={{
-                  background: team.color ?? 'var(--indigo)',
-                  boxShadow: `0 0 5px ${team.color ?? 'var(--indigo)'}`,
+                  background: teamColor(team.color),
+                  boxShadow: `0 0 5px ${teamColor(team.color)}`,
                 }}
               />
               <span className={`${rajdhaniClass} flex-1 text-txt font-semibold text-sm`}>{team.name}</span>
@@ -995,13 +996,13 @@ export default function LobbyPage() {
                     disabled={isChangingTeam || isCurrent}
                     className="flex items-center px-4 py-3.5 rounded-[14px] cursor-pointer transition-opacity disabled:opacity-60"
                     style={{
-                      background: isCurrent ? (team.color ? `${team.color}12` : 'var(--surface-2)') : 'var(--bg)',
-                      border: `1px solid ${isCurrent ? (team.color ?? 'var(--primary)') : 'var(--line)'}`,
+                      background: isCurrent ? teamColorTint(team.color, 12) : 'var(--bg)',
+                      border: `1px solid ${isCurrent ? teamColor(team.color) : 'var(--line)'}`,
                     }}
                   >
                     <div
                       className="w-3 h-3 rounded-full mr-3 shrink-0"
-                      style={{ background: team.color ?? 'var(--indigo)' }}
+                      style={{ background: teamColor(team.color) }}
                     />
                     <span className={`${rajdhani.className} flex-1 text-txt font-semibold text-sm text-left`}>{team.name}</span>
                     <span className={`${rajdhani.className} text-txt-40 text-xs`}>
@@ -1079,7 +1080,7 @@ export default function LobbyPage() {
                   return (
                     <span
                       className="text-[10px] font-bold px-2.5 py-0.5 rounded-full"
-                      style={{ backgroundColor: (team.color ?? 'var(--indigo)') + '20', color: team.color ?? 'var(--indigo)' }}
+                      style={{ backgroundColor: teamColorTint(team.color, 20), color: teamColor(team.color) }}
                     >
                       {team.name}
                     </span>
