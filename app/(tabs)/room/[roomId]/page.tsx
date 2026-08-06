@@ -940,15 +940,13 @@ export default function RoomDetailPage() {
             ))}
           </div>
         ) : (
-          isOwner && (
-            <button
-              onClick={handleCreateSession}
-              className="w-full py-4 rounded-2xl flex items-center justify-center bg-gradient-to-r from-accent to-gold text-btn-fg font-bold text-base shadow-glow-success hover:opacity-95 transition-all cursor-pointer shrink-0"
-            >
-              <Play size={20} className="text-btn-fg fill-current" />
-              <span className="ml-2">🚀 CRÉER & LANCER UNE SESSION</span>
-            </button>
-          )
+          <button
+            onClick={handleCreateSession}
+            className="w-full py-4 rounded-2xl flex items-center justify-center bg-gradient-to-r from-accent to-gold text-btn-fg font-bold text-base shadow-glow-success hover:opacity-95 transition-all cursor-pointer shrink-0"
+          >
+            <Play size={20} className="text-btn-fg fill-current" />
+            <span className="ml-2">🚀 CRÉER & LANCER UNE SESSION</span>
+          </button>
         )}
 
         {/* Members + Rankings fusionnés */}

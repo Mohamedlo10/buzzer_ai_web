@@ -151,8 +151,8 @@ export function AnswerRevealOverlay({
           </div>
         </div>
 
-        {/* Advance action — visible for any player when all answers are wrong */}
-        {allAnswersWrong && onAdvance ? (
+        {/* Manager Action / Auto-advance */}
+        {allAnswersWrong && onAdvance && isManager ? (
           <button
             onClick={handleAdvance}
             disabled={isAdvancing}
