@@ -191,7 +191,10 @@ export default function GamePage() {
   useEffect(() => {
     setSessionFetched(false);
     if (!code) return;
-    if (session && session.code === code) return;
+    if (session && session.code === code) {
+      setSessionFetched(true);
+      return;
+    }
 
     if (session && session.code !== code) {
       leaveSession();

@@ -402,33 +402,21 @@ function RoomsContent() {
     };
   }, [data?.recentRooms]);
 
-  const handleReconnectSession = async () => {
+  const handleReconnectSession = () => {
     if (!activeSessionInfo?.code) return;
     const code = activeSessionInfo.code;
+    const status = activeSessionInfo.status || 'PLAYING';
 
-    try {
-      const resData = await sessionsApi.joinCheck(code);
-      const realSessionId = resData.session.id;
-      const realStatus = resData.session.status;
-
-      await appStorage.setActiveSession({
-        code,
-        sessionId: realSessionId,
-      });
-
-      if (realStatus === 'LOBBY') {
-        router.push(`/session/${code}/lobby?sessionId=${realSessionId}`);
-      } else if (realStatus === 'GENERATING') {
-        router.push(`/session/${code}/loading?sessionId=${realSessionId}`);
-      } else if (['PLAYING', 'PAUSED'].includes(realStatus)) {
-        router.push(`/session/${code}/game?sessionId=${realSessionId}`);
-      } else if (realStatus === 'RESULTS') {
-        router.push(`/session/${code}/results?sessionId=${realSessionId}`);
-      } else {
-        router.push(`/session/${code}/lobby?sessionId=${realSessionId}`);
-      }
-    } catch (err) {
-      console.error('Failed to reconnect to active session:', err);
+    if (status === 'LOBBY') {
+      router.push(`/session/${code}/lobby`);
+    } else if (status === 'GENERATING') {
+      router.push(`/session/${code}/loading`);
+    } else if (['PLAYING', 'PAUSED'].includes(status)) {
+      router.push(`/session/${code}/game`);
+    } else if (status === 'RESULTS') {
+      router.push(`/session/${code}/results`);
+    } else {
+      router.push(`/session/${code}/lobby`);
     }
   };
 
