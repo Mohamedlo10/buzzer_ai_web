@@ -381,13 +381,42 @@ function RoomsContent() {
           }
         }
 
+        // Fallback: a room in recentRooms has an active session but we don't have the
+        // session code in local storage (e.g. different device). Resolve the real session
+        // code via joinCheck using the room code, then store it for navigation.
         const roomWithActiveSession = data?.recentRooms?.find((r) => r.hasActiveSession);
         if (roomWithActiveSession && isMounted) {
-          setActiveSessionInfo({
-            code: roomWithActiveSession.code,
-            status: 'PLAYING',
-            roomId: String(roomWithActiveSession.id),
-          });
+          // The room's active session code is the same as the room code in joinCheck API.
+          // Try to resolve the real session code first.
+          try {
+            const resData = await sessionsApi.joinCheck(roomWithActiveSession.code);
+            const status = resData?.session?.status;
+            if (status && ['LOBBY', 'GENERATING', 'PLAYING', 'PAUSED'].includes(status)) {
+              // Store the real session code + id for instant reconnection
+              await appStorage.setActiveSession({
+                sessionId: resData.session.id,
+                code: resData.session.code,
+              });
+              if (isMounted) {
+                setActiveSessionInfo({
+                  code: resData.session.code,
+                  status,
+                  roomId: roomWithActiveSession.id,
+                });
+              }
+              return;
+            }
+          } catch {
+            // joinCheck with room code failed — fall back to room page navigation
+          }
+          // Could not resolve session code: show banner that redirects to room page
+          if (isMounted) {
+            setActiveSessionInfo({
+              code: '',   // empty = signals room-only redirect
+              status: 'PLAYING',
+              roomId: roomWithActiveSession.id,
+            });
+          }
         } else if (isMounted) {
           setActiveSessionInfo(null);
         }
@@ -403,9 +432,15 @@ function RoomsContent() {
   }, [data?.recentRooms]);
 
   const handleReconnectSession = () => {
-    if (!activeSessionInfo?.code) return;
+    if (!activeSessionInfo) return;
     const code = activeSessionInfo.code;
     const status = activeSessionInfo.status || 'PLAYING';
+
+    // No session code resolved — redirect to the room page instead
+    if (!code && activeSessionInfo.roomId) {
+      router.push(`/room/${activeSessionInfo.roomId}`);
+      return;
+    }
 
     if (status === 'LOBBY') {
       router.push(`/session/${code}/lobby`);
