@@ -250,6 +250,17 @@ export default function SessionResultsPage() {
   // Net debt balance: positive = you receive, negative = you owe
   const netDebt = totalReceived - totalOwed;
 
+  /**
+   * Une session Sprint se reconnaît à ses statistiques de réponse, que le
+   * backend ne renseigne que dans ce mode. Pas besoin de l'objet session : ce
+   * qui décide de l'affichage, c'est la présence de la donnée à afficher.
+   */
+  const isSprint = rankings.some((r) => r.rawCorrectAnswers != null);
+
+  /** Temps en millisecondes → « 21.2 s », format de la spec §14. */
+  const formatMs = (ms?: number | null) =>
+    ms == null ? '—' : `${(ms / 1000).toFixed(1)} s`;
+
   // Build team rankings if session is in team mode
   const isTeamMode = rankings.some((r) => r.teamId);
   const teamRankings: TeamEntry[] = [];
@@ -333,7 +344,70 @@ export default function SessionResultsPage() {
           }}
         />
 
+        {/* ── Performance Sprint (spec §18 et §19) ── */}
+        {isSprint && currentUserRanking && (
+          <div className="bg-surface rounded-2xl border border-line p-4">
+            <div className="flex items-center gap-1.5 mb-3">
+              <Zap size={15} className="text-warn" />
+              <p className="text-warn text-[10px] font-bold tracking-widest uppercase">
+                Votre Sprint
+              </p>
+            </div>
+
+            <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
+              {[
+                {
+                  label: 'POSITION',
+                  value: `${currentUserRanking.rank}${currentUserRanking.rank === 1 ? 'er' : 'e'}`,
+                  color: 'var(--primary)',
+                },
+                {
+                  // Performance réelle, avant tout règlement de dette : afficher
+                  // le compte post-dettes ici donnerait une précision calculée
+                  // sur des bonnes réponses que le joueur n'a jamais données.
+                  label: 'BONNES RÉP.',
+                  value: `${currentUserRanking.rawCorrectAnswers ?? 0} / ${currentUserRanking.totalQuestions ?? 0}`,
+                  color: 'var(--gold)',
+                },
+                {
+                  label: 'PRÉCISION',
+                  value:
+                    currentUserRanking.accuracy != null
+                      ? `${Math.round(currentUserRanking.accuracy * 100)} %`
+                      : '—',
+                  color: 'var(--txt)',
+                },
+                {
+                  // Départage du classement à nombre de bonnes réponses égal.
+                  label: 'TEMPS CUMULÉ',
+                  value: formatMs(currentUserRanking.totalResponseTimeMs),
+                  color: 'var(--primary)',
+                },
+                {
+                  label: 'MEILLEUR',
+                  value: formatMs(currentUserRanking.bestResponseTimeMs),
+                  color: 'var(--txt)',
+                },
+                {
+                  label: 'PIRE',
+                  value: formatMs(currentUserRanking.worstResponseTimeMs),
+                  color: 'var(--txt)',
+                },
+              ].map(({ label, value, color }) => (
+                <div key={label} className="flex flex-col items-center text-center bg-surface-2/60 rounded-xl p-2">
+                  <p className="text-txt-40 text-[8.5px] font-bold tracking-wide mb-1">{label}</p>
+                  <p className="font-display font-semibold text-sm" style={{ color }}>{value}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* ── Performance globale ── */}
+        {/* Ces tuiles sont en points (BASE / CORR. / DETTES / FINAL) : elles n'ont
+            pas de sens en Sprint, où le classement se joue sur le nombre de
+            bonnes réponses puis sur le temps. */}
+        {!isSprint && (
         <div className="bg-surface rounded-2xl border border-line p-4">
           <div className="flex items-center gap-1.5 mb-3">
             <Zap size={15} className="text-warn" />
@@ -359,6 +433,7 @@ export default function SessionResultsPage() {
             ))}
           </div>
         </div>
+        )}
 
         {/* ── Classement par équipe ── */}
         {isTeamMode && teamRankings.length > 0 && (
@@ -395,7 +470,9 @@ export default function SessionResultsPage() {
                 {isTeamMode ? 'Classement individuel' : 'Classement'}
               </p>
             </div>
-            <p className="text-txt-40 text-[9.5px] font-bold tracking-widest uppercase">Total points</p>
+            <p className="text-txt-40 text-[9.5px] font-bold tracking-widest uppercase">
+              {isSprint ? 'Bonnes rép. · temps' : 'Total points'}
+            </p>
           </div>
 
           {rankings.map((entry, index) => {
@@ -457,13 +534,26 @@ export default function SessionResultsPage() {
                   />
                 </div>
 
-                {/* Score */}
-                <div className="flex items-baseline gap-1 shrink-0">
-                  <span className="font-display font-semibold text-lg" style={{ color: scoreColor }}>
-                    {entry.finalScore}
-                  </span>
-                  <span className="text-txt-40 text-[10px]">pts</span>
-                </div>
+                {/* Score. En Sprint c'est le couple qui classe : nombre de bonnes
+                    réponses d'abord, temps cumulé pour départager (spec §14).
+                    Afficher des points ici masquerait le critère réel du rang. */}
+                {isSprint ? (
+                  <div className="flex flex-col items-end shrink-0 leading-tight">
+                    <span className="font-display font-semibold text-lg" style={{ color: scoreColor }}>
+                      {entry.correctAnswers ?? 0}
+                    </span>
+                    <span className="text-txt-40 text-[10px] tabular-nums">
+                      {formatMs(entry.totalResponseTimeMs)}
+                    </span>
+                  </div>
+                ) : (
+                  <div className="flex items-baseline gap-1 shrink-0">
+                    <span className="font-display font-semibold text-lg" style={{ color: scoreColor }}>
+                      {entry.finalScore}
+                    </span>
+                    <span className="text-txt-40 text-[10px]">pts</span>
+                  </div>
+                )}
               </div>
             );
           })}
@@ -524,7 +614,14 @@ export default function SessionResultsPage() {
                     className="font-display font-semibold text-sm shrink-0"
                     style={{ color: iOwe ? 'var(--bad)' : owedToMe ? 'var(--primary)' : 'var(--txt-60)' }}
                   >
-                    {iOwe ? '-' : owedToMe ? '+' : '-'}{debt.amount} pts
+                    {/* Le champ `amount` change d'unité selon le mode : des points
+                        avec modérateur, des BONNES RÉPONSES en Sprint — c'est ce
+                        qui permet à une dette d'agir sur le critère de classement,
+                        qui n'est pas le score. */}
+                    {iOwe ? '-' : owedToMe ? '+' : '-'}{debt.amount}
+                    {isSprint
+                      ? debt.amount > 1 ? ' bonnes rép.' : ' bonne rép.'
+                      : ' pts'}
                   </span>
                 </div>
               );
