@@ -202,6 +202,39 @@ export default function GamePage() {
     }
   }, [session?.id]);
 
+  // Une partie qui n'a pas commencé n'a pas de question courante : sans cette
+  // garde, l'écran restait bloqué sur « Chargement du jeu… » pour toujours,
+  // sans rien indiquer. C'est ce qui arrivait en revenant sur cette URL alors
+  // que la partie était encore dans le lobby — impossible de distinguer « ça
+  // charge » de « il n'y a rien à charger ».
+  const status = session?.status;
+  const notStarted = status === 'LOBBY' || status === 'GENERATING' || status === 'CANCELLED';
+
+  if (session && notStarted) {
+    return (
+      <SafeScreen>
+        <div className="flex-1 flex flex-col justify-center items-center min-h-screen gap-4 px-6">
+          <div className="w-20 h-20 rounded-full bg-accent/15 flex items-center justify-center">
+            <Zap size={40} color="var(--primary)" />
+          </div>
+          <p className="text-txt font-semibold text-center">
+            {status === 'GENERATING'
+              ? 'Les questions sont en cours de génération…'
+              : status === 'CANCELLED'
+                ? 'Cette partie a été annulée.'
+                : "La partie n'a pas encore été lancée."}
+          </p>
+          <button
+            onClick={() => router.replace(`/session/${code}/lobby`)}
+            className="px-5 py-2.5 rounded-full bg-primary text-btn-fg font-bold text-sm"
+          >
+            Retour au lobby
+          </button>
+        </div>
+      </SafeScreen>
+    );
+  }
+
   if (!session || !currentQuestion) {
     return (
       <SafeScreen>

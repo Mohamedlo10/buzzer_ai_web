@@ -321,7 +321,14 @@ export default function LobbyPage() {
       }
     }
     try { await startSession(session.id); }
-    catch { /* ignore */ }
+    catch (err: any) {
+      // Un échec avalé en silence laissait le lobby revenir à son état initial
+      // sans un mot : impossible de distinguer « le serveur a refusé » de
+      // « je n'ai pas cliqué au bon endroit ». C'est le même symptôme que le
+      // handler d'à côté traite déjà correctement.
+      const detail = err?.response?.data?.message || err?.message;
+      window.alert(detail || 'Impossible de démarrer la partie');
+    }
   };
 
   const handleManagerStartClick = () => {

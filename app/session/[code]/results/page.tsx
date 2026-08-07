@@ -153,6 +153,8 @@ export default function SessionResultsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [storedSessionId, setStoredSessionId] = useState<string | null>(null);
   const [profileUserId, setProfileUserId] = useState<string | null>(null);
+  /** Salle d'origine, retenue avant que leaveSession() ne vide le store. */
+  const [capturedRoomId, setCapturedRoomId] = useState<string | null>(null);
 
   const user = useAuthStore((state) => state.user);
   const storeSession = useBuzzStore((state) => state.session);
@@ -181,6 +183,13 @@ export default function SessionResultsPage() {
       setRankings(sessionData);
       setCategoryRankings(categoryData);
 
+      // Mémoriser la salle AVANT de vider le store : leaveSession() efface la
+      // session, donc storeSession.roomId devient indisponible et le bouton
+      // « Retour » retombait sur la liste des salles au lieu de la salle d'où
+      // venait la partie.
+      const roomIdBeforeLeaving = useBuzzStore.getState().session?.roomId;
+      if (roomIdBeforeLeaving) setCapturedRoomId(roomIdBeforeLeaving);
+
       leaveSession();
       await appStorage.clearActiveSession();
     } catch (err) {
@@ -204,7 +213,7 @@ export default function SessionResultsPage() {
     }
   };
 
-  const resolvedRoomId = paramRoomId || storeSession?.roomId;
+  const resolvedRoomId = paramRoomId || storeSession?.roomId || capturedRoomId;
   const handleBack = () => {
     if (resolvedRoomId) router.replace(`/room/${resolvedRoomId}`);
     else router.replace('/rooms');
@@ -354,46 +363,63 @@ export default function SessionResultsPage() {
               </p>
             </div>
 
-            <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
-              {[
-                {
-                  label: 'POSITION',
-                  value: `${currentUserRanking.rank}${currentUserRanking.rank === 1 ? 'er' : 'e'}`,
-                  color: 'var(--primary)',
-                },
-                {
-                  // Performance réelle, avant tout règlement de dette : afficher
-                  // le compte post-dettes ici donnerait une précision calculée
-                  // sur des bonnes réponses que le joueur n'a jamais données.
-                  label: 'BONNES RÉP.',
-                  value: `${currentUserRanking.rawCorrectAnswers ?? 0} / ${currentUserRanking.totalQuestions ?? 0}`,
-                  color: 'var(--gold)',
-                },
-                {
-                  label: 'PRÉCISION',
-                  value:
-                    currentUserRanking.accuracy != null
-                      ? `${Math.round(currentUserRanking.accuracy * 100)} %`
-                      : '—',
-                  color: 'var(--txt)',
-                },
-                {
-                  // Départage du classement à nombre de bonnes réponses égal.
-                  label: 'TEMPS CUMULÉ',
-                  value: formatMs(currentUserRanking.totalResponseTimeMs),
-                  color: 'var(--primary)',
-                },
-                {
-                  label: 'MEILLEUR',
-                  value: formatMs(currentUserRanking.bestResponseTimeMs),
-                  color: 'var(--txt)',
-                },
-                {
-                  label: 'PIRE',
-                  value: formatMs(currentUserRanking.worstResponseTimeMs),
-                  color: 'var(--txt)',
-                },
-              ].map(({ label, value, color }) => (
+            <div className="grid grid-cols-4 md:grid-cols-7 gap-2">
+              {(() => {
+                // En Sprint, une dette transfère des BONNES RÉPONSES et non des
+                // points : l'écart entre le compte réel et le compte classé est
+                // donc exactement ce que les dettes ont déplacé. On retrouve la
+                // même identité lisible que sur l'écran du mode modéré :
+                //     BRUT + DETTES = FINAL
+                const raw = currentUserRanking.rawCorrectAnswers ?? 0;
+                const ranked = currentUserRanking.correctAnswers ?? raw;
+                const debtDelta = ranked - raw;
+
+                return [
+                  {
+                    label: 'POSITION',
+                    value: `${currentUserRanking.rank}${currentUserRanking.rank === 1 ? 'er' : 'e'}`,
+                    color: 'var(--primary)',
+                  },
+                  {
+                    // Performance réelle, avant tout règlement de dette.
+                    label: 'BRUT',
+                    value: `${raw} / ${currentUserRanking.totalQuestions ?? 0}`,
+                    color: 'var(--txt)',
+                  },
+                  {
+                    label: 'DETTES',
+                    value: debtDelta !== 0 ? (debtDelta > 0 ? `+${debtDelta}` : `${debtDelta}`) : '0',
+                    color: debtDelta < 0 ? 'var(--bad)' : debtDelta > 0 ? 'var(--primary)' : 'var(--txt)',
+                  },
+                  {
+                    // Le compte qui classe, dettes incluses.
+                    label: 'FINAL',
+                    value: ranked,
+                    color: 'var(--gold)',
+                  },
+                  {
+                    // Calculée sur le brut : sur le compte post-dettes, elle
+                    // porterait sur des réponses jamais données.
+                    label: 'PRÉCISION',
+                    value:
+                      currentUserRanking.accuracy != null
+                        ? `${Math.round(currentUserRanking.accuracy * 100)} %`
+                        : '—',
+                    color: 'var(--txt)',
+                  },
+                  {
+                    // Départage du classement à nombre de bonnes réponses égal.
+                    label: 'TEMPS CUMULÉ',
+                    value: formatMs(currentUserRanking.totalResponseTimeMs),
+                    color: 'var(--primary)',
+                  },
+                  {
+                    label: 'MEILLEUR',
+                    value: formatMs(currentUserRanking.bestResponseTimeMs),
+                    color: 'var(--txt)',
+                  },
+                ];
+              })().map(({ label, value, color }) => (
                 <div key={label} className="flex flex-col items-center text-center bg-surface-2/60 rounded-xl p-2">
                   <p className="text-txt-40 text-[8.5px] font-bold tracking-wide mb-1">{label}</p>
                   <p className="font-display font-semibold text-sm" style={{ color }}>{value}</p>
@@ -638,7 +664,7 @@ export default function SessionResultsPage() {
           >
             Retourner à la salle
           </button>
-          {resolvedRoomId && (
+          {/* {resolvedRoomId && (
             <button
               type="button"
               onClick={() => router.replace(`/session/create?roomId=${resolvedRoomId}`)}
@@ -646,7 +672,7 @@ export default function SessionResultsPage() {
             >
               Rejouer 🔁
             </button>
-          )}
+          )} */}
         </div>
       </div>
 
