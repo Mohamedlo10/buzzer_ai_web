@@ -70,24 +70,13 @@ export interface QuestionStartEvent extends BaseWSMessage {
   question: QuestionResponse;
 }
 
-export interface BuzzerPressedEvent extends BaseWSMessage {
-  type: 'buzzer_pressed';
-  userId: string;
-  username: string;
-  timestamp: number;
-  queuePosition: number;
-}
+
 
 export interface BuzzerResetEvent extends BaseWSMessage {
   type: 'buzzer_reset';
 }
 
-export interface BuzzCountdownEvent extends BaseWSMessage {
-  type: 'buzz_countdown';
-  playerId: string;
-  playerName: string;
-  durationSeconds: number;
-}
+
 
 export interface AnswerValidatedEvent extends BaseWSMessage {
   type: 'answer_validated';
@@ -263,20 +252,7 @@ export interface QuestionDisplayResumeEvent extends BaseWSMessage {
   wordIndex: number;
 }
 
-export interface QuestionTimerEvent extends BaseWSMessage {
-  type: 'question_timer';
-  remainingSeconds: number;
-  paused: boolean;
-}
 
-export interface AnswerRevealEvent extends BaseWSMessage {
-  type: 'answer_reveal';
-  correctAnswer: string;
-  winnerId: string | null;
-  winnerName: string | null;
-  /** Tous les joueurs se sont trompés : la partie attend le manager. */
-  allAnswersWrong?: boolean;
-}
 
 /**
  * Snapshot versionné du mode sans modérateur.
@@ -291,12 +267,7 @@ export interface GameStatePacketEvent extends BaseWSMessage {
   packet: import('~/lib/game/packet').GameStatePacket;
 }
 
-export interface GameChoicesEvent extends BaseWSMessage {
-  type: 'game_choices';
-  questionId: string;
-  choices: string[];
-  answerTimeSeconds: number;
-}
+
 
 export interface WordAdvanceEvent extends BaseWSMessage {
   type: 'word_advance';
@@ -320,9 +291,7 @@ export type WSEvent =
   | GenerationFailedEvent
   // Gameplay
   | QuestionStartEvent
-  | BuzzerPressedEvent
   | BuzzerResetEvent
-  | BuzzCountdownEvent
   | AnswerValidatedEvent
   | AnswerSkippedEvent
   | ScoreUpdatedEvent
@@ -349,8 +318,5 @@ export type WSEvent =
   | GameStateSyncEvent
   // Sans Modérateur
   | QuestionDisplayResumeEvent
-  | QuestionTimerEvent
-  | AnswerRevealEvent
-  | GameChoicesEvent
   | WordAdvanceEvent
   | GameStatePacketEvent;

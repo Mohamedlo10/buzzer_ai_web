@@ -615,7 +615,7 @@ export function SessionConfigForm({ onSuccess, onClose, roomId, initialMaxPlayer
               icon={<Bot size={26} className={sessionMode === 'WITHOUT_MODERATOR' ? 'text-host' : 'text-txt-40'} />}
               active={sessionMode === 'WITHOUT_MODERATOR'}
               accent="var(--violet)"
-              onClick={() => setSessionMode('WITHOUT_MODERATOR')}
+              onClick={() => { setSessionMode('WITHOUT_MODERATOR'); setConfig(c => ({ ...c, isTeamMode: false })); }}
             />
           </div>
         </div>
@@ -660,17 +660,19 @@ export function SessionConfigForm({ onSuccess, onClose, roomId, initialMaxPlayer
         )}
 
         {/* Options */}
-        <div className="flex flex-col">
-          <p className="text-txt-40 text-[9.5px] font-bold tracking-widest uppercase mb-3 leading-none">Format</p>
-          <ToggleRow
-            label="Mode équipes"
-            sub="Les points sont partagés entre coéquipiers"
-            icon={<Users size={16} className="text-team" style={{ color: 'var(--team, var(--indigo))' }} />}
-            checked={config.isTeamMode}
-            onChange={(v) => setConfig((c) => ({ ...c, isTeamMode: v }))}
-            accent="var(--team, var(--indigo))"
-          />
-        </div>
+        {sessionMode !== 'WITHOUT_MODERATOR' && (
+          <div className="flex flex-col">
+            <p className="text-txt-40 text-[9.5px] font-bold tracking-widest uppercase mb-3 leading-none">Format</p>
+            <ToggleRow
+              label="Mode équipes"
+              sub="Les points sont partagés entre coéquipiers"
+              icon={<Users size={16} className="text-team" style={{ color: 'var(--team, var(--indigo))' }} />}
+              checked={config.isTeamMode}
+              onChange={(v) => setConfig((c) => ({ ...c, isTeamMode: v }))}
+              accent="var(--team, var(--indigo))"
+            />
+          </div>
+        )}
 
         {/* Encart Sans Modérateur */}
         {sessionMode === 'WITHOUT_MODERATOR' && (
@@ -697,27 +699,19 @@ export function SessionConfigForm({ onSuccess, onClose, roomId, initialMaxPlayer
         {/* TIMERS SANS MODÉRATEUR */}
         {sessionMode === 'WITHOUT_MODERATOR' && (
           <div className="flex flex-col gap-3">
-            <p className="text-txt-40 text-[9.5px] font-bold tracking-widest uppercase mb-1 leading-none">Timers (Sans Modérateur)</p>
-            <div className="grid grid-cols-2 gap-3">
-              <StepperField
-                label="Temps réponse"
-                value={answerTimeSeconds}
-                suffix="s"
-                min={5}
-                max={60}
-                step={5}
-                onChange={setAnswerTimeSeconds}
-              />
-              <StepperField
-                label="Timer global"
-                value={globalQuestionSeconds}
-                suffix="s"
-                min={15}
-                max={120}
-                step={5}
-                onChange={setGlobalQuestionSeconds}
-              />
-            </div>
+            <p className="text-txt-40 text-[9.5px] font-bold tracking-widest uppercase mb-1 leading-none">Timers Sprint</p>
+            <StepperField
+              label="Temps pour répondre"
+              value={globalQuestionSeconds}
+              suffix="s"
+              min={5}
+              max={60}
+              step={5}
+              onChange={(v) => {
+                setGlobalQuestionSeconds(v);
+                setAnswerTimeSeconds(v);
+              }}
+            />
 
             <ChoiceStrip
               label="Nombre de choix de réponse"
@@ -786,23 +780,25 @@ export function SessionConfigForm({ onSuccess, onClose, roomId, initialMaxPlayer
               max={50}
               onChange={(v) => setConfig((c) => ({ ...c, maxPlayers: v }))}
             />
-            <StepperField
-              label="Points / rép."
-              value={config.pointsPerCorrectAnswer}
-              min={1}
-              max={50}
-              step={5}
-              onChange={(v) => setConfig((c) => ({ ...c, pointsPerCorrectAnswer: v }))}
-            />
+            {sessionMode !== 'WITHOUT_MODERATOR' && (
+              <StepperField
+                label="Points / rép."
+                value={config.pointsPerCorrectAnswer}
+                min={1}
+                max={50}
+                step={5}
+                onChange={(v) => setConfig((c) => ({ ...c, pointsPerCorrectAnswer: v }))}
+              />
+            )}
             {/* Les dettes se jouent sur les rubriques, qui n'existent qu'en mode IA. */}
             {questionMode === 'AI' && (
               <StepperField
-                label="Dette / rubrique"
+                label={sessionMode === 'WITHOUT_MODERATOR' ? "Dette (Rép.)" : "Dette / rubrique"}
                 value={config.debtAmount}
-                suffix=" pts"
+                suffix={sessionMode === 'WITHOUT_MODERATOR' ? " rép." : " pts"}
                 min={0}
                 max={50}
-                step={5}
+                step={sessionMode === 'WITHOUT_MODERATOR' ? 1 : 5}
                 onChange={(v) => setConfig((c) => ({ ...c, debtAmount: v }))}
               />
             )}
@@ -873,8 +869,8 @@ export function SessionConfigForm({ onSuccess, onClose, roomId, initialMaxPlayer
 
     if (sessionMode === 'WITHOUT_MODERATOR') {
       recapRows.push({
-        label: 'Timers de réponse',
-        value: `Rép: ${answerTimeSeconds}s · Global: ${globalQuestionSeconds}s`,
+        label: 'Temps pour répondre',
+        value: `${globalQuestionSeconds}s`,
         icon: <Timer size={16} />,
         iconColor: 'var(--txt)',
         valueColor: 'var(--txt)',
@@ -904,13 +900,15 @@ export function SessionConfigForm({ onSuccess, onClose, roomId, initialMaxPlayer
       valueColor: 'var(--txt)',
     });
 
-    recapRows.push({
-      label: 'Points par bonne réponse',
-      value: `+${config.pointsPerCorrectAnswer} pts`,
-      icon: <Award size={16} />,
-      iconColor: 'var(--txt)',
-      valueColor: 'var(--txt)',
-    });
+    if (sessionMode !== 'WITHOUT_MODERATOR') {
+      recapRows.push({
+        label: 'Points par bonne réponse',
+        value: `+${config.pointsPerCorrectAnswer} pts`,
+        icon: <Award size={16} />,
+        iconColor: 'var(--txt)',
+        valueColor: 'var(--txt)',
+      });
+    }
 
     recapRows.push({
       label: 'Format de la session',

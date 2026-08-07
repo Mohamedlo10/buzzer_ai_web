@@ -820,7 +820,6 @@ export class WebSocketManager {
     const queues = [
       `/queue/user/${this.userId}/notifications`,
       `/queue/user/${this.userId}/invitations`,
-      `/queue/user/${this.userId}/game-choices`,
     ];
 
     for (const queue of queues) {

@@ -48,9 +48,8 @@ interface BuzzState {
   isPaused: boolean;
   isGameOver: boolean;
 
-  myAnswerChoices: string[] | null;
-  myAnswerQuestionId: string | null;
-  answerTimeSeconds: number;
+  myChoice: string | null;
+  myAnswerCorrect: boolean | null;
   isSubmittingAnswer: boolean;
   answerReveal: { correctAnswer: string; winnerId: string | null; winnerName: string | null; allAnswersWrong?: boolean } | null;
 
@@ -100,7 +99,6 @@ interface BuzzActions {
 
   // Mode Sans Modérateur
   setIsSubmittingAnswer: (submitting: boolean) => void;
-  clearAnswerChoices: () => void;
   /** Unique écrivain de `game`. Ignore silencieusement les paquets périmés. */
   applyStatePacket: (packet: GameStatePacket | null | undefined) => void;
 
@@ -130,9 +128,8 @@ const initialState: BuzzState = {
   buzzerEnabled: false,
   isPaused: false,
   isGameOver: false,
-  myAnswerChoices: null,
-  myAnswerQuestionId: null,
-  answerTimeSeconds: 15,
+  myChoice: null,
+  myAnswerCorrect: null,
   isSubmittingAnswer: false,
   answerReveal: null,
   game: initialGameStateSlice,
@@ -309,8 +306,8 @@ export const useBuzzStore = create<BuzzState & BuzzActions>((set, get) => ({
       answeredWrongThisQuestion: false,
       myQueuePosition: null,
       buzzerEnabled: true,
-      myAnswerChoices: null,
-      myAnswerQuestionId: null,
+      myChoice: null,
+      myAnswerCorrect: null,
       answerReveal: null,
     });
   },
@@ -348,7 +345,6 @@ export const useBuzzStore = create<BuzzState & BuzzActions>((set, get) => ({
 
   // Mode Sans Modérateur
   setIsSubmittingAnswer: (submitting) => set({ isSubmittingAnswer: submitting }),
-  clearAnswerChoices: () => set({ myAnswerChoices: null, myAnswerQuestionId: null }),
 
   applyStatePacket: (packet) => {
     const next = applyPacket(get().game, packet);
@@ -361,8 +357,8 @@ export const useBuzzStore = create<BuzzState & BuzzActions>((set, get) => ({
       // paquet fait autorité, donc c'est lui qui déclenche la remise à zéro —
       // et non un effet React qui pouvait s'exécuter après coup.
       if (next.packetQuestionId && next.packetQuestionId !== state.game.packetQuestionId) {
-        patch.myAnswerChoices = null;
-        patch.myAnswerQuestionId = null;
+        patch.myChoice = null;
+        patch.myAnswerCorrect = null;
         patch.answeredWrongThisQuestion = false;
         patch.answerReveal = null;
       }
@@ -378,10 +374,8 @@ export const useBuzzStore = create<BuzzState & BuzzActions>((set, get) => ({
           }
         : null;
 
-      // Le joueur n'a plus la main : ses choix ne doivent plus être affichés.
-      if (next.phase !== 'ANSWERING') {
-        patch.myAnswerChoices = null;
-        patch.myAnswerQuestionId = null;
+      if (next.phase === 'REVEAL' && next.reveal && state.myChoice !== null) {
+        patch.myAnswerCorrect = state.myChoice === next.reveal.correctAnswer;
       }
 
       // Scores : le paquet est indexé par identifiant de Player.
@@ -433,8 +427,8 @@ export const useBuzzStore = create<BuzzState & BuzzActions>((set, get) => ({
       buzzerEnabled: false,
       isPaused: false,
       isGameOver: false,
-      myAnswerChoices: null,
-      myAnswerQuestionId: null,
+      myChoice: null,
+      myAnswerCorrect: null,
       isSubmittingAnswer: false,
       answerReveal: null,
       game: initialGameStateSlice,

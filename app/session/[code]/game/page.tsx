@@ -5,7 +5,7 @@ import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { Zap } from 'lucide-react';
 
 import { SafeScreen } from '~/components/layout/SafeScreen';
-import { ModeratorFreeGame } from '~/components/game/moderator-free/ModeratorFreeGame';
+import { SprintGame } from '~/components/game/sprint/SprintGame';
 import { ModeratedGame } from '~/components/game/moderated/ModeratedGame';
 import { useBuzzStore } from '~/stores/useBuzzStore';
 import { useAuthStore } from '~/stores/useAuthStore';
@@ -221,14 +221,13 @@ export default function GamePage() {
     <SafeScreen className="h-[100dvh] max-h-[100dvh] w-full flex flex-col overflow-hidden relative bg-transparent">
       <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y pb-6">
         {isWithoutModerator ? (
-          <ModeratorFreeGame
+          <SprintGame
             sessionId={session.id}
             myPlayer={currentPlayer}
             players={players}
             teams={teams}
             isManager={isManager}
             isSpectator={isSpectator}
-            onAdvanceAfterAllWrong={handleAdvanceAfterAllWrong}
           />
         ) : (
           <ModeratedGame

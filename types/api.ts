@@ -311,6 +311,8 @@ export interface GameStateResponse {
    * réponse REST tardive d'écraser un état plus frais.
    */
   statePacket?: import('~/lib/game/packet').GameStatePacket | null;
+  myAnswer?: string | null;
+  myAnswerCorrect?: boolean | null;
 }
 
 // ──────────────────────────────────────────────
@@ -424,6 +426,15 @@ export interface SessionRankingEntry {
   teamName?: string | null;
   teamColor?: string | null;
   teamScore?: number | null;
+  // Sprint mode fields
+  correctAnswers?: number;
+  rawCorrectAnswers?: number;
+  totalQuestions?: number;
+  totalResponseTimeMs?: number;
+  avgResponseTimeMs?: number;
+  bestResponseTimeMs?: number;
+  worstResponseTimeMs?: number;
+  accuracy?: number;
 }
 
 export interface DebtEntry {
@@ -1056,8 +1067,14 @@ export interface SubmitAnswerRequest {
 }
 
 export interface SubmitAnswerResponse {
-  isCorrect: boolean;
-  newScore: number;
-  correctAnswer: string | null;
-  buzzQueue: BuzzQueueItem[];
+  // Mode avec modérateur
+  isCorrect?: boolean;
+  newScore?: number;
+  correctAnswer?: string | null;
+  buzzQueue?: BuzzQueueItem[];
+  // Mode Sprint
+  accepted?: boolean;
+  questionId?: string;
+  answeredCount?: number | null;
+  expectedAnswerCount?: number | null;
 }

@@ -14,9 +14,10 @@ import { observeServerTime } from './clock';
  */
 
 export type GamePhase =
+  | 'COUNTDOWN'
+  | 'QUESTION'
   | 'READING'
   | 'BUZZ_WINDOW'
-  | 'ANSWERING'
   | 'AWAITING_VALIDATION'
   | 'REVEAL'
   | 'ADVANCING'
@@ -56,6 +57,9 @@ export interface GameStatePacket {
   answeringPlayerId: string | null;
   scores: Record<string, number>;
   reveal: PacketReveal | null;
+  choices: string[] | null;
+  answeredCount: number | null;
+  expectedAnswerCount: number | null;
 }
 
 /** Projection du paquet dans le store. */
@@ -72,6 +76,9 @@ export interface GameStateSlice {
   wordRevealStartedAtEpochMs: number | null;
   wordRevealIntervalMs: number;
   reveal: PacketReveal | null;
+  choices: string[] | null;
+  answeredCount: number | null;
+  expectedAnswerCount: number | null;
 }
 
 export const initialGameStateSlice: GameStateSlice = {
@@ -89,6 +96,9 @@ export const initialGameStateSlice: GameStateSlice = {
   wordRevealStartedAtEpochMs: null,
   wordRevealIntervalMs: 600,
   reveal: null,
+  choices: null,
+  answeredCount: null,
+  expectedAnswerCount: null,
 };
 
 /**
@@ -120,6 +130,9 @@ export function applyPacket(
     wordRevealStartedAtEpochMs: packet.wordRevealStartedAtEpochMs ?? null,
     wordRevealIntervalMs: packet.wordRevealIntervalMs ?? 600,
     reveal: packet.reveal ?? null,
+    choices: packet.choices ?? null,
+    answeredCount: packet.answeredCount ?? null,
+    expectedAnswerCount: packet.expectedAnswerCount ?? null,
   };
 }
 
@@ -131,23 +144,25 @@ function normalizeQueue(queue: QueueEntry[] | null | undefined): QueueEntry[] {
   return [...queue].sort((a, b) => a.position - b.position);
 }
 
-/** Le joueur a-t-il la main pour répondre ? Autorité : le serveur, pas `queue[0]`. */
-export function isAnswering(slice: GameStateSlice, myPlayerId: string | undefined): boolean {
-  return (
-    (slice.phase === 'ANSWERING' || slice.phase === 'AWAITING_VALIDATION') &&
-    !!myPlayerId &&
-    slice.answeringPlayerId === myPlayerId
-  );
+/** En mode Sprint, le joueur peut-il soumettre une réponse ? */
+export function canAnswer(slice: GameStateSlice, myChoice: string | null): boolean {
+  return slice.phase === 'QUESTION' && myChoice === null;
 }
 
-/** Position dans la file (1-based), ou null si absent. */
-export function queuePositionOf(slice: GameStateSlice, myPlayerId: string | undefined): number | null {
-  if (!myPlayerId) return null;
-  const index = slice.buzzQueue.findIndex((b) => b.playerId === myPlayerId);
-  return index >= 0 ? index + 1 : null;
-}
-
-/** Le buzzer est-il ouvert ? Vrai uniquement quand le serveur accepte les buzz. */
+/** Le buzzer est-il ouvert ? (Concerne uniquement le mode avec modérateur) */
 export function isBuzzerOpen(slice: GameStateSlice): boolean {
   return slice.phase === 'READING' || slice.phase === 'BUZZ_WINDOW';
+}
+
+/** Retourne la position (0-indexed) du joueur dans la file d'attente, ou null. */
+export function queuePositionOf(slice: GameStateSlice, playerId: string | undefined | null): number | null {
+  if (!playerId) return null;
+  const idx = slice.buzzQueue.findIndex((q) => q.playerId === playerId);
+  return idx >= 0 ? idx : null;
+}
+
+/** Le joueur passé en paramètre est-il en train de répondre ? */
+export function isAnswering(slice: GameStateSlice, playerId: string | undefined | null): boolean {
+  if (!playerId) return false;
+  return slice.phase === 'AWAITING_VALIDATION' && slice.answeringPlayerId === playerId;
 }

@@ -27,6 +27,7 @@ import {
   Share2,
   Gamepad2,
   Zap,
+  Bot,
 } from 'lucide-react';
 import { Orbitron, Rajdhani } from 'next/font/google';
 
@@ -545,6 +546,16 @@ export default function LobbyPage() {
             {players.length}/{session.maxPlayers}
           </span>
         </div>
+
+        {/* ── Règles mode Sprint ── */}
+        {isWithoutModerator && (
+          <div className="bg-host/10 border border-host/30 rounded-2xl p-3.5 mb-4 flex items-start gap-3">
+            <Bot size={18} className="text-host shrink-0 mt-0.5" />
+            <p className="text-txt text-xs leading-relaxed">
+              <strong className="text-host">Mode Sprint :</strong> 1 seule phase pour lire l'énoncé et y répondre. Tous les joueurs répondent simultanément.
+            </p>
+          </div>
+        )}
 
         {/* ── Share code ── */}
         <div className="bg-surface rounded-2xl border border-line p-3.5 mb-4">
