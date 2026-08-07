@@ -607,15 +607,25 @@ export function SessionConfigForm({ onSuccess, onClose, roomId, initialMaxPlayer
               icon={<User size={26} className={sessionMode === 'WITH_MODERATOR' ? 'text-accent' : 'text-txt-40'} />}
               active={sessionMode === 'WITH_MODERATOR'}
               accent="var(--primary)"
-              onClick={() => setSessionMode('WITH_MODERATOR')}
+              // La dette repasse en points, unité de ce mode.
+              onClick={() => {
+                setSessionMode('WITH_MODERATOR');
+                setConfig(c => ({ ...c, debtAmount: 5 }));
+              }}
             />
             <ModeCard
-              label="Sans modérateur"
-              sublabel="Réponses automatiques"
+              label="Sprint ⚡"
+              sublabel="Tous répondent en même temps"
               icon={<Bot size={26} className={sessionMode === 'WITHOUT_MODERATOR' ? 'text-host' : 'text-txt-40'} />}
               active={sessionMode === 'WITHOUT_MODERATOR'}
               accent="var(--violet)"
-              onClick={() => { setSessionMode('WITHOUT_MODERATOR'); setConfig(c => ({ ...c, isTeamMode: false })); }}
+              // En Sprint la dette se compte en bonnes réponses : conserver le 5
+              // du mode modéré en retirerait cinq au débiteur. Et le mode est
+              // individuel, d'où isTeamMode forcé à false.
+              onClick={() => {
+                setSessionMode('WITHOUT_MODERATOR');
+                setConfig(c => ({ ...c, isTeamMode: false, debtAmount: 1 }));
+              }}
             />
           </div>
         </div>
@@ -793,11 +803,13 @@ export function SessionConfigForm({ onSuccess, onClose, roomId, initialMaxPlayer
             {/* Les dettes se jouent sur les rubriques, qui n'existent qu'en mode IA. */}
             {questionMode === 'AI' && (
               <StepperField
-                label={sessionMode === 'WITHOUT_MODERATOR' ? "Dette (Rép.)" : "Dette / rubrique"}
-                value={config.debtAmount}
+                label={sessionMode === 'WITHOUT_MODERATOR' ? "Dette (bonnes rép.)" : "Dette / rubrique"}
+                value={config.debtAmount ?? (sessionMode === 'WITHOUT_MODERATOR' ? 1 : 5)}
                 suffix={sessionMode === 'WITHOUT_MODERATOR' ? " rép." : " pts"}
                 min={0}
-                max={50}
+                // En Sprint la dette se compte en bonnes réponses : au-delà de 3,
+                // elle viderait la partie d'un joueur au lieu de la corriger.
+                max={sessionMode === 'WITHOUT_MODERATOR' ? 3 : 50}
                 step={sessionMode === 'WITHOUT_MODERATOR' ? 1 : 5}
                 onChange={(v) => setConfig((c) => ({ ...c, debtAmount: v }))}
               />

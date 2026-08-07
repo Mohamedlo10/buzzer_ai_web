@@ -66,7 +66,16 @@ export interface GameStatePacket {
 export interface GameStateSlice {
   stateVersion: number;
   phase: GamePhase;
-  sessionMode: 'WITH_MODERATOR' | 'WITHOUT_MODERATOR';
+  /**
+   * `null` tant qu'aucun paquet n'a été appliqué.
+   *
+   * Surtout pas une valeur par défaut : l'écran de jeu choisit quel mode monter
+   * via `game.sessionMode ?? session?.sessionMode`, et `??` ne retombe que sur
+   * `null`/`undefined`. Un défaut à `'WITH_MODERATOR'` gagnait donc toujours et
+   * montait l'écran modéré sur une partie Sprint jusqu'à l'arrivée du premier
+   * paquet — voire indéfiniment si le WebSocket n'était pas encore connecté.
+   */
+  sessionMode: 'WITH_MODERATOR' | 'WITHOUT_MODERATOR' | null;
   packetQuestionId: string | null;
   buzzQueue: QueueEntry[];
   answeringPlayerId: string | null;
@@ -86,7 +95,9 @@ export const initialGameStateSlice: GameStateSlice = {
   // paquet reçu est toujours strictement supérieur.
   stateVersion: 0,
   phase: 'READING',
-  sessionMode: 'WITH_MODERATOR',
+  // Inconnu tant que le serveur n'a rien dit : c'est la session REST qui fait foi
+  // d'ici là.
+  sessionMode: null,
   packetQuestionId: null,
   buzzQueue: [],
   answeringPlayerId: null,

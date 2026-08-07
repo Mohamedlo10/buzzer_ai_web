@@ -146,7 +146,13 @@ export interface TeamResponse {
 }
 
 export interface CreateSessionRequest {
-  debtAmount: number;
+  /**
+   * Omettre pour laisser le serveur choisir selon le mode : 5 **points** avec
+   * modérateur, 1 **bonne réponse** en Sprint. Les deux unités diffèrent, donc
+   * envoyer une valeur « par défaut » depuis le client se trompe forcément dans
+   * l'un des deux modes.
+   */
+  debtAmount?: number;
   pointsPerCorrectAnswer: number;
   questionsPerCategory: number;
   maxPlayers: number;
