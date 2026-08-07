@@ -548,7 +548,7 @@ export default function CategorySelectionPage() {
         </div>
       </div>
 
-      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y pb-28 flex flex-col gap-[18px] px-4 pt-4">
+      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y pb-36 flex flex-col gap-[18px] px-4 pt-4">
         {/* Progress bar */}
         <div className="bg-surface rounded-2xl p-3.5 border border-line">
           <div className="flex flex-row items-center justify-between mb-2 text-[13px]">
