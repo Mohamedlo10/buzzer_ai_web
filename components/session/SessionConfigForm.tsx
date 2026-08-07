@@ -72,6 +72,8 @@ function ModeCard({
   sublabel,
   active,
   accent = 'var(--primary)',
+  disabled = false,
+  disabledLabel,
   onClick,
 }: {
   icon: React.ReactNode;
@@ -79,39 +81,51 @@ function ModeCard({
   sublabel: string;
   active: boolean;
   accent?: string;
+  disabled?: boolean;
+  disabledLabel?: string;
   onClick: () => void;
 }) {
   return (
     <button
       type="button"
-      onClick={onClick}
-      className={`flex-1 rounded-[18px] border-2 p-4 text-left transition-all duration-180 flex flex-col justify-between h-[125px] shrink-0 ${active ? '' : 'border-line bg-surface'
-        }`}
-      style={{
+      onClick={disabled ? undefined : onClick}
+      disabled={disabled}
+      className={`flex-1 rounded-[18px] border-2 p-4 text-left transition-all duration-180 flex flex-col justify-between h-[125px] shrink-0 ${
+        disabled
+          ? 'border-line bg-surface/40 opacity-70 cursor-not-allowed'
+          : active
+          ? ''
+          : 'border-line bg-surface'
+      }`}
+      style={!disabled ? {
         borderColor: active ? accent : 'var(--line)',
         backgroundColor: active
           ? `color-mix(in srgb, ${accent} 14%, var(--surface))`
           : 'var(--surface)',
-      }}
+      } : {}}
     >
       <div
         className="w-[52px] h-[52px] rounded-[15px] flex items-center justify-center transition-all shrink-0 mb-2"
-        style={{
+        style={!disabled ? {
           backgroundColor: active
             ? `color-mix(in srgb, ${accent} 22%, transparent)`
             : 'var(--surface-2)',
-        }}
+        } : { backgroundColor: 'var(--surface-2)' }}
       >
         {icon}
       </div>
       <div>
         <p
           className="text-[14.5px] font-bold transition-colors leading-tight"
-          style={{ color: active ? accent : 'var(--txt)' }}
+          style={{ color: active && !disabled ? accent : 'var(--txt)' }}
         >
           {label}
         </p>
-        <p className="text-[11px] text-txt-40 mt-1 line-clamp-1">{sublabel}</p>
+        {disabledLabel ? (
+          <p className="text-[11px] text-accent font-semibold mt-1 line-clamp-1">{disabledLabel}</p>
+        ) : (
+          <p className="text-[11px] text-txt-40 mt-1 line-clamp-1">{sublabel}</p>
+        )}
       </div>
     </button>
   );
@@ -619,6 +633,8 @@ export function SessionConfigForm({ onSuccess, onClose, roomId, initialMaxPlayer
               icon={<Bot size={26} className={sessionMode === 'WITHOUT_MODERATOR' ? 'text-host' : 'text-txt-40'} />}
               active={sessionMode === 'WITHOUT_MODERATOR'}
               accent="var(--violet)"
+              disabled={true}
+              disabledLabel="Bientôt dispo"
               // En Sprint la dette se compte en bonnes réponses : conserver le 5
               // du mode modéré en retirerait cinq au débiteur. Et le mode est
               // individuel, d'où isTeamMode forcé à false.
