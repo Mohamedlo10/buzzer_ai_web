@@ -1,0 +1,5 @@
+{
+  "name": "@xalaat/config",
+  "private": true,
+  "main": "tailwind-preset.js"
+}
