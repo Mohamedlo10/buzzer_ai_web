@@ -7,6 +7,7 @@ import { SafeScreen } from '~/components/layout/SafeScreen';
 import { Spinner } from '~/components/loading/Spinner';
 import * as soloApi from '~/lib/api/solo';
 import type { SoloCareerProgressResponse } from '~/types/solo';
+import { notify } from '~/lib/ui/notify';
 
 export default function SoloCareersPage() {
   const router = useRouter();
@@ -44,7 +45,7 @@ export default function SoloCareersPage() {
       await fetchCareers();
     } catch (error) {
       console.error('Failed to abandon career', error);
-      alert('Une erreur est survenue lors de l\'abandon de la carrière.');
+      notify.error('Une erreur est survenue lors de l\'abandon de la carrière.');
     } finally {
       setIsAbandoning(null);
     }

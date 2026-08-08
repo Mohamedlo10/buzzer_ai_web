@@ -21,6 +21,7 @@ import {
 import { Card } from '~/components/ui/Card';
 import { Spinner } from '~/components/loading/Spinner';
 import { DataTable, type Column } from '~/components/admin/DataTable';
+import { confirmAsync } from '~/lib/ui/confirm';
 import {
   getAdminSessionDetail,
   forceStopSession,
@@ -89,9 +90,15 @@ export default function AdminSessionDetailPage() {
     },
   });
 
-  const handleForceStop = () => {
+  const handleForceStop = async () => {
     if (!session) return;
-    if (!window.confirm(`Forcer l'arrêt de la session ${session.code} ?`)) return;
+    const confirmed = await confirmAsync({
+      title: "Forcer l'arrêt ?",
+      message: `La session ${session.code} sera interrompue pour tous les joueurs.`,
+      confirmLabel: 'Arrêter',
+      tone: 'warning',
+    });
+    if (!confirmed) return;
     stopMutation.mutate(session.id);
   };
 

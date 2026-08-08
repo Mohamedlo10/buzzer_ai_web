@@ -36,6 +36,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '~/components/ui/Card';
 import { KpiCard } from '~/components/admin/KpiCard';
 import * as adminApi from '~/lib/api/admin';
 import type { UserRole } from '~/types/api';
+import { confirmAsync } from '~/lib/ui/confirm';
 
 interface PageProps {
   params: Promise<{ userId: string }>;
@@ -259,10 +260,14 @@ export default function AdminUserDetailPage({ params }: PageProps) {
               </button>
             ) : (
               <button
-                onClick={() => {
-                  if (window.confirm(`Bannir ${user.username} ?`)) {
-                    banMutation.mutate();
-                  }
+                onClick={async () => {
+                  const confirmed = await confirmAsync({
+                    title: 'Bannir ce joueur ?',
+                    message: `${user.username} ne pourra plus se connecter.`,
+                    confirmLabel: 'Bannir',
+                    tone: 'danger',
+                  });
+                  if (confirmed) banMutation.mutate();
                 }}
                 disabled={banMutation.isPending}
                 className="flex items-center gap-2 px-3 py-2 rounded-xl bg-danger/15 hover:bg-danger/20 text-danger text-sm transition-colors"
@@ -273,10 +278,14 @@ export default function AdminUserDetailPage({ params }: PageProps) {
             )}
 
             <button
-              onClick={() => {
-                if (window.confirm(`Supprimer ${user.username} ? Cette action est irréversible.`)) {
-                  deleteMutation.mutate();
-                }
+              onClick={async () => {
+                const confirmed = await confirmAsync({
+                  title: 'Supprimer ce compte ?',
+                  message: `${user.username} sera définitivement supprimé. Cette action est irréversible.`,
+                  confirmLabel: 'Supprimer',
+                  tone: 'danger',
+                });
+                if (confirmed) deleteMutation.mutate();
               }}
               disabled={deleteMutation.isPending}
               className="flex items-center gap-2 px-3 py-2 rounded-xl bg-danger/15 hover:bg-danger/20 text-danger text-sm transition-colors"

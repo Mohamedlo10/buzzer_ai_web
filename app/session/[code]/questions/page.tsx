@@ -20,6 +20,7 @@ import {
 import { SafeScreen } from '~/components/layout/SafeScreen';
 import * as sessionsApi from '~/lib/api/sessions';
 import type { ManualQuestion, SessionResponse } from '~/types/api';
+import { notify } from '~/lib/ui/notify';
 
 const EMPTY_QUESTION: ManualQuestion = { text: '', answer: '', explanation: '' };
 
@@ -270,7 +271,7 @@ export default function QuestionsPage() {
       if (result.questions.length > 0) {
         setPreviewQuestions(result.questions);
         if (result.warnings.length > 0) {
-          window.alert('Import partiel: ' + result.warnings.join('\n'));
+          notify.info('Import partiel: ' + result.warnings.join('\n'));
         }
       } else {
         setError('Aucune question valide trouvée dans le fichier.');
@@ -292,7 +293,7 @@ export default function QuestionsPage() {
       if (result.questions.length > 0) {
         setPreviewQuestions(result.questions);
         if (result.warnings && result.warnings.length > 0) {
-          window.alert('Import partiel: ' + result.warnings.join('\n'));
+          notify.info('Import partiel: ' + result.warnings.join('\n'));
         }
       } else {
         setError('Aucune question valide trouvée dans le texte collé.');

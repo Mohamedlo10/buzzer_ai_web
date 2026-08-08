@@ -3,6 +3,8 @@
 import { Play, Settings, UserPlus, LogOut, Crown } from 'lucide-react';
 
 import { Card } from '~/components/ui/Card';
+import { notify } from '~/lib/ui/notify';
+import { confirmAsync } from '~/lib/ui/confirm';
 
 interface ManagerPanelProps {
   playerCount: number;
@@ -25,21 +27,33 @@ export function ManagerPanel({
 }: ManagerPanelProps) {
   const canStart = playerCount >= minPlayers;
 
-  const handleStart = () => {
+  const handleStart = async () => {
     if (!canStart) {
-      window.alert(`Minimum ${minPlayers} joueurs requis pour démarrer (${playerCount} présent)`);
+      notify.error(`Minimum ${minPlayers} joueurs requis pour démarrer (${playerCount} présent)`);
       return;
     }
 
-    if (window.confirm('Démarrer la partie ? La génération des questions va commencer. Les joueurs ne pourront plus rejoindre.')) {
-      onStartGame();
-    }
+    const confirmed = await confirmAsync({
+      title: 'Démarrer la partie ?',
+      message:
+        'La génération des questions va commencer. Les joueurs ne pourront plus rejoindre.',
+      confirmLabel: 'Démarrer',
+    });
+    if (!confirmed) return;
+
+    onStartGame();
   };
 
-  const handleLeave = () => {
-    if (window.confirm('Quitter la session ? Vous allez quitter cette session.')) {
-      onLeaveSession?.();
-    }
+  const handleLeave = async () => {
+    const confirmed = await confirmAsync({
+      title: 'Quitter la session ?',
+      message: 'Vous serez retiré de cette session.',
+      confirmLabel: 'Quitter',
+      tone: 'danger',
+    });
+    if (!confirmed) return;
+
+    onLeaveSession?.();
   };
 
   return (

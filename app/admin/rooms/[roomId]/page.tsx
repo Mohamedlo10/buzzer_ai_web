@@ -18,6 +18,7 @@ import { Card } from '~/components/ui/Card';
 import { Spinner } from '~/components/loading/Spinner';
 import * as adminApi from '~/lib/api/admin';
 import type { AdminRoomDetailResponse, AdminSessionStatus } from '~/types/api';
+import { confirmAsync } from '~/lib/ui/confirm';
 
 const STATUS_CONFIG: Record<AdminSessionStatus, { label: string; color: string }> = {
   LOBBY:      { label: 'Lobby',         color: 'var(--primary)' },
@@ -74,8 +75,14 @@ export default function AdminRoomDetailPage() {
     onError: () => toast.error('Impossible de transférer la propriété'),
   });
 
-  const handleDelete = () => {
-    if (!window.confirm(`Supprimer la salle "${room?.name}" ? Cette action est irréversible.`)) return;
+  const handleDelete = async () => {
+    const confirmed = await confirmAsync({
+      title: 'Supprimer la salle ?',
+      message: `"${room?.name}" sera définitivement supprimée. Cette action est irréversible.`,
+      confirmLabel: 'Supprimer',
+      tone: 'danger',
+    });
+    if (!confirmed) return;
     deleteMutation.mutate();
   };
 

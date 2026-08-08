@@ -22,6 +22,8 @@ import { appStorage } from '~/lib/utils/storage';
 import { UserProfileModal } from '~/components/shared/UserProfileModal';
 import { Avatar } from '~/components/shared/Avatar';
 import type { FriendResponse, RoomDetailResponse, RoomSessionResponse, SessionStatus } from '~/types/api';
+import { notify } from '~/lib/ui/notify';
+import { confirmAsync } from '~/lib/ui/confirm';
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; icon: React.ComponentType<{ size: number; color: string }> }> = {
   LOBBY: { label: 'Lobby', color: 'var(--primary)', bg: 'rgb(var(--primary-rgb) / 0.125)', icon: Users },
@@ -479,7 +481,7 @@ function InviteFriendsModal({
       setSent(true);
       setTimeout(onClose, 1200);
     } catch {
-      window.alert("Impossible d'envoyer les invitations");
+      notify.error("Impossible d'envoyer les invitations");
     } finally {
       setIsSending(false);
     }
@@ -745,7 +747,7 @@ export default function RoomDetailPage() {
   const handleCopyCode = async () => {
     if (!room) return;
     try { await navigator.clipboard.writeText(room.code); } catch { /* fallback */ }
-    window.alert(`Le code ${room.code} a été copié.`);
+    notify.success(`Le code ${room.code} a été copié.`);
   };
 
   const handleShare = async () => {
@@ -770,35 +772,50 @@ export default function RoomDetailPage() {
 
   const handleLeaveRoom = async () => {
     if (!room) return;
-    const confirmed = window.confirm(`Vous ne verrez plus "${room.name}" dans vos salles. Quitter ?`);
+    const confirmed = await confirmAsync({
+      title: 'Quitter la salle ?',
+      message: `Vous ne verrez plus "${room.name}" dans vos salles.`,
+      confirmLabel: 'Quitter',
+      tone: 'danger',
+    });
     if (!confirmed) return;
     try {
       await roomsApi.leaveRoom(room.code);
       router.replace('/rooms');
     } catch (err) {
-      window.alert('Impossible de quitter la salle');
+      notify.error('Impossible de quitter la salle');
     }
   };
 
   const handleDeleteSession = async (sessionId: string, sessionCode: string) => {
-    const confirmed = window.confirm(`La session ${sessionCode} sera définitivement supprimée. Continuer ?`);
+    const confirmed = await confirmAsync({
+      title: 'Supprimer la session ?',
+      message: `La session ${sessionCode} sera définitivement supprimée.`,
+      confirmLabel: 'Supprimer',
+      tone: 'danger',
+    });
     if (!confirmed) return;
     try {
       await sessionsApi.deleteSession(sessionId);
       await loadRoom();
     } catch (err) {
-      window.alert('Impossible de supprimer la session');
+      notify.error('Impossible de supprimer la session');
     }
   };
 
   const handleDeleteRoom = async () => {
-    const confirmed = window.confirm('Cette action est irréversible. Toutes les statistiques seront perdues. Supprimer la salle ?');
+    const confirmed = await confirmAsync({
+      title: 'Supprimer la salle ?',
+      message: 'Cette action est irréversible. Toutes les statistiques seront perdues.',
+      confirmLabel: 'Supprimer',
+      tone: 'danger',
+    });
     if (!confirmed) return;
     try {
       await roomsApi.deleteRoom(roomId);
       router.replace('/rooms');
     } catch (err) {
-      window.alert('Impossible de supprimer la salle');
+      notify.error('Impossible de supprimer la salle');
     }
   };
 

@@ -7,6 +7,7 @@ import { queryClient } from '~/lib/query/queryClient';
 import { useAuthStore } from '~/stores/useAuthStore';
 import { ThemeProvider } from '~/components/providers/ThemeProvider';
 import { AuthGate } from '~/components/providers/AuthGate';
+import { ConfirmHost } from '~/components/providers/ConfirmHost';
 
 export function AppProviders({ children }: { children: React.ReactNode }) {
   const [ready, setReady] = useState(false);
@@ -30,6 +31,9 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
         {/* Monté ici, donc après `restoreSession()` : `isAuthenticated` est déjà
             stabilisé et le garde couvre TOUTES les routes d'un coup. */}
         <AuthGate>{children}</AuthGate>
+        {/* Hors de `AuthGate` : une confirmation déclenchée juste avant une
+            redirection doit pouvoir se résoudre au lieu d'être démontée. */}
+        <ConfirmHost />
         <Toaster position="top-center" richColors theme="dark" />
       </QueryClientProvider>
     </ThemeProvider>

@@ -8,6 +8,7 @@ import { Spinner } from '~/components/loading/Spinner';
 import * as soloApi from '~/lib/api/solo';
 import { useSoloStore } from '~/stores/useSoloStore';
 import type { SoloCareerProgressResponse, LevelInfo } from '~/types/solo';
+import { notify } from '~/lib/ui/notify';
 
 export default function CareerDetailPage() {
   const router = useRouter();
@@ -45,7 +46,7 @@ export default function CareerDetailPage() {
       router.push('/solo/career');
     } catch (error) {
       console.error('Failed to abandon career', error);
-      alert('Erreur lors de l\'abandon de la carrière.');
+      notify.error('Erreur lors de l\'abandon de la carrière.');
       setIsAbandoning(false);
     }
   };
@@ -59,7 +60,7 @@ export default function CareerDetailPage() {
       router.push(`/solo/game/${startData.sessionId}`);
     } catch (error) {
       console.error('Failed to start level', error);
-      alert('Erreur lors du lancement du niveau. Veuillez réessayer.');
+      notify.error('Erreur lors du lancement du niveau. Veuillez réessayer.');
     } finally {
       setIsStartingLevel(false);
     }

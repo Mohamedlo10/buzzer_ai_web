@@ -7,9 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "npm run test:tokens && npm run test:routes",
+    "test": "npm run test:tokens && npm run test:routes && npm run test:confirm",
     "test:tokens": "node lib/theme/palette.test.js",
-    "test:routes": "node --experimental-strip-types --no-warnings lib/auth/routePolicy.test.mjs"
+    "test:routes": "node --experimental-strip-types --no-warnings lib/auth/routePolicy.test.mjs",
+    "test:confirm": "node --experimental-strip-types --no-warnings lib/ui/confirm.test.mjs"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.90.21",

@@ -18,6 +18,7 @@ import {
 import { DataTable } from '~/components/admin/DataTable';
 import * as adminApi from '~/lib/api/admin';
 import type { AdminRoomResponse } from '~/types/api';
+import { confirmAsync } from '~/lib/ui/confirm';
 
 const PAGE_SIZE = 20;
 
@@ -66,8 +67,14 @@ export default function AdminRoomsPage() {
     onError: () => toast.error('Impossible de transférer la propriété'),
   });
 
-  const handleDelete = (room: AdminRoomResponse) => {
-    if (!window.confirm(`Supprimer la salle "${room.name}" ?`)) return;
+  const handleDelete = async (room: AdminRoomResponse) => {
+    const confirmed = await confirmAsync({
+      title: 'Supprimer la salle ?',
+      message: `"${room.name}" et toutes ses statistiques seront supprimées.`,
+      confirmLabel: 'Supprimer',
+      tone: 'danger',
+    });
+    if (!confirmed) return;
     deleteMutation.mutate(room.id);
   };
 

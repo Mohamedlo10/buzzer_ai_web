@@ -15,6 +15,7 @@ import type { UserResponse } from '~/types/api';
 import { PatternLozenge } from '~/components/shared/PatternLozenge';
 import { Avatar } from '~/components/shared/Avatar';
 import { UserProfileModal } from '~/components/shared/UserProfileModal';
+import { notifyApiError } from '~/lib/ui/notify';
 
 type TabType = 'friends' | 'requests' | 'search';
 
@@ -89,7 +90,7 @@ export default function FriendsPage() {
       await sendRequest(userId);
       setSentRequests((prev) => new Set(prev).add(userId));
     } catch (err: any) {
-      alert(err?.message || "Impossible d'envoyer la demande");
+      notifyApiError(err, "Impossible d'envoyer la demande");
     }
   };
 

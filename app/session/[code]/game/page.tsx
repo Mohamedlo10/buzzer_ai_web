@@ -12,6 +12,7 @@ import { useAuthStore } from '~/stores/useAuthStore';
 import { useGameSocket } from '~/lib/websocket/useGameSocket';
 import * as gameApi from '~/lib/api/game';
 import { appStorage } from '~/lib/utils/storage';
+import { notifyApiError } from '~/lib/ui/notify';
 
 const POLL_WS_CONNECTED_MS = 3000;
 const POLL_WS_DISCONNECTED_MS = 2000;
@@ -175,7 +176,7 @@ export default function GamePage() {
     try {
       await pauseSession(session.id);
     } catch (err: any) {
-      window.alert(err?.message || 'Impossible de mettre en pause');
+      notifyApiError(err, 'Impossible de mettre en pause');
     } finally {
       setIsPauseToggling(false);
     }
@@ -187,7 +188,7 @@ export default function GamePage() {
     try {
       await resumeSession(session.id);
     } catch (err: any) {
-      window.alert(err?.message || 'Impossible de reprendre');
+      notifyApiError(err, 'Impossible de reprendre');
     } finally {
       setIsPauseToggling(false);
     }
@@ -198,7 +199,7 @@ export default function GamePage() {
     try {
       await gameApi.advanceAfterAllWrong(session.id);
     } catch (err: any) {
-      window.alert(err?.message || 'Action impossible');
+      notifyApiError(err, 'Action impossible');
     }
   }, [session?.id]);
 

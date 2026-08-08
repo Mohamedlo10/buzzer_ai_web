@@ -13,6 +13,7 @@ import * as invitationsApi from '~/lib/api/invitations';
 import * as roomsApi from '~/lib/api/rooms';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '~/lib/query/keys';
+import { notify } from '~/lib/ui/notify';
 
 export default function NotificationsPage() {
   const router = useRouter();
@@ -34,7 +35,7 @@ export default function NotificationsPage() {
       await friendsApi.acceptFriendRequest(requestId);
       invalidate();
     } catch {
-      alert("Impossible d'accepter la demande");
+      notify.error("Impossible d'accepter la demande");
     }
   };
 
@@ -43,7 +44,7 @@ export default function NotificationsPage() {
       await friendsApi.declineFriendRequest(requestId);
       invalidate();
     } catch {
-      alert('Impossible de refuser la demande');
+      notify.error('Impossible de refuser la demande');
     }
   };
 
@@ -53,7 +54,7 @@ export default function NotificationsPage() {
       invalidate();
       router.push(`/session/${sessionCode}/lobby`);
     } catch {
-      alert("Impossible d'accepter l'invitation");
+      notify.error("Impossible d'accepter l'invitation");
     }
   };
 
@@ -62,7 +63,7 @@ export default function NotificationsPage() {
       await invitationsApi.declineInvitation(invitationId);
       invalidate();
     } catch {
-      alert("Impossible de refuser l'invitation");
+      notify.error("Impossible de refuser l'invitation");
     }
   };
 
@@ -72,7 +73,7 @@ export default function NotificationsPage() {
       invalidate();
       router.push(`/room/${data.room.id}`);
     } catch {
-      alert('Impossible de rejoindre la salle');
+      notify.error('Impossible de rejoindre la salle');
     }
   };
 

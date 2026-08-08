@@ -1,6 +1,10 @@
 'use client';
 
+import { useState } from 'react';
+
 import { palette, alpha, radius, withAlpha } from '~/lib/theme/tokens';
+import { confirmAsync, type ConfirmTone } from '~/lib/ui/confirm';
+import { notify } from '~/lib/ui/notify';
 
 /**
  * ÉCRAN DE NON-RÉGRESSION DES DESIGN TOKENS
@@ -109,6 +113,85 @@ function Seam({ cls, inline, legacy }: { cls: string; inline: string; legacy?: s
       <div className={cls} style={{ flex: 1 }} />
       <div style={{ flex: 1, background: inline }} />
       {legacy ? <div style={{ flex: 1, background: `var(${legacy})` }} /> : null}
+    </div>
+  );
+}
+
+/**
+ * Banc d'essai des dialogues — la seule façon de vérifier À L'ŒIL le correctif
+ * de `ConfirmModal`, qui n'apparaît sur aucune page rendue statiquement.
+ *
+ * Il exerce la chaîne complète : `confirmAsync` → store → `ConfirmHost` →
+ * `ConfirmModal`, puis le retour de la promesse affiché en toast. Si le bouton
+ * de confirmation s'affiche sans fond ni bordure, c'est que la composition
+ * alpha est repartie sur une chaîne CSS au lieu d'un hexadécimal.
+ */
+function DialogBench() {
+  const [last, setLast] = useState<string>('—');
+
+  const tones: { tone: ConfirmTone; label: string }[] = [
+    { tone: 'default', label: 'Confirmation neutre' },
+    { tone: 'danger', label: 'Action destructrice' },
+    { tone: 'warning', label: 'Avertissement' },
+  ];
+
+  return (
+    <div
+      style={{
+        background: palette.surface,
+        border: `1px solid ${palette.line}`,
+        borderRadius: radius.card,
+        padding: 14,
+      }}
+    >
+      <div style={{ fontSize: 12, fontWeight: 800, marginBottom: 10 }}>
+        Dialogues — chaîne complète
+      </div>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 10 }}>
+        {tones.map((t) => (
+          <button
+            key={t.tone}
+            className="px-3 py-2 rounded-xl bg-surface-2 border border-line text-sm font-semibold cursor-pointer"
+            onClick={async () => {
+              const r = await confirmAsync({
+                title: t.label,
+                message: 'La promesse se résout avec votre choix.',
+                tone: t.tone,
+              });
+              setLast(`${t.tone} → ${r ? 'confirmé' : 'annulé'}`);
+            }}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 10 }}>
+        <button
+          className="px-3 py-2 rounded-xl bg-surface-2 border border-line text-sm font-semibold cursor-pointer"
+          onClick={() => notify.error('Message d’erreur')}
+        >
+          notify.error
+        </button>
+        <button
+          className="px-3 py-2 rounded-xl bg-surface-2 border border-line text-sm font-semibold cursor-pointer"
+          onClick={() => notify.success('Message de succès')}
+        >
+          notify.success
+        </button>
+        <button
+          className="px-3 py-2 rounded-xl bg-surface-2 border border-line text-sm font-semibold cursor-pointer"
+          onClick={() => notify.info('Message neutre')}
+        >
+          notify.info
+        </button>
+      </div>
+      <div style={{ fontSize: 11, color: palette.inkSoft, fontFamily: 'monospace' }}>
+        dernier retour : {last}
+      </div>
+      <p style={{ fontSize: 11, color: palette.inkSoft, marginTop: 8, marginBottom: 0 }}>
+        Pendant automatisé : <code>npm run test:confirm</code> — il couvre le cas qui ne se voit pas,
+        une promesse laissée en suspens quand une demande en remplace une autre.
+      </p>
     </div>
   );
 }
@@ -245,6 +328,17 @@ export default function TokensDevPage() {
             translucide — ne pas «&nbsp;harmoniser&nbsp;».
           </p>
         </div>
+      </div>
+
+      <h2 style={{ fontSize: 15, fontWeight: 700, margin: '32px 0 10px' }}>Dialogues</h2>
+      <p style={{ fontSize: 12, color: palette.inkSoft, marginBottom: 12, maxWidth: 680 }}>
+        Les 54 <code>alert()</code> et <code>window.confirm()</code> du projet ont été remplacés par
+        une API non bloquante. <code>confirm()</code> était <strong>synchrone</strong> et gelait le
+        thread — dans un jeu de buzzer, les trames WebSocket n&apos;étaient plus traitées pendant
+        l&apos;attente.
+      </p>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 14 }}>
+        <DialogBench />
       </div>
 
       <h2 style={{ fontSize: 15, fontWeight: 700, margin: '32px 0 10px' }}>Typographie</h2>

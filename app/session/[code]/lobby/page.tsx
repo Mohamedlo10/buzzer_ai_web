@@ -46,6 +46,8 @@ import { getUserProfile } from '~/lib/api/users';
 import { Slider } from '~/components/ui/Slider';
 import type { RoomInfo, PlayerResponse, TeamResponse } from '~/types/api';
 import { teamColor, teamColorTint } from '~/lib/game/teamColors';
+import { notify, notifyApiError } from '~/lib/ui/notify';
+import { confirmAsync } from '~/lib/ui/confirm';
 
 const orbitron = Orbitron({ subsets: ['latin'], weight: ['400', '700', '900'] });
 const rajdhani = Rajdhani({ subsets: ['latin'], weight: ['400', '500', '600', '700'] });
@@ -300,7 +302,7 @@ export default function LobbyPage() {
       try { await navigator.share({ title: 'Invitation Xalaat — Quiz by MouhaDev', text: msg }); } catch { /* cancelled */ }
     } else {
       await navigator.clipboard.writeText(msg);
-      window.alert('Lien copié dans le presse-papiers !');
+      notify.success('Lien copié dans le presse-papiers !');
     }
   };
 
@@ -327,7 +329,7 @@ export default function LobbyPage() {
       // « je n'ai pas cliqué au bon endroit ». C'est le même symptôme que le
       // handler d'à côté traite déjà correctement.
       const detail = err?.response?.data?.message || err?.message;
-      window.alert(detail || 'Impossible de démarrer la partie');
+      notify.error(detail || 'Impossible de démarrer la partie');
     }
   };
 
@@ -348,38 +350,65 @@ export default function LobbyPage() {
     finally { setIsSavingConfig(false); }
     setShowQLimit(false);
     try { await startSession(session.id); }
-    catch (err: any) { window.alert(err?.message || 'Impossible de démarrer la partie'); }
+    catch (err: any) { notifyApiError(err, 'Impossible de démarrer la partie'); }
   };
 
-  const handleLeave = () => {
-    if (window.confirm('Voulez-vous vraiment quitter cette session ?')) {
-      const roomId = session?.roomId;
-      leaveSession();
-      if (roomId) router.replace(`/room/${roomId}`); else router.replace('/');
-    }
+  const handleLeave = async () => {
+    const confirmed = await confirmAsync({
+      title: 'Quitter la session ?',
+      message: 'Vous serez retiré de cette session.',
+      confirmLabel: 'Quitter',
+      tone: 'danger',
+    });
+    if (!confirmed) return;
+
+    const roomId = session?.roomId;
+    leaveSession();
+    if (roomId) router.replace(`/room/${roomId}`);
+    else router.replace('/');
   };
 
   const handleDeleteSession = async () => {
     if (!session?.id || isDeletingSession) return;
-    if (window.confirm('Supprimer la session ? Cette action est irréversible. Tous les joueurs seront expulsés.')) {
-      setIsDeletingSession(true);
-      const roomId = session.roomId;
-      try {
-        await deleteSession(session.id);
-        if (roomId) router.replace(`/room/${roomId}`);
-        else router.replace('/rooms');
-      }
-      catch (err: any) { window.alert(err?.message || 'Impossible de supprimer la session'); setIsDeletingSession(false); }
+
+    const confirmed = await confirmAsync({
+      title: 'Supprimer la session ?',
+      message: 'Cette action est irréversible. Tous les joueurs seront expulsés.',
+      confirmLabel: 'Supprimer',
+      tone: 'danger',
+    });
+    if (!confirmed) return;
+
+    setIsDeletingSession(true);
+    const roomId = session.roomId;
+    try {
+      await deleteSession(session.id);
+      if (roomId) router.replace(`/room/${roomId}`);
+      else router.replace('/rooms');
+    } catch (err: any) {
+      notifyApiError(err, 'Impossible de supprimer la session');
+      setIsDeletingSession(false);
     }
   };
 
   const handleKickPlayer = async (playerId: string, playerName: string) => {
     if (!session?.id || kickingPlayerId) return;
-    if (window.confirm(`Voulez-vous vraiment retirer ${playerName} de la session ?`)) {
-      setKickingPlayerId(playerId);
-      try { await sessionsApi.removePlayer(session.id, playerId); }
-      catch (err: any) { window.alert(err?.message || "Impossible d'expulser le joueur"); }
-      finally { setKickingPlayerId(null); }
+
+    const confirmed = await confirmAsync({
+      title: 'Retirer ce joueur ?',
+      message: `${playerName} sera expulsé de la session.`,
+      confirmLabel: 'Retirer',
+      tone: 'danger',
+    });
+    if (!confirmed) return;
+
+    setKickingPlayerId(playerId);
+    try {
+      await sessionsApi.removePlayer(session.id, playerId);
+    } catch (err: any) {
+      notifyApiError(err, "Impossible d'expulser le joueur");
+    } finally {
+      setKickingPlayerId(null);
     }
   };
 
@@ -400,7 +429,7 @@ export default function LobbyPage() {
       await sessionsApi.changePlayerTeam(session.id, playerId, teamId);
       await fetchSession(session.id);
     } catch (err: any) {
-      window.alert(err?.response?.data?.message || "Impossible de changer d'équipe");
+      notifyApiError(err, "Impossible de changer d'équipe");
     } finally {
       setIsChangingTeam(false);
       setShowTeamPicker(false);
@@ -1201,7 +1230,7 @@ export default function LobbyPage() {
         }
         confirmLabel="Démarrer"
         cancelLabel="Annuler"
-        confirmColor="var(--primary)"
+        tone="default"
         icon={<Play size={24} color="var(--primary)" />}
         onConfirm={() => { setShowStartConfirm(false); handleStartGame(); }}
         onCancel={() => setShowStartConfirm(false)}

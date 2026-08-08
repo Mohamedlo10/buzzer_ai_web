@@ -35,6 +35,7 @@ import { useWordReveal } from '~/lib/game/useWordReveal';
 import type { ManualQuestion, PlayerResponse, TeamResponse } from '~/types/api';
 import { ProgressiveQuestionDisplay } from '~/components/game/ProgressiveQuestionDisplay';
 import { IdentificationQuestionDisplay } from '~/components/game/IdentificationQuestionDisplay';
+import { notifyApiError } from '~/lib/ui/notify';
 
 interface ExpandableCardProps {
   icon: ReactNode;
@@ -199,7 +200,7 @@ export function ModeratedGame({
         // State mismatch, let the packet sync it
       } else {
         buzzLockRef.current = false;
-        window.alert(err?.message || 'Impossible de buzzer');
+        notifyApiError(err, 'Impossible de buzzer');
       }
     } finally {
       setIsSubmitting(false);
@@ -219,7 +220,7 @@ export function ModeratedGame({
         });
       } catch (err: any) {
         if (err?.response?.status !== 409) {
-          window.alert(err?.message || 'Action impossible');
+          notifyApiError(err, 'Action impossible');
         }
       } finally {
         setIsValidating(false);
@@ -235,7 +236,7 @@ export function ModeratedGame({
     try {
       await gameApi.skipQuestion(sessionId);
     } catch (err: any) {
-      window.alert(err?.message || 'Action impossible');
+      notifyApiError(err, 'Action impossible');
     } finally {
       setIsSkipping(false);
     }
@@ -246,7 +247,7 @@ export function ModeratedGame({
     try {
       await gameApi.advanceAfterAllWrong(sessionId);
     } catch (err: any) {
-      window.alert(err?.message || 'Action impossible');
+      notifyApiError(err, 'Action impossible');
     }
   }, [sessionId]);
 
@@ -257,7 +258,7 @@ export function ModeratedGame({
     try {
       await gameApi.resetBuzzer(sessionId);
     } catch (err: any) {
-      window.alert(err?.message || 'Action impossible');
+      notifyApiError(err, 'Action impossible');
     } finally {
       setIsResettingBuzzer(false);
     }
@@ -904,7 +905,7 @@ export function ModeratedGame({
         }
         confirmLabel={pendingWrong?.applyPenalty ? 'Faux' : 'Sans pénalité'}
         cancelLabel="Annuler"
-        confirmColor="var(--bad)"
+        tone="danger"
         icon={<XCircle size={24} color="var(--bad)" />}
         onConfirm={() => {
           const p = pendingWrong;
@@ -919,7 +920,7 @@ export function ModeratedGame({
         message="Cette question sera ignorée et vous passerez à la suivante. Cette action est irréversible."
         confirmLabel="Passer"
         cancelLabel="Annuler"
-        confirmColor="var(--gold)"
+        tone="warning"
         icon={<SkipForward size={24} color="var(--gold)" />}
         onConfirm={() => {
           setShowSkipConfirm(false);

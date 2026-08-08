@@ -21,6 +21,7 @@ import { Card } from '~/components/ui/Card';
 import { Spinner } from '~/components/loading/Spinner';
 import * as adminApi from '~/lib/api/admin';
 import type { AdminCategoryResponse, AdminQuestionResponse } from '~/types/api';
+import { confirmAsync } from '~/lib/ui/confirm';
 
 const DIFFICULTY_CONFIG = {
   EASY:   { label: 'Facile',    color: 'var(--primary)' },
@@ -142,8 +143,14 @@ export default function AdminQuestionsPage() {
     });
   };
 
-  const handleDeleteQuestion = (q: AdminQuestionResponse) => {
-    if (!window.confirm('Supprimer cette question ?')) return;
+  const handleDeleteQuestion = async (q: AdminQuestionResponse) => {
+    const confirmed = await confirmAsync({
+      title: 'Supprimer cette question ?',
+      message: 'Elle ne sera plus proposée dans les parties.',
+      confirmLabel: 'Supprimer',
+      tone: 'danger',
+    });
+    if (!confirmed) return;
     deleteMutation.mutate(q.id);
   };
 

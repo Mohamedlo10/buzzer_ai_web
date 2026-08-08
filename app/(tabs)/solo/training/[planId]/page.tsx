@@ -8,6 +8,7 @@ import { Spinner } from '~/components/loading/Spinner';
 import * as soloApi from '~/lib/api/solo';
 import { useSoloStore } from '~/stores/useSoloStore';
 import type { SoloTrainingPlanResponse } from '~/types/solo';
+import { notify, notifyApiError } from '~/lib/ui/notify';
 
 export default function TrainingPlanDetailPage() {
   const router = useRouter();
@@ -43,7 +44,7 @@ export default function TrainingPlanDetailPage() {
       router.push(`/solo/game/${startData.sessionId}`);
     } catch (error) {
       console.error('Failed to start training level', error);
-      alert('Une erreur est survenue lors du lancement du niveau d\'entraînement.');
+      notify.error('Une erreur est survenue lors du lancement du niveau d\'entraînement.');
     } finally {
       setIsStartingLevel(null);
     }
@@ -66,15 +67,15 @@ export default function TrainingPlanDetailPage() {
           : null
       );
       if (voteData.regenerationTriggered) {
-        alert('Régénération déclenchée ! Le plan d\'entraînement a été mis à jour avec de nouvelles questions.');
+        notify.success('Régénération déclenchée ! Le plan d\'entraînement a été mis à jour avec de nouvelles questions.');
         setIsLoading(true);
         await fetchPlanDetail();
       } else {
-        alert('Votre vote a été pris en compte !');
+        notify.success('Votre vote a été pris en compte !');
       }
     } catch (error: any) {
       console.error('Failed to vote', error);
-      alert(error?.response?.data?.message || 'Vous avez déjà voté pour la régénération de ce plan.');
+      notifyApiError(error, 'Vous avez déjà voté pour la régénération de ce plan.');
     } finally {
       setIsVoting(false);
     }

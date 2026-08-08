@@ -25,6 +25,7 @@ import { DataTable, type Column } from '~/components/admin/DataTable';
 import { Avatar } from '~/components/ui/Avatar';
 import * as adminApi from '~/lib/api/admin';
 import type { UserRole } from '~/types/api';
+import { confirmAsync } from '~/lib/ui/confirm';
 
 interface AdminUser {
   id: string;
@@ -129,10 +130,26 @@ export default function AdminUsersPage() {
     setPage(0);
   };
 
-  const handleDelete = (user: AdminUser) => {
-    if (window.confirm(`Supprimer ${user.username} ? Cette action est irréversible.`)) {
-      deleteMutation.mutate(user.id);
-    }
+  const handleDelete = async (user: AdminUser) => {
+    const confirmed = await confirmAsync({
+      title: 'Supprimer ce compte ?',
+      message: `${user.username} sera définitivement supprimé. Cette action est irréversible.`,
+      confirmLabel: 'Supprimer',
+      tone: 'danger',
+    });
+    if (!confirmed) return;
+    deleteMutation.mutate(user.id);
+  };
+
+  const handleBan = async (user: Pick<AdminUser, 'id' | 'username'>) => {
+    const confirmed = await confirmAsync({
+      title: 'Bannir ce joueur ?',
+      message: `${user.username} ne pourra plus se connecter.`,
+      confirmLabel: 'Bannir',
+      tone: 'danger',
+    });
+    if (!confirmed) return;
+    banMutation.mutate(user.id);
   };
 
   const columns: Column<AdminUser>[] = [
@@ -286,11 +303,7 @@ export default function AdminUsersPage() {
             </button>
           ) : (
             <button
-              onClick={() => {
-                if (window.confirm(`Bannir ${row.username} ?`)) {
-                  banMutation.mutate(row.id);
-                }
-              }}
+              onClick={() => handleBan(row)}
               disabled={banMutation.isPending}
               className="p-1.5 rounded-lg bg-danger/15 hover:bg-danger/20 text-danger transition-colors"
               title="Bannir"
