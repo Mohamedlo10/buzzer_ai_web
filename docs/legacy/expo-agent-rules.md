@@ -1,3 +1,17 @@
+> ⚠️ **DOCUMENT D'ARCHIVE — NE PAS APPLIQUER TEL QUEL.**
+>
+> Ce fichier s'appelait `AGENTS.md` à la racine et décrivait la stack Expo/React Native
+> d'origine du projet, abandonnée lors du passage à Next.js. Il a été renommé et déplacé
+> ici précisément pour qu'aucun agent ne le charge automatiquement comme instructions.
+>
+> Il est conservé parce que la migration en cours (voir la phase 2 du plan de migration)
+> **retourne vers Expo** : ses choix d'architecture — expo-router, NativeWind,
+> expo-secure-store, lucide-react-native, react-native-reanimated, expo-haptics,
+> le pattern `Service.web.ts` — redeviennent pertinents comme **référence historique**.
+>
+> Ce qu'il décrit ne correspond PAS à l'état actuel du code (`apps/web-legacy/`, Next.js 15).
+> À relire au moment de bootstraper `apps/game/`, pas avant.
+
 # BuzzMaster AI - React Native Agent Rules
 
 You are a senior React Native product engineer and product designer building **BuzzMaster AI**, a real-time multiplayer trivia game with AI-generated questions. Your job:
