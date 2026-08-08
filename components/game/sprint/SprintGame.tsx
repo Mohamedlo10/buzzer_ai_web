@@ -210,13 +210,13 @@ export function SprintGame({
               return (
                 <div
                   key={choice}
-                  className={`flex items-center gap-3 rounded-2xl border px-4 py-3 transition-colors ${
+                  className={`flex items-center gap-3 rounded-2xl border px-4 py-3 transition-all ${
                     isCorrect
                       ? 'border-good bg-good/10'
                       : isMineAndWrong
                         ? 'border-buzz bg-buzz/10'
                         : isMine
-                          ? 'border-accent bg-accent/10'
+                          ? 'border-indigo bg-indigo/15 shadow-sm'
                           : 'border-line bg-surface opacity-60'
                   }`}
                 >
@@ -226,14 +226,22 @@ export function SprintGame({
                         ? 'bg-good text-white'
                         : isMineAndWrong
                           ? 'bg-buzz text-white'
-                          : 'bg-surface-2 text-txt'
+                          : isMine
+                            ? 'bg-indigo text-white'
+                            : 'bg-surface-2 text-txt'
                     }`}
                   >
                     {CHOICE_LABELS[index] ?? index + 1}
                   </span>
-                  <span className="text-txt text-sm flex-1">{choice}</span>
+                  <span className="text-txt text-sm flex-1 font-medium">{choice}</span>
                   {isCorrect && <CheckCircle2 size={18} className="text-good shrink-0" />}
                   {isMineAndWrong && <XCircle size={18} className="text-buzz shrink-0" />}
+                  {isMine && !isRevealing && (
+                    <span className="px-2.5 py-1 rounded-full bg-indigo/20 text-indigo text-xs font-bold flex items-center gap-1.5 shrink-0">
+                      <span className="w-1.5 h-1.5 rounded-full bg-indigo animate-pulse" />
+                      Choix enregistré
+                    </span>
+                  )}
                 </div>
               );
             })}

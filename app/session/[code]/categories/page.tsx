@@ -548,7 +548,7 @@ export default function CategorySelectionPage() {
         </div>
       </div>
 
-      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y pb-36 flex flex-col gap-[18px] px-4 pt-4">
+      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y pb-6 flex flex-col gap-[18px] px-4 pt-4">
         {/* Progress bar */}
         <div className="bg-surface rounded-2xl p-3.5 border border-line">
           <div className="flex flex-row items-center justify-between mb-2 text-[13px]">
@@ -725,16 +725,18 @@ export default function CategorySelectionPage() {
             <p className="text-buzz-h text-sm flex-1 font-medium">{error}</p>
           </div>
         )}
+      </div>
 
-        {/* Submit Button */}
+      {/* Sticky Footer Submit Button */}
+      <div className="p-4 border-t border-line bg-bg/95 backdrop-blur-md shrink-0 z-30 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
         <button
           type="button"
           onClick={handleSubmit}
           disabled={isSubmitting || (selectedCategories.length === 0 && !customCategory.trim()) || isJoining}
-          className={`w-full rounded-2xl py-4 px-6 flex flex-row items-center justify-center gap-2 transition-colors cursor-pointer ${
+          className={`w-full rounded-2xl py-4 px-6 flex flex-row items-center justify-center gap-2 transition-all cursor-pointer ${
             isSubmitting || (selectedCategories.length === 0 && !customCategory.trim()) || isJoining
               ? 'bg-surface-2 cursor-not-allowed opacity-60'
-              : 'bg-accent hover:bg-accent-d shadow-glow-success'
+              : 'bg-accent hover:bg-accent-d shadow-glow-success active:scale-[0.99]'
           }`}
         >
           {isSubmitting || isJoining ? (
