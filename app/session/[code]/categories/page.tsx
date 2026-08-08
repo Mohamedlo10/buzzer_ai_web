@@ -384,7 +384,7 @@ export default function CategorySelectionPage() {
   if (currentStep === 'team') {
     const sortedTeams = [...sessionTeams].sort((a, b) => b.score - a.score);
     return (
-      <SafeScreen className="h-[100dvh] max-h-[100dvh] w-full flex flex-col overflow-hidden relative bg-transparent">
+      <SafeScreen className="h-[100dvh] max-h-[100dvh] !min-h-0 w-full flex flex-col overflow-hidden relative bg-transparent">
         {/* Header */}
         <div className="shrink-0 z-20 bg-bg pt-4 pb-4 px-4 border-b border-line">
           <div className="flex flex-row items-center gap-3">
@@ -501,7 +501,7 @@ export default function CategorySelectionPage() {
         </div>
 
         {/* Footer selector button */}
-        <div className="p-4 border-t border-line bg-bg shrink-0">
+        <div className="p-4 border-t border-line bg-bg/95 backdrop-blur-md shrink-0 z-30 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] pb-[max(1rem,env(safe-area-inset-bottom))]">
           <button
             type="button"
             onClick={handleSubmit}
@@ -527,7 +527,7 @@ export default function CategorySelectionPage() {
   }
 
   return (
-    <SafeScreen className="h-[100dvh] max-h-[100dvh] w-full flex flex-col overflow-hidden relative bg-transparent">
+    <SafeScreen className="h-[100dvh] max-h-[100dvh] !min-h-0 w-full flex flex-col overflow-hidden relative bg-transparent">
       {/* Header */}
       <div className="shrink-0 z-20 bg-bg pt-4 pb-4 px-4 border-b border-line">
         <div className="flex flex-row items-center gap-3">
@@ -548,7 +548,7 @@ export default function CategorySelectionPage() {
         </div>
       </div>
 
-      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y pb-6 flex flex-col gap-[18px] px-4 pt-4">
+      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y pb-28 flex flex-col gap-[18px] px-4 pt-4">
         {/* Progress bar */}
         <div className="bg-surface rounded-2xl p-3.5 border border-line">
           <div className="flex flex-row items-center justify-between mb-2 text-[13px]">
@@ -728,7 +728,7 @@ export default function CategorySelectionPage() {
       </div>
 
       {/* Sticky Footer Submit Button */}
-      <div className="p-4 border-t border-line bg-bg/95 backdrop-blur-md shrink-0 z-30 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+      <div className="p-4 border-t border-line bg-bg/95 backdrop-blur-md shrink-0 z-30 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] pb-[max(1rem,env(safe-area-inset-bottom))]">
         <button
           type="button"
           onClick={handleSubmit}
