@@ -1,8 +1,8 @@
 import { ArrowLeft, Crown, RefreshCw } from 'lucide-react';
-import type { RoomInfo } from '~/types/api';
+import type { RoomInfo, SessionResponse } from '~/types/api';
 
 export interface LobbyHeaderProps {
-  session: any;
+  session: SessionResponse;
   roomInfo: RoomInfo | null;
   isConnected: boolean;
   isManager: boolean;

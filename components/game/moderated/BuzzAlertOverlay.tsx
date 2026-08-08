@@ -2,12 +2,13 @@ import { Hand } from 'lucide-react';
 import { Avatar } from '~/components/ui/Avatar';
 import { teamColor } from '~/lib/game/teamColors';
 import type { PlayerResponse, TeamResponse } from '~/types/api';
+import type { QueueEntry } from '~/lib/game/packet';
 
 export interface BuzzAlertOverlayProps {
   isManager: boolean;
   phase: string;
-  firstBuzzer: any;
-  buzzQueue: any[];
+  firstBuzzer?: QueueEntry;
+  buzzQueue: QueueEntry[];
   players: PlayerResponse[];
   myPlayerId?: string;
   isTeamMode: boolean;

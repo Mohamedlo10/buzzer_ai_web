@@ -1,10 +1,10 @@
 import { Crown, Zap, Users, Bot, Copy, Check, Share2, QrCode } from 'lucide-react';
 import { Avatar } from '~/components/ui/Avatar';
-import type { PlayerResponse } from '~/types/api';
+import type { PlayerResponse, UserResponse } from '~/types/api';
 
 export interface LobbyHeroProps {
   currentPlayer?: PlayerResponse;
-  user: any;
+  user: UserResponse | null;
   avatarMap: Record<string, string | null>;
   isWithoutModerator: boolean;
   questionMode?: string;

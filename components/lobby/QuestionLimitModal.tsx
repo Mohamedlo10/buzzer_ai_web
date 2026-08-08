@@ -1,8 +1,9 @@
 import { TrendingUp, AlertCircle, X, Play, Minus, Plus } from 'lucide-react';
 import { Slider } from '~/components/ui/Slider';
+import type { SessionResponse } from '~/types/api';
 
 export interface QuestionLimitModalProps {
-  session: any;
+  session: SessionResponse;
   realPlayerCount: number;
   adjustedQPerCat: number;
   setAdjustedQPerCat: React.Dispatch<React.SetStateAction<number>>;

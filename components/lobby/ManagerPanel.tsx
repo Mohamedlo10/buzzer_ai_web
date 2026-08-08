@@ -1,8 +1,9 @@
 import { Play, AlertCircle, LogOut, Trash2 } from 'lucide-react';
+import type { SessionResponse } from '~/types/api';
 import { ManualQuestionsAlert } from './ManualQuestionsAlert';
 
 export interface ManagerPanelProps {
-  session: any;
+  session: SessionResponse;
   code: string;
   isStarting: boolean;
   canStart: boolean;
