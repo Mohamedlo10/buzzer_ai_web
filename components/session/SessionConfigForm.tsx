@@ -1,41 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-  Users,
-  Zap,
-  Target,
-  AlertCircle,
-  PenLine,
-  Bot,
-  Plus,
-  X,
-  Palette,
-  Timer,
-  User,
-  ArrowLeft,
-  Sparkles,
-  Award,
-} from 'lucide-react';
-import { useBuzzStore } from '~/stores/useBuzzStore';
-import {
-  TEAM_COLOR_TOKENS,
-  teamColor,
-  teamColorByIndex,
-  toTeamColorToken,
-} from '~/lib/game/teamColors';
-import type { CreateSessionRequest, QuestionMode, SessionMode, TeamRequest } from '~/types/api';
-
-// Le serveur persiste un JETON de palette, pas une couleur CSS : envoyer
-// `var(--indigo)` faisait échouer la création de session (colonne VARCHAR(7)).
-// La conversion en couleur affichable se fait au rendu, via teamColor().
-// L'ancienne liste contenait aussi des doublons — « bad » trois fois, « good »
-// deux fois — donc les équipes 6 à 8 étaient indistinguables.
-const DEFAULT_TEAMS: TeamRequest[] = [
-  { name: 'Rouge', color: 'red' },
-  { name: 'Bleu', color: 'blue' },
-];
+import { Zap, ArrowLeft, X } from 'lucide-react';
+import { StepBar } from './StepBar';
+import { StepGameMode } from './StepGameMode';
+import { StepSettings } from './StepSettings';
+import { StepTeams } from './StepTeams';
+import { StepSummary } from './StepSummary';
+import { useSessionConfig } from '~/lib/hooks/useSessionConfig';
 
 interface SessionConfigFormProps {
   onSuccess?: (sessionId: string, code: string) => void;
@@ -44,405 +17,8 @@ interface SessionConfigFormProps {
   initialMaxPlayers?: number;
 }
 
-// StepBar segmented progress indicator
-function StepBar({ step, total }: { step: number; total: number }) {
-  return (
-    <div className="flex gap-2 w-full">
-      {Array.from({ length: total }).map((_, i) => {
-        const isFilled = i < step;
-        return (
-          <div
-            key={i}
-            className="flex-1 h-1 rounded-full transition-all duration-300"
-            style={{
-              backgroundColor: isFilled ? 'var(--primary)' : 'var(--surface-2)',
-              opacity: isFilled ? 1 : 0.5,
-            }}
-          />
-        );
-      })}
-    </div>
-  );
-}
-
-// ModeCard visual selector
-function ModeCard({
-  icon,
-  label,
-  sublabel,
-  active,
-  accent = 'var(--primary)',
-  onClick,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  sublabel: string;
-  active: boolean;
-  accent?: string;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`flex-1 rounded-[18px] border-2 p-4 text-left transition-all duration-180 flex flex-col justify-between h-[125px] shrink-0 ${active ? '' : 'border-line bg-surface'
-        }`}
-      style={{
-        borderColor: active ? accent : 'var(--line)',
-        backgroundColor: active
-          ? `color-mix(in srgb, ${accent} 14%, var(--surface))`
-          : 'var(--surface)',
-      }}
-    >
-      <div
-        className="w-[52px] h-[52px] rounded-[15px] flex items-center justify-center transition-all shrink-0 mb-2"
-        style={{
-          backgroundColor: active
-            ? `color-mix(in srgb, ${accent} 22%, transparent)`
-            : 'var(--surface-2)',
-        }}
-      >
-        {icon}
-      </div>
-      <div>
-        <p
-          className="text-[14.5px] font-bold transition-colors leading-tight"
-          style={{ color: active ? accent : 'var(--txt)' }}
-        >
-          {label}
-        </p>
-        <p className="text-[11px] text-txt-40 mt-1 line-clamp-1">{sublabel}</p>
-      </div>
-    </button>
-  );
-}
-
-// StepperField number input (- value +)
-function StepperField({
-  label,
-  value,
-  suffix = '',
-  min,
-  max,
-  step = 1,
-  onChange,
-  accent = 'var(--accent, var(--primary))',
-}: {
-  label: string;
-  value: number;
-  suffix?: string;
-  min: number;
-  max: number;
-  step?: number;
-  onChange: (val: number) => void;
-  accent?: string;
-}) {
-  return (
-    <div className="bg-surface rounded-2xl border border-line p-4 flex flex-col justify-between min-h-[92px]">
-      <p className="text-txt-40 text-[9.5px] font-bold tracking-widest uppercase mb-2 leading-none">{label}</p>
-      <div className="flex items-center justify-between gap-2 mt-auto">
-        <button
-          type="button"
-          onClick={() => onChange(Math.max(min, value - step))}
-          disabled={value <= min}
-          className="w-9 h-9 rounded-full bg-surface-2 border border-line flex items-center justify-center text-txt text-lg font-bold hover:bg-surface-3 active:scale-95 transition-all shrink-0 disabled:opacity-[0.38] disabled:cursor-not-allowed"
-        >
-          −
-        </button>
-        <span
-          className="font-bold text-[22px] flex-1 text-center font-mono leading-none"
-          style={{ color: accent }}
-        >
-          {value}{suffix}
-        </span>
-        <button
-          type="button"
-          onClick={() => onChange(Math.min(max, value + step))}
-          disabled={value >= max}
-          className="w-9 h-9 rounded-full bg-surface-2 border border-line flex items-center justify-center text-txt text-lg font-bold hover:bg-surface-3 active:scale-95 transition-all shrink-0 disabled:opacity-[0.38] disabled:cursor-not-allowed"
-        >
-          +
-        </button>
-      </div>
-    </div>
-  );
-}
-
-// ToggleRow custom iOS switch row
-function ToggleRow({
-  icon,
-  label,
-  sub,
-  checked,
-  onChange,
-  accent = 'var(--team, var(--indigo))',
-}: {
-  icon: React.ReactNode;
-  label: string;
-  sub: string;
-  checked: boolean;
-  onChange: (v: boolean) => void;
-  accent?: string;
-}) {
-  return (
-    <div className="bg-surface rounded-2xl border border-line p-[13px] px-[15px] flex items-center justify-between gap-4">
-      <div className="flex items-center gap-3">
-        <div
-          className="w-9 h-9 rounded-[11px] flex items-center justify-center shrink-0"
-          style={{
-            backgroundColor: `color-mix(in srgb, ${accent} 14%, transparent)`,
-          }}
-        >
-          {icon}
-        </div>
-        <div>
-          <p className="text-txt font-bold text-[14px] leading-tight">{label}</p>
-          <p className="text-[11px] text-txt-40 mt-1 leading-tight">{sub}</p>
-        </div>
-      </div>
-      <button
-        type="button"
-        role="switch"
-        aria-checked={checked}
-        onClick={() => onChange(!checked)}
-        className="relative inline-flex h-7 w-12 items-center rounded-[14px] transition-colors duration-200 shrink-0"
-        style={{
-          backgroundColor: checked ? accent : 'var(--surface-2)',
-        }}
-      >
-        <span
-          className={`inline-block h-5 w-5 rounded-full bg-white shadow transition-transform duration-200 ${checked ? 'translate-x-6' : 'translate-x-1'
-            }`}
-        />
-      </button>
-    </div>
-  );
-}
-
-// ChoiceStrip selection strip
-function ChoiceStrip({
-  label,
-  value,
-  options,
-  onChange,
-  accent = 'var(--primary)',
-}: {
-  label: string;
-  value: number | null;
-  options: { label: string; value: number | null }[];
-  onChange: (val: number | null) => void;
-  accent?: string;
-}) {
-  return (
-    <div className="bg-surface rounded-2xl border border-line p-4 flex flex-col">
-      <p className="text-txt-40 text-[9.5px] font-bold tracking-widest uppercase mb-3 leading-none">{label}</p>
-      <div className="flex gap-2">
-        {options.map((opt, i) => {
-          const isActive = value === opt.value;
-          return (
-            <button
-              key={i}
-              type="button"
-              onClick={() => onChange(opt.value)}
-              className="flex-1 py-2.5 rounded-xl text-xs font-bold transition-all border"
-              style={{
-                borderColor: isActive ? accent : 'var(--line)',
-                color: isActive ? accent : 'var(--txt-60)',
-                backgroundColor: isActive
-                  ? `color-mix(in srgb, ${accent} 16%, var(--surface))`
-                  : 'var(--surface)',
-              }}
-            >
-              {opt.label}
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-// TeamEditor team editor component
-function TeamEditor({
-  teams,
-  onChange,
-}: {
-  teams: TeamRequest[];
-  onChange: (teams: TeamRequest[]) => void;
-}) {
-  const addTeam = () => {
-    if (teams.length >= TEAM_COLOR_TOKENS.length) return;
-    onChange([
-      ...teams,
-      { name: `Équipe ${teams.length + 1}`, color: teamColorByIndex(teams.length) },
-    ]);
-  };
-
-  const removeTeam = (index: number) => {
-    if (teams.length <= 2) return;
-    onChange(teams.filter((_, i) => i !== index));
-  };
-
-  const updateName = (index: number, name: string) => {
-    onChange(teams.map((t, i) => (i === index ? { ...t, name } : t)));
-  };
-
-  const cycleColor = (index: number) => {
-    const current = toTeamColorToken(teams[index].color);
-    const nextColor = teamColorByIndex(TEAM_COLOR_TOKENS.indexOf(current) + 1);
-    onChange(teams.map((t, i) => (i === index ? { ...t, color: nextColor } : t)));
-  };
-
-  return (
-    <div className="flex flex-col gap-3">
-      {teams.map((team, index) => (
-        <div
-          key={index}
-          className="bg-surface rounded-2xl border border-line p-[12px] px-[13px] flex flex-row items-center gap-[11px]"
-        >
-          {/* Color selector - cycle color */}
-          <button
-            type="button"
-            onClick={() => cycleColor(index)}
-            className="w-[42px] h-[42px] rounded-[12px] flex items-center justify-center shrink-0 transition-opacity hover:opacity-85"
-            style={{ backgroundColor: teamColor(team.color) }}
-          >
-            <Palette size={17} className="text-white" />
-          </button>
-
-          {/* Name input */}
-          <input
-            type="text"
-            value={team.name}
-            onChange={e => updateName(index, e.target.value)}
-            placeholder={`Équipe ${index + 1}`}
-            maxLength={20}
-            className="flex-1 bg-bg rounded-xl px-4 py-3 text-txt border border-line focus:outline-none focus:border-accent placeholder:text-txt-25 text-[15px]"
-          />
-
-          {/* Delete team button */}
-          <button
-            type="button"
-            onClick={() => removeTeam(index)}
-            disabled={teams.length <= 2}
-            className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors disabled:opacity-50"
-            style={{
-              backgroundColor: teams.length <= 2
-                ? 'var(--surface-2)'
-                : 'color-mix(in srgb, var(--buzz, var(--bad)) 15%, transparent)',
-              color: teams.length <= 2
-                ? 'var(--txt-25)'
-                : 'var(--buzz, var(--bad))',
-            }}
-          >
-            <X size={16} />
-          </button>
-        </div>
-      ))}
-
-      {teams.length < 8 && (
-        <button
-          type="button"
-          onClick={addTeam}
-          className="w-full flex flex-row items-center justify-center py-3 rounded-xl border border-dashed border-line hover:bg-surface-2/30 transition-colors gap-2 text-txt-60"
-        >
-          <Plus size={16} />
-          <span className="text-txt-60 text-sm">Ajouter une équipe</span>
-        </button>
-      )}
-
-      {teams.length < 2 && (
-        <div
-          className="rounded-xl p-3 border flex flex-row items-center gap-2"
-          style={{
-            backgroundColor: 'color-mix(in srgb, var(--buzz, var(--bad)) 10%, transparent)',
-            borderColor: 'color-mix(in srgb, var(--buzz, var(--bad)) 28%, transparent)',
-          }}
-        >
-          <AlertCircle size={14} style={{ color: 'var(--buzz, var(--bad))' }} />
-          <span className="text-xs font-semibold" style={{ color: 'var(--buzz, var(--bad))' }}>
-            Minimum 2 équipes requises
-          </span>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// SummaryTable row definition and component
-interface SummaryRow {
-  label: string;
-  value: string | number;
-  icon: React.ReactNode;
-  iconColor: string;
-  valueColor: string;
-}
-
-function SummaryTable({ rows }: { rows: SummaryRow[] }) {
-  return (
-    <div className="bg-surface rounded-2xl border border-line overflow-hidden p-0 flex flex-col">
-      {rows.map((row, i) => (
-        <div
-          key={i}
-          className={`flex items-center gap-3 px-4 py-3 ${i < rows.length - 1 ? 'border-b border-line' : ''
-            }`}
-        >
-          <div
-            className="w-8 h-8 rounded-[9px] flex items-center justify-center shrink-0"
-            style={{
-              backgroundColor: `color-mix(in srgb, ${row.iconColor} 16%, var(--surface-2))`,
-              color: row.iconColor,
-            }}
-          >
-            {row.icon}
-          </div>
-          <span className="text-[13px] text-txt-60 flex-1">{row.label}</span>
-          <span
-            className="text-[13.5px] font-bold"
-            style={{ color: row.valueColor }}
-          >
-            {row.value}
-          </span>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-// Main SessionConfigForm Component
 export function SessionConfigForm({ onSuccess, onClose, roomId, initialMaxPlayers }: SessionConfigFormProps) {
   const router = useRouter();
-
-  // Wizard state variables
-  const [currentStep, setCurrentStep] = useState(0);
-
-  const [questionMode, setQuestionMode] = useState<QuestionMode>('AI');
-  const [sessionMode, setSessionMode] = useState<SessionMode>('WITH_MODERATOR');
-  const [answerTimeSeconds, setAnswerTimeSeconds] = useState(15);
-  const [globalQuestionSeconds, setGlobalQuestionSeconds] = useState(15);
-  const [answerChoicesCount, setAnswerChoicesCount] = useState<number | null>(null);
-  const [teams, setTeams] = useState<TeamRequest[]>(DEFAULT_TEAMS);
-  const [config, setConfig] = useState<CreateSessionRequest>({
-    // 0 désactivait les dettes sur toutes les parties créées depuis l'app, alors
-    // qu'aucun champ ne permettait de changer cette valeur (voir le stepper
-    // « Dette / rubrique » plus bas).
-    debtAmount: 5,
-    pointsPerCorrectAnswer: 5,
-    questionsPerCategory: 5,
-    maxPlayers: 20,
-    isPrivate: false,
-    isTeamMode: false,
-    maxCategoriesPerPlayer: 3,
-    buzzCountdownSeconds: 15,
-    roomId,
-    questionMode: 'AI',
-  });
-
-  const [error, setError] = useState<string | null>(null);
-  const createSession = useBuzzStore((state) => state.createSession);
-  const isCreating = useBuzzStore((state) => state.isCreating);
-
-  const totalSteps = config.isTeamMode ? 4 : 3;
 
   // Body scroll lock effect on mobile
   useEffect(() => {
@@ -452,544 +28,94 @@ export function SessionConfigForm({ onSuccess, onClose, roomId, initialMaxPlayer
     };
   }, []);
 
-  // Sync back current step index if total steps collapses and user is out of bounds
-  useEffect(() => {
-    if (currentStep >= totalSteps) {
-      setCurrentStep(totalSteps - 1);
-    }
-  }, [totalSteps, currentStep]);
-
-  const handleModeChange = (mode: QuestionMode) => {
-    setQuestionMode(mode);
-    setConfig((c) => ({ ...c, questionMode: mode }));
-  };
-
-  const handleNext = () => {
-    if (currentStep < totalSteps - 1) {
-      setCurrentStep((prev) => prev + 1);
-    }
-  };
-
-  const handleBack = () => {
-    if (currentStep > 0) {
-      setCurrentStep((prev) => prev - 1);
-    }
-  };
-
-  const getStepName = () => {
-    if (currentStep === 0) return 'Mode de jeu';
-    if (currentStep === 1) return 'Réglages';
-    if (currentStep === 2) {
-      return config.isTeamMode ? 'Équipes' : 'Récapitulatif';
-    }
-    return 'Récapitulatif';
-  };
-
-  const handleQuickStart = async () => {
-    setError(null);
-    try {
-      const withoutModeratorExtras = sessionMode === 'WITHOUT_MODERATOR'
-        ? { answerTimeSeconds, globalQuestionSeconds, answerChoicesCount }
-        : {};
-      const quickConfig: CreateSessionRequest = {
-        ...config,
-        sessionMode,
-        questionMode: 'AI',
-        buzzCountdownSeconds: 10,
-        questionsPerCategory: 5,
-        pointsPerCorrectAnswer: 5,
-        ...withoutModeratorExtras,
-      };
-      const result = await createSession(quickConfig);
-
-      if (onSuccess) {
-        onSuccess(result.sessionId, result.code);
-      } else {
-        router.push(`/session/${result.code}/lobby`);
-      }
-    } catch (err: any) {
-      setError(err?.response?.data?.message || 'Erreur lors de la création rapide.');
-    }
-  };
-
-  const handleCreate = async () => {
-    setError(null);
-
-    if (config.isTeamMode && teams.length < 2) {
-      setError('Minimum 2 équipes requises en mode équipe.');
-      return;
-    }
-
-    try {
-      const withoutModeratorExtras = sessionMode === 'WITHOUT_MODERATOR'
-        ? { answerTimeSeconds, globalQuestionSeconds, answerChoicesCount }
-        : {};
-      const finalConfig = config.isTeamMode
-        ? { ...config, sessionMode, ...withoutModeratorExtras, teams }
-        : { ...config, sessionMode, ...withoutModeratorExtras };
-      const result = await createSession(finalConfig);
-
-      if (onSuccess) {
-        onSuccess(result.sessionId, result.code);
-      } else {
-        router.push(`/session/${result.code}/lobby`);
-      }
-    } catch (err: any) {
-      let errorMessage = 'Erreur lors de la création';
-
-      if (err?.response?.status === 401) {
-        errorMessage = 'Session expirée. Veuillez vous reconnecter.';
-      } else if (err?.response?.status === 403) {
-        errorMessage = 'Accès refusé. Vérifiez votre authentification.';
-      } else if (err?.response?.status >= 500) {
-        errorMessage = 'Erreur serveur. Réessayez plus tard.';
-      } else if (err?.response?.data?.message) {
-        errorMessage = err.response.data.message;
-      } else if (!err?.response) {
-        errorMessage = 'Impossible de joindre le serveur. Vérifiez votre connexion.';
-      }
-
-      setError(errorMessage);
-    }
-  };
+  const {
+    currentStep,
+    totalSteps,
+    getStepName,
+    questionMode,
+    sessionMode,
+    setSessionMode,
+    globalQuestionSeconds,
+    setGlobalQuestionSeconds,
+    setAnswerTimeSeconds,
+    answerChoicesCount,
+    setAnswerChoicesCount,
+    teams,
+    setTeams,
+    config,
+    setConfig,
+    error,
+    isCreating,
+    handleModeChange,
+    handleNext,
+    handleBack,
+    handleQuickStart,
+    handleCreate,
+  } = useSessionConfig({
+    onSuccess,
+    onNavigateToLobby: (code) => router.push(`/session/${code}/lobby`),
+    roomId,
+    initialMaxPlayers,
+  });
 
   const isFirstStep = currentStep === 0;
   const isLastStep = currentStep === totalSteps - 1;
 
-  // Step render functions
-  const renderStep1 = () => {
-    return (
-      <div className="flex flex-col gap-5">
-        {/* Quick Launch Banner */}
-        <div className="bg-gradient-to-br from-accent/15 via-surface to-surface border border-accent/30 rounded-2xl p-4 flex flex-col gap-3">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-accent/20 flex items-center justify-center shrink-0">
-              <Zap size={20} className="text-accent fill-current" />
-            </div>
-            <div>
-              <p className="text-txt font-bold text-sm">Lancement Rapide</p>
-              <p className="text-txt-60 text-xs">Paramètres recommandés (IA, 10s buzz, 5 questions)</p>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={handleQuickStart}
-            disabled={isCreating}
-            className="w-full py-3 rounded-xl bg-accent hover:bg-accent-d text-btn-fg font-bold text-sm transition-all active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer"
-          >
-            {isCreating ? (
-              <>
-                <div className="w-4 h-4 border-2 border-btn-fg border-t-transparent rounded-full animate-spin" />
-                <span>Création...</span>
-              </>
-            ) : (
-              <>
-                <Zap size={16} className="fill-current" />
-                <span>Lancer directement ⚡</span>
-              </>
-            )}
-          </button>
-        </div>
-
-        <div className="flex items-center gap-3 my-1">
-          <div className="flex-1 h-px bg-line" />
-          <span className="text-txt-40 text-[10px] font-bold uppercase tracking-widest">Ou sur-mesure</span>
-          <div className="flex-1 h-px bg-line" />
-        </div>
-
-        {/* Modération */}
-        <div className="flex flex-col">
-          <p className="text-txt-40 text-[9.5px] font-bold tracking-widest uppercase mb-3 leading-none">Modération</p>
-          <div className="flex gap-3">
-            <ModeCard
-              label="Avec modérateur"
-              sublabel="L'hôte valide les réponses"
-              icon={<User size={26} className={sessionMode === 'WITH_MODERATOR' ? 'text-accent' : 'text-txt-40'} />}
-              active={sessionMode === 'WITH_MODERATOR'}
-              accent="var(--primary)"
-              // La dette repasse en points, unité de ce mode.
-              onClick={() => {
-                setSessionMode('WITH_MODERATOR');
-                setConfig(c => ({ ...c, debtAmount: 5 }));
-              }}
-            />
-            <ModeCard
-              label="Sprint ⚡"
-              sublabel="Tous répondent en même temps"
-              icon={<Bot size={26} className={sessionMode === 'WITHOUT_MODERATOR' ? 'text-host' : 'text-txt-40'} />}
-              active={sessionMode === 'WITHOUT_MODERATOR'}
-              accent="var(--violet)"
-              // En Sprint la dette se compte en bonnes réponses : conserver le 5
-              // du mode modéré en retirerait cinq au débiteur. Et le mode est
-              // individuel, d'où isTeamMode forcé à false.
-              onClick={() => {
-                setSessionMode('WITHOUT_MODERATOR');
-                setConfig(c => ({ ...c, isTeamMode: false, debtAmount: 1 }));
-              }}
-            />
-          </div>
-        </div>
-
-        {/* Source des questions */}
-        <div className="flex flex-col">
-          <p className="text-txt-40 text-[9.5px] font-bold tracking-widest uppercase mb-3 leading-none">Source des questions</p>
-          <div className="flex gap-3">
-            <ModeCard
-              label="IA"
-              sublabel="Générées par l'IA"
-              icon={<Sparkles size={26} className={questionMode === 'AI' ? 'text-accent' : 'text-txt-40'} />}
-              active={questionMode === 'AI'}
-              accent="var(--primary)"
-              onClick={() => handleModeChange('AI')}
-            />
-            <ModeCard
-              label="Manuel"
-              sublabel="Saisies dans le lobby"
-              icon={<PenLine size={26} className={questionMode === 'MANUAL' ? 'text-energy' : 'text-txt-40'} />}
-              active={questionMode === 'MANUAL'}
-              accent="var(--gold)"
-              onClick={() => handleModeChange('MANUAL')}
-            />
-          </div>
-        </div>
-
-        {/* Encart Manuel */}
-        {questionMode === 'MANUAL' && (
-          <div
-            className="rounded-2xl p-4 border flex items-start gap-3"
-            style={{
-              backgroundColor: 'color-mix(in srgb, var(--energy, var(--gold)) 10%, transparent)',
-              borderColor: 'color-mix(in srgb, var(--energy, var(--gold)) 30%, transparent)',
-            }}
-          >
-            <PenLine size={18} className="text-energy shrink-0 mt-0.5" style={{ color: 'var(--energy, var(--gold))' }} />
-            <p className="text-txt text-xs leading-relaxed">
-              Vous pourrez saisir vos questions dans le lobby avant de démarrer la session.
-            </p>
-          </div>
-        )}
-
-        {/* Options */}
-        {sessionMode !== 'WITHOUT_MODERATOR' && (
-          <div className="flex flex-col">
-            <p className="text-txt-40 text-[9.5px] font-bold tracking-widest uppercase mb-3 leading-none">Format</p>
-            <ToggleRow
-              label="Mode équipes"
-              sub="Les points sont partagés entre coéquipiers"
-              icon={<Users size={16} className="text-team" style={{ color: 'var(--team, var(--indigo))' }} />}
-              checked={config.isTeamMode}
-              onChange={(v) => setConfig((c) => ({ ...c, isTeamMode: v }))}
-              accent="var(--team, var(--indigo))"
-            />
-          </div>
-        )}
-
-        {/* Encart Sans Modérateur */}
-        {sessionMode === 'WITHOUT_MODERATOR' && (
-          <div
-            className="rounded-2xl p-4 border flex items-start gap-3"
-            style={{
-              backgroundColor: 'color-mix(in srgb, var(--host, var(--violet)) 10%, transparent)',
-              borderColor: 'color-mix(in srgb, var(--host, var(--violet)) 30%, transparent)',
-            }}
-          >
-            <Bot size={18} className="text-host shrink-0 mt-0.5" style={{ color: 'var(--host, var(--violet))' }} />
-            <p className="text-txt text-xs leading-relaxed">
-              Questions affichées entièrement · réponses automatisées · buzz immédiat.
-            </p>
-          </div>
-        )}
-      </div>
-    );
-  };
-
-  const renderStep2 = () => {
-    return (
-      <div className="flex flex-col gap-5">
-        {/* TIMERS SANS MODÉRATEUR */}
-        {sessionMode === 'WITHOUT_MODERATOR' && (
-          <div className="flex flex-col gap-3">
-            <p className="text-txt-40 text-[9.5px] font-bold tracking-widest uppercase mb-1 leading-none">Timers Sprint</p>
-            <StepperField
-              label="Temps pour répondre"
-              value={globalQuestionSeconds}
-              suffix="s"
-              min={5}
-              max={60}
-              step={5}
-              onChange={(v) => {
-                setGlobalQuestionSeconds(v);
-                setAnswerTimeSeconds(v);
-              }}
-            />
-
-            <ChoiceStrip
-              label="Nombre de choix de réponse"
-              value={answerChoicesCount}
-              onChange={setAnswerChoicesCount}
-              options={[
-                { label: 'Auto', value: null },
-                { label: '2', value: 2 },
-                { label: '3', value: 3 },
-                { label: '4', value: 4 },
-                { label: '5', value: 5 },
-                { label: '6', value: 6 },
-              ]}
-              accent="var(--accent, var(--primary))"
-            />
-          </div>
-        )}
-
-        {/* BUZZ COUNTDOWN AVEC MODÉRATEUR */}
-        {sessionMode === 'WITH_MODERATOR' && (
-          <div className="flex flex-col gap-3">
-            <p className="text-txt-40 text-[9.5px] font-bold tracking-widest uppercase mb-1 leading-none">Buzz Countdown</p>
-            <StepperField
-              label="Temps pour répondre"
-              value={config.buzzCountdownSeconds ?? 10}
-              suffix="s"
-              min={5}
-              max={60}
-              step={5}
-              onChange={(v) => setConfig((c) => ({ ...c, buzzCountdownSeconds: v }))}
-            />
-          </div>
-        )}
-
-        {/* QUESTIONS IA */}
-        {questionMode === 'AI' && (
-          <div className="flex flex-col gap-3">
-            <p className="text-txt-40 text-[9.5px] font-bold tracking-widest uppercase mb-1 leading-none">Questions IA</p>
-            <div className="grid grid-cols-2 gap-3">
-              <StepperField
-                label="Questions / cat."
-                value={config.questionsPerCategory}
-                min={2}
-                max={15}
-                onChange={(v) => setConfig((c) => ({ ...c, questionsPerCategory: v }))}
-              />
-              <StepperField
-                label="Catégories max"
-                value={config.maxCategoriesPerPlayer}
-                min={1}
-                max={10}
-                onChange={(v) => setConfig((c) => ({ ...c, maxCategoriesPerPlayer: v }))}
-              />
-            </div>
-          </div>
-        )}
-
-        {/* PARTIE */}
-        <div className="flex flex-col gap-3">
-          <p className="text-txt-40 text-[9.5px] font-bold tracking-widest uppercase mb-1 leading-none">Partie</p>
-          <div className="grid grid-cols-2 gap-3">
-            <StepperField
-              label="Joueurs max"
-              value={config.maxPlayers}
-              min={2}
-              max={50}
-              onChange={(v) => setConfig((c) => ({ ...c, maxPlayers: v }))}
-            />
-            {sessionMode !== 'WITHOUT_MODERATOR' && (
-              <StepperField
-                label="Points / rép."
-                value={config.pointsPerCorrectAnswer}
-                min={1}
-                max={50}
-                step={5}
-                onChange={(v) => setConfig((c) => ({ ...c, pointsPerCorrectAnswer: v }))}
-              />
-            )}
-            {/* Les dettes se jouent sur les rubriques, qui n'existent qu'en mode IA. */}
-            {questionMode === 'AI' && (
-              <StepperField
-                label={sessionMode === 'WITHOUT_MODERATOR' ? "Dette (bonnes rép.)" : "Dette / rubrique"}
-                value={config.debtAmount ?? (sessionMode === 'WITHOUT_MODERATOR' ? 1 : 5)}
-                suffix={sessionMode === 'WITHOUT_MODERATOR' ? " rép." : " pts"}
-                min={0}
-                // En Sprint la dette se compte en bonnes réponses : au-delà de 3,
-                // elle viderait la partie d'un joueur au lieu de la corriger.
-                max={sessionMode === 'WITHOUT_MODERATOR' ? 3 : 50}
-                step={sessionMode === 'WITHOUT_MODERATOR' ? 1 : 5}
-                onChange={(v) => setConfig((c) => ({ ...c, debtAmount: v }))}
-              />
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const renderStep3 = () => {
-    return (
-      <div className="flex flex-col gap-5">
-        <div
-          className="rounded-2xl p-4 border flex items-start gap-3"
-          style={{
-            backgroundColor: 'color-mix(in srgb, var(--team, var(--indigo)) 10%, transparent)',
-            borderColor: 'color-mix(in srgb, var(--team, var(--indigo)) 30%, transparent)',
-          }}
-        >
-          <Users size={18} className="text-team shrink-0 mt-0.5" style={{ color: 'var(--team, var(--indigo))' }} />
-          <p className="text-txt text-xs leading-relaxed">
-            Minimum 2 équipes · maximum 8. Cliquez sur la pastille de couleur pour la changer, ou personnalisez le nom.
-          </p>
-        </div>
-
-        <div className="flex flex-col">
-          <p className="text-txt-40 text-[9.5px] font-bold tracking-widest uppercase mb-3 leading-none">Équipes</p>
-          <TeamEditor teams={teams} onChange={setTeams} />
-        </div>
-      </div>
-    );
-  };
-
-  const renderStep4 = () => {
-    const recapRows: SummaryRow[] = [
-      {
-        label: 'Modération',
-        value: sessionMode === 'WITH_MODERATOR' ? 'Avec modérateur' : 'Sans modérateur',
-        icon: sessionMode === 'WITH_MODERATOR' ? <User size={16} /> : <Bot size={16} />,
-        iconColor: sessionMode === 'WITH_MODERATOR' ? 'var(--primary)' : 'var(--violet)',
-        valueColor: sessionMode === 'WITH_MODERATOR' ? 'var(--primary)' : 'var(--violet)',
-      },
-      {
-        label: 'Source des questions',
-        value: questionMode === 'AI' ? 'Générées par IA' : 'Saisie manuelle',
-        icon: questionMode === 'AI' ? <Sparkles size={16} /> : <PenLine size={16} />,
-        iconColor: questionMode === 'AI' ? 'var(--primary)' : 'var(--gold)',
-        valueColor: questionMode === 'AI' ? 'var(--primary)' : 'var(--gold)',
-      },
-    ];
-
-    if (questionMode === 'AI') {
-      recapRows.push({
-        label: 'Questions par catégorie',
-        value: config.questionsPerCategory,
-        icon: <Target size={16} />,
-        iconColor: 'var(--txt)',
-        valueColor: 'var(--txt)',
-      });
-      recapRows.push({
-        label: 'Catégories maximum',
-        value: config.maxCategoriesPerPlayer,
-        icon: <Target size={16} />,
-        iconColor: 'var(--txt)',
-        valueColor: 'var(--txt)',
-      });
-    }
-
-    if (sessionMode === 'WITHOUT_MODERATOR') {
-      recapRows.push({
-        label: 'Temps pour répondre',
-        value: `${globalQuestionSeconds}s`,
-        icon: <Timer size={16} />,
-        iconColor: 'var(--txt)',
-        valueColor: 'var(--txt)',
-      });
-      recapRows.push({
-        label: 'Choix de réponse',
-        value: answerChoicesCount === null ? 'Auto' : answerChoicesCount,
-        icon: <Zap size={16} />,
-        iconColor: 'var(--txt)',
-        valueColor: 'var(--txt)',
-      });
-    } else {
-      recapRows.push({
-        label: 'Délai du buzzer',
-        value: `${config.buzzCountdownSeconds ?? 10}s`,
-        icon: <Timer size={16} />,
-        iconColor: 'var(--txt)',
-        valueColor: 'var(--txt)',
-      });
-    }
-
-    recapRows.push({
-      label: 'Joueurs maximum',
-      value: config.maxPlayers,
-      icon: <Users size={16} />,
-      iconColor: 'var(--txt)',
-      valueColor: 'var(--txt)',
-    });
-
-    if (sessionMode !== 'WITHOUT_MODERATOR') {
-      recapRows.push({
-        label: 'Points par bonne réponse',
-        value: `+${config.pointsPerCorrectAnswer} pts`,
-        icon: <Award size={16} />,
-        iconColor: 'var(--txt)',
-        valueColor: 'var(--txt)',
-      });
-    }
-
-    recapRows.push({
-      label: 'Format de la session',
-      value: config.isTeamMode ? `Équipes (${teams.length})` : 'Solo',
-      icon: <Users size={16} />,
-      iconColor: config.isTeamMode ? 'var(--indigo)' : 'var(--txt)',
-      valueColor: config.isTeamMode ? 'var(--indigo)' : 'var(--txt)',
-    });
-
-    return (
-      <div className="flex flex-col gap-6">
-        {/* Hero Banner */}
-        <div className="flex flex-col items-center text-center py-4">
-          <div className="w-[68px] h-[68px] rounded-[22px] bg-gradient-to-br from-accent to-accent-d flex items-center justify-center shadow-[0_8px_24px_rgb(var(--primary-rgb)_/_0.28)] animate-pulse mb-3 shrink-0">
-            <Zap size={32} className="text-btn-fg fill-current" />
-          </div>
-          <h2 className="text-2xl font-bold text-txt">Tout est prêt !</h2>
-          <p className="text-txt-40 text-[13px] mt-1 px-4 leading-normal">
-            Vérifiez les paramètres ci-dessous avant de lancer la session.
-          </p>
-        </div>
-
-        {/* Summary Table */}
-        <div className="flex flex-col gap-2">
-          <p className="text-txt-40 text-[9.5px] font-bold tracking-widest uppercase px-1 leading-none">Récapitulatif des réglages</p>
-          <SummaryTable rows={recapRows} />
-        </div>
-
-        {/* Dynamic client error message if teams < 2 */}
-        {config.isTeamMode && teams.length < 2 && (
-          <div
-            className="rounded-2xl p-4 border flex items-center gap-3"
-            style={{
-              backgroundColor: 'color-mix(in srgb, var(--buzz, var(--bad)) 10%, transparent)',
-              borderColor: 'color-mix(in srgb, var(--buzz, var(--bad)) 30%, transparent)',
-            }}
-          >
-            <AlertCircle size={18} className="text-buzz shrink-0" style={{ color: 'var(--buzz)' }} />
-            <span className="text-txt text-sm font-medium">Minimum 2 équipes requises pour le mode équipes.</span>
-          </div>
-        )}
-
-        {/* API Error Box */}
-        {error && (
-          <div
-            className="rounded-2xl p-4 border flex items-center gap-3 animate-shake"
-            style={{
-              backgroundColor: 'color-mix(in srgb, var(--buzz, var(--bad)) 10%, transparent)',
-              borderColor: 'color-mix(in srgb, var(--buzz, var(--bad)) 30%, transparent)',
-            }}
-          >
-            <AlertCircle size={18} className="text-buzz shrink-0" style={{ color: 'var(--buzz)' }} />
-            <span className="text-txt text-sm font-medium">{error}</span>
-          </div>
-        )}
-      </div>
-    );
-  };
-
   const renderStepContent = () => {
     switch (currentStep) {
       case 0:
-        return renderStep1();
+        return (
+          <StepGameMode
+            handleQuickStart={handleQuickStart}
+            isCreating={isCreating}
+            sessionMode={sessionMode}
+            setSessionMode={setSessionMode}
+            questionMode={questionMode}
+            handleModeChange={handleModeChange}
+            config={config}
+            setConfig={setConfig}
+          />
+        );
       case 1:
-        return renderStep2();
+        return (
+          <StepSettings
+            sessionMode={sessionMode}
+            questionMode={questionMode}
+            globalQuestionSeconds={globalQuestionSeconds}
+            setGlobalQuestionSeconds={setGlobalQuestionSeconds}
+            setAnswerTimeSeconds={setAnswerTimeSeconds}
+            answerChoicesCount={answerChoicesCount}
+            setAnswerChoicesCount={setAnswerChoicesCount}
+            config={config}
+            setConfig={setConfig}
+          />
+        );
       case 2:
-        return config.isTeamMode ? renderStep3() : renderStep4();
+        return config.isTeamMode ? (
+          <StepTeams teams={teams} setTeams={setTeams} />
+        ) : (
+          <StepSummary
+            sessionMode={sessionMode}
+            questionMode={questionMode}
+            globalQuestionSeconds={globalQuestionSeconds}
+            answerChoicesCount={answerChoicesCount}
+            config={config}
+            teams={teams}
+            error={error}
+          />
+        );
       case 3:
-        return renderStep4();
+        return (
+          <StepSummary
+            sessionMode={sessionMode}
+            questionMode={questionMode}
+            globalQuestionSeconds={globalQuestionSeconds}
+            answerChoicesCount={answerChoicesCount}
+            config={config}
+            teams={teams}
+            error={error}
+          />
+        );
       default:
         return null;
     }
