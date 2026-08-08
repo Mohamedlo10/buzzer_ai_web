@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '~/stores/useAuthStore';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -460,13 +461,13 @@ export default function ProfilePage() {
       </div>
 
       {/* Logout Modal */}
-      {showLogoutModal && (
+      {showLogoutModal && typeof document !== 'undefined' && createPortal(
         <div
-          className="fixed inset-0 bg-scrim/80 backdrop-blur-sm z-50 flex items-center justify-center p-5"
+          className="fixed inset-0 bg-scrim/80 backdrop-blur-md z-[9999] flex items-center justify-center p-5 animate-[fadeIn_0.2s_ease-out]"
           onClick={() => setShowLogoutModal(false)}
         >
           <div
-            className="bg-surface rounded-2xl border border-line p-6 w-full max-w-xs text-center"
+            className="bg-surface rounded-2xl border border-line p-6 w-full max-w-xs text-center shadow-card animate-[pop_0.25s_both]"
             onClick={(e) => e.stopPropagation()}
           >
             <div style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 700, marginBottom: 8 }}>
@@ -512,13 +513,14 @@ export default function ProfilePage() {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Password Change Modal */}
-      {showPasswordModal && (
+      {showPasswordModal && typeof document !== 'undefined' && createPortal(
         <div
-          className="fixed inset-0 bg-scrim/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 bg-scrim/80 backdrop-blur-md z-[9999] flex items-center justify-center p-4 animate-[fadeIn_0.2s_ease-out]"
           onClick={() => {
             setShowPasswordModal(false);
             setPasswordError(null);
@@ -624,7 +626,8 @@ export default function ProfilePage() {
               </form>
             )}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </SafeScreen>
   );
