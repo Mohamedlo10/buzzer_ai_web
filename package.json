@@ -5,6 +5,11 @@
     "apps/*",
     "packages/*"
   ],
+  "overrides": {
+    "react-native": {
+      "react": "$react"
+    }
+  },
   "scripts": {
     "test": "npm run test:tokens && npm run test:routes && npm run test:confirm",
     "test:tokens": "node packages/core/src/lib/theme/palette.test.js",
