@@ -179,7 +179,7 @@ for (const [name, value] of Object.entries(vars)) {
 // l'alpha. Sur ce projet, `scrim` était dans ce cas : les 7 scrims de modale
 // demandaient une opacité que Tailwind ne pouvait pas produire, donc
 // l'utilitaire n'était PAS généré et les overlays n'avaient aucun fond.
-const tw = require('../../tailwind.config.js');
+const tw = require('../../../../../apps/web-legacy/tailwind.config.js');
 const flat = JSON.stringify(tw.theme.extend.colors);
 ok(() => assert.ok(!flat.includes('var('), 'aucune couleur Tailwind ne doit dépendre de var()'));
 ok(() => assert.ok(!flat.includes('<alpha-value>'), 'plus de placeholder <alpha-value>'));

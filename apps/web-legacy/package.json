@@ -1,16 +1,12 @@
 {
-  "name": "xalaat",
+  "name": "@xalaat/web-legacy",
   "version": "1.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "test": "npm run test:tokens && npm run test:routes && npm run test:confirm",
-    "test:tokens": "node lib/theme/palette.test.js",
-    "test:routes": "node --experimental-strip-types --no-warnings lib/auth/routePolicy.test.mjs",
-    "test:confirm": "node --experimental-strip-types --no-warnings lib/ui/confirm.test.mjs"
+    "lint": "next lint"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.90.21",

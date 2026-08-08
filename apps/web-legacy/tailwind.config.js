@@ -1,7 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 
 const plugin = require('tailwindcss/plugin');
-const { palette, alpha, radius, withAlpha, cssVars } = require('./lib/theme/palette');
+const { palette, alpha, radius, withAlpha, cssVars } = require('../../packages/core/src/lib/theme/palette');
 
 // ─────────────────────────────────────────────────────────────────────────────
 // POURQUOI DES HEX ET PLUS `rgb(var(--x-rgb) / <alpha-value>)`
@@ -38,7 +38,7 @@ module.exports = {
   content: [
     './app/**/*.{js,jsx,ts,tsx}',
     './components/**/*.{js,jsx,ts,tsx}',
-    './lib/**/*.{js,jsx,ts,tsx}',
+    '../../packages/core/src/lib/**/*.{js,jsx,ts,tsx}',
   ],
   theme: {
     extend: {
