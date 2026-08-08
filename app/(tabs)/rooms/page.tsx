@@ -555,7 +555,9 @@ function RoomsContent() {
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   <span className="w-2 h-2 rounded-full bg-accent animate-ping shrink-0" />
-                  <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-gold)' }}>
+                  {/* `--color-gold` n'a jamais existé : ce libellé retombait sur la
+                      couleur héritée. `--gold` est l'or encre (4,8:1), lisible en texte. */}
+                  <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--gold)' }}>
                     Session en cours #{activeSessionInfo.code}
                   </span>
                 </div>

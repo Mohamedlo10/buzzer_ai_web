@@ -1,17 +1,39 @@
 /** @type {import('tailwindcss').Config} */
 
-// Toutes les couleurs de thème passent par des canaux RGB déclarés dans
-// global.css. La forme `rgb(var(--x-rgb) / <alpha-value>)` est ce qui rend
-// les modificateurs d'opacité (`bg-surface/40`, `text-accent/20`…) réellement
-// fonctionnels — avec un simple `var(--x)` Tailwind ne peut pas injecter
-// l'alpha et le modificateur est silencieusement ignoré.
-const token = (name) => `rgb(var(--${name}-rgb) / <alpha-value>)`;
+const plugin = require('tailwindcss/plugin');
+const { palette, alpha, radius, withAlpha, cssVars } = require('./lib/theme/palette');
+
+// ─────────────────────────────────────────────────────────────────────────────
+// POURQUOI DES HEX ET PLUS `rgb(var(--x-rgb) / <alpha-value>)`
+// ─────────────────────────────────────────────────────────────────────────────
+// L'ancienne forme demandait au moteur de résoudre une variable CSS À
+// L'EXÉCUTION puis d'interpréter son contenu comme des canaux nus à l'intérieur
+// d'un `rgb()`. C'est exactement le cas où le parseur de NativeWind v4 décroche :
+// les couleurs pleines passent, mais les modificateurs d'opacité (un suffixe
+// «⁄40» sur une classe de fond) rendent du transparent ou du noir —
+// silencieusement, sur 3 129 `className`.
+//
+// En donnant des hex à Tailwind, c'est LUI qui calcule l'alpha, à la
+// compilation, sur les trois plateformes et sans runtime. Aucun `className` du
+// projet ne change d'un caractère — on remplace le mécanisme, pas les sites
+// d'appel.
+//
+// ⚠ Ne pas écrire de nom de classe littéral dans ces commentaires : `content`
+// scanne `./lib/**` en texte brut et générerait l'utilitaire correspondant,
+// même depuis un commentaire. (C'est arrivé pendant ce refactor.)
+//
+// Contrepartie : plus de bascule de thème à l'exécution. Le coût est nul ici,
+// le mode sombre étant déjà désactivé (bloc commenté dans global.css,
+// data-theme="light" en dur dans app/layout.tsx, ThemeProvider inerte).
+// Pour le réactiver un jour, NativeWind v4 fournit `vars()` sur une View racine
+// — les variables devront alors porter une COULEUR COMPLÈTE (`#B8462A`), jamais
+// des canaux nus.
+// ─────────────────────────────────────────────────────────────────────────────
 
 module.exports = {
-  // Mode sombre désactivé. En 'class' (au lieu du défaut 'media'), une
-  // variante `dark:` oubliée ne peut plus se déclencher toute seule sur la
-  // préférence système d'un joueur — elle attendrait une classe .dark que
-  // personne ne pose.
+  // Mode sombre désactivé. En 'class' (au lieu du défaut 'media'), une variante
+  // `dark:` oubliée ne peut plus se déclencher toute seule sur la préférence
+  // système d'un joueur — elle attendrait une classe .dark que personne ne pose.
   darkMode: 'class',
   content: [
     './app/**/*.{js,jsx,ts,tsx}',
@@ -21,52 +43,56 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // ── Surfaces & texte (bascule clair/sombre) ──
-        bg: token('bg'),
-        'bg-deep': token('bg-deep'),
-        surface: token('surface'),
-        'surface-2': token('surface-2'),
-        line: token('line'),
-        txt: token('txt'),
-        'txt-60': 'var(--txt-60)',
-        'txt-40': 'var(--txt-40)',
-        'txt-25': 'var(--txt-25)',
-        scrim: 'var(--scrim)',
+        // ── Surfaces & texte ──
+        bg: palette.bg,
+        'bg-deep': palette.bgDeep,
+        surface: palette.surface,
+        'surface-2': palette.surface2,
+        line: palette.line,
+        txt: palette.txt,
+        'txt-60': withAlpha(palette.txt, alpha.txt60),
+        'txt-40': withAlpha(palette.txt, alpha.txt40),
+        'txt-25': withAlpha(palette.txt, alpha.txt25),
+        scrim: withAlpha(palette.txt, alpha.scrim),
+        'ink-soft': palette.inkSoft,
 
         // ── Marque Xalaat ──
-        // `accent` = terracotta, la couleur d'action de l'app.
-        accent: token('primary'),
-        'accent-d': token('primary-d'),
-        'btn-fg': token('primary-ink'),
+        // ⚠ `accent` = terracotta EN CLASSE, mais `var(--color-accent)` = or vif
+        // EN STYLE INLINE (héritage de theme.css, 19 sites). Deux couleurs
+        // différentes sous un même mot. Dans du code neuf : `primary` ou
+        // `gold-bright`, jamais « accent ».
+        accent: palette.primary,
+        'accent-d': palette.primaryD,
+        'btn-fg': palette.primaryInk,
 
         // Alias explicites — à préférer dans le code neuf.
-        primary: token('primary'),
-        'primary-d': token('primary-d'),
-        'primary-ink': token('primary-ink'),
-        terracotta: token('primary'),
-        indigo: token('indigo'),
-        secondary: token('indigo'),
+        primary: palette.primary,
+        'primary-d': palette.primaryD,
+        'primary-ink': palette.primaryInk,
+        terracotta: palette.primary,
+        indigo: palette.indigo,
+        secondary: palette.indigo,
 
-        // Deux ors — voir global.css. `gold` est l'or encre (lisible sur la
-        // crème), `gold-bright` l'or décor (aplats, médailles, marque) qui
-        // ne doit jamais porter de texte sombre… ni servir de texte clair.
-        gold: token('gold'),
-        'gold-bright': token('gold-bright'),
+        // Deux ors — voir palette.js. `gold` est l'or encre (lisible sur la
+        // crème), `gold-bright` l'or décor (aplats, médailles, marque) qui ne
+        // doit jamais porter de texte sombre… ni servir de texte clair.
+        gold: palette.gold,
+        'gold-bright': palette.goldBright,
 
         // ── Rôles sémantiques ──
-        energy: token('gold'),        // points, or, 1re place
-        success: token('good'),       // bonne réponse
-        good: token('good'),
-        buzz: token('bad'),           // buzz, erreur
-        'buzz-h': token('bad-h'),
-        danger: token('bad'),
-        bad: token('bad'),
-        warn: token('warn'),
-        host: token('violet'),        // animateur / manager
-        team: token('indigo'),        // équipes
+        energy: palette.gold, // points, or, 1re place
+        success: palette.good, // bonne réponse
+        good: palette.good,
+        buzz: palette.bad, // buzz, erreur
+        'buzz-h': palette.badH,
+        danger: palette.bad,
+        bad: palette.bad,
+        warn: palette.warn,
+        host: palette.violet, // animateur / manager
+        team: palette.indigo, // équipes
 
-        silver: '#C0C0C0',
-        bronze: '#CD7F32',
+        silver: palette.silver,
+        bronze: palette.bronze,
       },
       fontFamily: {
         display: ['var(--font-display)', 'system-ui', 'sans-serif'],
@@ -74,18 +100,22 @@ module.exports = {
         serif: ['var(--font-accent)', 'Georgia', 'serif'],
       },
       borderRadius: {
-        // Le design Xalaat privilégie des angles nets sur les grandes
-        // surfaces et des pilules sur les contrôles.
-        casino: '16px',
-        '3xl': '20px',
-        '4xl': '26px',
+        // Le design Xalaat privilégie des angles nets sur les grandes surfaces
+        // et des pilules sur les contrôles.
+        casino: radius.casino,
+        '3xl': radius.xl3,
+        '4xl': radius.xl4,
       },
       boxShadow: {
-        glow: '0 0 20px rgb(var(--primary-rgb) / 0.28)',
-        'glow-success': '0 0 20px rgb(var(--good-rgb) / 0.30)',
-        danger: '0 0 12px rgb(var(--bad-rgb) / 0.40)',
-        soft: '0 4px 20px rgb(26 20 16 / 0.10)',
-        card: '0 12px 28px -10px rgb(26 20 16 / 0.18), 0 2px 6px rgb(26 20 16 / 0.05)',
+        // ⚠ Portage RN : `shadow-card` est une double ombre avec spread négatif.
+        // iOS n'a pas de spread, Android n'a qu'un scalaire `elevation` — ces
+        // cinq ombres devront être normalisées en 3 niveaux en phase 2, pas
+        // traduites au pixel près.
+        glow: `0 0 20px ${withAlpha(palette.primary, 0.28)}`,
+        'glow-success': `0 0 20px ${withAlpha(palette.good, 0.3)}`,
+        danger: `0 0 12px ${withAlpha(palette.bad, 0.4)}`,
+        soft: `0 4px 20px ${withAlpha(palette.txt, 0.1)}`,
+        card: `0 12px 28px -10px ${withAlpha(palette.txt, 0.18)}, 0 2px 6px ${withAlpha(palette.txt, 0.05)}`,
       },
       animation: {
         'pulse-ring': 'pulse-ring 2s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite',
@@ -115,5 +145,14 @@ module.exports = {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    // Les variables CSS `:root` sont GÉNÉRÉES depuis la même palette que les
+    // couleurs ci-dessus. C'est ce qui garantit qu'un `className="bg-surface"`
+    // et un `style={{ background: 'var(--color-surface)' }}` ne pourront plus
+    // diverger : auparavant, les deux valeurs vivaient dans deux fichiers CSS
+    // distincts qu'il fallait penser à modifier ensemble.
+    plugin(({ addBase }) => {
+      addBase({ ':root': cssVars() });
+    }),
+  ],
 };

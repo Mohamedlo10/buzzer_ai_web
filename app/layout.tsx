@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from 'next';
-import { Bricolage_Grotesque, Manrope, Instrument_Serif } from 'next/font/google';
+import { Boldonse, Manrope, Instrument_Serif } from 'next/font/google';
 import { AppProviders } from '~/components/providers/AppProviders';
-import '~/theme.css';
 import '~/global.css';
 
 export const viewport: Viewport = {
@@ -11,9 +10,15 @@ export const viewport: Viewport = {
   userScalable: false,
 };
 
-const bricolage = Bricolage_Grotesque({
+// Boldonse est la police d'affichage du design Xalaat. Elle était jusqu'ici
+// chargée par un `@import` Google dans theme.css, et écrasait Bricolage
+// Grotesque par simple ordre de déclaration — Bricolage était donc téléchargée
+// pour ne servir que de fallback. Elle passe maintenant par next/font comme les
+// deux autres : plus d'`@import` externe bloquant, plus de double téléchargement,
+// et la résolution devient explicite au lieu d'être un accident de cascade.
+const boldonse = Boldonse({
   subsets: ['latin'],
-  weight: ['500', '600', '700', '800'],
+  weight: ['400'],
   variable: '--font-display',
   display: 'swap',
 });
@@ -59,7 +64,7 @@ export default function RootLayout({
     <html
       lang="fr"
       data-theme="light"
-      className={`${bricolage.variable} ${manrope.variable} ${instrumentSerif.variable}`}
+      className={`${boldonse.variable} ${manrope.variable} ${instrumentSerif.variable}`}
     >
       <body className="bg-bg h-[100dvh] max-h-[100dvh] w-full overflow-hidden items-center justify-center md:py-2 md:px-12 md:min-w-2xl text-txt antialiased font-ui">
         <AppProviders>{children}</AppProviders>
