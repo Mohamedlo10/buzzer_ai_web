@@ -6,9 +6,8 @@
     "packages/*"
   ],
   "overrides": {
-    "react-native": {
-      "react": "$react"
-    }
+    "react": "$react",
+    "react-dom": "$react-dom"
   },
   "scripts": {
     "test": "npm run test:tokens && npm run test:routes && npm run test:confirm",
@@ -18,5 +17,9 @@
     "dev": "npm --workspace apps/web-legacy run dev",
     "build": "npm --workspace apps/web-legacy run build",
     "lint": "npm --workspace apps/web-legacy run lint"
+  },
+  "dependencies": {
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
   }
 }

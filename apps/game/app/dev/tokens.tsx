@@ -106,6 +106,46 @@ export default function TokensDevScreen() {
           ))}
         </View>
 
+        {/*
+          Le point de rupture NativeWind, exercé explicitement.
+
+          Les modificateurs d'opacité (`bg-primary/60`) sont ce que l'ancien
+          mécanisme de tokens cassait EN SILENCE : quand une couleur Tailwind
+          valait `rgb(var(--x-rgb) / <alpha-value>)`, le moteur ne pouvait pas y
+          injecter l'alpha et n'émettait tout simplement pas l'utilitaire. Sur le
+          web, cela avait déjà supprimé le fond des 7 scrims de modale sans que
+          personne ne le remarque.
+
+          Les classes sont écrites EN LITTÉRAL — le scanner ne résout pas les
+          gabarits. Chaque bloc superpose la classe (gauche) et la valeur
+          calculée en JS (droite) : une couture verticale signale une divergence.
+        */}
+        <Text className="text-txt font-bold text-base mb-3 uppercase tracking-wider">
+          2b. Modificateurs d&apos;opacité
+        </Text>
+        <View className="bg-surface rounded-2xl p-3 border border-line mb-6">
+          {[
+            { label: '100 %', a: 1, cls: 'bg-primary' },
+            { label: '60 %', a: 0.6, cls: 'bg-primary/60' },
+            { label: '40 %', a: 0.4, cls: 'bg-primary/40' },
+            { label: '25 %', a: 0.25, cls: 'bg-primary/25' },
+            { label: '10 %', a: 0.1, cls: 'bg-primary/10' },
+          ].map((step) => (
+            <View key={step.label} className="mb-2">
+              <View className="h-8 rounded-lg flex-row overflow-hidden border border-black/10">
+                <View className={`flex-1 h-full ${step.cls}`} />
+                <View
+                  className="flex-1 h-full"
+                  style={{ backgroundColor: withAlpha(palette.primary, step.a) }}
+                />
+              </View>
+              <Text className="text-txt-40 text-[10px] font-mono mt-0.5">
+                {step.cls} · {step.label}
+              </Text>
+            </View>
+          ))}
+        </View>
+
         {/* Section 3: Typography Specimens */}
         <Text className="text-txt font-bold text-base mb-3 uppercase tracking-wider">
           3. Typographie (3 familles)
