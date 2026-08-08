@@ -1,7 +1,10 @@
 {
   "name": "@xalaat/core",
   "private": true,
-  "main": "src/lib/index.ts",
+  "version": "1.0.0",
+  "peerDependencies": {
+    "react": ">=19"
+  },
   "dependencies": {
     "@tanstack/react-query": "^5.90.21",
     "axios": "^1.13.5",
