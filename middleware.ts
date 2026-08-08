@@ -1,54 +1,66 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// Routes qui nécessitent une authentification
-const PROTECTED_PREFIXES = [
-  '/dashboard',
-  '/friends',
-  '/rankings',
-  '/rooms',
-  '/profile',
-  '/room',
-  '/session',
-  '/admin',
-];
+import { decideAccess } from '~/lib/auth/routePolicy';
 
-// Routes accessibles uniquement si NON authentifié
-const AUTH_ONLY_ROUTES = ['/login', '/register', '/onboarding'];
+/**
+ * Pré-filtre serveur — il ne décide de RIEN par lui-même.
+ *
+ * La politique d'accès vit dans `lib/auth/routePolicy.ts`, partagée avec
+ * `components/providers/AuthGate.tsx`. Ce fichier ne fait que l'appliquer une
+ * première fois côté Edge, avant tout rendu.
+ *
+ * ── Pourquoi déléguer plutôt que dupliquer ──
+ * Ce middleware portait sa propre liste `PROTECTED_PREFIXES` de huit préfixes,
+ * indépendante du garde client. Elle avait déjà divergé : `/notifications`,
+ * `/solo/game/[id]` et `/solo/results/[id]` n'y figuraient pas, et n'étaient
+ * couvertes par aucun des deux gardes. Deux jeux de règles pour une seule
+ * question finissent toujours par se contredire.
+ *
+ * `decideAccess` est une fonction pure, sans dépendance navigateur : elle
+ * s'exécute telle quelle dans le runtime Edge.
+ *
+ * ── Ce que ce fichier devient ──
+ * Il disparaît en phase 2, en même temps que le cookie `has_session` : React
+ * Native n'a pas de middleware, et `AuthGate` applique déjà exactement la même
+ * décision côté client. D'ici là il reste utile — il coupe avant le rendu, donc
+ * sans flash de contenu privé ni déclenchement des effets de la page (appels
+ * API, abonnements WebSocket) pour un visiteur qui n'y a pas droit.
+ *
+ * ── Le signal d'authentification est faible, et c'est assumé ──
+ * `has_session` est un simple drapeau posé en JavaScript par le client
+ * (`lib/utils/storage.ts`), jamais par le serveur : il ne contient pas le JWT et
+ * n'est pas vérifiable ici. C'est une garde optimiste anti-flash, pas un
+ * contrôle de sécurité — celui-ci est fait par le backend Spring, qui exige un
+ * `Authorization: Bearer` sur chaque requête.
+ */
 
-// ─── MAINTENANCE ──────────────────────────────────────────────────────────────
-// Pour activer : remplacer false par true  |  Pour désactiver : remettre false
+/**
+ * Coupure de service. À basculer à `true` pour rediriger tout le trafic vers
+ * `/maintenance`.
+ *
+ * Codé en dur, donc toute coupure impose aujourd'hui un redéploiement. En phase
+ * 6 cette valeur viendra d'un endpoint public (`GET /api/health`), pilotable
+ * depuis `app/admin/settings` — il faut que ce soit fait AVANT le retrait de ce
+ * fichier, sinon le mécanisme disparaît sans remplaçant.
+ */
 const MAINTENANCE_MODE = false;
-// ──────────────────────────────────────────────────────────────────────────────
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  if (MAINTENANCE_MODE && pathname !== '/maintenance') {
-    return NextResponse.redirect(new URL('/maintenance', request.url));
-  }
+  const decision = decideAccess({
+    pathname,
+    isAuthenticated: request.cookies.get('has_session')?.value === '1',
+    maintenance: MAINTENANCE_MODE,
+  });
 
-  if (!MAINTENANCE_MODE && pathname === '/maintenance') {
-    return NextResponse.redirect(new URL('/login', request.url));
-  }
-
-  const hasSession = request.cookies.get('has_session')?.value === '1';
-
-  const isProtected = PROTECTED_PREFIXES.some((p) => pathname.startsWith(p));
-  const isAuthOnly = AUTH_ONLY_ROUTES.some((p) => pathname.startsWith(p));
-
-  if (isProtected && !hasSession) {
-    return NextResponse.redirect(new URL('/login', request.url));
-  }
-
-  if (isAuthOnly && hasSession && pathname !== '/onboarding') {
-    return NextResponse.redirect(new URL('/rooms', request.url));
+  if (decision.action === 'redirect') {
+    return NextResponse.redirect(new URL(decision.to, request.url));
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|assets/).*)',
-  ],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|assets/).*)'],
 };

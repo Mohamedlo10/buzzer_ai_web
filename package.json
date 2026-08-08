@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "npm run test:tokens && npm run test:routes",
+    "test:tokens": "node lib/theme/palette.test.js",
+    "test:routes": "node --experimental-strip-types --no-warnings lib/auth/routePolicy.test.mjs"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.90.21",

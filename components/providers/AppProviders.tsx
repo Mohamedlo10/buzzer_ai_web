@@ -6,6 +6,7 @@ import { Toaster } from 'sonner';
 import { queryClient } from '~/lib/query/queryClient';
 import { useAuthStore } from '~/stores/useAuthStore';
 import { ThemeProvider } from '~/components/providers/ThemeProvider';
+import { AuthGate } from '~/components/providers/AuthGate';
 
 export function AppProviders({ children }: { children: React.ReactNode }) {
   const [ready, setReady] = useState(false);
@@ -26,7 +27,9 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
   return (
     <ThemeProvider>
       <QueryClientProvider client={queryClient}>
-        {children}
+        {/* Monté ici, donc après `restoreSession()` : `isAuthenticated` est déjà
+            stabilisé et le garde couvre TOUTES les routes d'un coup. */}
+        <AuthGate>{children}</AuthGate>
         <Toaster position="top-center" richColors theme="dark" />
       </QueryClientProvider>
     </ThemeProvider>

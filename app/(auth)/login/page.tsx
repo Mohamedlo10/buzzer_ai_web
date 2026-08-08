@@ -4,6 +4,7 @@ import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Zap, Eye, EyeOff, User, Mail, Lock, ArrowRight, Sparkles, Crown } from 'lucide-react';
 import { useAuthStore } from '~/stores/useAuthStore';
+import { readReturnTo } from '~/lib/auth/returnTo';
 
 export default function LoginPage() {
   const [username, setUsername] = useState('');
@@ -47,7 +48,18 @@ export default function LoginPage() {
     try {
       await login(u.trim(), p);
       const user = useAuthStore.getState().user;
-      const redirect = user?.role === 'SUPER_ADMIN' ? '/admin' : '/rooms';
+
+      // La destination initiale prime sur l'accueil par défaut : sans ça, un lien
+      // profond reçu hors session (`/join/room/ABC`, un QR code partagé) envoie
+      // bien vers /login mais fait ensuite atterrir sur /rooms — le code du salon
+      // est perdu. C'est le scénario central du deep link mobile.
+      const redirect =
+        readReturnTo() ?? (user?.role === 'SUPER_ADMIN' ? '/admin' : '/rooms');
+
+      // Rechargement complet volontaire : il force le middleware Edge à relire le
+      // cookie `has_session` qui vient d'être posé. À remplacer par un
+      // `router.replace` en phase 2, quand le middleware et le cookie disparaissent
+      // (`window.location` n'existe pas en React Native).
       window.location.replace(redirect);
     } catch (err: any) {
       const message =
