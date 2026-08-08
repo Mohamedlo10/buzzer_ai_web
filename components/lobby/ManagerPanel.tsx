@@ -1,134 +1,106 @@
-'use client';
+import { Play, AlertCircle, LogOut, Trash2 } from 'lucide-react';
+import { ManualQuestionsAlert } from './ManualQuestionsAlert';
 
-import { Play, Settings, UserPlus, LogOut, Crown } from 'lucide-react';
-
-import { Card } from '~/components/ui/Card';
-import { notify } from '~/lib/ui/notify';
-import { confirmAsync } from '~/lib/ui/confirm';
-
-interface ManagerPanelProps {
-  playerCount: number;
-  minPlayers?: number;
-  onStartGame: () => void;
-  onInviteFriends?: () => void;
-  onEditSettings?: () => void;
-  onLeaveSession?: () => void;
-  isStarting?: boolean;
+export interface ManagerPanelProps {
+  session: any;
+  code: string;
+  isStarting: boolean;
+  canStart: boolean;
+  isDeletingSession: boolean;
+  onNavigateToQuestions: () => void;
+  onManagerStartClick: () => void;
+  onLeave: () => void;
+  onDeleteSession: () => void;
+  orbitronClass: string;
+  rajdhaniClass: string;
 }
 
 export function ManagerPanel({
-  playerCount,
-  minPlayers = 2,
-  onStartGame,
-  onInviteFriends,
-  onEditSettings,
-  onLeaveSession,
-  isStarting = false,
+  session,
+  code,
+  isStarting,
+  canStart,
+  isDeletingSession,
+  onNavigateToQuestions,
+  onManagerStartClick,
+  onLeave,
+  onDeleteSession,
+  orbitronClass,
+  rajdhaniClass,
 }: ManagerPanelProps) {
-  const canStart = playerCount >= minPlayers;
-
-  const handleStart = async () => {
-    if (!canStart) {
-      notify.error(`Minimum ${minPlayers} joueurs requis pour démarrer (${playerCount} présent)`);
-      return;
-    }
-
-    const confirmed = await confirmAsync({
-      title: 'Démarrer la partie ?',
-      message:
-        'La génération des questions va commencer. Les joueurs ne pourront plus rejoindre.',
-      confirmLabel: 'Démarrer',
-    });
-    if (!confirmed) return;
-
-    onStartGame();
-  };
-
-  const handleLeave = async () => {
-    const confirmed = await confirmAsync({
-      title: 'Quitter la session ?',
-      message: 'Vous serez retiré de cette session.',
-      confirmLabel: 'Quitter',
-      tone: 'danger',
-    });
-    if (!confirmed) return;
-
-    onLeaveSession?.();
-  };
-
   return (
-    <Card className="mb-4 border border-energy/25">
-      <div className="flex flex-row items-center mb-4">
-        <Crown size={18} color="var(--gold)" />
-        <p className="text-txt font-bold ml-2 flex-1">Contrôles Manager</p>
-        <span className="text-txt-60 text-sm">
-          {playerCount} joueur{playerCount > 1 ? 's' : ''}
-        </span>
-      </div>
+    <div className="mb-4">
+      {session.questionMode === 'MANUAL' && (
+        <ManualQuestionsAlert
+          totalQuestions={session.totalQuestions}
+          sessionId={session.id}
+          code={code}
+          onNavigate={onNavigateToQuestions}
+        />
+      )}
 
-      {/* Start Button */}
       <button
-        onClick={handleStart}
-        disabled={isStarting}
-        className={`w-full py-4 rounded-2xl flex items-center justify-center mb-3 transition-colors ${
-          isStarting
-            ? 'bg-surface-2 cursor-not-allowed'
-            : canStart
-            ? 'bg-accent hover:bg-accent-d'
-            : 'bg-surface-2 cursor-not-allowed'
+        type="button"
+        onClick={onManagerStartClick}
+        disabled={isStarting || !canStart}
+        className={`w-full py-5 rounded-2xl flex items-center justify-center gap-2.5 mb-2.5 transition-all ${
+          canStart && !isStarting
+            ? 'bg-accent hover:bg-accent-d shadow-glow-success'
+            : 'bg-surface-2 border border-line cursor-not-allowed'
         }`}
-        style={canStart && !isStarting ? { boxShadow: '0 0 12px rgb(var(--primary-rgb) / 0.4)' } : undefined}
       >
         {isStarting ? (
-          <span className="text-txt-60 font-bold">Démarrage...</span>
+          <>
+            <div className="w-5 h-5 border-2 border-btn-fg border-t-transparent rounded-full animate-spin" />
+            <span className={`${orbitronClass} text-btn-fg text-lg font-bold`}>DÉMARRAGE…</span>
+          </>
         ) : (
-          <div className="flex flex-row items-center gap-2">
-            <Play size={20} className={canStart ? 'text-btn-fg' : 'text-txt-40'} />
-            <span className={`font-bold text-lg ${canStart ? 'text-btn-fg' : 'text-txt-40'}`}>
-              Démarrer la partie
+          <>
+            <span className="dotpulse" style={{ background: canStart ? 'var(--primary-ink)' : 'var(--txt-40)' }} />
+            <Play size={20} className={canStart ? 'text-btn-fg' : 'text-txt-40'} fill="currentColor" />
+            <span className={`${orbitronClass} text-lg font-bold tracking-wide ${canStart ? 'text-btn-fg' : 'text-txt-40'}`}>
+              Lancer la partie
             </span>
-          </div>
+          </>
         )}
       </button>
 
       {!canStart && !isStarting && (
-        <p className="text-buzz text-xs text-center mb-3">
-          Minimum {minPlayers} joueurs requis
-        </p>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, padding: '8px 0 6px', marginBottom: 8 }}>
+          <AlertCircle size={13} color="var(--bad)" />
+          <span className={rajdhaniClass} style={{ fontSize: 13, color: 'var(--bad)' }}>Minimum 2 joueurs requis</span>
+        </div>
       )}
 
-      {/* Secondary Actions */}
-      <div className="flex flex-row gap-2">
-        {onInviteFriends && (
-          <button
-            onClick={onInviteFriends}
-            className="flex-1 bg-surface-2 py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-surface-2/80 transition-colors text-txt"
-          >
-            <UserPlus size={16} />
-            <span className="font-medium text-sm">Inviter</span>
-          </button>
-        )}
-
-        {onEditSettings && (
-          <button
-            onClick={onEditSettings}
-            className="flex-1 bg-surface-2 py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-surface-2/80 transition-colors text-txt"
-          >
-            <Settings size={16} />
-            <span className="font-medium text-sm">Config</span>
-          </button>
-        )}
-
-        {onLeaveSession && (
-          <button
-            onClick={handleLeave}
-            className="flex-1 bg-buzz/15 py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-buzz/25 transition-colors"
-          >
-            <LogOut size={16} color="var(--bad)" />
-            <span className="text-buzz font-medium text-sm">Quitter</span>
-          </button>
-        )}
+      <div style={{ display: 'flex', gap: 8 }}>
+        <button
+          onClick={onLeave}
+          style={{
+            flex: 1, padding: '12px 0', borderRadius: 13,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, cursor: 'pointer',
+            background: 'rgb(var(--bad-rgb) / 0.071)', border: '1px solid rgb(var(--bad-rgb) / 0.188)',
+          }}
+        >
+          <LogOut size={15} color="var(--bad)" />
+          <span className={rajdhaniClass} style={{ fontSize: 13, fontWeight: 600, color: 'var(--bad)' }}>Quitter</span>
+        </button>
+        <button
+          onClick={onDeleteSession}
+          disabled={isDeletingSession}
+          style={{
+            flex: 1, padding: '12px 0', borderRadius: 13,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, cursor: 'pointer',
+            background: 'rgb(var(--bad-rgb) / 0.071)', border: '1px solid rgb(var(--bad-rgb) / 0.188)',
+          }}
+        >
+          {isDeletingSession ? (
+            <div style={{ width: 14, height: 14, border: '2px solid var(--bad)', borderTopColor: 'transparent', borderRadius: '50%' }} className="animate-spin" />
+          ) : (
+            <Trash2 size={15} color="var(--bad)" />
+          )}
+          <span className={rajdhaniClass} style={{ fontSize: 13, fontWeight: 600, color: 'var(--bad)' }}>Supprimer</span>
+        </button>
       </div>
-    </Card>
+    </div>
   );
 }
