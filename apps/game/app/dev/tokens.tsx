@@ -2,7 +2,7 @@ import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ArrowLeft, CheckCircle2 } from 'lucide-react-native';
-import { palette, alpha, withAlpha } from '~/lib/theme/palette';
+import { palette, alpha, withAlpha, font } from '~/lib/theme/palette';
 
 // Table matching Tailwind class name -> palette property
 const COLOR_PAIRS: Array<{ name: string; twClass: string; hex: string }> = [
@@ -110,30 +110,47 @@ export default function TokensDevScreen() {
         <Text className="text-txt font-bold text-base mb-3 uppercase tracking-wider">
           3. Typographie (3 familles)
         </Text>
+        {/*
+          Chaque famille est rendue DEUX FOIS : par la classe Tailwind
+          (`font-display`…), puis par `fontFamily` inline. Les deux doivent
+          donner exactement le même dessin de lettre.
+
+          C'est le pendant typographique de la couture verticale des couleurs, et
+          il couvre un défaut réel : le preset partagé portait
+          `fontFamily: var(--font-display)`, hérité du web. Les variables CSS
+          n'existent pas en React Native — la valeur y est ignorée SANS ERREUR et
+          la classe retombe sur la police système. Si les deux lignes d'un même
+          bloc n'ont pas la même allure, la résolution par classe est cassée.
+        */}
         <View className="bg-surface rounded-2xl p-4 border border-line">
           <View className="mb-4">
             <Text className="text-txt-40 text-[10px] font-bold uppercase mb-1">
-              Display — Boldonse
+              Display — {font.nativeFamily.display} · classe puis inline
             </Text>
-            <Text className="text-txt text-2xl" style={{ fontFamily: 'Boldonse' }}>
+            <Text className="text-txt text-2xl font-display">Xalaat Quiz 123</Text>
+            <Text className="text-txt text-2xl" style={{ fontFamily: font.nativeFamily.display }}>
               Xalaat Quiz 123
             </Text>
           </View>
 
           <View className="mb-4">
             <Text className="text-txt-40 text-[10px] font-bold uppercase mb-1">
-              UI — Manrope
+              UI — {font.nativeFamily.ui} · classe puis inline
             </Text>
-            <Text className="text-txt text-base" style={{ fontFamily: 'Manrope' }}>
-              Question 1/10 — Quel est le plus grand océan de la Terre ?
+            <Text className="text-txt text-base font-ui">
+              Question 1/10 — Quel est le plus grand océan ?
+            </Text>
+            <Text className="text-txt text-base" style={{ fontFamily: font.nativeFamily.ui }}>
+              Question 1/10 — Quel est le plus grand océan ?
             </Text>
           </View>
 
           <View>
             <Text className="text-txt-40 text-[10px] font-bold uppercase mb-1">
-              Accent — Instrument Serif (Italique)
+              Accent — {font.nativeFamily.serif} · classe puis inline
             </Text>
-            <Text className="text-primary text-xl" style={{ fontFamily: 'InstrumentSerifItalic' }}>
+            <Text className="text-primary text-xl font-serif">Quiz by MouhaDev</Text>
+            <Text className="text-primary text-xl" style={{ fontFamily: font.nativeFamily.serif }}>
               Quiz by MouhaDev
             </Text>
           </View>

@@ -9,18 +9,25 @@ import {
   Manrope_700Bold,
 } from '@expo-google-fonts/manrope';
 import { InstrumentSerif_400Regular_Italic } from '@expo-google-fonts/instrument-serif';
+
+import { font, palette } from '~/lib/theme/tokens';
 import '../global.css';
 
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
+  // Les clés viennent de `palette.font.nativeFamily`, que lit aussi
+  // `tailwind.config.js` pour résoudre `font-display` / `font-ui` / `font-serif`.
+  // Écrites en dur des deux côtés, elles finiraient par diverger — et le
+  // symptôme serait une police silencieusement remplacée par celle du système,
+  // sans la moindre erreur.
   const [loaded, error] = useFonts({
-    Boldonse: Boldonse_400Regular,
-    Manrope: Manrope_400Regular,
+    [font.nativeFamily.display]: Boldonse_400Regular,
+    [font.nativeFamily.ui]: Manrope_400Regular,
+    [font.nativeFamily.serif]: InstrumentSerif_400Regular_Italic,
     ManropeMedium: Manrope_500Medium,
     ManropeSemiBold: Manrope_600SemiBold,
     ManropeBold: Manrope_700Bold,
-    InstrumentSerifItalic: InstrumentSerif_400Regular_Italic,
   });
 
   useEffect(() => {
@@ -37,7 +44,7 @@ export default function RootLayout() {
     <Stack
       screenOptions={{
         headerShown: false,
-        contentStyle: { backgroundColor: '#F1E5C9' },
+        contentStyle: { backgroundColor: palette.bg },
       }}
     />
   );

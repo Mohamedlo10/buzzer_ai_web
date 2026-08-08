@@ -167,6 +167,27 @@ const radius = {
 const font = {
   /** Graisse d'affichage — `next/font` ne fournit pas cette information. */
   displayWeight: '400',
+
+  /**
+   * Noms des familles telles qu'elles sont ENREGISTRÉES en React Native.
+   *
+   * Le web résout ses polices par variables CSS (`var(--font-display)`, posées
+   * par next/font). React Native n'a pas de variables CSS : il lui faut le nom
+   * littéral de la famille, celui passé à `useFonts()`. Une valeur `var(...)`
+   * y est reçue comme une chaîne quelconque et ignorée sans erreur — la classe
+   * `font-display` retomberait en silence sur la police système.
+   *
+   * Ces clés sont donc consommées aux DEUX endroits qui doivent s'accorder :
+   * `apps/game/app/_layout.tsx` (chargement) et `apps/game/tailwind.config.js`
+   * (résolution des classes). Écrites à la main de part et d'autre, elles
+   * finiraient par diverger, et le symptôme serait une police silencieusement
+   * fausse.
+   */
+  nativeFamily: {
+    display: 'Boldonse',
+    ui: 'Manrope',
+    serif: 'InstrumentSerifItalic',
+  },
 };
 
 // ─────────────────────────────────────────────────────────────────────────────

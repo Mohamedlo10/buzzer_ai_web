@@ -48,11 +48,18 @@ module.exports = {
         silver: palette.silver,
         bronze: palette.bronze,
       },
-      fontFamily: {
-        display: ['var(--font-display)', 'system-ui', 'sans-serif'],
-        ui: ['var(--font-ui)', 'system-ui', 'sans-serif'],
-        serif: ['var(--font-accent)', 'Georgia', 'serif'],
-      },
+      // ⚠ PAS de `fontFamily` ici — chaque application déclare la sienne.
+      //
+      // Le web résout ses polices par variables CSS (`var(--font-display)`,
+      // injectées par next/font). Ces variables n'existent PAS en React Native :
+      // une valeur `var(...)` y est reçue comme une chaîne littérale et ignorée,
+      // sans erreur. Toute classe `font-display` retomberait donc en silence sur
+      // la police système — sur 164 sites dans web-legacy, à porter en phase 3.
+      //
+      // Le natif doit recevoir le NOM de la famille chargée par `useFonts`.
+      // Ces noms sont dans `palette.font.nativeFamily`, source unique partagée
+      // entre `apps/game/tailwind.config.js` et `apps/game/app/_layout.tsx` —
+      // deux endroits qui, écrits à la main, finiraient par diverger.
       borderRadius: {
         casino: radius.casino,
         '3xl': radius.xl3,

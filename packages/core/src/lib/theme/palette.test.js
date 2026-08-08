@@ -183,6 +183,27 @@ const tw = require('../../../../config/tailwind-preset.js');
 const flat = JSON.stringify(tw.theme.extend.colors);
 ok(() => assert.ok(!flat.includes('var('), 'aucune couleur Tailwind ne doit dépendre de var()'));
 ok(() => assert.ok(!flat.includes('<alpha-value>'), 'plus de placeholder <alpha-value>'));
+
+/**
+ * La règle vaut pour TOUT le preset partagé, pas seulement les couleurs.
+ *
+ * Cette assertion manquait, et le trou s'est refermé sur `fontFamily` : le
+ * preset y portait `var(--font-display)`, hérité du web. Les variables CSS
+ * n'existent pas en React Native — la valeur y est reçue comme une chaîne
+ * quelconque et ignorée SANS ERREUR. Les 164 `font-display` / `font-ui` de
+ * web-legacy seraient tombés en silence sur la police système une fois portés.
+ *
+ * Ce qui est spécifique à une plateforme n'a rien à faire dans le preset
+ * partagé : chaque application déclare sa propre résolution de polices.
+ */
+const wholePreset = JSON.stringify(tw.theme.extend);
+ok(() =>
+  assert.ok(
+    !wholePreset.includes('var('),
+    'le preset PARTAGÉ ne doit contenir aucun var() — il est lu par NativeWind',
+  ),
+);
+ok(() => assert.equal(tw.theme.extend.fontFamily, undefined, 'les polices sont résolues par application'));
 ok(() => assert.equal(tw.theme.extend.colors.surface, '#FBF4DF'));
 ok(() => assert.equal(tw.theme.extend.colors['txt-40'], 'rgb(26 20 16 / 0.45)'));
 
