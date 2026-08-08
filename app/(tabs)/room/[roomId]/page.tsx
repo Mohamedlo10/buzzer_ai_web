@@ -4,36 +4,18 @@ import { useCallback, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useRouter, useParams } from 'next/navigation';
 import {
-  Crown, Users, Trophy, Play, Settings, Trash2, X,
-  Gamepad2, Eye, Copy, UserPlus, LogOut, Clock, Sparkles,
-  ChevronRight, Zap, Target, Hash,
-  Swords, Medal, History, Plus, QrCode, Home, LayoutGrid,
+  Settings, Trash2, Play, UserPlus, LogOut, Sparkles, ChevronRight, History, QrCode, Eye,
 } from 'lucide-react';
 
 import { SessionConfigForm } from '~/components/session/SessionConfigForm';
-import { FriendshipButton } from '~/components/ui/FriendshipButton';
-import { useAuthStore } from '~/stores/useAuthStore';
-import { useRoomSocket } from '~/lib/websocket';
+import { useRoomDetail } from '~/lib/hooks/useRoomDetail';
 import * as qrcodeApi from '~/lib/api/qrcode';
-import * as roomsApi from '~/lib/api/rooms';
-import * as friendsApi from '~/lib/api/friends';
-import * as sessionsApi from '~/lib/api/sessions';
-import { appStorage } from '~/lib/utils/storage';
 import { UserProfileModal } from '~/components/shared/UserProfileModal';
-import { Avatar } from '~/components/shared/Avatar';
-import type { FriendResponse, RoomDetailResponse, RoomSessionResponse, SessionStatus } from '~/types/api';
 import { notify } from '~/lib/ui/notify';
-import { confirmAsync } from '~/lib/ui/confirm';
-
-import { STATUS_CONFIG } from '~/components/room/STATUS_CONFIG';
-import { RoomCodeCard } from '~/components/room/RoomCodeCard';
 import { ActiveSessionCard } from '~/components/room/ActiveSessionCard';
 import { MembersWithStats } from '~/components/room/MembersWithStats';
 import { HistoryModal } from '~/components/room/HistoryModal';
 import { InviteFriendsModal } from '~/components/room/InviteFriendsModal';
-
-// ── Main Screen ───────────────────────────────────────────────────────────────
-
 
 export default function RoomDetailPage() {
   const router = useRouter();
@@ -44,52 +26,45 @@ export default function RoomDetailPage() {
     setMounted(true);
   }, []);
 
-  const [roomData, setRoomData] = useState<RoomDetailResponse | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [showConfigModal, setShowConfigModal] = useState(false);
-  const [showInviteModal, setShowInviteModal] = useState(false);
-  const [showHistoryModal, setShowHistoryModal] = useState(false);
-  const [selectedUserModal, setSelectedUserModal] = useState<RoomDetailResponse['members'][number] | null>(null);
+  const {
+    roomData,
+    isLoading,
+    showConfigModal,
+    setShowConfigModal,
+    showInviteModal,
+    setShowInviteModal,
+    showHistoryModal,
+    setShowHistoryModal,
+    selectedUserModal,
+    setSelectedUserModal,
+    showQrExpanded,
+    setShowQrExpanded,
+    user,
+    room,
+    isOwner,
+    members,
+    rankings,
+    activeSessions,
+    pastSessions,
+    navigateToSession,
+    handleSessionCreated,
+    handleSendFriendRequest,
+    handleLeaveRoom,
+    handleDeleteSession,
+    handleDeleteRoom,
+  } = useRoomDetail({
+    roomId: roomId ?? '',
+    onNavigate: (path) => router.push(path),
+    onReplaceRoute: (path) => router.replace(path),
+  });
+
   const [qrImage, setQrImage] = useState<string | null>(null);
   const [qrLoading, setQrLoading] = useState(false);
-  const [showQrExpanded, setShowQrExpanded] = useState(false);
-  // Real-time presence overrides: userId → isOnline
-  const [memberPresence, setMemberPresence] = useState<Record<string, boolean>>({});
 
-  const user = useAuthStore((state) => state.user);
-  const room = roomData?.room;
-  const isOwner = room?.ownerId === user?.id;
-
-  // Merge server-loaded members with real-time presence overrides
-  const members = (roomData?.members ?? []).map((m) =>
-    m.userId in memberPresence ? { ...m, isOnline: memberPresence[m.userId] } : m
-  );
-  const sessions = roomData?.sessions ?? [];
-  const rankings = roomData?.rankings ?? [];
-
-  const activeSessions = sessions.filter(
-    (s) => s.status === 'LOBBY' || s.status === 'GENERATING' || s.status === 'PLAYING' || s.status === 'PAUSED'
-  );
-  const pastSessions = sessions.filter((s) => s.status === 'RESULTS' || s.status === 'CANCELLED');
-  const hasActiveSession = activeSessions.length > 0;
-
-  const loadRoom = useCallback(async () => {
-    if (!roomId) return;
-    try {
-      const data = await roomsApi.getRoomDetail(roomId);
-      setRoomData(data);
-    } catch (err) {
-      console.error('Failed to load room:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [roomId]);
-
-  const loadQR = useCallback(async (roomId: string) => {
+  const loadQR = useCallback(async (rId: string) => {
     setQrLoading(true);
     try {
-      const blob = await qrcodeApi.getRoomQR(roomId);
+      const blob = await qrcodeApi.getRoomQR(rId);
       const reader = new FileReader();
       reader.onloadend = () => setQrImage(reader.result as string);
       reader.readAsDataURL(blob);
@@ -101,29 +76,6 @@ export default function RoomDetailPage() {
   }, []);
 
   useEffect(() => {
-    loadRoom();
-  }, [loadRoom]);
-
-  // Refresh silencieux toutes les 10s (presence is now handled via WebSocket)
-  useEffect(() => {
-    const interval = setInterval(loadRoom, 10_000);
-    return () => clearInterval(interval);
-  }, [loadRoom]);
-
-  // WebSocket: real-time presence for this room
-  useRoomSocket(roomId ?? null, {
-    onPresence: (event) => {
-      setMemberPresence((prev) => ({ ...prev, [event.userId]: event.isOnline }));
-    },
-    onDisconnect: () => {
-      // Mark current user offline locally immediately on transport close
-      if (user?.id) {
-        setMemberPresence((prev) => ({ ...prev, [user.id]: false }));
-      }
-    },
-  });
-
-  useEffect(() => {
     if (roomData?.room?.id) loadQR(roomData.room.id);
   }, [roomData?.room?.id, loadQR]);
 
@@ -132,112 +84,8 @@ export default function RoomDetailPage() {
     return () => { document.body.style.overflow = ''; };
   }, [showConfigModal]);
 
-  const handleRefresh = async () => {
-    setIsRefreshing(true);
-    await loadRoom();
-    setIsRefreshing(false);
-  };
-
-  const navigateToSession = async (session: RoomSessionResponse) => {
-    const { code, status, id: sessionId } = session;
-
-    await appStorage.setActiveSession({ sessionId, code });
-
-    if (status === 'LOBBY') {
-      router.push(`/session/${code}/categories?sessionId=${sessionId}`);
-    } else {
-      const routes: Record<string, string> = {
-        GENERATING: `/session/${code}/loading`,
-        PLAYING: `/session/${code}/game`,
-        RESULTS: `/session/${code}/results`,
-        PAUSED: `/session/${code}/game`,
-      };
-      router.push(`${routes[status] || `/session/${code}/lobby`}?sessionId=${sessionId}&roomId=${roomId}`);
-    }
-  };
-
   const handleCreateSession = () => {
     setShowConfigModal(true);
-  };
-
-  const handleSessionCreated = (_sessionId: string, code: string) => {
-    setShowConfigModal(false);
-    router.push(`/session/${code}/lobby`);
-  };
-
-  const handleCopyCode = async () => {
-    if (!room) return;
-    try { await navigator.clipboard.writeText(room.code); } catch { /* fallback */ }
-    notify.success(`Le code ${room.code} a été copié.`);
-  };
-
-  const handleShare = async () => {
-    if (!room) return;
-    const msg = `Rejoins ma salle sur Xalaat (Quiz by MouhaDev) ! Code: ${room.code}`;
-    if (navigator.share) {
-      try { await navigator.share({ title: 'Invitation Xalaat — Quiz by MouhaDev', text: msg }); } catch { /* cancelled */ }
-    } else {
-      await navigator.clipboard.writeText(msg);
-    }
-  };
-
-  const handleSendFriendRequest = async (targetUserId: string, _username: string) => {
-    if (targetUserId === user?.id) return;
-    try {
-      await friendsApi.sendFriendRequest(targetUserId);
-      await loadRoom();
-    } catch (err: any) {
-      // silently ignore 409 conflicts
-    }
-  };
-
-  const handleLeaveRoom = async () => {
-    if (!room) return;
-    const confirmed = await confirmAsync({
-      title: 'Quitter la salle ?',
-      message: `Vous ne verrez plus "${room.name}" dans vos salles.`,
-      confirmLabel: 'Quitter',
-      tone: 'danger',
-    });
-    if (!confirmed) return;
-    try {
-      await roomsApi.leaveRoom(room.code);
-      router.replace('/rooms');
-    } catch (err) {
-      notify.error('Impossible de quitter la salle');
-    }
-  };
-
-  const handleDeleteSession = async (sessionId: string, sessionCode: string) => {
-    const confirmed = await confirmAsync({
-      title: 'Supprimer la session ?',
-      message: `La session ${sessionCode} sera définitivement supprimée.`,
-      confirmLabel: 'Supprimer',
-      tone: 'danger',
-    });
-    if (!confirmed) return;
-    try {
-      await sessionsApi.deleteSession(sessionId);
-      await loadRoom();
-    } catch (err) {
-      notify.error('Impossible de supprimer la session');
-    }
-  };
-
-  const handleDeleteRoom = async () => {
-    const confirmed = await confirmAsync({
-      title: 'Supprimer la salle ?',
-      message: 'Cette action est irréversible. Toutes les statistiques seront perdues.',
-      confirmLabel: 'Supprimer',
-      tone: 'danger',
-    });
-    if (!confirmed) return;
-    try {
-      await roomsApi.deleteRoom(roomId);
-      router.replace('/rooms');
-    } catch (err) {
-      notify.error('Impossible de supprimer la salle');
-    }
   };
 
   // ── Loading ──
@@ -306,7 +154,7 @@ export default function RoomDetailPage() {
       {/* ── Scrollable main content area (QR code + Code + Invite + Members table + Danger zone) ── */}
       <div className={`flex-1 min-h-0 px-4 pt-4 pb-16 flex flex-col gap-4 overscroll-contain touch-pan-y${showConfigModal ? ' overflow-hidden' : ' overflow-y-auto'}`}>
 
-        {/* QR + Code (Dynamic: large when 1 member/alone, compact banner when 2+ members) */}
+        {/* QR + Code */}
         {members.length <= 1 || showQrExpanded ? (
           <div className="bg-surface rounded-3xl border border-line p-4 flex flex-col items-center shrink-0 transition-all">
             {qrLoading ? (
@@ -431,7 +279,7 @@ export default function RoomDetailPage() {
       {/* Invite Friends Modal */}
       {showInviteModal && mounted && createPortal(
         <InviteFriendsModal
-          roomId={roomId}
+          roomId={roomId ?? ''}
           memberUserIds={members.map((m) => m.userId)}
           pendingInvitationUserIds={roomData?.pendingInvitationUserIds ?? []}
           onClose={() => setShowInviteModal(false)}
@@ -448,7 +296,7 @@ export default function RoomDetailPage() {
           />
           <div className="relative bg-bg rounded-t-[32px] w-full max-w-2xl h-[92dvh] max-h-[92dvh] flex flex-col overflow-hidden shadow-2xl z-10 border-t border-line">
             <SessionConfigForm
-              roomId={roomId}
+              roomId={roomId ?? ''}
               onSuccess={handleSessionCreated}
               onClose={() => setShowConfigModal(false)}
               initialMaxPlayers={members.length || undefined}
