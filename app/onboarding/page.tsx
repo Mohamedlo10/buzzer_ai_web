@@ -115,17 +115,17 @@ export default function OnboardingPage() {
 
   return (
     <div
-      className="min-h-screen flex flex-col relative overflow-hidden text-txt"
+      className="h-[100dvh] max-h-[100dvh] w-full flex flex-col overflow-hidden relative text-txt"
       style={{ background: 'linear-gradient(180deg, var(--surface) 0%, var(--bg) 100%)' }}
     >
       {/* Logo Header — marque + signature MouhaDev */}
-      <div className="pt-10 flex flex-col items-center gap-1.5">
+      <div className="shrink-0 pt-6 pb-2 flex flex-col items-center gap-1">
         <div className="flex flex-row items-center gap-2">
-          <XalaatMark size={24} />
-          <span className="font-display text-2xl font-bold tracking-[-0.02em]">Xalaat</span>
+          <XalaatMark size={22} />
+          <span className="font-display text-xl font-bold tracking-[-0.02em]">Xalaat</span>
         </div>
         <span
-          className="text-[10px] font-bold uppercase tracking-[0.2em]"
+          className="text-[9px] font-bold uppercase tracking-[0.2em]"
           style={{ color: 'var(--primary)' }}
         >
           Quiz by MouhaDev
@@ -133,49 +133,48 @@ export default function OnboardingPage() {
       </div>
 
       {/* Slide content */}
-      <div className="flex-1 flex flex-col items-center justify-center px-8">
+      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y px-6 py-2 flex flex-col items-center justify-center">
         <div
           key={currentIndex}
-          className="flex flex-col items-center justify-center w-full max-w-md"
+          className="flex flex-col items-center justify-center w-full max-w-md py-4"
           style={{ animation: 'fadeInUp 0.35s ease both' }}
         >
           {/* Icon */}
           <div
-            className="mb-8 overflow-hidden flex items-center justify-center"
+            className="mb-4 sm:mb-6 overflow-hidden flex items-center justify-center transition-all shrink-0"
             style={{
-              width: 180,
-              height: 180,
-              borderRadius: 40,
-              boxShadow: `0 18px 34px -12px ${colA(currentSlide.accent, 0.45)}`,
+              width: 'min(150px, 20vh)',
+              height: 'min(150px, 20vh)',
+              borderRadius: 32,
+              boxShadow: `0 14px 28px -10px ${colA(currentSlide.accent, 0.45)}`,
               background: `linear-gradient(135deg, ${fill(currentSlide.gradient[0])}, ${fill(currentSlide.gradient[1])})`,
-              flexShrink: 0,
               color: onFill(currentSlide.gradient[0]),
             }}
           >
             {currentSlide.icon}
           </div>
 
-          <h2 className="font-display text-4xl font-bold text-center mb-2 tracking-[-0.02em]">
+          <h2 className="font-display text-2xl sm:text-3xl font-bold text-center mb-1 tracking-[-0.02em]">
             {currentSlide.title}
           </h2>
 
           <p
-            className="text-center mb-6 text-lg font-semibold"
+            className="text-center mb-3 text-sm sm:text-base font-semibold"
             style={{ color: col(currentSlide.accent) }}
           >
             {currentSlide.subtitle}
           </p>
 
-          <p className="text-txt-60 text-center text-lg leading-7 px-4">
+          <p className="text-txt-60 text-center text-sm sm:text-base leading-relaxed px-2">
             {currentSlide.description}
           </p>
         </div>
       </div>
 
       {/* Bottom section */}
-      <div className="pb-12 px-8">
+      <div className="shrink-0 px-6 pt-3 pb-[max(1.25rem,env(safe-area-inset-bottom))] border-t border-line/30 bg-bg/90 backdrop-blur-sm z-20">
         {/* Dots + next arrow */}
-        <div className="flex flex-row justify-center items-center mb-8 gap-3">
+        <div className="flex flex-row justify-center items-center mb-3 gap-3">
           {slides.map((slide, index) => (
             <button
               key={index}
@@ -200,7 +199,7 @@ export default function OnboardingPage() {
             <button
               type="button"
               onClick={handleNext}
-              className="ml-2 w-8 h-8 rounded-full flex items-center justify-center transition-opacity hover:opacity-80"
+              className="ml-2 w-8 h-8 rounded-full flex items-center justify-center transition-opacity hover:opacity-80 cursor-pointer"
               style={{ backgroundColor: 'var(--surface-2)' }}
             >
               <ChevronRight size={16} color="var(--txt-60)" />
@@ -209,33 +208,33 @@ export default function OnboardingPage() {
         </div>
 
         {/* CTAs */}
-        <div className="flex flex-col max-w-md mx-auto gap-3">
+        <div className="flex flex-col max-w-md mx-auto gap-2.5">
           {/* S'inscrire — primary */}
           <button
             type="button"
             onClick={() => goTo('/register')}
-            className="w-full flex flex-row items-center justify-center py-4 rounded-2xl transition-opacity hover:opacity-90 active:opacity-80"
+            className="w-full flex flex-row items-center justify-center py-3.5 rounded-2xl transition-opacity hover:opacity-90 active:opacity-80 cursor-pointer"
             style={{
               backgroundColor: fill(currentSlide.accent),
               boxShadow: `0 10px 24px -8px ${colA(currentSlide.accent, 0.5)}`,
               color: onFill(currentSlide.accent),
             }}
           >
-            <span className="font-bold text-lg mr-2">S&apos;inscrire</span>
-            <ArrowRight size={20} />
+            <span className="font-bold text-base mr-2">S&apos;inscrire</span>
+            <ArrowRight size={18} />
           </button>
 
           {/* Se connecter — secondary */}
           <button
             type="button"
             onClick={() => goTo('/login')}
-            className="w-full flex flex-row items-center justify-center py-4 rounded-2xl transition-opacity hover:opacity-90 active:opacity-80"
+            className="w-full flex flex-row items-center justify-center py-3.5 rounded-2xl transition-opacity hover:opacity-90 active:opacity-80 cursor-pointer"
             style={{
               backgroundColor: 'var(--surface)',
               border: '1px solid var(--line)',
             }}
           >
-            <span className="font-semibold text-lg">Se connecter</span>
+            <span className="font-semibold text-base">Se connecter</span>
           </button>
         </div>
       </div>
