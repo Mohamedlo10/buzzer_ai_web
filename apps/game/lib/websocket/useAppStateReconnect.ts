@@ -1,11 +1,11 @@
 import { useEffect, useRef } from 'react';
 import { AppState, AppStateStatus } from 'react-native';
-import { wsManager } from './WebSocketManager';
+import { wsManager } from '~/lib/websocket';
 
 /**
-/ * Hook to automatically reconnect WebSocket when the app comes back to the foreground
-/ * (e.g. from background on iOS/Android).
-/ */
+ * Hook to automatically reconnect WebSocket when the app comes back to the foreground
+ * (e.g. from background on iOS/Android).
+ */
 export function useAppStateReconnect() {
   const appState = useRef<AppStateStatus>(AppState.currentState);
 

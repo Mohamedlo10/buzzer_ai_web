@@ -10,7 +10,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, Play, DoorOpen, Users, Crown, Gamepad2, Share2, Copy } from 'lucide-react-native';
 import { useLobbySession } from '~/lib/hooks/useLobbySession';
-import { useAppStateReconnect } from '~/lib/websocket';
+import { useAppStateReconnect } from '~/lib/websocket/useAppStateReconnect';
 import { palette, inkAlpha } from '~/lib/theme/tokens';
 
 export default function LobbyScreen() {

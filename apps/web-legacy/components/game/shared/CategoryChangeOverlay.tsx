@@ -11,7 +11,7 @@ interface CategoryChangeOverlayProps {
 export function CategoryChangeOverlay({ currentQuestion }: CategoryChangeOverlayProps) {
   const [showCategoryOverlay, setShowCategoryOverlay] = useState(false);
   const prevCategoryRef = useRef<string | null>(null);
-  const categoryOverlayTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const categoryOverlayTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (!currentQuestion?.category) return;
