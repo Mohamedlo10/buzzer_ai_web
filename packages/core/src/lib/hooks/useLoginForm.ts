@@ -56,9 +56,15 @@ export function useLoginForm(options?: UseLoginFormOptions) {
 
       options?.onNavigate?.(redirect);
     } catch (err: unknown) {
-      const apiError = err as { response?: { data?: { message?: string } } };
+      const apiError = err as {
+        response?: { data?: { message?: string } };
+        message?: string;
+      };
       const message =
-        apiError?.response?.data?.message ?? 'Échec de la connexion. Veuillez réessayer.';
+        apiError?.response?.data?.message ??
+        (apiError?.message === 'Network Error'
+          ? 'Impossible de contacter le serveur. Vérifiez que le serveur est démarré ou l’URL réseau.'
+          : 'Échec de la connexion. Veuillez réessayer.');
       setErrors({ password: message });
     }
   }

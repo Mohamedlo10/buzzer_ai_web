@@ -1,6 +1,8 @@
 import { useEffect } from 'react';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { queryClient } from '~/lib/query/queryClient';
 import { useFonts, Boldonse_400Regular } from '@expo-google-fonts/boldonse';
 import {
   Manrope_400Regular,
@@ -16,11 +18,6 @@ import '../global.css';
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  // Les clés viennent de `palette.font.nativeFamily`, que lit aussi
-  // `tailwind.config.js` pour résoudre `font-display` / `font-ui` / `font-serif`.
-  // Écrites en dur des deux côtés, elles finiraient par diverger — et le
-  // symptôme serait une police silencieusement remplacée par celle du système,
-  // sans la moindre erreur.
   const [loaded, error] = useFonts({
     [font.nativeFamily.display]: Boldonse_400Regular,
     [font.nativeFamily.ui]: Manrope_400Regular,
@@ -41,11 +38,13 @@ export default function RootLayout() {
   }
 
   return (
-    <Stack
-      screenOptions={{
-        headerShown: false,
-        contentStyle: { backgroundColor: palette.bg },
-      }}
-    />
+    <QueryClientProvider client={queryClient}>
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: palette.bg },
+        }}
+      />
+    </QueryClientProvider>
   );
 }

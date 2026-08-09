@@ -67,9 +67,15 @@ export function useRegisterForm(options?: UseRegisterFormOptions) {
       await register(username.trim(), email.trim(), password);
       options?.onNavigate?.('/rooms');
     } catch (err: unknown) {
-      const apiError = err as { response?: { data?: { message?: string } } };
+      const apiError = err as {
+        response?: { data?: { message?: string } };
+        message?: string;
+      };
       const message =
-        apiError?.response?.data?.message ?? "Échec de l'inscription. Veuillez réessayer.";
+        apiError?.response?.data?.message ??
+        (apiError?.message === 'Network Error'
+          ? 'Impossible de contacter le serveur. Vérifiez votre connexion internet.'
+          : "Échec de l'inscription. Veuillez réessayer.");
       setErrors({ username: message });
     }
   }
