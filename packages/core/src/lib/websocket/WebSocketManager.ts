@@ -409,6 +409,31 @@ export class WebSocketManager {
     this._doDisconnect();
   }
 
+  /** Force an immediate reconnect (e.g. when app returns from background) */
+  reconnect(): void {
+    if (this.intentionallyClosed) return;
+    this.reconnectAttempt = 0;
+    this.clearReconnect();
+    this.clearHeartbeat();
+    this.clearPresenceHeartbeat();
+    if (this.ws) {
+      const oldWs = this.ws;
+      this.ws = null;
+      oldWs.onopen = null;
+      oldWs.onmessage = null;
+      oldWs.onerror = null;
+      oldWs.onclose = null;
+      try {
+        oldWs.close();
+      } catch {
+        /* ignore */
+      }
+    }
+    this.stompConnected = false;
+    this.openConnection();
+  }
+
+
   private _doDisconnect(): void {
     this.clearDisconnectTimer();
     this.intentionallyClosed = true;
