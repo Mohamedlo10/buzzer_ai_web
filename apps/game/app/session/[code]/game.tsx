@@ -7,7 +7,7 @@ import { ModeratedGame } from '~/components/game/moderated/ModeratedGame';
 import { useBuzzStore } from '~/stores/useBuzzStore';
 import { useAuthStore } from '~/stores/useAuthStore';
 import { useGameSocket } from '~/lib/websocket';
-import { useAppStateReconnect } from '~/lib/websocket/useAppStateReconnect';
+import { useAppStateReconnect } from '~/native/websocket/useAppStateReconnect';
 import * as gameApi from '~/lib/api/game';
 import { appStorage } from '~/lib/utils/storage';
 import { palette } from '~/lib/theme/tokens';
