@@ -10,6 +10,7 @@
     "react-dom": "$react-dom"
   },
   "scripts": {
+    "postinstall": "patch-package",
     "test": "npm run test:tokens && npm run test:routes && npm run test:confirm",
     "test:tokens": "node packages/core/src/lib/theme/palette.test.js",
     "test:routes": "node --experimental-strip-types --no-warnings packages/core/src/lib/auth/routePolicy.test.mjs",
@@ -20,6 +21,10 @@
   },
   "dependencies": {
     "react": "^19.2.8",
-    "react-dom": "^19.2.8"
+    "react-dom": "^19.2.8",
+    "react-native-worklets": "^0.10.3"
+  },
+  "devDependencies": {
+    "patch-package": "^8.0.1"
   }
 }

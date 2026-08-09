@@ -39,6 +39,20 @@ apps/web-legacy/.next
 # typescript
 *.tsbuildinfo
 
-# generated native folders
-/ios
-/android
+# Dossiers natifs générés par `npx expo prebuild` (Continuous Native Generation).
+# Non versionnés à dessein : `apps/game/app.json` est la source de vérité, et un
+# `ios/` regénéré depuis app.json est toujours cohérent, là où un `ios/` commité
+# dérive silencieusement de la config dès qu'un plugin change.
+#
+# Sans barre oblique initiale : les motifs doivent matcher à toute profondeur.
+# Ancrés à la racine (`/ios`), ils laissaient passer `apps/game/ios/` — 1,2 Go
+# et 9 425 fichiers de Pods et d'artefacts de build.
+#
+# Pour les recréer :  cd apps/game && npx expo prebuild
+ios/
+android/
+
+# Xcode écrit ses intermédiaires DANS node_modules lors d'un build local.
+# `patch-package` les capture alors comme s'ils faisaient partie du paquet : un
+# patch de 1,4 Mo truffé de chemins absolus, inapplicable sur une autre machine.
+.DerivedData/
