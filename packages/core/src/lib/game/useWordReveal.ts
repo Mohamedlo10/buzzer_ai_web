@@ -35,7 +35,7 @@ export function useWordReveal(
     const elapsed = Math.max(0, now - wordRevealStartedAtEpochMs);
     const msUntilNextWord = wordRevealIntervalMs - (elapsed % wordRevealIntervalMs);
 
-    let intervalId: NodeJS.Timeout;
+    let intervalId: ReturnType<typeof setTimeout>;
 
     // Lancer un setTimeout pour se synchroniser exactement sur le prochain mot,
     // puis lancer le setInterval régulier.
