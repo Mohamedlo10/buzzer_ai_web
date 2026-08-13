@@ -6,6 +6,7 @@ module.exports = {
   darkMode: 'class',
   content: [
     './app/**/*.{js,jsx,ts,tsx}',
+    './native/**/*.{js,jsx,ts,tsx}',
     '../../packages/core/src/**/*.{js,jsx,ts,tsx}',
   ],
   presets: [require('nativewind/preset'), sharedPreset],
