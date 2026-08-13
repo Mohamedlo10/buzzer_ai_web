@@ -24,7 +24,8 @@
     "react-dom": "^19.2.8"
   },
   "devDependencies": {
-    "patch-package": "^8.0.1"
+    "patch-package": "^8.0.1",
+    "react-native": "^0.86.2"
   },
   "version": "1.0.0"
 }
