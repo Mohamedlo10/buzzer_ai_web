@@ -1,0 +1,277 @@
+import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
+import { X, ArrowLeft, Zap } from 'lucide-react-native';
+import { palette } from '~/lib/theme/tokens';
+import { useSessionConfig } from '~/lib/hooks/useSessionConfig';
+import { StepBar } from './StepBar';
+import { StepGameMode } from './StepGameMode';
+import { StepSettings } from './StepSettings';
+import { StepTeams } from './StepTeams';
+import { StepSummary } from './StepSummary';
+
+interface SessionConfigFormProps {
+  onSuccess?: (sessionId: string, code: string) => void;
+  onClose?: () => void;
+  onNavigateToLobby?: (code: string) => void;
+  roomId?: string;
+  initialMaxPlayers?: number;
+}
+
+export function SessionConfigForm({
+  onSuccess,
+  onClose,
+  onNavigateToLobby,
+  roomId,
+  initialMaxPlayers,
+}: SessionConfigFormProps) {
+  const {
+    currentStep,
+    totalSteps,
+    getStepName,
+    questionMode,
+    sessionMode,
+    setSessionMode,
+    globalQuestionSeconds,
+    setGlobalQuestionSeconds,
+    setAnswerTimeSeconds,
+    answerChoicesCount,
+    setAnswerChoicesCount,
+    teams,
+    setTeams,
+    config,
+    setConfig,
+    error,
+    isCreating,
+    handleModeChange,
+    handleNext,
+    handleBack,
+    handleQuickStart,
+    handleCreate,
+  } = useSessionConfig({
+    onSuccess,
+    onNavigateToLobby,
+    roomId,
+    initialMaxPlayers,
+  });
+
+  const isFirstStep = currentStep === 0;
+  const isLastStep = currentStep === totalSteps - 1;
+
+  const renderStepContent = () => {
+    switch (currentStep) {
+      case 0:
+        return (
+          <StepGameMode
+            handleQuickStart={handleQuickStart}
+            isCreating={isCreating}
+            sessionMode={sessionMode}
+            setSessionMode={setSessionMode}
+            questionMode={questionMode}
+            handleModeChange={handleModeChange}
+            config={config}
+            setConfig={setConfig}
+          />
+        );
+      case 1:
+        return (
+          <StepSettings
+            sessionMode={sessionMode}
+            questionMode={questionMode}
+            globalQuestionSeconds={globalQuestionSeconds}
+            setGlobalQuestionSeconds={setGlobalQuestionSeconds}
+            setAnswerTimeSeconds={setAnswerTimeSeconds}
+            answerChoicesCount={answerChoicesCount}
+            setAnswerChoicesCount={setAnswerChoicesCount}
+            config={config}
+            setConfig={setConfig}
+          />
+        );
+      case 2:
+        return config.isTeamMode ? (
+          <StepTeams teams={teams} setTeams={setTeams} />
+        ) : (
+          <StepSummary
+            sessionMode={sessionMode}
+            questionMode={questionMode}
+            globalQuestionSeconds={globalQuestionSeconds}
+            answerChoicesCount={answerChoicesCount}
+            config={config}
+            teams={teams}
+            error={error}
+          />
+        );
+      case 3:
+        return (
+          <StepSummary
+            sessionMode={sessionMode}
+            questionMode={questionMode}
+            globalQuestionSeconds={globalQuestionSeconds}
+            answerChoicesCount={answerChoicesCount}
+            config={config}
+            teams={teams}
+            error={error}
+          />
+        );
+      default:
+        return null;
+    }
+  };
+
+  const getFooterButtonLabel = () => {
+    if (isLastStep) return isCreating ? 'Création...' : 'Créer la session';
+    if (currentStep === 0) return 'Régler les paramètres';
+    if (currentStep === 1) return config.isTeamMode ? 'Configurer les équipes' : 'Voir le récapitulatif';
+    if (currentStep === 2) return 'Voir le récapitulatif';
+    return 'Suivant';
+  };
+
+  const footerDisabled = isLastStep
+    ? isCreating || (config.isTeamMode && teams.length < 2)
+    : false;
+
+  return (
+    <View style={{ flex: 1, backgroundColor: palette.bg }}>
+      {/* Header sticky */}
+      <View
+        style={{
+          paddingTop: 20,
+          paddingBottom: 12,
+          paddingHorizontal: 16,
+          borderBottomWidth: 1,
+          borderBottomColor: palette.line,
+          gap: 12,
+        }}
+      >
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+          <TouchableOpacity
+            onPress={isFirstStep ? onClose : handleBack}
+            activeOpacity={0.7}
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 20,
+              backgroundColor: palette.surface,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            {isFirstStep
+              ? <X size={20} color={palette.txt} />
+              : <ArrowLeft size={20} color={palette.txt} />}
+          </TouchableOpacity>
+
+          <View style={{ flex: 1, alignItems: 'center', paddingHorizontal: 8 }}>
+            <Text style={{ color: palette.txt, fontWeight: '700', fontSize: 16 }}>Créer une session</Text>
+            <Text style={{ color: palette.inkSoft, fontSize: 12, marginTop: 2 }}>
+              {getStepName()} · Étape {currentStep + 1}/{totalSteps}
+            </Text>
+          </View>
+
+          <View style={{ width: 40, alignItems: 'flex-end' }}>
+            {!isLastStep ? (
+              <TouchableOpacity
+                onPress={handleNext}
+                activeOpacity={0.8}
+                style={{
+                  paddingHorizontal: 12,
+                  paddingVertical: 6,
+                  borderRadius: 9999,
+                  backgroundColor: palette.primary,
+                }}
+              >
+                <Text style={{ color: '#FFFFFF', fontSize: 12, fontWeight: '700' }}>Suivant</Text>
+              </TouchableOpacity>
+            ) : <View style={{ width: 40 }} />}
+          </View>
+        </View>
+
+        <StepBar step={currentStep + 1} total={totalSteps} />
+      </View>
+
+      {/* Scrollable body */}
+      <ScrollView
+        contentContainerStyle={{ padding: 16, paddingBottom: 120, gap: 24 }}
+        showsVerticalScrollIndicator={false}
+      >
+        {renderStepContent()}
+      </ScrollView>
+
+      {/* Fixed footer */}
+      <View
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          backgroundColor: palette.bg,
+          borderTopWidth: 1,
+          borderTopColor: palette.line,
+          paddingHorizontal: 16,
+          paddingTop: 12,
+          paddingBottom: 32,
+          flexDirection: 'row',
+          gap: 12,
+          alignItems: 'center',
+        }}
+      >
+        {currentStep > 0 && (
+          <TouchableOpacity
+            onPress={handleBack}
+            activeOpacity={0.7}
+            style={{
+              width: 48,
+              height: 48,
+              borderRadius: 16,
+              backgroundColor: palette.surface2,
+              borderWidth: 1,
+              borderColor: palette.line,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <ArrowLeft size={20} color={palette.txt} />
+          </TouchableOpacity>
+        )}
+
+        <TouchableOpacity
+          onPress={isLastStep ? handleCreate : handleNext}
+          disabled={footerDisabled}
+          activeOpacity={0.8}
+          style={{
+            flex: 1,
+            borderRadius: 16,
+            paddingVertical: 14,
+            backgroundColor: footerDisabled ? palette.surface2 : palette.primary,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 8,
+            opacity: footerDisabled ? 0.5 : 1,
+            shadowColor: palette.primary,
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: footerDisabled ? 0 : 0.3,
+            shadowRadius: 12,
+            elevation: footerDisabled ? 0 : 4,
+          }}
+        >
+          {isLastStep && isCreating ? (
+            <>
+              <ActivityIndicator size="small" color="#FFFFFF" />
+              <Text style={{ color: '#FFFFFF', fontWeight: '700', fontSize: 16 }}>Création...</Text>
+            </>
+          ) : isLastStep ? (
+            <>
+              <Zap size={20} color="#FFFFFF" />
+              <Text style={{ color: footerDisabled ? palette.inkSoft : '#FFFFFF', fontWeight: '700', fontSize: 16 }}>
+                {getFooterButtonLabel()}
+              </Text>
+            </>
+          ) : (
+            <Text style={{ color: '#FFFFFF', fontWeight: '700', fontSize: 16 }}>
+              {getFooterButtonLabel()}
+            </Text>
+          )}
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+}

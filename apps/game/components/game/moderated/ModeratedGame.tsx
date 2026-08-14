@@ -1,12 +1,24 @@
-import { useState } from 'react';
-import { View, Text, TouchableOpacity, ActivityIndicator, ScrollView } from 'react-native';
-import { Eye, Check, X, SkipForward, Pause, Play, RefreshCw } from 'lucide-react-native';
+import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
+import { Eye, XCircle, PlayCircle, PauseCircle, SkipForward, Users } from 'lucide-react-native';
 import { BuzzerButton } from '~/components/game/BuzzerButton';
+import { AnswerRevealOverlay } from '~/components/game/AnswerRevealOverlay';
+import { GameHeader } from '~/components/game/shared/GameHeader';
+import { PauseOverlay } from '~/components/game/shared/PauseOverlay';
+import { CategoryChangeOverlay } from '~/components/game/shared/CategoryChangeOverlay';
+import { GameFooter } from '~/components/game/shared/GameFooter';
+import { BuzzAlertOverlay } from './BuzzAlertOverlay';
+import { BuzzQueueView } from './BuzzQueueView';
+import { QuestionAndAnswerDisplay } from './QuestionAndAnswerDisplay';
+import { PlayerActionView } from './PlayerActionView';
 import { useModeratedGame } from '~/lib/hooks/useModeratedGame';
+import { teamColor } from '~/lib/game/teamColors';
+import { palette } from '~/lib/theme/tokens';
 import type { PlayerResponse, TeamResponse } from '~/types/api';
-import { palette, inkAlpha } from '~/lib/theme/tokens';
 
-export interface ModeratedGameProps {
+// TODO: Replace with your actual modal/alert component for RN, simplified here to avoid external deps if not present
+import { Alert } from 'react-native';
+
+interface ModeratedGameProps {
   sessionId: string;
   isManager: boolean;
   isSpectator: boolean;
@@ -20,283 +32,184 @@ export interface ModeratedGameProps {
 }
 
 export function ModeratedGame({
-  sessionId,
-  isManager,
-  isSpectator,
-  currentPlayer,
-  players,
-  teams,
-  isTeamMode,
-  handlePause,
-  handleResume,
-  isPauseToggling,
+  sessionId, isManager, isSpectator, currentPlayer, players, teams, isTeamMode, handlePause, handleResume, isPauseToggling
 }: ModeratedGameProps) {
   const {
-    session,
-    currentQuestion,
-    questionIndex,
-    isPaused,
-    game,
-    isSubmitting,
-    isSkipping,
-    isValidating,
-    isResettingBuzzer,
-    showAnswer,
-    setShowAnswer,
-    myPlayerId,
-    myQueuePosition,
-    buzzerOpen,
-    answeringPlayer,
-    countdownSeconds,
-    actualHasBuzzed,
-    answeredWrongThisQuestion,
-    teamBuzzed,
-    firstBuzzer,
-    handleBuzz,
-    handleValidate,
-    handleSkip,
-    handleAdvanceAfterAllWrong,
-    handleResetBuzzer,
-  } = useModeratedGame({
-    sessionId,
-    isManager,
-    isSpectator,
-    currentPlayer,
-    players,
-    teams,
-    isTeamMode,
-  });
+    session, currentQuestion, questionIndex, isPaused, game, isSubmitting, isSkipping, showSkipConfirm, setShowSkipConfirm,
+    pendingWrong, setPendingWrong, isValidating, isResettingBuzzer, manualQuestions, showAnswer, setShowAnswer, myPlayerId,
+    amIAnswering, myQueuePosition, buzzerOpen, answeringPlayer, countdownSeconds, displayedWordCount, actualHasBuzzed,
+    answeredWrongThisQuestion, teamBuzzed, firstBuzzer, handleBuzz, handleValidate, handleSkip, handleAdvanceAfterAllWrong, handleResetBuzzer
+  } = useModeratedGame({ sessionId, isManager, isSpectator, currentPlayer, players, teams, isTeamMode });
 
-  if (!session || !currentQuestion) {
-    return (
-      <View className="flex-1 bg-bg flex-col items-center justify-center p-6">
-        <ActivityIndicator size="large" color={palette.primary} />
-        <Text className="text-txt-60 text-sm mt-3 font-semibold">
-          Préparation de la question...
-        </Text>
-      </View>
+  if (!session || !currentQuestion) return null;
+
+  // Polyfills for ConfirmModal from web
+  const confirmWrong = (pending: { applyPenalty: boolean }) => {
+    Alert.alert(
+      pending.applyPenalty ? 'Faux avec pénalité ?' : 'Faux sans pénalité ?',
+      pending.applyPenalty
+        ? `${firstBuzzer?.playerName ?? 'Le joueur'} sera pénalisé et retiré de la file d'attente.`
+        : `${firstBuzzer?.playerName ?? 'Le joueur'} sera retiré de la file sans perdre de points.`,
+      [
+        { text: 'Annuler', style: 'cancel', onPress: () => setPendingWrong(null) },
+        { text: pending.applyPenalty ? 'Faux' : 'Sans pénalité', style: 'destructive', onPress: () => { setPendingWrong(null); handleValidate(false, pending.applyPenalty); } }
+      ]
     );
+  };
+  
+  if (pendingWrong) {
+    confirmWrong(pendingWrong);
+  }
+
+  const confirmSkip = () => {
+    Alert.alert(
+      'Passer la question ?',
+      'Cette action est irréversible.',
+      [
+        { text: 'Annuler', style: 'cancel', onPress: () => setShowSkipConfirm(false) },
+        { text: 'Passer', style: 'destructive', onPress: () => { setShowSkipConfirm(false); handleSkip(); } }
+      ]
+    );
+  };
+
+  if (showSkipConfirm) {
+    confirmSkip();
   }
 
   return (
-    <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 120 }}>
-      {/* Question Header */}
-      <View className="bg-surface rounded-2xl border border-line p-3.5 mb-4 flex-row items-center justify-between shadow-sm">
-        <View className="flex-row items-center">
-          <View className="px-2.5 py-1 rounded-full bg-accent/15 mr-2.5">
-            <Text className="text-accent text-xs font-bold">
-              Q{questionIndex + 1} / {session.totalQuestions || '?'}
-            </Text>
-          </View>
-          <Text className="text-txt-60 text-xs font-semibold uppercase tracking-wider">
-            {currentQuestion.category || 'Général'}
-          </Text>
-        </View>
+    <View style={{ flex: 1 }}>
+      <GameHeader
+        session={session}
+        currentQuestion={currentQuestion}
+        questionIndex={questionIndex}
+        isConnected={true}
+        isManager={isManager}
+        isSpectator={isSpectator}
+        currentPlayer={currentPlayer}
+        teams={teams}
+      />
 
-        {isPaused ? (
-          <View className="px-2.5 py-1 rounded-full bg-gold/15">
-            <Text className="text-gold text-xs font-bold">PAUSE</Text>
-          </View>
-        ) : null}
-      </View>
+      <PauseOverlay isPaused={isPaused} isManager={isManager} isPauseToggling={isPauseToggling} onResume={handleResume} />
+      <CategoryChangeOverlay currentQuestion={currentQuestion} />
+      
+      <BuzzAlertOverlay isManager={isManager} phase={game.phase} firstBuzzer={firstBuzzer} buzzQueue={game.buzzQueue} players={players} myPlayerId={myPlayerId} isTeamMode={isTeamMode} teams={teams} />
 
-      {/* Question Text Box */}
-      <View className="bg-surface rounded-3xl border border-line p-5 mb-4 flex-col shadow-sm">
-        <Text className="text-txt-40 text-[10px] font-bold tracking-widest uppercase mb-2">
-          Question
-        </Text>
-        <Text className="text-txt font-bold text-xl leading-relaxed mb-3">
-          {currentQuestion.text}
-        </Text>
+      <ScrollView contentContainerStyle={{ paddingBottom: 24 }}>
+        <QuestionAndAnswerDisplay
+          isManager={isManager}
+          currentQuestion={currentQuestion}
+          questionIndex={questionIndex}
+          manualQuestions={manualQuestions}
+          showAnswer={showAnswer}
+          setShowAnswer={setShowAnswer}
+          displayedWordCount={displayedWordCount}
+          phase={game.phase}
+          totalWordCount={game.totalWordCount}
+        />
 
-        {/* Answer display for Manager / Spectator */}
-        {(isManager || isSpectator || showAnswer) ? (
-          <View className="mt-2 p-3 rounded-2xl bg-bg border border-line flex-col">
-            <Text className="text-accent text-xs font-bold mb-1">
-              RÉPONSE ATTENDUE :
-            </Text>
-            <Text className="text-txt font-bold text-base">
-              {currentQuestion.answer}
-            </Text>
+        <PlayerActionView
+          isManager={isManager}
+          isSpectator={isSpectator}
+          amIAnswering={amIAnswering}
+          phase={game.phase}
+          answeringPlayer={answeringPlayer}
+          countdownSeconds={countdownSeconds}
+          answeredWrongThisQuestion={answeredWrongThisQuestion}
+        />
+
+        {/* Spectator */}
+        {isSpectator && (
+          <View style={{ paddingHorizontal: 16, paddingTop: 16 }}>
+            <View style={{ backgroundColor: palette.surface, borderRadius: 24, padding: 32, borderWidth: 1, borderColor: palette.line, alignItems: 'center' }}>
+              <View style={{ width: 80, height: 80, borderRadius: 40, backgroundColor: palette.warn + '26', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+                <Eye size={32} color={palette.warn} />
+              </View>
+              <Text style={{ color: palette.warn, fontSize: 20, fontWeight: '700', marginBottom: 8 }}>Mode spectateur</Text>
+              <Text style={{ color: palette.inkSoft }}>Vous observez la partie</Text>
+            </View>
           </View>
-        ) : (
-          <TouchableOpacity
-            onPress={() => setShowAnswer(true)}
-            activeOpacity={0.7}
-            className="flex-row items-center mt-1"
-          >
-            <Eye size={14} color={palette.gold} />
-            <Text className="text-gold text-xs font-semibold ml-1.5 underline">
-              Afficher la réponse (entraînement)
-            </Text>
-          </TouchableOpacity>
         )}
-      </View>
 
-      {/* Answering Player Banner / Countdown */}
-      {answeringPlayer ? (
-        <View className="bg-gold/15 border border-gold/30 rounded-2xl p-4 mb-4 flex-col items-center shadow-sm">
-          <Text className="text-gold text-xs font-bold tracking-wider uppercase mb-1">
-            ⚡ JOUEUR EN TRAIN DE RÉPONDRE
-          </Text>
-          <Text className="text-txt font-bold text-xl mb-1">
-            {(answeringPlayer as any).playerName || answeringPlayer.name}
-          </Text>
-          {countdownSeconds !== null ? (
-            <Text className="text-buzz font-extrabold text-2xl">
-              {countdownSeconds}s
-            </Text>
-          ) : null}
-        </View>
-      ) : null}
-
-      {/* Spectator View */}
-      {isSpectator ? (
-        <View className="bg-surface rounded-3xl p-6 border border-line flex-col items-center mb-4">
-          <Eye size={32} color={palette.gold} />
-          <Text className="text-gold font-bold text-base mt-2">
-            Mode spectateur
-          </Text>
-          <Text className="text-txt-60 text-xs text-center mt-1">
-            Vous observez la partie en cours
-          </Text>
-        </View>
-      ) : null}
-
-      {/* Buzzer Button for Players */}
-      {!isSpectator && !isManager ? (
-        <View className="mb-4 flex-col items-center">
-          <BuzzerButton
-            onBuzz={handleBuzz}
-            disabled={isSubmitting || !buzzerOpen || actualHasBuzzed || answeredWrongThisQuestion}
-            hasBuzzed={actualHasBuzzed}
-            queuePosition={myQueuePosition}
-            teamBuzzed={teamBuzzed}
-          />
-        </View>
-      ) : null}
-
-      {/* Manager Validation Controls (if player is answering) */}
-      {isManager && answeringPlayer ? (
-        <View className="bg-surface rounded-3xl border border-line p-4 mb-4 flex-col">
-          <Text className="text-txt font-bold text-center text-sm mb-3">
-            Valider la réponse de {(answeringPlayer as any).playerName || answeringPlayer.name} :
-          </Text>
-          <View className="flex-row gap-3">
-            <TouchableOpacity
-              onPress={() => handleValidate(true)}
-              disabled={isValidating}
-              activeOpacity={0.8}
-              className="flex-1 py-3.5 rounded-2xl bg-good flex-row items-center justify-center shadow-sm"
-            >
-              <Check size={20} color="#FFFFFF" />
-              <Text className="text-white font-bold text-base ml-1.5">
-                CORRECT
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={() => handleValidate(false, true)}
-              disabled={isValidating}
-              activeOpacity={0.8}
-              className="flex-1 py-3.5 rounded-2xl bg-buzz flex-row items-center justify-center shadow-sm"
-            >
-              <X size={20} color="#FFFFFF" />
-              <Text className="text-white font-bold text-base ml-1.5">
-                FAUX (-pts)
-              </Text>
-            </TouchableOpacity>
+        {/* Buzzer Button */}
+        {!isSpectator && !isManager && (
+          <View style={{ paddingHorizontal: 16, paddingVertical: 12, alignItems: 'center' }}>
+            <BuzzerButton
+              onBuzz={handleBuzz}
+              disabled={isSubmitting || !buzzerOpen || actualHasBuzzed || answeredWrongThisQuestion}
+              hasBuzzed={actualHasBuzzed}
+              queuePosition={myQueuePosition}
+              teamBuzzed={teamBuzzed}
+            />
+            {teamBuzzed && firstBuzzer && (() => {
+              const tColor = teamColor(teams.find(t => t.id === firstBuzzer.teamId)?.color);
+              return (
+                <View style={{ marginTop: 8, width: '100%', maxWidth: 360, borderRadius: 16, padding: 16, borderWidth: 1, backgroundColor: tColor + '1A', borderColor: tColor, flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                  <View style={{ width: 30, height: 30, borderRadius: 15, backgroundColor: tColor + '33', alignItems: 'center', justifyContent: 'center' }}>
+                    <Users size={14} color={tColor} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ color: palette.txt, fontWeight: '700', fontSize: 13.5 }}>Votre équipe a déjà buzzé</Text>
+                    <Text style={{ color: palette.inkSoft, fontSize: 12, marginTop: 2 }} numberOfLines={1}>
+                      <Text style={{ fontWeight: '700' }}>{firstBuzzer.playerName}</Text> répond pour {firstBuzzer.teamName || 'votre équipe'}
+                    </Text>
+                  </View>
+                </View>
+              );
+            })()}
           </View>
-        </View>
-      ) : null}
+        )}
 
-      {/* Manager Action Controls (Skip, Reset, Pause) */}
-      {isManager ? (
-        <View className="flex-row gap-2 mb-4">
-          <TouchableOpacity
-            onPress={handleSkip}
-            disabled={isSkipping}
-            activeOpacity={0.7}
-            className="flex-1 py-3 rounded-xl bg-surface2 border border-line flex-row items-center justify-center"
-          >
-            <SkipForward size={16} color={inkAlpha.soft} />
-            <Text className="text-txt-60 font-semibold text-xs ml-1.5">
-              Passer
-            </Text>
-          </TouchableOpacity>
+        <BuzzQueueView
+          buzzQueue={game.buzzQueue}
+          phase={game.phase}
+          countdownSeconds={countdownSeconds}
+          isManager={isManager}
+          isValidating={isValidating}
+          players={players}
+          myPlayerId={myPlayerId}
+          isTeamMode={isTeamMode}
+          teams={teams}
+          onValidate={handleValidate}
+          onSetPendingWrong={setPendingWrong}
+        />
 
-          <TouchableOpacity
-            onPress={handleResetBuzzer}
-            disabled={isResettingBuzzer}
-            activeOpacity={0.7}
-            className="flex-1 py-3 rounded-xl bg-surface2 border border-line flex-row items-center justify-center"
-          >
-            <RefreshCw size={16} color={inkAlpha.soft} />
-            <Text className="text-txt-60 font-semibold text-xs ml-1.5">
-              Reset
-            </Text>
-          </TouchableOpacity>
+        {/* Manager Controls */}
+        {isManager && (
+          <View style={{ paddingHorizontal: 16, paddingTop: 12 }}>
+            <View style={{ flexDirection: 'row', gap: 8 }}>
+              <TouchableOpacity onPress={() => setShowSkipConfirm(true)} disabled={isSkipping} style={{ flex: 1, paddingVertical: 12, borderRadius: 12, backgroundColor: palette.surface2, alignItems: 'center', justifyContent: 'center', opacity: isSkipping ? 0.6 : 1 }}>
+                {isSkipping ? <ActivityIndicator size="small" color="#FFFFFF" /> : <Text style={{ color: palette.inkSoft, fontWeight: '500', fontSize: 14 }}>Passer</Text>}
+              </TouchableOpacity>
+              <TouchableOpacity onPress={handleResetBuzzer} disabled={game.buzzQueue.length === 0 || isResettingBuzzer} style={{ flex: 1, paddingVertical: 12, borderRadius: 12, backgroundColor: game.buzzQueue.length > 0 ? palette.bad + '33' : palette.surface2, alignItems: 'center', justifyContent: 'center', opacity: (game.buzzQueue.length === 0 || isResettingBuzzer) ? 0.5 : 1 }}>
+                {isResettingBuzzer ? <ActivityIndicator size="small" color={palette.bad} /> : <Text style={{ fontWeight: '500', fontSize: 14, color: game.buzzQueue.length > 0 ? palette.bad : palette.inkSoft }}>Reset</Text>}
+              </TouchableOpacity>
+              <TouchableOpacity onPress={isPaused ? handleResume : handlePause} disabled={isPauseToggling} style={{ flex: 1, paddingVertical: 12, borderRadius: 12, backgroundColor: isPaused ? palette.primary : palette.warn + '33', borderWidth: isPaused ? 0 : 1, borderColor: palette.warn + '4D', alignItems: 'center', justifyContent: 'center', opacity: isPauseToggling ? 0.6 : 1, flexDirection: 'row', gap: 6 }}>
+                {isPauseToggling ? (
+                  <ActivityIndicator size="small" color={isPaused ? '#FFFFFF' : palette.warn} />
+                ) : isPaused ? (
+                  <><PlayCircle size={18} color="#FFFFFF" /><Text style={{ fontWeight: '700', fontSize: 14, color: '#FFFFFF' }}>Reprendre</Text></>
+                ) : (
+                  <><PauseCircle size={18} color={palette.warn} /><Text style={{ fontWeight: '700', fontSize: 14, color: palette.warn }}>Pause</Text></>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
 
-          <TouchableOpacity
-            onPress={isPaused ? handleResume : handlePause}
-            disabled={isPauseToggling}
-            activeOpacity={0.7}
-            className="flex-1 py-3 rounded-xl bg-gold/15 border border-gold/30 flex-row items-center justify-center"
-          >
-            {isPaused ? (
-              <View className="flex-row items-center">
-                <Play size={16} color={palette.gold} />
-                <Text className="text-gold font-bold text-xs ml-1.5">
-                  Reprendre
-                </Text>
-              </View>
-            ) : (
-              <View className="flex-row items-center">
-                <Pause size={16} color={palette.gold} />
-                <Text className="text-gold font-bold text-xs ml-1.5">
-                  Pause
-                </Text>
-              </View>
-            )}
-          </TouchableOpacity>
-        </View>
-      ) : null}
+        <GameFooter sessionId={sessionId} players={players} teams={teams} isTeamMode={isTeamMode} isManager={isManager} currentUserId={myPlayerId} />
+      </ScrollView>
 
-      {/* Reveal Banner if question answered */}
-      {game.reveal ? (
-        <View className="bg-surface rounded-3xl border border-line p-5 mb-4 flex-col items-center shadow-md">
-          {game.reveal.winnerName ? (
-            <>
-              <Text className="text-good font-bold text-lg mb-1 text-center">
-                🎉 Bonne réponse de {game.reveal.winnerName} !
-              </Text>
-              <Text className="text-txt-60 text-xs text-center mb-3">
-                Réponse : {game.reveal.correctAnswer}
-              </Text>
-            </>
-          ) : (
-            <>
-              <Text className="text-buzz font-bold text-lg mb-1 text-center">
-                ❌ Personne n&apos;a trouvé !
-              </Text>
-              <Text className="text-txt-60 text-xs text-center mb-3">
-                Bonne réponse : {game.reveal.correctAnswer}
-              </Text>
-              {isManager ? (
-                <TouchableOpacity
-                  onPress={handleAdvanceAfterAllWrong}
-                  activeOpacity={0.8}
-                  className="px-5 py-2.5 rounded-full bg-buzz"
-                >
-                  <Text className="text-white text-xs font-bold">
-                    Question suivante →
-                  </Text>
-                </TouchableOpacity>
-              ) : null}
-            </>
-          )}
-        </View>
-      ) : null}
-    </ScrollView>
+      {game.reveal && (
+        <AnswerRevealOverlay
+          visible={!!game.reveal}
+          correctAnswer={game.reveal.correctAnswer}
+          winnerId={game.reveal.winnerId}
+          winnerName={game.reveal.winnerName}
+          allAnswersWrong={game.reveal.allAnswersWrong}
+          isManager={isManager}
+          onAdvance={handleAdvanceAfterAllWrong}
+        />
+      )}
+    </View>
   );
 }

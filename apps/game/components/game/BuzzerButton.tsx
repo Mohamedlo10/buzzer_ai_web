@@ -1,9 +1,10 @@
-import { useEffect } from 'react';
-import { View, Text, TouchableOpacity, Platform } from 'react-native';
+import { useEffect, useRef } from 'react';
+import { View, Text, TouchableOpacity, Animated, Easing } from 'react-native';
 import { Zap } from 'lucide-react-native';
-import { palette, inkAlpha } from '~/lib/theme/tokens';
+import { palette } from '~/lib/theme/tokens';
+import Svg, { Path } from 'react-native-svg';
 
-export interface BuzzerButtonProps {
+interface BuzzerButtonProps {
   onBuzz: () => void;
   disabled?: boolean;
   hasBuzzed?: boolean;
@@ -20,130 +21,140 @@ export function BuzzerButton({
 }: BuzzerButtonProps) {
   const isActive = !disabled && !hasBuzzed && queuePosition === null;
 
+  const size = 180;
+  const color = palette.primary;
+  const ink = palette.primaryInk;
+
+  // Animations
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+  const haloScale1 = useRef(new Animated.Value(0.85)).current;
+  const haloOpacity1 = useRef(new Animated.Value(0.3)).current;
+  const haloScale2 = useRef(new Animated.Value(0.85)).current;
+  const haloOpacity2 = useRef(new Animated.Value(0)).current;
+
   useEffect(() => {
-    if (!isActive || Platform.OS !== 'web') return;
+    if (isActive) {
+      // Pulse bouton
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(scaleAnim, { toValue: 1.04, duration: 700, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+          Animated.timing(scaleAnim, { toValue: 1, duration: 700, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+        ])
+      ).start();
 
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.code !== 'Space' && e.code !== 'Enter') return;
-      const tag = (e.target as HTMLElement)?.tagName;
-      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
-      e.preventDefault();
-      onBuzz();
-    };
+      // Halo 1
+      const animateHalo1 = Animated.loop(
+        Animated.parallel([
+          Animated.timing(haloScale1, { toValue: 1.35, duration: 1800, easing: Easing.out(Easing.ease), useNativeDriver: true }),
+          Animated.timing(haloOpacity1, { toValue: 0, duration: 1800, easing: Easing.out(Easing.ease), useNativeDriver: true }),
+        ])
+      );
 
-    window.addEventListener('keydown', handleKey);
-    return () => window.removeEventListener('keydown', handleKey);
-  }, [isActive, onBuzz]);
+      // Halo 2 (décalé)
+      const animateHalo2 = Animated.loop(
+        Animated.parallel([
+          Animated.timing(haloScale2, { toValue: 1.35, duration: 1800, easing: Easing.out(Easing.ease), useNativeDriver: true }),
+          Animated.sequence([
+            Animated.timing(haloOpacity2, { toValue: 0.3, duration: 0, useNativeDriver: true }),
+            Animated.timing(haloOpacity2, { toValue: 0, duration: 1800, easing: Easing.out(Easing.ease), useNativeDriver: true }),
+          ])
+        ])
+      );
+
+      animateHalo1.start();
+      setTimeout(() => animateHalo2.start(), 600);
+
+      return () => {
+        scaleAnim.stopAnimation();
+        haloScale1.stopAnimation();
+        haloOpacity1.stopAnimation();
+        haloScale2.stopAnimation();
+        haloOpacity2.stopAnimation();
+      };
+    }
+  }, [isActive]); // eslint-disable-line
 
   const handleClick = () => {
     if (!isActive) return;
     onBuzz();
   };
 
-  const size = 180;
-
-  // ── Waiting in queue state ──
+  // ── Waiting in queue ──
   if (queuePosition !== null) {
     return (
-      <View className="flex-col items-center py-6">
-        <View
-          style={{ width: size, height: size }}
-          className="flex-col items-center justify-center rounded-full border-4 border-line opacity-60 bg-surface"
-        >
-          <Zap size={36} color={inkAlpha.muted} strokeWidth={2} />
-          <Text className="text-txt-60 font-bold text-2xl mt-1 tracking-wide">
-            #{queuePosition}
-          </Text>
+      <View style={{ alignItems: 'center', paddingVertical: 24 }}>
+        <View style={{ width: size, height: size, borderRadius: size / 2, borderWidth: 3, borderColor: palette.line, opacity: 0.6, backgroundColor: palette.surface, alignItems: 'center', justifyContent: 'center' }}>
+          <Zap size={36} color={palette.inkSoft} strokeWidth={2} />
+          <Text style={{ color: palette.inkSoft, fontWeight: '700', fontSize: 24, marginTop: 4, letterSpacing: 1 }}>#{queuePosition}</Text>
         </View>
-        <Text className="text-txt-40 mt-4 text-sm font-medium">
-          En file d&apos;attente
-        </Text>
+        <Text style={{ color: palette.inkSoft, marginTop: 16, fontSize: 14, fontWeight: '500' }}>En file d'attente</Text>
       </View>
     );
   }
 
   // ── Disabled state ──
-  if (disabled || hasBuzzed) {
+  if (disabled) {
     return (
-      <View className="flex-col items-center py-6">
-        <View
-          style={{ width: size, height: size }}
-          className="relative flex-col items-center justify-center rounded-full border border-line opacity-60 bg-surface"
-        >
+      <View style={{ alignItems: 'center', paddingVertical: 24 }}>
+        <View style={{ width: size, height: size, borderRadius: size / 2, borderWidth: 1, borderColor: palette.line, opacity: 0.6, backgroundColor: palette.surface, alignItems: 'center', justifyContent: 'center' }}>
           {teamBuzzed ? (
-            <Text className="text-4xl mb-1">🔒</Text>
+            <Text style={{ fontSize: 36, marginBottom: 4 }}>🔒</Text>
           ) : (
-            <Zap size={44} color={inkAlpha.muted} strokeWidth={2} />
+            <Zap size={44} color={palette.inkSoft} strokeWidth={2} />
           )}
-          <Text className="text-txt-40 font-bold text-lg mt-2 tracking-wide">
+          <Text style={{ color: palette.inkSoft, fontWeight: '700', fontSize: 18, marginTop: 8, letterSpacing: 1 }}>
             {teamBuzzed ? 'VERROUILLÉ' : 'BUZZ'}
           </Text>
         </View>
-        <Text className="text-txt-40 mt-3 text-xs font-semibold">
+        <Text style={{ color: palette.inkSoft, marginTop: 12, fontSize: 12, fontWeight: '600' }}>
           {teamBuzzed ? 'Votre équipe a déjà buzzé' : 'Buzzer désactivé'}
         </Text>
       </View>
     );
   }
 
-  // ── Active Xalaat Buzzer ──
+  // ── Active Buzzer ──
   return (
-    <View className="flex-col items-center py-4">
-      <View
-        style={{
-          width: size + 40,
-          height: size + 40,
-        }}
-        className="relative flex-col items-center justify-center"
-      >
-        {/* Concentric Outer Ring */}
-        <View
-          style={{
-            position: 'absolute',
-            width: size + 20,
-            height: size + 20,
-            borderRadius: (size + 20) / 2,
-            backgroundColor: palette.primary,
-            opacity: 0.2,
-          }}
-        />
+    <View style={{ alignItems: 'center', paddingVertical: 16 }}>
+      <View style={{ width: size + 40, height: size + 40, alignItems: 'center', justifyContent: 'center' }}>
+        {/* Halos */}
+        <Animated.View style={{ position: 'absolute', width: size + 40, height: size + 40, borderRadius: (size + 40) / 2, backgroundColor: color, opacity: haloOpacity1, transform: [{ scale: haloScale1 }] }} />
+        <Animated.View style={{ position: 'absolute', width: size + 40, height: size + 40, borderRadius: (size + 40) / 2, backgroundColor: color, opacity: haloOpacity2, transform: [{ scale: haloScale2 }] }} />
+        {/* Outer ring fixed */}
+        <View style={{ position: 'absolute', width: size + 18, height: size + 18, borderRadius: (size + 18) / 2, backgroundColor: color, opacity: 0.22 }} />
 
-        {/* Main Touch-Friendly Buzzer Button */}
-        <TouchableOpacity
-          onPress={handleClick}
-          activeOpacity={0.7}
-          style={{
-            width: size,
-            height: size,
-            borderRadius: size / 2,
-            backgroundColor: palette.primary,
-            shadowColor: palette.primary,
-            shadowOffset: { width: 0, height: 10 },
-            shadowOpacity: 0.5,
-            shadowRadius: 15,
-            elevation: 10,
-          }}
-          className="flex-col items-center justify-center"
-        >
-          <Zap size={44} color={palette.primaryInk} strokeWidth={2.5} />
-          <Text className="text-primaryInk font-bold text-xl tracking-wider mt-1">
-            BUZZER
-          </Text>
-          {Platform.OS === 'web' ? (
-            <View className="mt-1 px-2 py-0.5 rounded bg-black/20">
-              <Text className="text-primaryInk text-[10px] font-semibold tracking-widest">
-                ESPACE
-              </Text>
+        <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+          <TouchableOpacity
+            onPress={handleClick}
+            activeOpacity={0.9}
+            style={{
+              width: size,
+              height: size,
+              borderRadius: size / 2,
+              backgroundColor: color,
+              alignItems: 'center',
+              justifyContent: 'center',
+              shadowColor: color,
+              shadowOffset: { width: 0, height: 14 },
+              shadowOpacity: 0.9,
+              shadowRadius: 32,
+              elevation: 10,
+              borderWidth: 2,
+              borderColor: 'rgba(255,255,255,0.1)',
+            }}
+          >
+            <Svg width={size * 0.32} height={size * 0.32} viewBox="0 0 80 80" style={{ opacity: 0.85 }}>
+              <Path d="M40 6 L74 40 L40 74 L6 40 Z" fill="none" stroke={ink} strokeOpacity="0.45" strokeWidth="2" />
+              <Path d="M40 22 L58 40 L40 58 L22 40 Z" fill={ink} fillOpacity="0.95" />
+            </Svg>
+            <Text style={{ color: ink, fontSize: size * 0.12, fontWeight: '700', marginTop: 4, letterSpacing: 1 }}>BUZZER</Text>
+            <View style={{ marginTop: 6, backgroundColor: 'rgba(0,0,0,0.15)', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 }}>
+              <Text style={{ color: ink, fontSize: 10, fontWeight: '600', letterSpacing: 1.2 }}>ESPACE</Text>
             </View>
-          ) : null}
-        </TouchableOpacity>
+          </TouchableOpacity>
+        </Animated.View>
       </View>
-
-      <Text className="text-txt-60 mt-3 text-xs font-semibold">
-        {Platform.OS === 'web'
-          ? 'Appuyer sur le bouton ou la touche ESPACE'
-          : 'Touchez le bouton pour buzzer !'}
-      </Text>
+      <Text style={{ color: palette.inkSoft, marginTop: 8, fontSize: 12, fontWeight: '600' }}>Appuyer sur l'écran</Text>
     </View>
   );
 }
