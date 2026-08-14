@@ -193,7 +193,7 @@ export default function NewCustomTrainingPage() {
         </form>
 
         {/* Bottom spacing for TabBar */}
-        <div className="h-12" />
+        <div className="h-32 shrink-0" />
       </div>
     </SafeScreen>
   );

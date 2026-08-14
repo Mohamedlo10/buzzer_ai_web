@@ -63,7 +63,7 @@ function NewSoloCareerForm() {
         <h1 className="text-txt font-display font-bold text-2xl tracking-tight">Nouvelle Carrière</h1>
       </div>
 
-      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y px-4 pt-4 pb-28">
+      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y px-4 pt-4 pb-8">
 
         {/* Info card */}
         <div className="bg-surface border border-line rounded-3xl p-5 mb-6 animate-[rise_0.4s_both]">
@@ -131,7 +131,7 @@ function NewSoloCareerForm() {
         </form>
 
         {/* Bottom spacing for TabBar */}
-        <div className="h-12" />
+        <div className="h-32 shrink-0" />
       </div>
     </SafeScreen>
   );
