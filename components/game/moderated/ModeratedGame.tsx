@@ -14,6 +14,7 @@ import {
   Zap,
   Users,
   Hand,
+  MinusCircle,
 } from 'lucide-react';
 
 import { Avatar } from '~/components/ui/Avatar';
@@ -697,37 +698,36 @@ export function ModeratedGame({
 
                 {/* Quick Validation — Manager only */}
                 {isManager && game.phase === 'AWAITING_VALIDATION' && (
-                  <div className="flex flex-row gap-2 mt-3 relative z-50">
+                  <div className="grid grid-cols-3 gap-2 mt-4 relative z-50">
                     <button
                       onClick={() => handleValidate(true)}
                       disabled={isValidating}
-                      className="flex-1 py-3 rounded-xl bg-accent flex items-center justify-center hover:bg-accent-d transition-colors disabled:opacity-60"
+                      className="flex flex-col items-center justify-center py-3 px-1 rounded-2xl bg-good text-white hover:bg-good/90 active:scale-[0.98] transition-all disabled:opacity-60 shadow-sm"
                     >
                       {isValidating ? (
-                        <div className="w-4 h-4 border-2 border-btn-fg border-t-transparent rounded-full animate-spin" />
+                        <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin my-1" />
                       ) : (
-                        <div className="flex flex-row items-center">
-                          <CheckCircle size={18} className="text-btn-fg" />
-                          <span className="text-btn-fg font-bold ml-1.5">Correct</span>
-                        </div>
+                        <>
+                          <CheckCircle size={24} className="mb-1" />
+                          <span className="font-bold text-[13px] leading-tight text-center">Correct</span>
+                        </>
                       )}
                     </button>
                     <button
                       onClick={() => setPendingWrong({ applyPenalty: false })}
                       disabled={isValidating}
-                      className="flex-1 py-3 rounded-xl bg-buzz flex items-center justify-center hover:bg-buzz/90 transition-colors disabled:opacity-60"
+                      className="flex flex-col items-center justify-center py-3 px-1 rounded-2xl bg-warn text-white hover:bg-warn/90 active:scale-[0.98] transition-all disabled:opacity-60 shadow-sm"
                     >
-                      <span className="text-white font-bold text-sm">Sans pénalité</span>
+                      <MinusCircle size={24} className="mb-1" />
+                      <span className="font-bold text-[13px] leading-tight text-center">Sans pénalité</span>
                     </button>
                     <button
                       onClick={() => setPendingWrong({ applyPenalty: true })}
                       disabled={isValidating}
-                      className="px-3 py-3 rounded-xl bg-surface-2 flex items-center justify-center hover:bg-surface-3 transition-colors disabled:opacity-60"
+                      className="flex flex-col items-center justify-center py-3 px-1 rounded-2xl bg-buzz text-white hover:bg-buzz/90 active:scale-[0.98] transition-all disabled:opacity-60 shadow-sm"
                     >
-                      <div className="flex flex-row items-center">
-                        <XCircle size={18} color="#FFFFFF" />
-                        <span className="text-txt font-bold ml-1.5">Faux avec -</span>
-                      </div>
+                      <XCircle size={24} className="mb-1" />
+                      <span className="font-bold text-[13px] leading-tight text-center">Faux avec -</span>
                     </button>
                   </div>
                 )}

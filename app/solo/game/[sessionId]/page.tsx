@@ -177,12 +177,12 @@ export default function SoloGamePage() {
               {/* Status Header */}
               <div className="flex items-center gap-3">
                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-                  showCorrect ? 'bg-accent/15 text-accent' : 'bg-buzz/15 text-buzz'
+                  showCorrect ? 'bg-good/15 text-good' : 'bg-buzz/15 text-buzz'
                 }`}>
                   {showCorrect ? <CheckCircle2 size={24} /> : <XCircle size={24} />}
                 </div>
                 <div>
-                  <h3 className={`font-display font-bold text-lg leading-tight ${showCorrect ? 'text-accent' : 'text-buzz-h'}`}>
+                  <h3 className={`font-display font-bold text-lg leading-tight ${showCorrect ? 'text-good' : 'text-buzz-h'}`}>
                     {showCorrect ? 'Bonne réponse !' : 'Oups, raté...'}
                   </h3>
                   <p className="text-txt-60 text-xs mt-0.5">

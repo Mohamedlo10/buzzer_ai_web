@@ -25,8 +25,8 @@ export function AnswerRevealOverlay({
   autoDismissMs = 3000,
 }: AnswerRevealOverlayProps) {
   const isWinner = !!winnerId;
-  const goodColor = '#2D8559';
-  const badColor = 'var(--color-primary)';
+  const goodColor = 'var(--good)';
+  const badColor = 'var(--buzz)';
   const [isAdvancing, setIsAdvancing] = useState(false);
 
   const handleAdvance = () => {
@@ -71,8 +71,8 @@ export function AnswerRevealOverlay({
             gap: 8,
             padding: '8px 16px 8px 12px',
             borderRadius: 'var(--radius-pill)',
-            background: isWinner ? goodColor : badColor,
-            color: '#FFFFFF',
+            background: isWinner ? 'rgba(var(--good-rgb) / 0.15)' : 'rgba(var(--bad-rgb) / 0.15)',
+            color: isWinner ? goodColor : badColor,
             fontSize: 13,
             fontWeight: 700,
             letterSpacing: '0.04em',
@@ -84,7 +84,8 @@ export function AnswerRevealOverlay({
               width: 20,
               height: 20,
               borderRadius: '50%',
-              background: 'rgba(255,255,255,0.25)',
+              background: isWinner ? goodColor : badColor,
+              color: '#FFFFFF',
               display: 'grid',
               placeItems: 'center',
               fontSize: 11,
@@ -105,20 +106,20 @@ export function AnswerRevealOverlay({
             lineHeight: 1,
             letterSpacing: '-0.03em',
             margin: '0 0 16px',
-            color: isWinner ? goodColor : 'var(--color-ink)',
+            color: isWinner ? goodColor : 'var(--txt)',
           }}
         >
           {isWinner ? (
             <>
               {winnerName ?? 'Un joueur'}<br />
-              <span style={{ fontSize: 24, color: 'var(--color-ink-soft)', fontFamily: 'var(--font-accent)', fontStyle: 'italic', fontWeight: 400 }}>
+              <span style={{ fontSize: 24, color: 'var(--txt-60)', fontFamily: 'var(--font-accent)', fontStyle: 'italic', fontWeight: 400 }}>
                 remporte la manche !
               </span>
             </>
           ) : (
             <>
               Oups !<br />
-              <span style={{ fontSize: 22, color: 'var(--color-ink-soft)', fontFamily: 'var(--font-accent)', fontStyle: 'italic', fontWeight: 400 }}>
+              <span style={{ fontSize: 22, color: 'var(--txt-60)', fontFamily: 'var(--font-accent)', fontStyle: 'italic', fontWeight: 400 }}>
                 {allAnswersWrong ? 'Personne n\'a trouvé la bonne réponse' : 'La réponse était incorrecte'}
               </span>
             </>
@@ -128,15 +129,15 @@ export function AnswerRevealOverlay({
         {/* Correct answer card */}
         <div
           style={{
-            background: 'var(--color-bg)',
+            background: 'var(--surface-2)',
             borderRadius: 'var(--card-radius)',
-            border: '1px solid var(--color-line)',
+            border: '1px solid var(--line)',
             padding: 18,
             marginTop: 16,
             marginBottom: 20,
           }}
         >
-          <div style={{ fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--color-ink-soft)', fontWeight: 700, marginBottom: 6 }}>
+          <div style={{ fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--txt-60)', fontWeight: 700, marginBottom: 6 }}>
             {isWinner ? 'Réponse validée' : 'La bonne réponse était'}
           </div>
           <div
@@ -144,7 +145,7 @@ export function AnswerRevealOverlay({
               fontFamily: 'var(--font-display)',
               fontWeight: 'var(--font-display-weight)' as any,
               fontSize: 22,
-              color: 'var(--color-ink)',
+              color: 'var(--txt)',
             }}
           >
             {correctAnswer}
@@ -158,8 +159,8 @@ export function AnswerRevealOverlay({
             disabled={isAdvancing}
             style={{
               width: '100%',
-              background: isAdvancing ? 'var(--color-line)' : 'var(--color-primary)',
-              color: 'var(--color-primary-ink)',
+              background: isAdvancing ? 'var(--line)' : 'var(--primary)',
+              color: isAdvancing ? 'var(--txt-60)' : 'var(--btn-fg)',
               border: 'none',
               borderRadius: 'var(--radius-pill)',
               padding: '14px 20px',
