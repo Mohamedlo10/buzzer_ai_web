@@ -257,6 +257,15 @@ export function ModeratedGame({
 
   if (!session || !currentQuestion) return null;
 
+  // Le reset sert surtout quand la file est vide : un joueur validé faux garde
+  // sa ligne de buzz côté serveur et reste inéligible jusqu'à ce qu'elle soit
+  // supprimée. Le conditionner à `buzzQueue.length > 0` grisait donc le bouton
+  // exactement dans le cas où le modérateur en a besoin.
+  const canResetBuzzer =
+    game.phase === 'READING' ||
+    game.phase === 'BUZZ_WINDOW' ||
+    game.phase === 'AWAITING_VALIDATION';
+
   const actualHasBuzzed = hasBuzzed || myQueuePosition !== null;
   const amIFirstInQueue = game.buzzQueue.length > 0 && game.buzzQueue[0].playerId === myPlayerId;
   const teamBuzzed = isTeamMode && actualHasBuzzed && myQueuePosition === null && !answeredWrongThisQuestion;
@@ -812,9 +821,9 @@ export function ModeratedGame({
             </button>
             <button
               onClick={handleResetBuzzer}
-              disabled={game.buzzQueue.length === 0 || isResettingBuzzer}
+              disabled={!canResetBuzzer || isResettingBuzzer}
               className={`flex-1 py-3 rounded-xl flex items-center justify-center transition-colors ${
-                game.buzzQueue.length > 0 && !isResettingBuzzer
+                canResetBuzzer && !isResettingBuzzer
                   ? 'bg-buzz/20 hover:bg-buzz/30'
                   : 'bg-surface-2 opacity-50 cursor-not-allowed'
               }`}
@@ -824,7 +833,7 @@ export function ModeratedGame({
               ) : (
                 <span
                   className={`font-medium text-sm ${
-                    game.buzzQueue.length > 0 ? 'text-buzz' : 'text-txt-40'
+                    canResetBuzzer ? 'text-buzz' : 'text-txt-40'
                   }`}
                 >
                   Reset
