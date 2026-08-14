@@ -150,6 +150,13 @@ export default function SoloGamePage() {
             {currentQuestion.text}
           </h2>
 
+          {/* Error Alert */}
+          {error && (
+            <div className="mb-4 p-4 bg-buzz/10 border border-buzz/30 rounded-xl text-buzz text-sm font-semibold text-center animate-[rise_0.3s_both]">
+              {error}
+            </div>
+          )}
+
           {/* Choices panel */}
           <div className="w-full">
             <AnswerChoicesPanel

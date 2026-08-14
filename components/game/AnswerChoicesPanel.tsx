@@ -71,6 +71,17 @@ export function AnswerChoicesPanel({
     onSubmitRef.current('__timeout__');
   }, [serverDriven, localDeadline, remaining, isSubmitting, result]);
 
+  // Reset state if submission fails (isSubmitting goes false but we have no result)
+  const prevIsSubmitting = useRef(isSubmitting);
+  useEffect(() => {
+    if (prevIsSubmitting.current && !isSubmitting && !result && selectedIndex !== null) {
+      // Submission finished without a result (error case)
+      hasSubmittedRef.current = false;
+      setSelectedIndex(null);
+    }
+    prevIsSubmitting.current = isSubmitting;
+  }, [isSubmitting, result, selectedIndex]);
+
   const handleSelect = (index: number, answer: string) => {
     if (hasSubmittedRef.current || isSubmitting || result) return;
     hasSubmittedRef.current = true;
@@ -114,24 +125,31 @@ export function AnswerChoicesPanel({
               type="button"
               onClick={() => handleSelect(i, choice)}
               disabled={hasSubmittedRef.current || isSubmitting || !!result}
-              className={`flex items-center gap-2.5 w-full rounded-[14px] border-[1.5px] p-3.5 min-h-[58px] text-left transition-all duration-150 active:scale-[0.98] disabled:cursor-default ${
-                showCorrect ? 'bg-good/20 border-good' :
-                showWrong ? 'bg-buzz/18 border-buzz animate-[shake_0.4s_ease]' :
-                isSelected ? 'bg-indigo/15 border-indigo' :
-                'bg-surface border-line'
-              } ${dimmed ? 'opacity-45' : ''}`}
+              className={`relative flex items-center gap-3 w-full rounded-2xl border-2 p-3.5 min-h-[60px] text-left transition-all duration-200 active:scale-[0.98] disabled:cursor-default overflow-hidden ${
+                showCorrect ? 'bg-good/10 border-good' :
+                showWrong ? 'bg-buzz/10 border-buzz animate-[shake_0.4s_ease]' :
+                isSelected ? 'bg-indigo/10 border-indigo shadow-md scale-[1.01]' :
+                'bg-surface border-line hover:border-txt-20 hover:bg-surface-2'
+              } ${dimmed ? 'opacity-50 scale-[0.99]' : ''}`}
             >
-              <span className={`w-[30px] h-[30px] rounded-[9px] flex items-center justify-center font-bold text-[13px] shrink-0 ${
+              {isSelected && isSubmitting && (
+                <div className="absolute inset-0 bg-surface/40 flex items-center justify-center backdrop-blur-[1px] z-10">
+                  <span className="w-5 h-5 border-2 border-indigo border-t-transparent rounded-full animate-spin" />
+                </div>
+              )}
+              <span className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold text-sm shrink-0 transition-colors ${
                 showCorrect ? 'bg-good text-white' :
                 showWrong ? 'bg-buzz text-white' :
-                isSelected ? 'bg-indigo text-white' :
-                'bg-surface-2 text-txt'
+                isSelected ? 'bg-indigo text-white shadow-sm' :
+                'bg-surface-2 text-txt-60'
               }`}>
                 {CHOICE_LABELS[i]}
               </span>
-              <span className="text-txt text-[14.5px] font-semibold leading-snug flex-1">{choice}</span>
-              {showCorrect && <CheckCircle size={18} className="text-good shrink-0" />}
-              {showWrong && <XCircle size={18} className="text-buzz shrink-0" />}
+              <span className={`text-[15px] leading-snug flex-1 transition-colors ${
+                isSelected ? 'text-indigo font-bold' : 'text-txt font-semibold'
+              }`}>{choice}</span>
+              {showCorrect && <CheckCircle size={20} className="text-good shrink-0" />}
+              {showWrong && <XCircle size={20} className="text-buzz shrink-0" />}
             </button>
           );
         })}

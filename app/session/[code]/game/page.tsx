@@ -68,6 +68,15 @@ export default function GamePage() {
         return;
       }
 
+      if (gameState.currentQuestion) {
+        const store = useBuzzStore.getState();
+        if (store.currentQuestion?.id !== gameState.currentQuestion.id) {
+          const qIndex = gameState.currentQuestion.orderIndex ?? (gameState.session as any).currentQuestionIndex ?? store.questionIndex;
+          const total = (gameState.session as any).totalQuestions ?? store.totalQuestions;
+          store.setCurrentQuestion(gameState.currentQuestion, qIndex, total);
+        }
+      }
+
       // Feed authoritative state packet to store
       if (gameState.statePacket) {
         useBuzzStore.getState().applyStatePacket(gameState.statePacket);
