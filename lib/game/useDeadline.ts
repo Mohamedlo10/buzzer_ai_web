@@ -20,26 +20,20 @@ import { msUntil } from './clock';
  * @returns secondes restantes, arrondies au supérieur, jamais négatives
  */
 export function useDeadlineSeconds(deadlineEpochMs: number | null | undefined): number {
-  const [remainingMs, setRemainingMs] = useState(() => msUntil(deadlineEpochMs));
+  const [, setTick] = useState(0);
 
   useEffect(() => {
-    if (!deadlineEpochMs) {
-      setRemainingMs(0);
-      return;
-    }
-
-    setRemainingMs(msUntil(deadlineEpochMs));
+    if (!deadlineEpochMs) return;
 
     // 200 ms : assez fin pour que la seconde affichée change au bon moment,
     // assez grossier pour rester négligeable en coût.
     const interval = setInterval(() => {
-      const next = msUntil(deadlineEpochMs);
-      setRemainingMs(next);
-      if (next <= 0) clearInterval(interval);
+      setTick((t) => t + 1);
     }, 200);
 
     return () => clearInterval(interval);
   }, [deadlineEpochMs]);
 
-  return Math.ceil(remainingMs / 1000);
+  if (!deadlineEpochMs) return 0;
+  return Math.ceil(msUntil(deadlineEpochMs) / 1000);
 }

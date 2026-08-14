@@ -44,27 +44,23 @@ export function AnswerChoicesPanel({
   const onSubmitRef = useRef(onSubmit);
   onSubmitRef.current = onSubmit;
 
-  // Mode local (solo) : une échéance est fabriquée une fois par tour. Elle est
-  // recalculée uniquement quand les propositions changent, jamais sur un simple
-  // re-render — c'était la cause du réarmement du garde en pleine soumission.
-  const [localDeadline, setLocalDeadline] = useState<number | null>(null);
-  const choicesKey = choices.join('|');
-  useEffect(() => {
-    if (serverDriven) {
-      setLocalDeadline(null);
-      return;
-    }
-    setLocalDeadline(serverNow() + answerTimeSeconds * 1000);
-  }, [serverDriven, answerTimeSeconds, choicesKey]);
+  // Mode local (solo) : une échéance est fabriquée une fois par tour.
+  const choicesKey = (choices ?? []).join('|');
+  const [prevChoicesKey, setPrevChoicesKey] = useState(choicesKey);
+  const [localDeadline, setLocalDeadline] = useState<number | null>(() =>
+    serverDriven ? null : serverNow() + answerTimeSeconds * 1000
+  );
+
+  // Quand les propositions changent (nouvelle question), on réinitialise immédiatement
+  if (choicesKey !== prevChoicesKey) {
+    setPrevChoicesKey(choicesKey);
+    setLocalDeadline(serverDriven ? null : serverNow() + answerTimeSeconds * 1000);
+    setSelectedIndex(null);
+    hasSubmittedRef.current = false;
+  }
 
   const effectiveDeadline = serverDriven ? deadlineEpochMs : localDeadline;
   const remaining = useDeadlineSeconds(effectiveDeadline);
-
-  // Le garde ne se réarme qu'au changement de tour, jamais sur un re-render.
-  useEffect(() => {
-    setSelectedIndex(null);
-    hasSubmittedRef.current = false;
-  }, [effectiveDeadline]);
 
   // Auto-soumission au temps écoulé : uniquement en mode local. En multijoueur
   // c'est le serveur qui décide de l'expiration.
