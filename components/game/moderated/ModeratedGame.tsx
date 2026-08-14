@@ -31,9 +31,7 @@ import { serverNow, syncClock } from '~/lib/game/clock';
 import { isAnswering, isBuzzerOpen, queuePositionOf } from '~/lib/game/packet';
 import { teamColor } from '~/lib/game/teamColors';
 import { useDeadlineSeconds } from '~/lib/game/useDeadline';
-import { useWordReveal } from '~/lib/game/useWordReveal';
 import type { ManualQuestion, PlayerResponse, TeamResponse } from '~/types/api';
-import { ProgressiveQuestionDisplay } from '~/components/game/ProgressiveQuestionDisplay';
 import { IdentificationQuestionDisplay } from '~/components/game/IdentificationQuestionDisplay';
 
 interface ExpandableCardProps {
@@ -149,13 +147,6 @@ export function ModeratedGame({
   // Countdown when someone is answering
   const countdownSeconds = useDeadlineSeconds(
     game.phase === 'AWAITING_VALIDATION' ? game.phaseEndsAtEpochMs : null
-  );
-
-  const displayedWordCount = useWordReveal(
-    game.revealedWordCount,
-    game.totalWordCount,
-    game.wordRevealStartedAtEpochMs,
-    game.wordRevealIntervalMs
   );
 
   // Reset buzz lock when question changes
@@ -441,23 +432,14 @@ export function ModeratedGame({
             </div>
           </div>
         </div>
-      ) : (
+      ) : currentQuestion.questionType === 'IDENTIFICATION' && currentQuestion.imageUrl ? (
         <div className="px-4 pt-4">
-          {currentQuestion.questionType === 'IDENTIFICATION' && currentQuestion.imageUrl ? (
-            <IdentificationQuestionDisplay
-              imageUrl={currentQuestion.imageUrl}
-              category={currentQuestion.category}
-              text={currentQuestion.text}
-            />
-          ) : (
-            <ProgressiveQuestionDisplay
-              wordIndex={displayedWordCount - 1}
-              text={currentQuestion.text}
-              isRunning={game.phase === 'READING' && displayedWordCount < game.totalWordCount}
-            />
-          )}
+          <IdentificationQuestionDisplay
+            imageUrl={currentQuestion.imageUrl}
+            category={currentQuestion.category}
+          />
         </div>
-      )}
+      ) : null}
 
       {/* Player Action View */}
       {!isManager && !isSpectator && (
