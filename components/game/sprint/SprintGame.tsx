@@ -210,26 +210,24 @@ export function SprintGame({
               return (
                 <div
                   key={choice}
-                  className={`flex items-center gap-3 rounded-2xl border px-4 py-3 transition-all ${
-                    isCorrect
+                  className={`flex items-center gap-3 rounded-2xl border px-4 py-3 transition-all ${isCorrect
                       ? 'border-good bg-good/10'
                       : isMineAndWrong
                         ? 'border-buzz bg-buzz/10'
                         : isMine
                           ? 'border-indigo bg-indigo/15 shadow-sm'
                           : 'border-line bg-surface opacity-60'
-                  }`}
+                    }`}
                 >
                   <span
-                    className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
-                      isCorrect
+                    className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${isCorrect
                         ? 'bg-good text-white'
                         : isMineAndWrong
                           ? 'bg-buzz text-white'
                           : isMine
                             ? 'bg-indigo text-white'
                             : 'bg-surface-2 text-txt'
-                    }`}
+                      }`}
                   >
                     {CHOICE_LABELS[index] ?? index + 1}
                   </span>
@@ -278,16 +276,18 @@ export function SprintGame({
             Réponse enregistrée — en attente des autres joueurs…
           </p>
         )}
+
+        <GameFooter
+          sessionId={sessionId}
+          players={players}
+          teams={teams ?? []}
+          isTeamMode={session?.isTeamMode ?? false}
+          isManager={isManager ?? false}
+          currentUserId={myPlayer?.id}
+        />
       </div>
 
-      <GameFooter
-        sessionId={sessionId}
-        players={players}
-        teams={teams ?? []}
-        isTeamMode={session?.isTeamMode ?? false}
-        isManager={isManager ?? false}
-        currentUserId={myPlayer?.id}
-      />
+
     </div>
   );
 }
