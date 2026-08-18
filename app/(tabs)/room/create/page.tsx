@@ -105,7 +105,7 @@ export default function CreateRoomPage() {
           flex: 1,
           padding: '20px 20px 24px',
         }}
-        className="overflow-y-auto sm:pb-36 pb-16"
+        className="overflow-y-auto sm:pb-16 pb-44"
       >
         <div
           style={{
