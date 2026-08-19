@@ -18,6 +18,7 @@ export default function TabsLayout({
   // Mark the user online as soon as they enter the app
   usePresence();
   const isRoom = pathname.startsWith('/room/');
+  const hideTabBar = pathname.startsWith('/room/create');
 
   return (
     <AuthGuard>
@@ -26,7 +27,7 @@ export default function TabsLayout({
         <main key={pathname} className={`flex-1 min-h-0 h-full flex flex-col ${isRoom ? 'pb-0 overflow-hidden' : 'pb-[76px] overflow-y-auto overscroll-contain touch-pan-y'} animate-page-transition`}>
           {children}
         </main>
-        <TabBar />
+        {!hideTabBar && <TabBar />}
       </div>
     </AuthGuard>
   );

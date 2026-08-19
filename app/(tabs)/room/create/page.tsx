@@ -46,7 +46,7 @@ export default function CreateRoomPage() {
   };
 
   return (
-    <SafeScreen className="bg-bg min-h-[100dvh] relative overflow-hidden pb-16 flex flex-col">
+    <SafeScreen className="bg-bg min-h-[100dvh] relative overflow-hidden flex flex-col">
       {/* Background pattern */}
       <div style={{ position: 'absolute', inset: 0, opacity: 0.5, pointerEvents: 'none' }}>
         <PatternLozenge color="var(--color-primary)" opacity={0.05} size={26} />
@@ -105,7 +105,7 @@ export default function CreateRoomPage() {
           flex: 1,
           padding: '20px 20px 24px',
         }}
-        className="overflow-y-auto sm:pb-16 pb-44"
+        className="overflow-y-auto pb-10"
       >
         <div
           style={{
