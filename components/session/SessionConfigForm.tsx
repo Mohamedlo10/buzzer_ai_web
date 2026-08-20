@@ -417,7 +417,7 @@ export function SessionConfigForm({ onSuccess, onClose, roomId, initialMaxPlayer
   const [currentStep, setCurrentStep] = useState(0);
 
   const [questionMode, setQuestionMode] = useState<QuestionMode>('AI');
-  const [sessionMode, setSessionMode] = useState<SessionMode>('WITH_MODERATOR');
+  const [sessionMode, setSessionMode] = useState<SessionMode>('WITHOUT_MODERATOR');
   const [answerTimeSeconds, setAnswerTimeSeconds] = useState(15);
   const [globalQuestionSeconds, setGlobalQuestionSeconds] = useState(15);
   const [answerChoicesCount, setAnswerChoicesCount] = useState<number | null>(null);
@@ -426,7 +426,7 @@ export function SessionConfigForm({ onSuccess, onClose, roomId, initialMaxPlayer
     // 0 désactivait les dettes sur toutes les parties créées depuis l'app, alors
     // qu'aucun champ ne permettait de changer cette valeur (voir le stepper
     // « Dette / rubrique » plus bas).
-    debtAmount: 5,
+    debtAmount: 1,
     pointsPerCorrectAnswer: 5,
     questionsPerCategory: 5,
     maxPlayers: 20,
