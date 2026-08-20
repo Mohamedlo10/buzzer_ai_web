@@ -487,103 +487,88 @@ export default function SessionResultsPage() {
           />
         )}
 
-        {/* ── Classement individuel ── */}
-        <div className="bg-surface rounded-2xl border border-line overflow-hidden">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-line">
-            <div className="flex items-center gap-2">
-              <BarChart3 size={16} className="text-accent" />
-              <p className="text-accent text-[10px] font-bold tracking-widest uppercase">
-                {isTeamMode ? 'Classement individuel' : 'Classement'}
+        {/* ── Suite du classement ── */}
+        {rankings.length > 3 && (
+          <div className="bg-surface rounded-2xl border border-line overflow-hidden">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-line">
+              <div className="flex items-center gap-2">
+                <BarChart3 size={16} className="text-accent" />
+                <p className="text-accent text-[10px] font-bold tracking-widest uppercase">
+                  {isTeamMode ? 'Suite du classement individuel' : 'Suite du classement'}
+                </p>
+              </div>
+              <p className="text-txt-40 text-[9.5px] font-bold tracking-widest uppercase">
+                {isSprint ? 'Bonnes rép. · temps' : 'Total points'}
               </p>
             </div>
-            <p className="text-txt-40 text-[9.5px] font-bold tracking-widest uppercase">
-              {isSprint ? 'Bonnes rép. · temps' : 'Total points'}
-            </p>
+
+            {rankings.slice(3).map((entry, index) => {
+              const actualIndex = index + 3;
+              const isCurrentUser = (entry.player.userId ?? entry.player.id) === user?.id;
+              const scoreColor = 'var(--txt)';
+              const playerUserId = entry.player.userId ?? entry.player.id;
+
+              return (
+                <div
+                  key={entry.player.id}
+                  onClick={() => playerUserId && setProfileUserId(playerUserId)}
+                  className={`w-full flex flex-row items-center px-4 py-3 text-left transition-colors cursor-pointer ${
+                    index < rankings.length - 4 ? 'border-b border-line' : ''
+                  } ${isCurrentUser ? 'bg-accent/9' : 'hover:bg-surface-2/40'}`}
+                >
+                  {/* Avatar */}
+                  <div className="relative mr-3 shrink-0">
+                    <Avatar
+                      avatarUrl={entry.player.avatarUrl}
+                      name={entry.player.name}
+                      size={38}
+                    />
+                  </div>
+
+                  {/* Name & label */}
+                  <div className="flex-1 min-w-0 mr-2">
+                    <p className={`font-bold text-sm truncate ${isCurrentUser ? 'text-accent' : 'text-txt'}`}>
+                      {entry.player.name}
+                      {isCurrentUser && <span className="text-xs font-normal opacity-60"> (Vous)</span>}
+                    </p>
+                    <p className="text-txt-40 text-[9.5px] font-bold tracking-wider uppercase">
+                      {rankLabel(actualIndex)}
+                    </p>
+                  </div>
+
+                  {/* Friendship */}
+                  <div onClick={(e) => e.stopPropagation()} className="shrink-0 mr-3">
+                    <FriendshipButton
+                      status={entry.player.friendshipStatus}
+                      isCurrentUser={isCurrentUser}
+                      onAddFriend={() => handleAddFriend(entry.player.userId ?? entry.player.id)}
+                      size="sm"
+                    />
+                  </div>
+
+                  {/* Score */}
+                  {isSprint ? (
+                    <div className="flex flex-col items-end shrink-0 leading-tight">
+                      <span className="font-display font-semibold text-lg" style={{ color: scoreColor }}>
+                        {entry.correctAnswers ?? 0}
+                      </span>
+                      <span className="text-txt-40 text-[10px] tabular-nums">
+                        {formatMs(entry.totalResponseTimeMs)}
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="flex items-baseline gap-1 shrink-0">
+                      <span className="font-display font-semibold text-lg" style={{ color: scoreColor }}>
+                        {entry.finalScore}
+                      </span>
+                      <span className="text-txt-40 text-[10px]">pts</span>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
-
-          {rankings.map((entry, index) => {
-            const isCurrentUser = (entry.player.userId ?? entry.player.id) === user?.id;
-            const rankColors = ['var(--gold)', '#C0C0C0', '#CD7F32'];
-            const scoreColor = index < 3 ? rankColors[index] : 'var(--txt)';
-            const playerUserId = entry.player.userId ?? entry.player.id;
-
-            return (
-              <div
-                key={entry.player.id}
-                onClick={() => playerUserId && setProfileUserId(playerUserId)}
-                className={`w-full flex flex-row items-center px-4 py-3 text-left transition-colors cursor-pointer ${
-                  index < rankings.length - 1 ? 'border-b border-line' : ''
-                } ${isCurrentUser ? 'bg-accent/9' : 'hover:bg-surface-2/40'}`}
-              >
-                {/* Avatar with rank badge */}
-                <div className="relative mr-3 shrink-0">
-                  <Avatar
-                    avatarUrl={entry.player.avatarUrl}
-                    name={entry.player.name}
-                    size={38}
-                  />
-                  {index === 0 && (
-                    <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-gold-bright flex items-center justify-center">
-                      <Crown size={10} className="text-btn-fg" />
-                    </div>
-                  )}
-                  {index === 1 && (
-                    <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-[#C0C0C0] flex items-center justify-center">
-                      <Medal size={10} className="text-btn-fg" />
-                    </div>
-                  )}
-                  {index === 2 && (
-                    <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-[#CD7F32] flex items-center justify-center">
-                      <Medal size={10} className="text-btn-fg" />
-                    </div>
-                  )}
-                </div>
-
-                {/* Name & label */}
-                <div className="flex-1 min-w-0 mr-2">
-                  <p className={`font-bold text-sm truncate ${isCurrentUser ? 'text-accent' : 'text-txt'}`}>
-                    {entry.player.name}
-                    {isCurrentUser && <span className="text-xs font-normal opacity-60"> (Vous)</span>}
-                  </p>
-                  <p className="text-txt-40 text-[9.5px] font-bold tracking-wider uppercase">
-                    {rankLabel(index)}
-                  </p>
-                </div>
-
-                {/* Friendship */}
-                <div onClick={(e) => e.stopPropagation()} className="shrink-0 mr-3">
-                  <FriendshipButton
-                    status={entry.player.friendshipStatus}
-                    isCurrentUser={isCurrentUser}
-                    onAddFriend={() => handleAddFriend(entry.player.userId ?? entry.player.id)}
-                    size="sm"
-                  />
-                </div>
-
-                {/* Score. En Sprint c'est le couple qui classe : nombre de bonnes
-                    réponses d'abord, temps cumulé pour départager (spec §14).
-                    Afficher des points ici masquerait le critère réel du rang. */}
-                {isSprint ? (
-                  <div className="flex flex-col items-end shrink-0 leading-tight">
-                    <span className="font-display font-semibold text-lg" style={{ color: scoreColor }}>
-                      {entry.correctAnswers ?? 0}
-                    </span>
-                    <span className="text-txt-40 text-[10px] tabular-nums">
-                      {formatMs(entry.totalResponseTimeMs)}
-                    </span>
-                  </div>
-                ) : (
-                  <div className="flex items-baseline gap-1 shrink-0">
-                    <span className="font-display font-semibold text-lg" style={{ color: scoreColor }}>
-                      {entry.finalScore}
-                    </span>
-                    <span className="text-txt-40 text-[10px]">pts</span>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
+        )}
 
         {/* ── Détails par catégorie ── */}
         {categoryRankings && (
