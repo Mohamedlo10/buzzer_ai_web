@@ -29,6 +29,7 @@ import { Platform, View } from 'react-native';
 import { apiClient } from '@xalaat/core';
 
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { ConfirmHost } from '~/components/shared/ConfirmHost';
 
 export default function RootLayout() {
   const router = useRouter();
@@ -109,6 +110,7 @@ export default function RootLayout() {
         ) : (
           stackContent
         )}
+        <ConfirmHost />
       </QueryClientProvider>
     </SafeAreaProvider>
   );
