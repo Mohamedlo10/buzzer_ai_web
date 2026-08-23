@@ -252,10 +252,12 @@ export default function RankingsScreen() {
                       style={{
                         fontFamily: font.nativeFamily.display,
                         fontSize: 14,
+                        lineHeight: 18,
                         color: rankNumber <= 3 ? palette.gold : palette.inkSoft,
-                        width: 28,
-                        textAlign: 'center',
+                        minWidth: 38,
+                        paddingTop: 2,
                       }}
+                      numberOfLines={1}
                     >
                       #{rankNumber}
                     </Text>

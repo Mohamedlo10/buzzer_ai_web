@@ -326,7 +326,7 @@ export default function DashboardScreen() {
               </TouchableOpacity>
             </View>
 
-            <View style={{ gap: 10 }}>
+            <View style={{ gap: 4 }}>
               {topRankings.map((r, i) => (
                 <View
                   key={r.userId}
@@ -334,28 +334,47 @@ export default function DashboardScreen() {
                     flexDirection: 'row',
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    paddingVertical: 6,
+                    paddingVertical: 10,
                     borderBottomWidth: i < topRankings.length - 1 ? 1 : 0,
                     borderBottomColor: palette.line,
                   }}
                 >
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1, marginRight: 10 }}>
                     <Text
                       style={{
                         fontFamily: font.nativeFamily.display,
                         fontSize: 15,
+                        lineHeight: 20,
                         color: i === 0 ? palette.gold : palette.inkSoft,
-                        width: 24,
+                        minWidth: 36,
+                        paddingTop: 2,
                       }}
+                      numberOfLines={1}
                     >
                       #{i + 1}
                     </Text>
-                    <Avatar name={r.username} size={32} />
-                    <Text style={{ fontSize: 14, fontWeight: '700', color: palette.txt }}>
+                    <Avatar name={r.username} size={34} />
+                    <Text
+                      style={{
+                        fontSize: 14,
+                        fontWeight: '700',
+                        color: palette.txt,
+                        flex: 1,
+                      }}
+                      numberOfLines={1}
+                    >
                       {r.username}
                     </Text>
                   </View>
-                  <Text style={{ fontFamily: font.nativeFamily.display, fontSize: 14, color: palette.txt }}>
+                  <Text
+                    style={{
+                      fontFamily: font.nativeFamily.display,
+                      fontSize: 14,
+                      lineHeight: 18,
+                      color: palette.txt,
+                      paddingTop: 2,
+                    }}
+                  >
                     {r.totalScore.toLocaleString('fr-FR')} pts
                   </Text>
                 </View>
