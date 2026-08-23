@@ -82,6 +82,7 @@ contourne pas en désactivant un test, en ajoutant `: any`, ou en commentant du 
 | Notifications | `~/lib/ui/notify` | `notify.error/success/info`, `notifyApiError` |
 | Confirmations | `~/lib/ui/confirm` | `confirmAsync()` → `Promise<boolean>` |
 | Accès aux routes | `~/lib/auth/routePolicy` | fonction pure |
+| Session, tokens, refresh 401 | `~/stores/useAuthStore` + `~/lib/api/auth` | **à réutiliser pour Google, ne pas dupliquer** |
 | Format, avatars | `~/lib/utils/format`, `~/lib/utils/avatar` | |
 
 ### 3.2 Hooks métier déjà extraits — RÉUTILISE-LES
@@ -198,6 +199,40 @@ pas le bon type, cherche-le — il existe presque toujours.
 **Piège vécu :** la file de buzz n'est **pas** `BuzzQueueItem` (type du store et de l'API)
 mais `QueueEntry` de `lib/game/packet.ts`, qui porte en plus `deltaMs`. Les deux coexistent
 légitimement.
+
+### 4.6 Authentification tierce — ce qui doit rester partagé
+
+Le bouton « Continuer avec Google » ne remplace rien : il s'ajoute au parcours
+username/mot de passe existant.
+
+**Le serveur rend le même DTO.** `POST /api/auth/google` répond exactement comme
+`POST /api/auth/login`. Donc `useAuthStore.login()`, le stockage des tokens, le refresh
+401 et la restauration de session **se réutilisent tels quels**. Si tu écris une seconde
+gestion de session pour Google, tu t'es trompé.
+
+**Découpe portable / plateforme.** `expo-auth-session` est une dépendance native : elle ne
+peut pas entrer dans `packages/core/src/lib/hooks/`, qui doit rester utilisable partout.
+
+```
+apps/game/native/auth/      obtenir l'ID token auprès de Google  (plateforme)
+packages/core/.../hooks/    échanger l'ID token contre les JWT   (partagé)
+```
+
+La partie plateforme est **injectée au hook comme callback**, exactement comme la
+navigation l'est déjà dans `useLobbySession`.
+
+**Choix imposé : `expo-auth-session`, pas `@react-native-google-signin`.** Le second est
+natif uniquement et obligerait à maintenir un second chemin pour le web — contraire au
+principe « un seul codebase ». `expo-auth-session/providers/google` couvre iOS, Android et
+web avec une seule API.
+
+⚠️ **Guideline Apple 4.8** : proposer Google impose de proposer **aussi** Sign in with
+Apple (ou une option équivalente limitant la collecte). **Sans ça, le dépôt est refusé.**
+Ce n'est pas optionnel, et ça se découvre au pire moment si on ne le prévoit pas.
+
+⚠️ Les 3 client IDs (Web / iOS / Android) viennent du `.env`, **jamais en dur**. Le
+reversed client ID iOS doit être déclaré comme URL scheme dans `app.json`, à côté de
+`buzzmaster`.
 
 ---
 
@@ -381,6 +416,8 @@ avec le SDK.
 | Classe Tailwind absente du CSS | couleur déclarée en `var()` | hex littéraux uniquement |
 | `expo start` ouvre Expo Go | dev client pas installé | `npx expo run:ios --device` depuis `apps/game` |
 | Projet Expo fantôme à la racine | `expo` dans les deps racine | ne jamais l'y remettre |
+| Connexion Google OK en dev, KO en prod | une seule empreinte SHA-1 enregistrée | enregistrer celle de dev **et** celle de prod |
+| Dépôt App Store refusé | Google proposé sans Sign in with Apple | guideline 4.8 — les deux ou aucun |
 
 ---
 

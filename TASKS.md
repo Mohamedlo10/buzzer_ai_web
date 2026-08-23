@@ -140,6 +140,72 @@ concentre presque tout le code incompatible RN (tables, recharts).
 
 ---
 
+### Authentification Google *(transverse — dépend du backend)*
+
+Ajoute « Continuer avec Google » **à côté** de l'inscription username/mot de passe. Le
+parcours existant reste, il n'est pas remplacé.
+
+Principe : l'app obtient un **ID token** Google et l'envoie à `POST /api/auth/google`. Le
+serveur le vérifie et renvoie **le même DTO** que `POST /api/auth/login` — donc
+`useAuthStore.login()` et tout le flux de session existant se réutilisent tels quels.
+
+⚠️ **Dépend des tâches backend 5bis.3 et 5bis.5.** Ne commence pas avant qu'elles soient
+cochées : sans les client IDs Google et la route serveur, tu ne peux rien tester.
+
+- [ ] **G1** — Installer et configurer `expo-auth-session`
+  - ⚠️ **Choix imposé : `expo-auth-session`, pas `@react-native-google-signin`.** Le second
+    est natif uniquement et obligerait à écrire un second chemin pour le web — contraire au
+    principe « un seul codebase » de ce projet. `expo-auth-session/providers/google` couvre
+    iOS, Android et web avec **une seule API**.
+  - `npx expo install expo-auth-session expo-web-browser expo-crypto`
+  - ⚠️ **Dépendances natives → rebuild du dev client.** Groupe cette tâche avec la 5.4.
+  - `app.json` : ajouter le **reversed client ID iOS** comme URL scheme
+    (`com.googleusercontent.apps.<ID>`), à côté du scheme `buzzmaster` existant
+  - Les 3 client IDs (Web / iOS / Android) viennent du `.env`, **jamais en dur**
+  - Fini quand : `npx expo run:ios --device` passe et l'app démarre toujours
+
+- [ ] **G2** — Hook `useGoogleAuth` dans `packages/core/src/lib/hooks/`
+  - ⚠️ **Contrainte de pureté** : le hook ne doit importer ni `next/*` ni d'API DOM. Or
+    `expo-auth-session` est une dépendance native. **Découpe donc en deux :**
+    - la partie **portable** (échange de l'ID token contre les JWT, mise à jour du store)
+      va dans `packages/core` — c'est elle qui est réutilisée
+    - la partie **plateforme** (obtenir l'ID token auprès de Google) va dans
+      `apps/game/native/auth/`, et est injectée au hook comme callback
+  - Réutilise `lib/api/auth.ts` (ajoute-y `loginWithGoogle(idToken)`) et
+    `useAuthStore.login` — **ne réécris pas la gestion de session**
+  - Fini quand : `grep -rn "from 'next/\|window\.\|document\.\|expo-" packages/core/src/lib/hooks/` ne renvoie rien
+
+- [ ] **G3** — Bouton « Continuer avec Google » sur `login` et `register`
+  - Écrans : `apps/game/app/(auth)/login.tsx` et `register.tsx`
+  - Réutilise les composants existants — n'invente pas un nouveau bouton si un équivalent
+    stylé existe déjà
+  - Respecte les **règles de marque Google** (logo, libellé « Continuer avec Google » ou
+    « Se connecter avec Google », contraste) : un bouton non conforme peut être refusé
+  - Gère les 3 issues : succès, **annulation par l'utilisateur** (ne montre pas d'erreur),
+    échec réseau (`notifyApiError`)
+  - Fini quand : la connexion Google fonctionne sur iPhone **et** sur web
+
+- [ ] **G4** — ⚠️ **Sign in with Apple — bloquant pour l'App Store**
+  - **Guideline Apple 4.8** : une app qui propose une connexion tierce (Google) **doit
+    aussi** proposer Sign in with Apple, ou une option équivalente qui limite la collecte
+    de données. **Sans ça, le dépôt est refusé.**
+  - `npx expo install expo-apple-authentication` (iOS uniquement — masque le bouton
+    ailleurs via `Platform.OS === 'ios'`)
+  - Côté backend, le même schéma que Google : vérification du token côté serveur,
+    identité sur le `sub`, réponse identique à `login`
+  - ⚠️ Apple ne fournit le nom et l'e-mail **qu'au tout premier consentement** : si tu ne
+    les stockes pas à ce moment-là, ils sont perdus définitivement
+  - Fini quand : les deux boutons sont présents sur iOS et les deux parcours créent un compte
+
+- [ ] **G5** — Parcours de bord
+  - Un compte Google qui tente « mot de passe oublié » doit voir un message clair, pas une
+    erreur
+  - Permettre de **lier** Google à un compte existant depuis `profile/edit`
+  - Vérifier que le logout révoque bien la session côté app **et** le token push (tâche 5.5)
+  - Fini quand : les trois cas se comportent proprement
+
+---
+
 ### Phase 6 — Écrans de bord et parité web
 
 - [ ] **6.1** — `onboarding`, `confirm-email`, `forgot-password`, `reset-password`
