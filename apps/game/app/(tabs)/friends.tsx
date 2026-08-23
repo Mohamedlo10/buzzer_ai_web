@@ -16,6 +16,7 @@ import * as usersApi from '~/lib/api/users';
 import type { UserResponse } from '~/types/api';
 import { palette, font } from '~/lib/theme/tokens';
 import { Avatar } from '~/components/shared/Avatar';
+import { AppTopBar } from '~/components/shared/AppTopBar';
 import { notify, notifyApiError } from '~/lib/ui/notify';
 
 type TabType = 'friends' | 'requests' | 'search';
@@ -90,8 +91,9 @@ export default function FriendsScreen() {
   const totalRequests = pendingRequests.length + storeSentRequests.length;
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: palette.bg }}>
-      <View style={{ flex: 1, paddingHorizontal: 20, paddingTop: 10 }}>
+    <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: palette.bg }}>
+      <AppTopBar title="Xalaat" tag="AMIS & DUELS" />
+      <View style={{ flex: 1, paddingHorizontal: 20, paddingTop: 4 }}>
         {/* Header */}
         <Text
           style={{
@@ -155,7 +157,7 @@ export default function FriendsScreen() {
             <ActivityIndicator size="large" color={palette.primary} />
           </View>
         ) : (
-          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ gap: 10, paddingBottom: 110 }}>
+          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ gap: 10, paddingBottom: 24 }}>
             {activeTab === 'friends' && (
               friends.length === 0 ? (
                 <View

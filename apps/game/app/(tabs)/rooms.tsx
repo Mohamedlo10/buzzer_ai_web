@@ -20,6 +20,7 @@ import { GlobalRankCard } from '~/components/shared/GlobalRankCard';
 import { QuizOfTheDayCard } from '~/components/shared/QuizOfTheDayCard';
 import { AllRoomsModal } from '~/components/shared/AllRoomsModal';
 import { Avatar } from '~/components/shared/Avatar';
+import { AppTopBar } from '~/components/shared/AppTopBar';
 
 export default function RoomsScreen() {
   const router = useRouter();
@@ -50,7 +51,7 @@ export default function RoomsScreen() {
 
   if (isLoading && !data) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: palette.bg, alignItems: 'center', justifyContent: 'center' }}>
+      <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: palette.bg, alignItems: 'center', justifyContent: 'center' }}>
         <ActivityIndicator size="large" color={palette.primary} />
         <Text style={{ color: palette.inkSoft, fontSize: 14, marginTop: 12, fontWeight: '600' }}>
           Chargement des salons...
@@ -61,7 +62,7 @@ export default function RoomsScreen() {
 
   if (isError || !data) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: palette.bg, alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+      <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: palette.bg, alignItems: 'center', justifyContent: 'center', padding: 24 }}>
         <View style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: palette.surface2, alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
           <Text style={{ fontSize: 32 }}>😵</Text>
         </View>
@@ -85,9 +86,10 @@ export default function RoomsScreen() {
   const activeRoom = recentRooms.find((r) => r.hasActiveSession) || null;
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: palette.bg }}>
+    <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: palette.bg }}>
+      <AppTopBar title="Xalaat" tag="SALONS & JEUX" />
       <ScrollView
-        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 10, paddingBottom: 110, gap: 16 }}
+        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 4, paddingBottom: 24, gap: 16 }}
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refetch} tintColor={palette.primary} />}
       >

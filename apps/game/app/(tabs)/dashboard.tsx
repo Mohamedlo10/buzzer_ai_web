@@ -21,6 +21,7 @@ import { Avatar } from '~/components/shared/Avatar';
 import { GlobalRankCard } from '~/components/shared/GlobalRankCard';
 import { QuizOfTheDayCard } from '~/components/shared/QuizOfTheDayCard';
 import { PatternZigzag } from '~/components/shared/PatternZigzag';
+import { AppTopBar } from '~/components/shared/AppTopBar';
 
 const THEME_CHIPS = [
   { label: 'Mbalax', theme: 'Mbalax', active: true },
@@ -85,7 +86,7 @@ export default function DashboardScreen() {
 
   if (isLoading && !data) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: palette.bg, alignItems: 'center', justifyContent: 'center' }}>
+      <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: palette.bg, alignItems: 'center', justifyContent: 'center' }}>
         <ActivityIndicator size="large" color={palette.primary} />
         <Text style={{ color: palette.inkSoft, fontSize: 14, marginTop: 12, fontWeight: '600' }}>
           Chargement de l&apos;accueil…
@@ -95,9 +96,10 @@ export default function DashboardScreen() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: palette.bg }}>
+    <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: palette.bg }}>
+      <AppTopBar title="Xalaat" tag="MODE SOLO" />
       <ScrollView
-        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 10, paddingBottom: 110, gap: 16 }}
+        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 4, paddingBottom: 24, gap: 16 }}
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={palette.primary} />}
       >

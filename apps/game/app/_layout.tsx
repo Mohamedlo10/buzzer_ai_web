@@ -28,6 +28,8 @@ SplashScreen.preventAutoHideAsync();
 import { Platform, View } from 'react-native';
 import { apiClient } from '@xalaat/core';
 
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+
 export default function RootLayout() {
   const router = useRouter();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -96,16 +98,18 @@ export default function RootLayout() {
   );
 
   return (
-    <QueryClientProvider client={queryClient}>
-      {Platform.OS === 'web' ? (
-        <View style={{ flex: 1, width: '100%', backgroundColor: '#EAD7BA', alignItems: 'center' }}>
-          <View style={{ flex: 1, width: '100%', maxWidth: 672, backgroundColor: palette.bg }}>
-            {stackContent}
+    <SafeAreaProvider>
+      <QueryClientProvider client={queryClient}>
+        {Platform.OS === 'web' ? (
+          <View style={{ flex: 1, width: '100%', backgroundColor: '#EAD7BA', alignItems: 'center' }}>
+            <View style={{ flex: 1, width: '100%', maxWidth: 672, backgroundColor: palette.bg }}>
+              {stackContent}
+            </View>
           </View>
-        </View>
-      ) : (
-        stackContent
-      )}
-    </QueryClientProvider>
+        ) : (
+          stackContent
+        )}
+      </QueryClientProvider>
+    </SafeAreaProvider>
   );
 }

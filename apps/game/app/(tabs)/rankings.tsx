@@ -24,6 +24,7 @@ import * as rankingsApi from '~/lib/api/rankings';
 import type { GlobalRanking } from '~/types/api';
 import { palette, font } from '~/lib/theme/tokens';
 import { Avatar } from '~/components/shared/Avatar';
+import { AppTopBar } from '~/components/shared/AppTopBar';
 
 const PAGE_SIZE = 30;
 
@@ -87,8 +88,9 @@ export default function RankingsScreen() {
   const listItems = !searchUsername && rankings.length >= 3 ? rankings.slice(3) : rankings;
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: palette.bg }}>
-      <View style={{ flex: 1, paddingHorizontal: 20, paddingTop: 10 }}>
+    <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: palette.bg }}>
+      <AppTopBar title="Xalaat" tag="CLASSEMENT" />
+      <View style={{ flex: 1, paddingHorizontal: 20, paddingTop: 4 }}>
         {/* Header */}
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
           <View>
@@ -222,7 +224,7 @@ export default function RankingsScreen() {
             <ActivityIndicator size="large" color={palette.primary} />
           </View>
         ) : (
-          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingBottom: 110 }}>
+          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingBottom: 24 }}>
             {listItems.map((item, index) => {
               const rankNumber = !searchUsername && rankings.length >= 3 ? index + 4 : index + 1;
               const isMe = item.userId === user?.id;

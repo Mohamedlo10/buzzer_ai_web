@@ -31,6 +31,7 @@ import { useMyGlobalRank, useDashboard } from '~/lib/query/hooks';
 import * as usersApi from '~/lib/api/users';
 import { palette, font } from '~/lib/theme/tokens';
 import { Avatar } from '~/components/shared/Avatar';
+import { AppTopBar } from '~/components/shared/AppTopBar';
 import { notify, notifyApiError } from '~/lib/ui/notify';
 import { confirmAsync } from '~/lib/ui/confirm';
 
@@ -121,9 +122,10 @@ export default function ProfileScreen() {
   const glickoRating = myRank?.glickoRating != null ? Math.round(myRank.glickoRating) : 1500;
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: palette.bg }}>
+    <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: palette.bg }}>
+      <AppTopBar title="Xalaat" tag="PROFIL JOUEUR" />
       <ScrollView
-        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 12, paddingBottom: 120, gap: 16 }}
+        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 4, paddingBottom: 24, gap: 16 }}
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={palette.primary} />}
       >
