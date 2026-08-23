@@ -85,21 +85,80 @@
 
 ---
 
-### Phase 2bis — Extraire l'admin vers Vite *(parallélisable, indépendant)*
+### Phase 2bis — Sortir l'admin dans un DÉPÔT SÉPARÉ *(parallélisable)*
 
-L'admin reste **web-only** : personne n'administre depuis un téléphone, et c'est là que se
-concentre presque tout le code incompatible RN (tables, recharts).
+L'admin quitte ce dépôt. Il devient `buzzer_admin`, un projet **Vite + React Router**
+autonome, avec ses propres dépendances, son propre cycle de vie et son propre déploiement.
 
-- [ ] **2bis.1** — Créer `apps/admin/` (Vite + React Router)
-  - Déplacer `apps/web-legacy/app/admin/` (11 pages) et `components/admin/` (5 fichiers)
+**Pourquoi séparer plutôt que garder `apps/admin/` dans le monorepo :**
+- `recharts`, `sonner` et toute la pile DOM n'entrent plus jamais dans l'arbre mobile
+- l'admin n'est plus soumis à la contrainte **« une seule version de React »** que le
+  monorepo impose par `overrides` — contrainte qui a déjà provoqué un crash au démarrage
+- une modification de l'admin ne peut plus casser le build mobile, et réciproquement
+- personne n'administre depuis un téléphone : le couplage n'apportait rien
+
+**Ce que ça coûte, et comment on le paie :** l'admin importe aujourd'hui 5 modules de
+`packages/core`. Dupliqués à la main, ils dériveraient en silence — c'est le risque réel de
+la séparation. La réponse : **générer le contrat depuis le backend**, qui expose déjà
+`/v3/api-docs` (SpringDoc). Le contrat devient vérifié par la machine au lieu d'être
+recopié à la main — donc **plus sûr** que la situation actuelle.
+
+Surface mesurée : **16 fichiers, 4 123 lignes**, et seulement ces imports de `core` :
+
+| Import | Fichiers | Traitement dans le nouveau dépôt |
+|---|---|---|
+| `~/lib/api/admin` | 10 | **généré** depuis OpenAPI |
+| `~/types/api` | 8 | **généré** depuis OpenAPI |
+| `~/lib/ui/confirm` | 7 | **copié** (89 l., zustand + promesse, sans dépendance) |
+| `~/stores/useAuthStore` | 2 | **réécrit en plus simple** — l'admin n'a besoin que de login + rôle |
+| `~/lib/api/rankings` | 1 | **généré** depuis OpenAPI |
+
+- [ ] **2bis.1** — Créer le dépôt `buzzer_admin`
+  - Vite + React + TypeScript + React Router
+  - Dépendances **propres** : `recharts`, `sonner`, `axios`, `@tanstack/react-query`,
+    `tailwindcss`. Aucune dépendance Expo, aucune React Native.
+  - Copier `apps/web-legacy/app/admin/` (11 pages) et `components/admin/` (5 fichiers)
   - `next/navigation` → `react-router-dom`, `app/admin/layout.tsx` → layout avec `<Outlet/>`
-  - Garder `recharts` et `sonner` : ils restent du DOM
-  - Fini quand : `vite build` sert les 11 pages, auth et mutations fonctionnelles
+  - Fini quand : `vite build` passe et les 11 pages s'affichent
 
-- [ ] **2bis.2** — Retirer `recharts` et `sonner` des dépendances de `apps/game`
-  - `recharts` n'est utilisé que par `app/admin/page.tsx`
-  - 9 des 11 fichiers utilisant `sonner` sont dans `admin/`
-  - Fini quand : ni l'un ni l'autre n'apparaît dans le bundle de `apps/game`
+- [ ] **2bis.2** — Générer le contrat d'API depuis OpenAPI
+  - Le backend expose **`GET /v3/api-docs`** (vérifié, répond 200)
+  - Outil : `openapi-typescript` (types seuls) ou `orval` (types + client + hooks Query)
+  - Script `npm run api:gen` dans le dépôt admin, à relancer après tout changement de DTO
+  - ⚠️ **Commite le fichier généré.** Un build qui dépend d'un backend joignable est un
+    build qui casse en CI.
+  - Fini quand : `npm run api:gen` régénère les types et `tsc --noEmit` reste vert
+
+- [ ] **2bis.3** — Reprendre le thème sans dupliquer les couleurs
+  - Copier `packages/core/src/lib/theme/palette.js` **tel quel** dans le dépôt admin
+  - ⚠️ C'est le seul endroit où la duplication est acceptée : les couleurs changent
+    rarement, et un `import` cross-repo coûterait plus cher que le risque.
+  - Copier aussi `palette.test.js` : la table de vérité doit continuer de tourner
+  - Fini quand : `node palette.test.js` passe dans le dépôt admin
+
+- [ ] **2bis.4** — Authentification admin autonome
+  - L'admin n'a pas besoin de `useAuthStore` complet : login, stockage du token,
+    refresh 401, et le contrôle `role !== 'SUPER_ADMIN'`
+  - Le backend est **stateless JWT** : rien à changer côté serveur
+  - Fini quand : se connecter en SUPER_ADMIN donne accès, un compte normal est refusé
+
+- [ ] **2bis.5** — Retirer l'admin de ce dépôt
+  - ⚠️ **Uniquement quand 2bis.1 à 2bis.4 sont cochées et le nouveau dépôt déployé.**
+  - Supprimer `apps/web-legacy/app/admin/` et `components/admin/`
+  - Retirer `recharts` et `sonner` des dépendances de `apps/web-legacy`
+    (`recharts` n'est utilisé que par `app/admin/page.tsx` ; 9 des 11 fichiers utilisant
+    `sonner` sont dans `admin/`)
+  - Retirer `/admin` de `PROTECTED_PREFIXES` dans `packages/core/src/lib/auth/routePolicy.ts`
+    **et de sa suite de tests**
+  - ⚠️ Vérifier le hash md5 du CSS de `web-legacy` **avant/après** : il VA changer ici,
+    c'est normal — les classes de l'admin disparaissent. Note le nouveau hash de référence
+    dans `GUIDE_TECHNIQUE.md`.
+  - Fini quand : `npm test`, `tsc` et les builds passent, et le nouveau hash est consigné
+
+- [ ] **2bis.6** — Garde-fou contre la dérive du contrat
+  - Un script dans le dépôt admin qui régénère les types et échoue si le diff n'est pas vide
+  - À lancer en CI, ou au minimum avant chaque release admin
+  - Fini quand : modifier un DTO côté backend fait échouer ce contrôle
 
 ---
 

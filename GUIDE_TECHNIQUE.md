@@ -29,6 +29,13 @@ buzzer_front/
     └── game/             Expo SDK 57 — iOS + Android + web
 ```
 
+**L'admin ne vit PAS ici.** Il part dans un dépôt séparé, `buzzer_admin` (Vite +
+React Router), avec ses propres dépendances — voir la tâche 2bis. Raison : `recharts`,
+`sonner` et la pile DOM n'ont rien à faire dans l'arbre mobile, et l'admin n'a pas à subir
+la contrainte « une seule version de React » que ce monorepo impose. Si tu croises encore
+`apps/web-legacy/app/admin/`, c'est qu'il n'a pas encore été extrait — **ne le porte pas
+vers `apps/game`**.
+
 **`apps/web-legacy` est en production. NE LE MODIFIE JAMAIS**, sauf tâche qui le demande
 explicitement. C'est la référence de comportement : tu la lis, tu ne la touches pas.
 
@@ -234,6 +241,19 @@ Ce n'est pas optionnel, et ça se découvre au pire moment si on ne le prévoit 
 reversed client ID iOS doit être déclaré comme URL scheme dans `app.json`, à côté de
 `buzzmaster`.
 
+### 4.7 L'admin est hors périmètre
+
+L'application d'administration part dans un dépôt séparé (`buzzer_admin`). Elle reste du
+DOM, sur Vite, avec ses propres dépendances.
+
+**Ne porte jamais un écran d'admin vers `apps/game`.** Personne n'administre depuis un
+téléphone, et c'est là que se concentre presque tout le code incompatible React Native :
+tables, `recharts`, exports de fichiers.
+
+Son contrat d'API est **généré depuis le backend** (`GET /v3/api-docs`, SpringDoc), pas
+recopié depuis `packages/core`. Conséquence pour toi : **si tu modifies un DTO côté
+backend, le dépôt admin doit régénérer ses types.** Signale-le dans ton compte rendu.
+
 ---
 
 ## 5. Les pièges React Native, mesurés sur ce projet
@@ -348,6 +368,10 @@ cat apps/web-legacy/.next/static/css/*.css | md5
 
 Si le hash change **et que tu n'as pas touché à web-legacy**, tu as cassé quelque chose de
 partagé. Trouve quoi avant de commiter.
+
+⚠️ **Une seule exception légitime :** la tâche 2bis.5 (retrait de l'admin du dépôt) fait
+disparaître les classes de l'admin, donc le hash **va** changer. C'est le seul cas. Quand
+il arrive, note le nouveau hash de référence ici même.
 
 ### 6.2 L'écran de vérification visuelle
 
