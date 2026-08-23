@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { User, Mail, Lock, ArrowRight, Sparkles } from 'lucide-react-native';
+import { User, Mail, Lock, ArrowRight } from 'lucide-react-native';
 import { useRegisterForm } from '~/lib/hooks/useRegisterForm';
 import { GoogleSignInButton } from '~/components/auth/GoogleSignInButton';
 import { AppleSignInButton } from '~/components/auth/AppleSignInButton';
@@ -49,115 +49,104 @@ export default function RegisterScreen() {
             flexGrow: 1,
             justifyContent: 'center',
             paddingHorizontal: 20,
-            paddingVertical: 24,
+            paddingVertical: 28,
           }}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
           {/* Header Branding */}
-          <View style={{ alignItems: 'center', marginBottom: 20 }}>
-            {/* Logo Squircle */}
+          <View style={{ alignItems: 'center', marginBottom: 24 }}>
             <View
               style={{
-                width: 72,
-                height: 72,
-                borderRadius: 22,
+                width: 60,
+                height: 60,
+                borderRadius: 18,
                 backgroundColor: palette.primary,
                 alignItems: 'center',
                 justifyContent: 'center',
                 marginBottom: 10,
                 shadowColor: palette.primary,
-                shadowOpacity: 0.35,
-                shadowRadius: 12,
-                elevation: 6,
+                shadowOpacity: 0.3,
+                shadowRadius: 10,
+                elevation: 4,
               }}
             >
-              <XalaatMark size={40} color={palette.primaryInk} accent={palette.gold} />
+              <XalaatMark size={32} color={palette.primaryInk} accent={palette.gold} />
             </View>
 
             <Text
               style={{
                 fontFamily: font.nativeFamily.display,
                 fontSize: 34,
-                lineHeight: 44,
+                lineHeight: 42,
                 letterSpacing: -0.5,
                 color: palette.txt,
+                textAlign: 'center',
                 paddingTop: 4,
               }}
             >
               Xalaat
             </Text>
 
-            {/* Tag Pill */}
-            <View
+            <Text
               style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                backgroundColor: 'rgba(217, 119, 6, 0.12)',
-                borderWidth: 1,
-                borderColor: 'rgba(217, 119, 6, 0.28)',
-                paddingHorizontal: 12,
-                paddingVertical: 4,
-                borderRadius: 9999,
-                marginTop: 6,
+                fontFamily: font.nativeFamily.serif,
+                fontStyle: 'italic',
+                fontSize: 16,
+                lineHeight: 22,
+                color: palette.inkSoft,
+                textAlign: 'center',
+                marginTop: 2,
               }}
             >
-              <Sparkles size={12} color={palette.gold} />
-              <Text
-                style={{
-                  fontSize: 11,
-                  fontWeight: '700',
-                  letterSpacing: 1,
-                  color: palette.gold,
-                  marginLeft: 6,
-                  textTransform: 'uppercase',
-                }}
-              >
-                Rejoins l&apos;arène
-              </Text>
-            </View>
+              Quiz by Mouhadev
+            </Text>
           </View>
 
           {/* Form Card */}
           <View
             style={{
               width: '100%',
-              maxWidth: 420,
+              maxWidth: 400,
               alignSelf: 'center',
               backgroundColor: palette.surface,
-              borderRadius: 28,
+              borderRadius: 24,
               padding: 24,
               borderWidth: 1,
               borderColor: palette.line,
               shadowColor: '#000',
-              shadowOpacity: 0.06,
-              shadowRadius: 16,
-              elevation: 3,
+              shadowOpacity: 0.05,
+              shadowRadius: 12,
+              elevation: 2,
             }}
           >
-            {/* Card Header */}
-            <View style={{ marginBottom: 18 }}>
+            {/* Greeting */}
+            <View style={{ alignItems: 'center', marginBottom: 22 }}>
               <Text
                 style={{
                   fontFamily: font.nativeFamily.display,
                   fontSize: 24,
                   lineHeight: 32,
                   color: palette.txt,
+                  textAlign: 'center',
                   paddingTop: 2,
                 }}
               >
-                Créer un compte
+                Rejoins-nous !
               </Text>
+
               <Text
                 style={{
                   fontFamily: font.nativeFamily.serif,
                   fontStyle: 'italic',
-                  fontSize: 14.5,
+                  fontSize: 15.5,
+                  lineHeight: 22,
                   color: palette.inkSoft,
-                  marginTop: 2,
+                  textAlign: 'center',
+                  marginTop: 4,
                 }}
               >
-                Deviens le maître du buzzer et défie tes amis
+                Crée ton compte pour{'\n'}défier tes amis en quiz
               </Text>
             </View>
 
@@ -180,7 +169,7 @@ export default function RegisterScreen() {
               leftIcon={Mail}
               value={email}
               onChangeText={setEmail}
-              placeholder="votre@email.com (pour récupérer ton compte)"
+              placeholder="votre@email.com"
               error={errors.email}
               keyboardType="email-address"
               autoCapitalize="none"
@@ -307,7 +296,6 @@ export default function RegisterScreen() {
             {/* Switch to Login */}
             <View
               style={{
-                flexDirection: 'row',
                 alignItems: 'center',
                 justifyContent: 'center',
                 marginTop: 20,
@@ -316,8 +304,8 @@ export default function RegisterScreen() {
                 borderTopColor: palette.line,
               }}
             >
-              <Text style={{ fontSize: 13.5, color: palette.inkSoft }}>
-                Déjà inscrit ?{' '}
+              <Text style={{ fontSize: 13.5, color: palette.inkSoft, marginBottom: 3 }}>
+                Déjà un compte ?
               </Text>
               <TouchableOpacity
                 onPress={() => router.push('/(auth)/login' as any)}
@@ -325,7 +313,7 @@ export default function RegisterScreen() {
               >
                 <Text
                   style={{
-                    fontSize: 13.5,
+                    fontSize: 14.5,
                     fontWeight: '700',
                     color: palette.primary,
                   }}
