@@ -16,6 +16,8 @@ import {
   Pencil,
   Sparkles,
   Shuffle,
+  User,
+  Mail,
 } from 'lucide-react-native';
 import { useMutation } from '@tanstack/react-query';
 
@@ -24,6 +26,7 @@ import * as usersApi from '~/lib/api/users';
 import { AVATAR_STYLES, AVATAR_SEEDS, getAvatarUrl } from '~/lib/utils/avatar';
 import { palette, font } from '~/lib/theme/tokens';
 import { Avatar } from '~/components/shared/Avatar';
+import { FormInput } from '~/components/shared/FormInput';
 import { GoogleSignInButton } from '~/components/auth/GoogleSignInButton';
 import { notify, notifyApiError } from '~/lib/ui/notify';
 
@@ -310,55 +313,28 @@ export default function EditProfileScreen() {
             borderWidth: 1,
             borderColor: palette.line,
             padding: 20,
-            gap: 16,
           }}
         >
-          <View style={{ gap: 6 }}>
-            <Text style={{ color: palette.inkSoft, fontSize: 12, fontWeight: '700', textTransform: 'uppercase' }}>
-              Nom d'utilisateur *
-            </Text>
-            <TextInput
-              value={username}
-              onChangeText={setUsername}
-              placeholder="Votre pseudo"
-              placeholderTextColor={palette.inkSoft}
-              style={{
-                backgroundColor: palette.bg,
-                borderRadius: 14,
-                borderWidth: 1,
-                borderColor: palette.line,
-                paddingHorizontal: 16,
-                paddingVertical: 12,
-                color: palette.txt,
-                fontSize: 15,
-                fontWeight: '600',
-              }}
-            />
-          </View>
+          <FormInput
+            label="Nom d'utilisateur *"
+            leftIcon={User}
+            value={username}
+            onChangeText={setUsername}
+            placeholder="Votre pseudo"
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
 
-          <View style={{ gap: 6 }}>
-            <Text style={{ color: palette.inkSoft, fontSize: 12, fontWeight: '700', textTransform: 'uppercase' }}>
-              Adresse e-mail
-            </Text>
-            <TextInput
-              value={email}
-              onChangeText={setEmail}
-              placeholder="votre.email@exemple.com"
-              placeholderTextColor={palette.inkSoft}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              style={{
-                backgroundColor: palette.bg,
-                borderRadius: 14,
-                borderWidth: 1,
-                borderColor: palette.line,
-                paddingHorizontal: 16,
-                paddingVertical: 12,
-                color: palette.txt,
-                fontSize: 15,
-              }}
-            />
-          </View>
+          <FormInput
+            label="Adresse e-mail"
+            leftIcon={Mail}
+            value={email}
+            onChangeText={setEmail}
+            placeholder="votre.email@exemple.com"
+            keyboardType="email-address"
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
         </View>
 
         {/* Linked Accounts Section */}

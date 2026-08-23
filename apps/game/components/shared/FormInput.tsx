@@ -4,6 +4,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
+  Platform,
   type TextInputProps,
 } from 'react-native';
 import { Eye, EyeOff, AlertCircle, type LucideIcon } from 'lucide-react-native';
@@ -43,7 +44,7 @@ export function FormInput({
   const backgroundColor = isFocused ? '#FFFFFF' : palette.bg;
 
   return (
-    <View style={{ marginBottom: 16 }}>
+    <View style={{ marginBottom: 16, width: '100%' }}>
       {/* Label Row */}
       <View
         style={{
@@ -51,6 +52,7 @@ export function FormInput({
           alignItems: 'center',
           justifyContent: 'space-between',
           marginBottom: 6,
+          paddingHorizontal: 2,
         }}
       >
         <Text
@@ -58,7 +60,7 @@ export function FormInput({
             fontSize: 13,
             fontWeight: '700',
             color: palette.txt,
-            letterSpacing: 0.2,
+            letterSpacing: 0.1,
           }}
         >
           {label}
@@ -71,7 +73,7 @@ export function FormInput({
           >
             <Text
               style={{
-                fontSize: 12,
+                fontSize: 12.5,
                 fontWeight: '700',
                 color: palette.primary,
               }}
@@ -92,7 +94,7 @@ export function FormInput({
           backgroundColor,
           borderWidth: isFocused ? 1.5 : 1,
           borderColor,
-          paddingHorizontal: 12,
+          paddingHorizontal: 14,
           shadowColor: isFocused ? palette.primary : '#000',
           shadowOpacity: isFocused ? 0.08 : 0.02,
           shadowRadius: isFocused ? 8 : 4,
@@ -103,18 +105,17 @@ export function FormInput({
         {LeftIcon && (
           <View
             style={{
-              width: 32,
-              height: 32,
-              borderRadius: 10,
-              backgroundColor: isFocused ? `${palette.primary}14` : palette.surface2,
+              width: 28,
+              height: 28,
               alignItems: 'center',
               justifyContent: 'center',
               marginRight: 10,
             }}
           >
             <LeftIcon
-              size={17}
+              size={18}
               color={isFocused ? palette.primary : palette.inkSoft}
+              strokeWidth={2}
             />
           </View>
         )}
@@ -130,11 +131,13 @@ export function FormInput({
           onBlur={() => setIsFocused(false)}
           style={{
             flex: 1,
+            height: 52,
             fontSize: 15,
             fontWeight: '600',
             color: palette.txt,
-            height: '100%',
             paddingVertical: 0,
+            textAlignVertical: 'center',
+            ...(Platform.OS === 'android' ? { includeFontPadding: false } : {}),
           }}
           {...textInputProps}
         />
@@ -145,12 +148,18 @@ export function FormInput({
             onPress={() => setShowPassword(!showPassword)}
             activeOpacity={0.7}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            style={{ padding: 4 }}
+            style={{
+              width: 32,
+              height: 32,
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginLeft: 6,
+            }}
           >
             {showPassword ? (
-              <EyeOff size={19} color={palette.inkSoft} />
+              <EyeOff size={18} color={palette.inkSoft} />
             ) : (
-              <Eye size={19} color={palette.inkSoft} />
+              <Eye size={18} color={palette.inkSoft} />
             )}
           </TouchableOpacity>
         )}

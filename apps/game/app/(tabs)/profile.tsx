@@ -32,6 +32,7 @@ import * as usersApi from '~/lib/api/users';
 import { palette, font } from '~/lib/theme/tokens';
 import { Avatar } from '~/components/shared/Avatar';
 import { AppTopBar } from '~/components/shared/AppTopBar';
+import { FormInput } from '~/components/shared/FormInput';
 import { notify, notifyApiError } from '~/lib/ui/notify';
 import { confirmAsync } from '~/lib/ui/confirm';
 
@@ -498,67 +499,31 @@ export default function ProfileScreen() {
               </TouchableOpacity>
             </View>
 
-            <Text style={{ color: palette.txt, fontWeight: '600', fontSize: 12, marginBottom: 4 }}>
-              Mot de passe actuel
-            </Text>
-            <TextInput
-              secureTextEntry
+            <FormInput
+              label="Mot de passe actuel"
+              leftIcon={Lock}
               value={currentPassword}
               onChangeText={setCurrentPassword}
               placeholder="••••••••"
-              placeholderTextColor={palette.inkSoft}
-              style={{
-                backgroundColor: palette.bg,
-                borderRadius: 14,
-                borderWidth: 1,
-                borderColor: palette.line,
-                padding: 12,
-                color: palette.txt,
-                fontSize: 14,
-                marginBottom: 12,
-              }}
+              isPassword
             />
 
-            <Text style={{ color: palette.txt, fontWeight: '600', fontSize: 12, marginBottom: 4 }}>
-              Nouveau mot de passe
-            </Text>
-            <TextInput
-              secureTextEntry
+            <FormInput
+              label="Nouveau mot de passe"
+              leftIcon={Lock}
               value={newPassword}
               onChangeText={setNewPassword}
               placeholder="Au moins 6 caractères"
-              placeholderTextColor={palette.inkSoft}
-              style={{
-                backgroundColor: palette.bg,
-                borderRadius: 14,
-                borderWidth: 1,
-                borderColor: palette.line,
-                padding: 12,
-                color: palette.txt,
-                fontSize: 14,
-                marginBottom: 12,
-              }}
+              isPassword
             />
 
-            <Text style={{ color: palette.txt, fontWeight: '600', fontSize: 12, marginBottom: 4 }}>
-              Confirmer le nouveau mot de passe
-            </Text>
-            <TextInput
-              secureTextEntry
+            <FormInput
+              label="Confirmer le nouveau mot de passe"
+              leftIcon={Lock}
               value={confirmPassword}
               onChangeText={setConfirmPassword}
               placeholder="••••••••"
-              placeholderTextColor={palette.inkSoft}
-              style={{
-                backgroundColor: palette.bg,
-                borderRadius: 14,
-                borderWidth: 1,
-                borderColor: palette.line,
-                padding: 12,
-                color: palette.txt,
-                fontSize: 14,
-                marginBottom: 18,
-              }}
+              isPassword
             />
 
             <TouchableOpacity

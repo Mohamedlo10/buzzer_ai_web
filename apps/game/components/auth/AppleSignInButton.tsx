@@ -48,12 +48,12 @@ export function AppleSignInButton({ onSuccess, disabled }: AppleSignInButtonProp
   }
 
   return (
-    <View className="w-full mt-3">
+    <View style={{ width: '100%' }}>
       <AppleAuthentication.AppleAuthenticationButton
         buttonType={AppleAuthentication.AppleAuthenticationButtonType.CONTINUE}
         buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
         cornerRadius={16}
-        style={{ width: '100%', height: 48 }}
+        style={{ width: '100%', height: 52 }}
         onPress={signIn}
       />
     </View>

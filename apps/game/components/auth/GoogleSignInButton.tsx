@@ -49,21 +49,35 @@ export function GoogleSignInButton({ onSuccess, disabled }: GoogleSignInButtonPr
       onPress={signIn}
       disabled={disabled || isLoading}
       activeOpacity={0.8}
-      className={`w-full py-3.5 px-4 rounded-2xl bg-surface border border-line flex-row items-center justify-center shadow-sm ${
-        isLoading || disabled ? 'opacity-60' : ''
-      }`}
+      style={{
+        width: '100%',
+        height: 52,
+        borderRadius: 16,
+        backgroundColor: palette.surface,
+        borderWidth: 1,
+        borderColor: palette.line,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingHorizontal: 16,
+        shadowColor: '#000',
+        shadowOpacity: 0.03,
+        shadowRadius: 4,
+        elevation: 1,
+        opacity: isLoading || disabled ? 0.6 : 1,
+      }}
     >
       {isLoading ? (
-        <View className="flex-row items-center justify-center">
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
           <ActivityIndicator size="small" color={palette.primary} />
-          <Text className="text-txt font-semibold text-base ml-2.5">
+          <Text style={{ color: palette.txt, fontWeight: '600', fontSize: 15, marginLeft: 10 }}>
             Connexion avec Google...
           </Text>
         </View>
       ) : (
-        <View className="flex-row items-center justify-center">
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
           <GoogleIcon size={20} />
-          <Text className="text-txt font-bold text-base ml-3">
+          <Text style={{ color: palette.txt, fontWeight: '700', fontSize: 15, marginLeft: 10 }}>
             Continuer avec Google
           </Text>
         </View>
