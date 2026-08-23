@@ -1,6 +1,6 @@
 import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { X, ArrowLeft, Zap } from 'lucide-react-native';
-import { palette } from '~/lib/theme/tokens';
+import { palette, font } from '~/lib/theme/tokens';
 import { useSessionConfig } from '~/lib/hooks/useSessionConfig';
 import { StepBar } from './StepBar';
 import { StepGameMode } from './StepGameMode';
@@ -141,47 +141,59 @@ export function SessionConfigForm({
           gap: 12,
         }}
       >
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
           <TouchableOpacity
             onPress={isFirstStep ? onClose : handleBack}
             activeOpacity={0.7}
             style={{
-              width: 40,
-              height: 40,
-              borderRadius: 20,
+              width: 38,
+              height: 38,
+              borderRadius: 19,
               backgroundColor: palette.surface,
               alignItems: 'center',
               justifyContent: 'center',
+              borderWidth: 1,
+              borderColor: palette.line,
             }}
           >
             {isFirstStep
-              ? <X size={20} color={palette.txt} />
-              : <ArrowLeft size={20} color={palette.txt} />}
+              ? <X size={18} color={palette.txt} />
+              : <ArrowLeft size={18} color={palette.txt} />}
           </TouchableOpacity>
 
-          <View style={{ flex: 1, alignItems: 'center', paddingHorizontal: 8 }}>
-            <Text style={{ color: palette.txt, fontWeight: '700', fontSize: 16 }}>Créer une session</Text>
-            <Text style={{ color: palette.inkSoft, fontSize: 12, marginTop: 2 }}>
+          <View style={{ flex: 1, alignItems: 'center' }}>
+            <Text style={{ fontFamily: font.nativeFamily.display, fontSize: 16, lineHeight: 22, color: palette.txt, paddingTop: 2 }}>
+              Créer une session
+            </Text>
+            <Text style={{ fontFamily: font.nativeFamily.serif, fontStyle: 'italic', fontSize: 13, color: palette.inkSoft }}>
               {getStepName()} · Étape {currentStep + 1}/{totalSteps}
             </Text>
           </View>
 
-          <View style={{ width: 40, alignItems: 'flex-end' }}>
-            {!isLastStep ? (
-              <TouchableOpacity
-                onPress={handleNext}
-                activeOpacity={0.8}
-                style={{
-                  paddingHorizontal: 12,
-                  paddingVertical: 6,
-                  borderRadius: 9999,
-                  backgroundColor: palette.primary,
-                }}
-              >
-                <Text style={{ color: '#FFFFFF', fontSize: 12, fontWeight: '700' }}>Suivant</Text>
-              </TouchableOpacity>
-            ) : <View style={{ width: 40 }} />}
-          </View>
+          {!isLastStep ? (
+            <TouchableOpacity
+              onPress={handleNext}
+              activeOpacity={0.8}
+              style={{
+                paddingHorizontal: 16,
+                paddingVertical: 8,
+                borderRadius: 9999,
+                backgroundColor: palette.primary,
+                alignItems: 'center',
+                justifyContent: 'center',
+                shadowColor: palette.primary,
+                shadowOpacity: 0.25,
+                shadowRadius: 4,
+                elevation: 2,
+              }}
+            >
+              <Text style={{ color: palette.primaryInk, fontSize: 13, fontWeight: '700' }}>
+                Suivant
+              </Text>
+            </TouchableOpacity>
+          ) : (
+            <View style={{ width: 38 }} />
+          )}
         </View>
 
         <StepBar step={currentStep + 1} total={totalSteps} />
