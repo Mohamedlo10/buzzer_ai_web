@@ -24,9 +24,18 @@
  * Pour du web pur, `className="bg-surface"` reste préférable au style inline.
  */
 
-export { palette, alpha, radius, font, toChannels, withAlpha } from './palette';
+import * as paletteModule from './palette';
 
-import { palette, alpha, withAlpha } from './palette';
+const pMod: any = (paletteModule as any).default ?? paletteModule;
+
+export const palette = pMod.palette;
+export const darkPalette = pMod.darkPalette;
+export const alpha = pMod.alpha;
+export const radius = pMod.radius;
+export const font = pMod.font;
+export const toChannels = pMod.toChannels;
+export const withAlpha = pMod.withAlpha;
+export const cssVars = pMod.cssVars;
 
 /** Nom canonique d'une couleur de la palette Teranga. */
 export type ColorName = keyof typeof palette;

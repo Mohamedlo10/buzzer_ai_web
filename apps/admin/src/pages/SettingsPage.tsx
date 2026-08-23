@@ -1,0 +1,144 @@
+import { useNavigate } from 'react-router-dom';
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { toast } from 'sonner';
+import {
+  ArrowLeft,
+  RefreshCw,
+  BarChart3,
+  Users,
+  Gamepad2,
+  Brain,
+  DollarSign,
+} from 'lucide-react';
+
+import { Card } from '../components/ui/Card';
+import { KpiCard } from '../components/admin/KpiCard';
+import { adminApi, rankingsApi } from '@xalaat/core';
+
+export function SettingsPage() {
+  const navigate = useNavigate();
+
+  const { data: stats } = useQuery({
+    queryKey: ['adminStats'],
+    queryFn: adminApi.getAdminStats,
+  });
+
+  const globalRecalc = useMutation({
+    mutationFn: rankingsApi.recalculateGlobalRankings,
+    onSuccess: (data: any) => toast.success(data?.message || 'Classements globaux recalculés'),
+    onError: () => toast.error('Erreur lors du recalcul global'),
+  });
+
+  const roomRecalc = useMutation({
+    mutationFn: rankingsApi.recalculateRoomRankings,
+    onSuccess: (data: any) => toast.success(data?.message || 'Classements par salle recalculés'),
+    onError: () => toast.error('Erreur lors du recalcul par salle'),
+  });
+
+  return (
+    <div className="min-h-screen bg-bg flex flex-col">
+      {/* Header */}
+      <div className="bg-bg pt-6 pb-4 px-4 border-b border-line">
+        <div className="flex items-center">
+          <button
+            onClick={() => navigate('/')}
+            className="w-10 h-10 rounded-full bg-surface flex items-center justify-center mr-3 hover:bg-surface-2 transition-colors cursor-pointer"
+          >
+            <ArrowLeft size={20} color="var(--txt)" />
+          </button>
+          <div className="flex-1">
+            <p className="text-txt font-bold text-xl font-display">Paramètres</p>
+            <p className="text-txt-60 text-xs">Maintenance et statistiques</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-y-auto px-4 py-6 space-y-6">
+        {/* Maintenance */}
+        <div>
+          <h2 className="text-txt font-bold text-lg mb-4 flex items-center gap-2 font-display">
+            <RefreshCw size={20} color="var(--violet)" />
+            Maintenance
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Card className="flex flex-col gap-3">
+              <div>
+                <p className="text-txt font-semibold">Recalcul global</p>
+                <p className="text-txt-60 text-xs mt-1">
+                  Recalcule tous les classements globaux des joueurs.
+                </p>
+              </div>
+              <button
+                onClick={() => globalRecalc.mutate()}
+                disabled={globalRecalc.isPending}
+                className="w-full py-3 rounded-xl bg-host text-white text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40 flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <RefreshCw size={16} className={globalRecalc.isPending ? 'animate-spin' : ''} />
+                {globalRecalc.isPending
+                  ? 'Recalcul en cours...'
+                  : 'Recalculer classements globaux'}
+              </button>
+            </Card>
+
+            <Card className="flex flex-col gap-3">
+              <div>
+                <p className="text-txt font-semibold">Recalcul par salle</p>
+                <p className="text-txt-60 text-xs mt-1">
+                  Recalcule les classements pour chaque salle.
+                </p>
+              </div>
+              <button
+                onClick={() => roomRecalc.mutate()}
+                disabled={roomRecalc.isPending}
+                className="w-full py-3 rounded-xl bg-host text-white text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40 flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <RefreshCw size={16} className={roomRecalc.isPending ? 'animate-spin' : ''} />
+                {roomRecalc.isPending
+                  ? 'Recalcul en cours...'
+                  : 'Recalculer classements par salle'}
+              </button>
+            </Card>
+          </div>
+        </div>
+
+        {/* Quick Stats */}
+        <div>
+          <h2 className="text-txt font-bold text-lg mb-4 flex items-center gap-2 font-display">
+            <BarChart3 size={20} color="var(--primary)" />
+            Statistiques rapides
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <KpiCard
+              title="Utilisateurs"
+              value={stats?.totalUsers ?? '-'}
+              icon={Users}
+              iconColor="var(--indigo)"
+              iconBg="rgba(78, 140, 255, 0.125)"
+            />
+            <KpiCard
+              title="Sessions"
+              value={stats?.totalSessions ?? '-'}
+              icon={Gamepad2}
+              iconColor="var(--good)"
+              iconBg="rgba(46, 204, 113, 0.125)"
+            />
+            <KpiCard
+              title="Questions"
+              value={stats?.totalQuestions ?? '-'}
+              icon={Brain}
+              iconColor="var(--violet)"
+              iconBg="rgba(155, 89, 182, 0.125)"
+            />
+            <KpiCard
+              title="Coût AI (mois)"
+              value={stats ? `$${stats.aiCostThisMonth.toFixed(2)}` : '-'}
+              icon={DollarSign}
+              iconColor="var(--bad)"
+              iconBg="rgba(231, 76, 60, 0.125)"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

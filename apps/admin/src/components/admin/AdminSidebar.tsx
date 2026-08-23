@@ -1,0 +1,158 @@
+import { Link, useLocation } from 'react-router-dom';
+import {
+  LayoutDashboard,
+  Users,
+  Gamepad2,
+  DoorOpen,
+  BookOpen,
+  ShieldAlert,
+  Settings,
+  ChevronLeft,
+  ChevronRight,
+  Crown,
+  Menu,
+  X,
+} from 'lucide-react';
+import { useState } from 'react';
+
+const NAV_ITEMS = [
+  { href: '/', label: 'Dashboard', icon: LayoutDashboard, short: 'Dash' },
+  { href: '/users', label: 'Utilisateurs', icon: Users, short: 'Users' },
+  { href: '/sessions', label: 'Sessions', icon: Gamepad2, short: 'Sessions' },
+  { href: '/rooms', label: 'Salles', icon: DoorOpen, short: 'Salles' },
+  { href: '/questions', label: 'Questions', icon: BookOpen, short: 'QCM' },
+  { href: '/audit-logs', label: 'Audit', icon: ShieldAlert, short: 'Audit' },
+  { href: '/settings', label: 'Paramètres', icon: Settings, short: 'Settings' },
+];
+
+export function AdminSidebar() {
+  const { pathname } = useLocation();
+  const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  return (
+    <>
+      {/* ─── Desktop Sidebar ─── */}
+      <aside
+        className={`hidden lg:flex flex-col h-full bg-bg-deep border-r border-line transition-all duration-300 flex-shrink-0 ${
+          collapsed ? 'w-20' : 'w-64'
+        }`}
+      >
+        {/* Logo */}
+        <div className="flex items-center gap-3 px-5 h-16 border-b border-line flex-shrink-0">
+          <Crown size={24} color="var(--gold)" />
+          {!collapsed && (
+            <span className="text-txt font-bold text-lg whitespace-nowrap font-display">Admin</span>
+          )}
+        </div>
+
+        {/* Nav */}
+        <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
+          {NAV_ITEMS.map((item) => {
+            const isActive =
+              item.href === '/'
+                ? pathname === '/'
+                : pathname === item.href || pathname.startsWith(`${item.href}/`);
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.href}
+                to={item.href}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors ${
+                  isActive
+                    ? 'bg-host text-white'
+                    : 'text-txt-60 hover:bg-surface-2 hover:text-txt'
+                }`}
+                title={collapsed ? item.label : undefined}
+              >
+                <Icon size={20} />
+                {!collapsed && <span className="text-sm font-medium whitespace-nowrap">{item.label}</span>}
+              </Link>
+            );
+          })}
+        </nav>
+
+        {/* Bottom */}
+        <div className="p-3 border-t border-line flex-shrink-0">
+          <button
+            onClick={() => setCollapsed(!collapsed)}
+            className="flex items-center justify-center w-full py-2 rounded-xl text-txt-40 hover:bg-surface-2 hover:text-txt transition-colors cursor-pointer"
+          >
+            {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+            {!collapsed && <span className="ml-2 text-sm">Réduire</span>}
+          </button>
+        </div>
+      </aside>
+
+      {/* ─── Mobile Header (hamburger + logo) ─── */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-bg-deep border-b border-line h-14 flex items-center justify-between px-4 flex-shrink-0">
+        <div className="flex items-center gap-2">
+          <Crown size={20} color="var(--gold)" />
+          <span className="text-txt font-bold font-display">Admin</span>
+        </div>
+        <button
+          onClick={() => setMobileOpen(!mobileOpen)}
+          className="w-10 h-10 rounded-xl bg-surface-2 flex items-center justify-center text-txt cursor-pointer"
+        >
+          {mobileOpen ? <X size={20} /> : <Menu size={20} />}
+        </button>
+      </div>
+
+      {/* ─── Mobile Drawer ─── */}
+      {mobileOpen && (
+        <div className="lg:hidden fixed inset-0 z-40">
+          <div className="absolute inset-0 bg-black/60" onClick={() => setMobileOpen(false)} />
+          <aside className="absolute top-14 left-0 right-0 bg-bg-deep border-b border-line p-4 space-y-1">
+            {NAV_ITEMS.map((item) => {
+              const isActive =
+                item.href === '/'
+                  ? pathname === '/'
+                  : pathname === item.href || pathname.startsWith(`${item.href}/`);
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.href}
+                  to={item.href}
+                  onClick={() => setMobileOpen(false)}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${
+                    isActive
+                      ? 'bg-host text-white'
+                      : 'text-txt-60 hover:bg-surface-2 hover:text-txt'
+                  }`}
+                >
+                  <Icon size={20} />
+                  <span className="text-sm font-medium">{item.label}</span>
+                </Link>
+              );
+            })}
+          </aside>
+        </div>
+      )}
+
+      {/* ─── Mobile Bottom Tab Bar ─── */}
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-bg-deep border-t border-line px-2 pb-safe flex-shrink-0">
+        <div className="flex items-center justify-around h-16">
+          {NAV_ITEMS.slice(0, 5).map((item) => {
+            const isActive =
+              item.href === '/'
+                ? pathname === '/'
+                : pathname === item.href || pathname.startsWith(`${item.href}/`);
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.href}
+                to={item.href}
+                className={`flex flex-col items-center justify-center gap-1 min-w-[56px] py-1 rounded-xl transition-colors ${
+                  isActive ? 'text-host' : 'text-txt-40'
+                }`}
+              >
+                <Icon size={18} />
+                <span className="text-[10px] font-medium">{item.short}</span>
+              </Link>
+            );
+          })}
+        </div>
+      </nav>
+    </>
+  );
+}

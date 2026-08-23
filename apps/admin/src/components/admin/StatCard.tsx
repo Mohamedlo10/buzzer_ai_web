@@ -1,0 +1,50 @@
+import React from 'react';
+import { TrendingUp, TrendingDown } from 'lucide-react';
+
+interface StatCardProps {
+  title: string;
+  value: string | number;
+  change?: number;
+  icon: React.ComponentType<{ size: number; color: string }>;
+  color: string;
+}
+
+export function StatCard({ title, value, change, icon: Icon, color }: StatCardProps) {
+  const isPositive = change !== undefined && change > 0;
+  const isNegative = change !== undefined && change < 0;
+
+  return (
+    <div
+      className="bg-surface rounded-2xl p-4 border border-line"
+      style={{ boxShadow: `0 2px 8px 0 ${color}1a` }}
+    >
+      <div className="flex flex-row items-center justify-between mb-3">
+        <div
+          className="w-10 h-10 rounded-xl flex items-center justify-center"
+          style={{ backgroundColor: `${color}20` }}
+        >
+          <Icon size={20} color={color} />
+        </div>
+        {change !== undefined && (
+          <div
+            className={`flex flex-row items-center gap-1 px-2 py-1 rounded-full ${
+              isPositive ? 'bg-accent/15' : isNegative ? 'bg-buzz/15' : 'bg-surface-2'
+            }`}
+          >
+            {isPositive && <TrendingUp size={12} color="var(--primary)" />}
+            {isNegative && <TrendingDown size={12} color="var(--bad)" />}
+            <span
+              className={`text-xs font-medium ${
+                isPositive ? 'text-accent' : isNegative ? 'text-buzz' : 'text-txt-60'
+              }`}
+            >
+              {isPositive ? '+' : ''}{change}%
+            </span>
+          </div>
+        )}
+      </div>
+      <p className="text-txt-60 text-sm mb-1">{title}</p>
+      <p className="text-txt text-2xl font-bold">{value}</p>
+    </div>
+  );
+}

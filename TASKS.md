@@ -78,7 +78,7 @@
   - Crée une bibliothèque réutilisable dans `apps/game/components/anim/`
   - Fini quand : aucune saccade sur un appareil d'entrée de gamme
 
-- [ ] **4.4** — Recette complète de la boucle de jeu
+- [x] **4.4** — Recette complète de la boucle de jeu
   - Une partie **modérée** ET une partie **sprint**, de la création aux résultats
   - Sur **iPhone** et sur **web**
   - Fini quand : les deux parcours passent sans retour au web
