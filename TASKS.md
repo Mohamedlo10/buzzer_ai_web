@@ -267,7 +267,7 @@ cochées : sans les client IDs Google et la route serveur, tu ne peux rien teste
 
 ### Phase 6 — Écrans de bord et parité web
 
-- [ ] **6.1** — `onboarding`, `confirm-email`, `forgot-password`, `reset-password`
+- [x] **6.1** — `onboarding`, `confirm-email`, `forgot-password`, `reset-password`
   - `onboarding` contient un `<style>` brut à convertir
   - Les liens e-mail doivent fonctionner comme deep links
   - Fini quand : le parcours d'inscription complet passe depuis un e-mail réel
