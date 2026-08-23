@@ -41,47 +41,29 @@ export function FormInput({
       ? palette.primary
       : palette.line;
 
-  const backgroundColor = isFocused ? '#FFFFFF' : palette.bg;
-
   return (
-    <View style={{ marginBottom: 16, width: '100%' }}>
-      {/* Label Row */}
+    <View style={{ marginBottom: 16, marginTop: 4, width: '100%', position: 'relative' }}>
+      {/* Floating Notch Label */}
       <View
         style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          marginBottom: 6,
-          paddingHorizontal: 2,
+          position: 'absolute',
+          top: -9,
+          left: 14,
+          backgroundColor: palette.bg,
+          paddingHorizontal: 6,
+          zIndex: 2,
         }}
       >
         <Text
           style={{
-            fontSize: 13,
+            fontSize: 12,
             fontWeight: '700',
-            color: palette.txt,
+            color: isError ? palette.bad : isFocused ? palette.primary : palette.inkSoft,
             letterSpacing: 0.1,
           }}
         >
           {label}
         </Text>
-        {rightLabel && (
-          <TouchableOpacity
-            onPress={onRightLabelPress}
-            activeOpacity={0.7}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-          >
-            <Text
-              style={{
-                fontSize: 12.5,
-                fontWeight: '700',
-                color: palette.primary,
-              }}
-            >
-              {rightLabel}
-            </Text>
-          </TouchableOpacity>
-        )}
       </View>
 
       {/* Input Container */}
@@ -90,30 +72,26 @@ export function FormInput({
           flexDirection: 'row',
           alignItems: 'center',
           height: 52,
-          borderRadius: 16,
-          backgroundColor,
-          borderWidth: isFocused ? 1.5 : 1,
+          borderRadius: 14,
+          backgroundColor: isFocused ? '#FFFFFF' : palette.bg,
+          borderWidth: 1.5,
           borderColor,
           paddingHorizontal: 14,
-          shadowColor: isFocused ? palette.primary : '#000',
-          shadowOpacity: isFocused ? 0.08 : 0.02,
-          shadowRadius: isFocused ? 8 : 4,
-          elevation: isFocused ? 2 : 1,
         }}
       >
-        {/* Left Icon */}
+        {/* Left Icon (if provided) */}
         {LeftIcon && (
           <View
             style={{
-              width: 28,
-              height: 28,
+              width: 26,
+              height: 26,
               alignItems: 'center',
               justifyContent: 'center',
-              marginRight: 10,
+              marginRight: 8,
             }}
           >
             <LeftIcon
-              size={18}
+              size={17}
               color={isFocused ? palette.primary : palette.inkSoft}
               strokeWidth={2}
             />
@@ -153,7 +131,7 @@ export function FormInput({
               height: 32,
               alignItems: 'center',
               justifyContent: 'center',
-              marginLeft: 6,
+              marginLeft: 4,
             }}
           >
             {showPassword ? (
@@ -171,13 +149,13 @@ export function FormInput({
           style={{
             flexDirection: 'row',
             alignItems: 'center',
-            gap: 5,
-            marginTop: 6,
-            marginLeft: 4,
+            gap: 4,
+            marginTop: 4,
+            marginLeft: 6,
           }}
         >
-          <AlertCircle size={13} color={palette.bad} />
-          <Text style={{ color: palette.bad, fontSize: 12, fontWeight: '600' }}>
+          <AlertCircle size={12} color={palette.bad} />
+          <Text style={{ color: palette.bad, fontSize: 11.5, fontWeight: '600' }}>
             {error}
           </Text>
         </View>

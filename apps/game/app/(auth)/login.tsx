@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { User, Mail, Lock, ArrowRight } from 'lucide-react-native';
+import { Check } from 'lucide-react-native';
 import { useLoginForm } from '~/lib/hooks/useLoginForm';
 import { GoogleSignInButton } from '~/components/auth/GoogleSignInButton';
 import { AppleSignInButton } from '~/components/auth/AppleSignInButton';
@@ -20,6 +20,7 @@ import { palette, font } from '~/lib/theme/tokens';
 
 export default function LoginScreen() {
   const router = useRouter();
+  const [rememberMe, setRememberMe] = useState(true);
   const {
     username,
     setUsername,
@@ -49,186 +50,161 @@ export default function LoginScreen() {
           contentContainerStyle={{
             flexGrow: 1,
             justifyContent: 'center',
-            paddingHorizontal: 20,
-            paddingVertical: 28,
+            paddingHorizontal: 26,
+            paddingVertical: 20,
           }}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          {/* Header Branding */}
-          <View style={{ alignItems: 'center', marginBottom: 28 }}>
-            <View
-              style={{
-                width: 60,
-                height: 60,
-                borderRadius: 18,
-                backgroundColor: palette.primary,
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginBottom: 10,
-                shadowColor: palette.primary,
-                shadowOpacity: 0.3,
-                shadowRadius: 10,
-                elevation: 4,
-              }}
-            >
-              <XalaatMark size={32} color={palette.primaryInk} accent={palette.gold} />
+          <View style={{ width: '100%', maxWidth: 380, alignSelf: 'center' }}>
+            {/* Top Right Logo Header */}
+            <View style={{ alignItems: 'flex-end', marginBottom: 16 }}>
+              <View
+                style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: 14,
+                  backgroundColor: palette.primary,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  shadowColor: palette.primary,
+                  shadowOpacity: 0.25,
+                  shadowRadius: 6,
+                  elevation: 3,
+                }}
+              >
+                <XalaatMark size={24} color={palette.primaryInk} accent={palette.gold} />
+              </View>
             </View>
 
-            <Text
-              style={{
-                fontFamily: font.nativeFamily.display,
-                fontSize: 34,
-                lineHeight: 42,
-                letterSpacing: -0.5,
-                color: palette.txt,
-                textAlign: 'center',
-                paddingTop: 4,
-              }}
-            >
-              Xalaat
-            </Text>
-
-            <Text
-              style={{
-                fontFamily: font.nativeFamily.serif,
-                fontStyle: 'italic',
-                fontSize: 16,
-                lineHeight: 22,
-                color: palette.inkSoft,
-                textAlign: 'center',
-                marginTop: 2,
-              }}
-            >
-              Quiz by Mouhadev
-            </Text>
-          </View>
-
-          {/* Form Card */}
-          <View
-            style={{
-              width: '100%',
-              maxWidth: 400,
-              alignSelf: 'center',
-              backgroundColor: palette.surface,
-              borderRadius: 24,
-              padding: 24,
-              borderWidth: 1,
-              borderColor: palette.line,
-              shadowColor: '#000',
-              shadowOpacity: 0.05,
-              shadowRadius: 12,
-              elevation: 2,
-            }}
-          >
-            {/* Greeting */}
-            <View style={{ alignItems: 'center', marginBottom: 22 }}>
+            {/* Title & Subtitle */}
+            <View style={{ marginBottom: 28 }}>
               <Text
                 style={{
                   fontFamily: font.nativeFamily.display,
-                  fontSize: 24,
-                  lineHeight: 32,
+                  fontSize: 30,
+                  lineHeight: 38,
+                  letterSpacing: -0.5,
                   color: palette.txt,
-                  textAlign: 'center',
                   paddingTop: 2,
                 }}
               >
-                Bon retour !
+                Connecte-toi à ton compte.
               </Text>
 
               <Text
                 style={{
                   fontFamily: font.nativeFamily.serif,
                   fontStyle: 'italic',
-                  fontSize: 15.5,
-                  lineHeight: 22,
+                  fontSize: 16,
                   color: palette.inkSoft,
-                  textAlign: 'center',
-                  marginTop: 4,
+                  marginTop: 6,
                 }}
               >
-                Connecte-toi pour retrouver{'\n'}tes salons et scores
+                Ravi de te revoir !
               </Text>
             </View>
 
-            {/* Username / Email Input */}
+            {/* Form Inputs (Floating Notch Labels) */}
             <FormInput
-              label="Nom d'utilisateur ou email"
-              leftIcon={isEmailInput ? Mail : User}
+              label="E-mail ou pseudo"
               value={username}
               onChangeText={setUsername}
-              placeholder={isEmailInput ? 'votre@email.com' : 'Entre ton pseudo'}
+              placeholder="exemple@email.com"
               error={errors.username}
               autoCapitalize="none"
               autoCorrect={false}
               editable={!isLoading}
             />
 
-            {/* Password Input */}
             <FormInput
               label="Mot de passe"
-              leftIcon={Lock}
               value={password}
               onChangeText={setPassword}
-              placeholder="Entre ton mot de passe"
+              placeholder="Ton mot de passe"
               error={errors.password}
               isPassword
-              rightLabel="Oublié ?"
-              onRightLabelPress={() => router.push('/forgot-password' as any)}
               autoCapitalize="none"
               autoCorrect={false}
               editable={!isLoading}
               onSubmitEditing={handleLogin}
             />
 
-            {/* Login CTA Button */}
+            {/* Remember Me & Forgot Password Row */}
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: 22,
+                marginTop: 2,
+                paddingHorizontal: 2,
+              }}
+            >
+              <TouchableOpacity
+                onPress={() => setRememberMe(!rememberMe)}
+                activeOpacity={0.8}
+                style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}
+              >
+                <View
+                  style={{
+                    width: 18,
+                    height: 18,
+                    borderRadius: 9,
+                    borderWidth: 1.5,
+                    borderColor: rememberMe ? palette.primary : palette.line,
+                    backgroundColor: rememberMe ? palette.primary : 'transparent',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  {rememberMe && <Check size={12} color={palette.primaryInk} strokeWidth={3} />}
+                </View>
+                <Text style={{ fontSize: 13, color: palette.inkSoft, fontWeight: '600' }}>
+                  Se souvenir
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => router.push('/forgot-password' as any)}
+                activeOpacity={0.7}
+              >
+                <Text style={{ fontSize: 13, color: palette.inkSoft, fontWeight: '600' }}>
+                  Mot de passe oublié ?
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Primary Action Button */}
             <TouchableOpacity
               onPress={handleLogin}
               disabled={isLoading}
-              activeOpacity={0.8}
+              activeOpacity={0.85}
               style={{
-                height: 52,
-                borderRadius: 16,
+                height: 50,
+                borderRadius: 14,
                 backgroundColor: palette.primary,
-                flexDirection: 'row',
                 alignItems: 'center',
                 justifyContent: 'center',
-                marginTop: 4,
                 shadowColor: palette.primary,
-                shadowOpacity: 0.3,
-                shadowRadius: 8,
+                shadowOpacity: 0.25,
+                shadowRadius: 6,
                 elevation: 3,
                 opacity: isLoading ? 0.7 : 1,
               }}
             >
               {isLoading ? (
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <ActivityIndicator size="small" color={palette.primaryInk} />
-                  <Text
-                    style={{
-                      color: palette.primaryInk,
-                      fontWeight: '700',
-                      fontSize: 16,
-                      marginLeft: 8,
-                    }}
-                  >
-                    Connexion...
-                  </Text>
-                </View>
+                <ActivityIndicator size="small" color={palette.primaryInk} />
               ) : (
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <Text
-                    style={{
-                      color: palette.primaryInk,
-                      fontWeight: '700',
-                      fontSize: 16,
-                      marginRight: 8,
-                    }}
-                  >
-                    Se connecter
-                  </Text>
-                  <ArrowRight size={18} color={palette.primaryInk} />
-                </View>
+                <Text
+                  style={{
+                    color: palette.primaryInk,
+                    fontWeight: '700',
+                    fontSize: 16,
+                  }}
+                >
+                  Connexion
+                </Text>
               )}
             </TouchableOpacity>
 
@@ -237,32 +213,32 @@ export default function LoginScreen() {
               style={{
                 flexDirection: 'row',
                 alignItems: 'center',
-                marginVertical: 18,
+                marginVertical: 22,
               }}
             >
               <View style={{ flex: 1, height: 1, backgroundColor: palette.line }} />
               <Text
                 style={{
-                  fontSize: 11,
-                  fontWeight: '700',
+                  fontSize: 12,
+                  fontWeight: '600',
                   color: palette.inkSoft,
                   paddingHorizontal: 12,
-                  textTransform: 'uppercase',
-                  letterSpacing: 0.8,
                 }}
               >
-                ou
+                ou continuer avec
               </Text>
               <View style={{ flex: 1, height: 1, backgroundColor: palette.line }} />
             </View>
 
-            {/* Social Logins */}
-            <View style={{ gap: 10 }}>
+            {/* Social Logins Row */}
+            <View style={{ flexDirection: 'row', gap: 12, width: '100%' }}>
               <GoogleSignInButton
+                variant="icon"
                 onSuccess={() => router.replace('/(tabs)/rooms')}
                 disabled={isLoading}
               />
               <AppleSignInButton
+                variant="icon"
                 onSuccess={() => router.replace('/(tabs)/rooms')}
                 disabled={isLoading}
               />
@@ -271,16 +247,14 @@ export default function LoginScreen() {
             {/* Switch to Register */}
             <View
               style={{
+                flexDirection: 'row',
                 alignItems: 'center',
                 justifyContent: 'center',
-                marginTop: 20,
-                paddingTop: 16,
-                borderTopWidth: 1,
-                borderTopColor: palette.line,
+                marginTop: 26,
               }}
             >
-              <Text style={{ fontSize: 13.5, color: palette.inkSoft, marginBottom: 3 }}>
-                Pas encore de compte ?
+              <Text style={{ fontSize: 13.5, color: palette.inkSoft }}>
+                Pas encore de compte ?{' '}
               </Text>
               <TouchableOpacity
                 onPress={() => router.push('/(auth)/register' as any)}
@@ -288,7 +262,7 @@ export default function LoginScreen() {
               >
                 <Text
                   style={{
-                    fontSize: 14.5,
+                    fontSize: 14,
                     fontWeight: '700',
                     color: palette.primary,
                   }}

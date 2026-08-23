@@ -5,7 +5,7 @@ import { useNativeGoogleAuth } from '~/native/auth/googleAuth';
 import { notifyApiError } from '~/lib/ui/notify';
 import { palette } from '~/lib/theme/tokens';
 
-function GoogleIcon({ size = 20 }: { size?: number }) {
+function GoogleIcon({ size = 22 }: { size?: number }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24">
       <Path
@@ -31,9 +31,14 @@ function GoogleIcon({ size = 20 }: { size?: number }) {
 interface GoogleSignInButtonProps {
   onSuccess?: () => void;
   disabled?: boolean;
+  variant?: 'full' | 'icon';
 }
 
-export function GoogleSignInButton({ onSuccess, disabled }: GoogleSignInButtonProps) {
+export function GoogleSignInButton({
+  onSuccess,
+  disabled,
+  variant = 'full',
+}: GoogleSignInButtonProps) {
   const { getIdToken } = useNativeGoogleAuth();
 
   const { signIn, isLoading } = useGoogleAuth({
@@ -44,6 +49,33 @@ export function GoogleSignInButton({ onSuccess, disabled }: GoogleSignInButtonPr
     },
   });
 
+  if (variant === 'icon') {
+    return (
+      <TouchableOpacity
+        onPress={signIn}
+        disabled={disabled || isLoading}
+        activeOpacity={0.8}
+        style={{
+          flex: 1,
+          height: 50,
+          borderRadius: 14,
+          backgroundColor: palette.bg,
+          borderWidth: 1.5,
+          borderColor: palette.line,
+          alignItems: 'center',
+          justifyContent: 'center',
+          opacity: isLoading || disabled ? 0.6 : 1,
+        }}
+      >
+        {isLoading ? (
+          <ActivityIndicator size="small" color={palette.primary} />
+        ) : (
+          <GoogleIcon size={22} />
+        )}
+      </TouchableOpacity>
+    );
+  }
+
   return (
     <TouchableOpacity
       onPress={signIn}
@@ -51,19 +83,15 @@ export function GoogleSignInButton({ onSuccess, disabled }: GoogleSignInButtonPr
       activeOpacity={0.8}
       style={{
         width: '100%',
-        height: 52,
-        borderRadius: 16,
-        backgroundColor: palette.surface,
-        borderWidth: 1,
+        height: 50,
+        borderRadius: 14,
+        backgroundColor: palette.bg,
+        borderWidth: 1.5,
         borderColor: palette.line,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
         paddingHorizontal: 16,
-        shadowColor: '#000',
-        shadowOpacity: 0.03,
-        shadowRadius: 4,
-        elevation: 1,
         opacity: isLoading || disabled ? 0.6 : 1,
       }}
     >
