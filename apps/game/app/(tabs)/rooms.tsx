@@ -86,7 +86,7 @@ export default function RoomsScreen() {
   const activeRoom = recentRooms.find((r) => r.hasActiveSession) || null;
 
   return (
-    <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: palette.bg }}>
+    <View style={{ flex: 1, backgroundColor: palette.bg }}>
       <AppTopBar title="Xalaat" tag="SALONS & JEUX" />
       <ScrollView
         contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 4, paddingBottom: 24, gap: 16 }}
@@ -94,14 +94,15 @@ export default function RoomsScreen() {
         refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refetch} tintColor={palette.primary} />}
       >
         {/* Header Title */}
-        <View style={{ marginVertical: 6 }}>
+        <View style={{ marginVertical: 4 }}>
           <Text
             style={{
               fontFamily: font.nativeFamily.display,
               fontSize: 28,
-              lineHeight: 30,
+              lineHeight: 38,
               letterSpacing: -0.5,
               color: palette.txt,
+              paddingTop: 6,
               marginBottom: 4,
             }}
           >
@@ -531,6 +532,6 @@ export default function RoomsScreen() {
           setShowJoinModal(true);
         }}
       />
-    </SafeAreaView>
+    </View>
   );
 }

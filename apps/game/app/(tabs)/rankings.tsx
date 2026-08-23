@@ -88,7 +88,7 @@ export default function RankingsScreen() {
   const listItems = !searchUsername && rankings.length >= 3 ? rankings.slice(3) : rankings;
 
   return (
-    <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: palette.bg }}>
+    <View style={{ flex: 1, backgroundColor: palette.bg }}>
       <AppTopBar title="Xalaat" tag="CLASSEMENT" />
       <View style={{ flex: 1, paddingHorizontal: 20, paddingTop: 4 }}>
         {/* Header */}
@@ -98,8 +98,10 @@ export default function RankingsScreen() {
               style={{
                 fontFamily: font.nativeFamily.display,
                 fontSize: 26,
+                lineHeight: 34,
                 letterSpacing: -0.4,
                 color: palette.txt,
+                paddingTop: 4,
               }}
             >
               Classement
@@ -337,6 +339,6 @@ export default function RankingsScreen() {
           </View>
         </View>
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 }

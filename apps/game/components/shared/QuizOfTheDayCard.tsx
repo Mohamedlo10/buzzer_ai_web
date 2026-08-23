@@ -69,8 +69,9 @@ export function QuizOfTheDayCard({
           style={{
             fontFamily: font.nativeFamily.display,
             fontSize: 22,
-            lineHeight: 26,
+            lineHeight: 30,
             color: '#FFFFFF',
+            paddingTop: 4,
             marginBottom: 2,
           }}
         >

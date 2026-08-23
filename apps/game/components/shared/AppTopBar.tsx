@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity, Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Bell, ArrowLeft } from 'lucide-react-native';
 import { XalaatMark } from './XalaatMark';
@@ -20,6 +21,9 @@ export function AppTopBar({
 }) {
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
+  const insets = useSafeAreaInsets();
+
+  const topInset = Math.max(insets.top, Platform.OS === 'ios' ? 48 : 16);
 
   return (
     <View
@@ -28,8 +32,8 @@ export function AppTopBar({
         alignItems: 'center',
         justifyContent: 'space-between',
         paddingHorizontal: 20,
-        paddingTop: 8,
-        paddingBottom: 10,
+        paddingTop: topInset + 6,
+        paddingBottom: 12,
         backgroundColor: palette.bg,
       }}
     >
@@ -57,36 +61,38 @@ export function AppTopBar({
 
         <View
           style={{
-            width: 36,
-            height: 36,
-            borderRadius: 11,
+            width: 38,
+            height: 38,
+            borderRadius: 12,
             backgroundColor: palette.primary,
             alignItems: 'center',
             justifyContent: 'center',
           }}
         >
-          <XalaatMark size={20} color={palette.primaryInk} accent={palette.gold} />
+          <XalaatMark size={22} color={palette.primaryInk} accent={palette.gold} />
         </View>
 
-        <View>
+        <View style={{ justifyContent: 'center' }}>
           <Text
             style={{
               fontFamily: font.nativeFamily.display,
-              fontSize: 16,
+              fontSize: 17,
               letterSpacing: -0.2,
               color: palette.txt,
-              lineHeight: 18,
+              lineHeight: 22,
+              paddingTop: 2,
             }}
           >
             {title}
           </Text>
           <Text
             style={{
-              fontSize: 9,
+              fontSize: 9.5,
               letterSpacing: 1,
               textTransform: 'uppercase',
               color: palette.primary,
               fontWeight: '700',
+              marginTop: 1,
             }}
           >
             {tag}
@@ -95,14 +101,14 @@ export function AppTopBar({
       </View>
 
       {/* Right actions: Notifications & Avatar */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
         <TouchableOpacity
           onPress={() => router.push('/notifications' as any)}
           activeOpacity={0.7}
           style={{
-            width: 34,
-            height: 34,
-            borderRadius: 17,
+            width: 36,
+            height: 36,
+            borderRadius: 18,
             backgroundColor: palette.surface,
             borderWidth: 1,
             borderColor: palette.line,
@@ -117,7 +123,7 @@ export function AppTopBar({
           onPress={() => router.push('/(tabs)/profile' as any)}
           activeOpacity={0.8}
         >
-          <Avatar name={user?.username || 'Momo'} avatarUrl={user?.avatarUrl} size={34} />
+          <Avatar name={user?.username || 'Momo'} avatarUrl={user?.avatarUrl} size={36} />
         </TouchableOpacity>
       </View>
     </View>

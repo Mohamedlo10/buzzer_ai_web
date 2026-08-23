@@ -96,7 +96,7 @@ export default function DashboardScreen() {
   }
 
   return (
-    <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: palette.bg }}>
+    <View style={{ flex: 1, backgroundColor: palette.bg }}>
       <AppTopBar title="Xalaat" tag="MODE SOLO" />
       <ScrollView
         contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 4, paddingBottom: 24, gap: 16 }}
@@ -104,7 +104,7 @@ export default function DashboardScreen() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={palette.primary} />}
       >
         {/* Header Greeting */}
-        <View style={{ marginVertical: 6 }}>
+        <View style={{ marginVertical: 4 }}>
           <Text style={{ fontSize: 13, color: palette.inkSoft, marginBottom: 4 }}>
             Salaam, {username}{' '}
             <Text style={{ fontFamily: font.nativeFamily.serif, fontStyle: 'italic' }}>·</Text>{' '}
@@ -113,10 +113,11 @@ export default function DashboardScreen() {
           <Text
             style={{
               fontFamily: font.nativeFamily.display,
-              fontSize: 32,
-              lineHeight: 34,
+              fontSize: 30,
+              lineHeight: 40,
               letterSpacing: -0.5,
               color: palette.txt,
+              paddingTop: 6,
             }}
           >
             Que veux-tu{'\n'}
@@ -363,6 +364,6 @@ export default function DashboardScreen() {
           </View>
         )}
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }

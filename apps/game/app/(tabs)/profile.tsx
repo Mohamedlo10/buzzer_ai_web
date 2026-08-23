@@ -122,7 +122,7 @@ export default function ProfileScreen() {
   const glickoRating = myRank?.glickoRating != null ? Math.round(myRank.glickoRating) : 1500;
 
   return (
-    <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: palette.bg }}>
+    <View style={{ flex: 1, backgroundColor: palette.bg }}>
       <AppTopBar title="Xalaat" tag="PROFIL JOUEUR" />
       <ScrollView
         contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 4, paddingBottom: 24, gap: 16 }}
@@ -162,8 +162,10 @@ export default function ProfileScreen() {
             style={{
               fontFamily: font.nativeFamily.display,
               fontSize: 22,
+              lineHeight: 30,
               letterSpacing: -0.3,
               color: palette.txt,
+              paddingTop: 4,
               marginBottom: 8,
             }}
           >
@@ -582,6 +584,6 @@ export default function ProfileScreen() {
           </View>
         </View>
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 }

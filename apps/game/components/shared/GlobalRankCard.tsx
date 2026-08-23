@@ -59,6 +59,8 @@ export function GlobalRankCard({ rank, caption = 'Top 1% des joueurs' }: GlobalR
             style={{
               fontFamily: font.nativeFamily.display,
               fontSize: 18,
+              lineHeight: 24,
+              paddingTop: 2,
               color: palette.gold,
               fontWeight: '700',
             }}
