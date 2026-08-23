@@ -1,17 +1,46 @@
-import { useState } from 'react';
+import React from 'react';
 import {
   View,
   Text,
-  TouchableOpacity,
   ScrollView,
-  ActivityIndicator,
+  Share,
+  Platform,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ChevronLeft, Play, DoorOpen, Users, Crown, Gamepad2, Share2, Copy, PenLine } from 'lucide-react-native';
+import { Gamepad2 } from 'lucide-react-native';
+import * as Clipboard from 'expo-clipboard';
+
 import { useLobbySession } from '~/lib/hooks/useLobbySession';
 import { useAppStateReconnect } from '~/lib/websocket';
-import { palette, font, inkAlpha } from '~/lib/theme/tokens';
+import { palette, font } from '~/lib/theme/tokens';
+import { notify } from '~/lib/ui/notify';
+
+// Dedicated Lobby Components
+import { LobbyHeader } from '~/components/lobby/LobbyHeader';
+import { LobbyHero } from '~/components/lobby/LobbyHero';
+import { MyCategoriesCard } from '~/components/lobby/MyCategoriesCard';
+import { LobbyWaitingCard } from '~/components/lobby/LobbyWaitingCard';
+import { ManagerPanel } from '~/components/lobby/ManagerPanel';
+import { PlayerGrid } from '~/components/lobby/PlayerGrid';
+import { ArcadeTeamsSection } from '~/components/lobby/ArcadeTeamsSection';
+import { QRCodeModal } from '~/components/shared/QRCodeModal';
+import { TeamPickerModal } from '~/components/lobby/TeamPickerModal';
+import { QuestionLimitModal } from '~/components/lobby/QuestionLimitModal';
+import { LobbyPlayerDetailModal } from '~/components/lobby/LobbyPlayerDetailModal';
+
+const CATEGORY_EMOJI: Record<string, string> = {
+  Histoire: '📜',
+  Science: '🔬',
+  Sports: '🏆',
+  Géographie: '🌍',
+  'Culture G': '🌐',
+  Cinéma: '🎬',
+  Musique: '🎵',
+  Jeux: '🎮',
+  Littérature: '📚',
+  Animaux: '🐾',
+};
 
 export default function LobbyScreen() {
   const router = useRouter();
@@ -21,26 +50,119 @@ export default function LobbyScreen() {
   useAppStateReconnect();
 
   const {
+    isCopied,
+    setIsCopied,
+    isRefreshing,
+    isDeletingSession,
+    kickingPlayerId,
+    roomInfo,
+    showQRModal,
+    setShowQRModal,
+    showTeamPicker,
+    setShowTeamPicker,
+    teamPickerTargetPlayer,
+    setTeamPickerTargetPlayer,
+    isChangingTeam,
+    showQLimit,
+    setShowQLimit,
+    adjustedQPerCat,
+    setAdjustedQPerCat,
+    isSavingConfig,
+    avatarMap,
+    profileUserId,
+    setProfileUserId,
+    selectedLobbyPlayer,
+    setSelectedLobbyPlayer,
+    reqOpen,
+    setReqOpen,
+    reqText,
+    setReqText,
+    reqSent,
+    user,
     session,
     players,
-    user,
+    teams,
     isManager,
-    isStarting,
+    currentPlayer,
     isConnected,
+    isStarting,
+    managerPlayer,
+    realPlayerCount,
+    canStart,
+    isWithoutModerator,
+    totalQuestionsEstimate,
     handleStartGame,
+    handleManagerStartClick,
+    handleStartWithAdjustedQ,
     handleLeave,
+    handleDeleteSession,
+    handleKickPlayer,
+    handleAssignTeam,
+    handleChangeTeam,
+    handleManagerReassign,
+    handleRefresh,
+    handleSendCategoryRequest,
   } = useLobbySession({
-    code: code || '',
+    code: (code as string) || '',
     onNavigate: (path) => router.push(path as any),
     onReplaceRoute: (path) => router.replace(path as any),
   });
 
-  const [copied, setCopied] = useState(false);
+  const handleCopyCode = async () => {
+    if (!code) return;
+    try {
+      await Clipboard.setStringAsync(code as string);
+      setIsCopied(true);
+      notify.success('Code copié !');
+      setTimeout(() => setIsCopied(false), 2000);
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleShare = async () => {
+    if (!code) return;
+    const msg = `Rejoins ma partie sur Xalaat ! Code : ${code}`;
+    try {
+      await Share.share({
+        message: msg,
+        title: 'Invitation Xalaat — Quiz by MouhaDev',
+      });
+    } catch {
+      // cancelled
+    }
+  };
+
+  const handleEditMyCategories = () => {
+    const me = players.find((p) => p.userId === user?.id);
+    if (!me) return;
+    router.push(
+      `/session/${code}/categories?playerId=${me.id}&playerName=${encodeURIComponent(me.name)}&isEditing=true&sessionId=${session?.id || ''}` as any
+    );
+  };
+
+  const handleEditPlayerCategories = (player: { id: string; name: string }) => {
+    router.push(
+      `/session/${code}/categories?playerId=${player.id}&playerName=${encodeURIComponent(player.name)}&isEditing=true&sessionId=${session?.id || ''}` as any
+    );
+  };
 
   if (!session) {
     return (
-      <SafeAreaView className="flex-1 bg-bg flex-col items-center justify-center">
-        <View className="w-16 h-16 rounded-full bg-accent/15 flex-col items-center justify-center mb-4 border border-line">
+      <SafeAreaView edges={['top', 'bottom']} style={{ flex: 1, backgroundColor: palette.bg, alignItems: 'center', justifyContent: 'center' }}>
+        <View
+          style={{
+            width: 64,
+            height: 64,
+            borderRadius: 32,
+            backgroundColor: `${palette.primary}18`,
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginBottom: 16,
+            borderWidth: 1,
+            borderColor: `${palette.primary}33`,
+          }}
+        >
           <Gamepad2 size={32} color={palette.primary} />
         </View>
         <Text
@@ -60,189 +182,194 @@ export default function LobbyScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-bg">
+    <SafeAreaView edges={['top', 'bottom']} style={{ flex: 1, backgroundColor: palette.bg }}>
       {/* Header */}
-      <View className="flex-row items-center px-4 py-3 bg-bg border-b border-line justify-between">
-        <TouchableOpacity
-          onPress={() => {
-            if (session.roomId) {
-              router.replace(`/room/${session.roomId}` as any);
-            } else {
-              router.replace('/(tabs)/rooms');
-            }
-          }}
-          activeOpacity={0.7}
-          className="w-10 h-10 rounded-full bg-surface border border-line flex-col items-center justify-center"
-        >
-          <ChevronLeft size={20} color={palette.primary} />
-        </TouchableOpacity>
-
-        <View className="flex-col items-center">
-          <Text
-            style={{
-              fontFamily: font.nativeFamily.display,
-              fontSize: 18,
-              lineHeight: 24,
-              color: palette.txt,
-              paddingTop: 2,
-            }}
-          >
-            Lobby #{code}
-          </Text>
-          <View className="flex-row items-center mt-0.5">
-            <View className={`w-2 h-2 rounded-full ${isConnected ? 'bg-good' : 'bg-bad'} mr-1.5`} />
-            <Text className="text-txt-60 text-xs font-semibold">
-              {isConnected ? 'Connecté' : 'Connexion...'}
-            </Text>
-          </View>
-        </View>
-
-        <View className="w-10 h-10" />
-      </View>
+      <LobbyHeader
+        session={session}
+        roomInfo={roomInfo}
+        isConnected={isConnected}
+        isManager={isManager}
+        code={(code as string) || ''}
+        isRefreshing={isRefreshing}
+        onBack={() => {
+          if (session?.roomId) {
+            router.replace(`/room/${session.roomId}` as any);
+          } else {
+            router.replace('/(tabs)/rooms' as any);
+          }
+        }}
+        onRefresh={handleRefresh}
+      />
 
       {/* Main Content */}
-      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 100 }}>
-        {/* Session Info Hero Card */}
-        <View className="bg-surface rounded-3xl border border-line p-5 flex-col items-center mb-5 shadow-sm">
-          <Text className="text-txt-40 text-xs font-bold tracking-widest uppercase mb-1">
-            Code de la partie
-          </Text>
-          <Text
-            style={{
-              fontFamily: font.nativeFamily.display,
-              fontSize: 32,
-              lineHeight: 40,
-              color: palette.primary,
-              letterSpacing: 2,
-              paddingTop: 4,
-              marginBottom: 12,
-            }}
-          >
-            {code}
-          </Text>
+      <ScrollView
+        contentContainerStyle={{
+          paddingHorizontal: 16,
+          paddingTop: 16,
+          paddingBottom: 40,
+          maxWidth: 540,
+          width: '100%',
+          alignSelf: 'center',
+        }}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Lobby Hero */}
+        <LobbyHero
+          currentPlayer={currentPlayer}
+          user={user}
+          avatarMap={avatarMap}
+          isWithoutModerator={isWithoutModerator}
+          questionMode={session.questionMode}
+          totalQuestions={session.totalQuestions}
+          totalQuestionsEstimate={totalQuestionsEstimate}
+          playersCount={players.length}
+          maxPlayers={session.maxPlayers}
+          code={(code as string) || ''}
+          isCopied={isCopied}
+          onCopyCode={handleCopyCode}
+          onShare={handleShare}
+          onShowQR={() => setShowQRModal(true)}
+        />
 
-          <View className="flex-row items-center gap-3">
-            <View className="bg-bg px-3.5 py-1.5 rounded-full border border-line flex-row items-center">
-              <Users size={14} color={palette.gold} />
-              <Text className="text-txt-60 text-xs font-semibold ml-1.5">
-                {players.length} / {session.maxPlayers || 10} Joueurs
-              </Text>
-            </View>
-          </View>
-        </View>
+        {/* My Categories Card */}
+        <MyCategoriesCard
+          currentPlayer={currentPlayer}
+          questionMode={session.questionMode}
+          onEditCategories={handleEditMyCategories}
+          reqOpen={reqOpen}
+          setReqOpen={setReqOpen}
+          reqSent={reqSent}
+          reqText={reqText}
+          setReqText={setReqText}
+          onSendCategoryRequest={handleSendCategoryRequest}
+          categoryEmojiMap={CATEGORY_EMOJI}
+        />
 
-        {/* Manager Start CTA */}
-        {isManager ? (
-          <View className="gap-3 mb-6">
-            {session.questionMode === 'MANUAL' && (
-              <TouchableOpacity
-                onPress={() => router.push(`/session/${code}/questions?sessionId=${session.id}` as any)}
-                activeOpacity={0.8}
-                className="w-full py-3.5 rounded-2xl bg-surface border border-line flex-row items-center justify-center gap-2"
-              >
-                <PenLine size={18} color={palette.gold} />
-                <Text className="text-txt font-bold text-sm">
-                  📝 Configurer les questions manuelles
-                </Text>
-              </TouchableOpacity>
-            )}
+        {/* Waiting Card (for non-managers) */}
+        <LobbyWaitingCard
+          isManager={isManager}
+          managerPlayer={managerPlayer}
+          currentPlayer={currentPlayer}
+          questionMode={session.questionMode}
+          onEditCategories={handleEditMyCategories}
+        />
 
-            <TouchableOpacity
-              onPress={handleStartGame}
-              disabled={isStarting}
-              activeOpacity={0.8}
-              className={`w-full py-4 rounded-2xl flex-row items-center justify-center shadow-md ${
-                isStarting ? 'bg-surface2 opacity-70' : 'bg-buzz'
-              }`}
-            >
-              {isStarting ? (
-                <View className="flex-row items-center">
-                  <ActivityIndicator size="small" color="#FFFFFF" />
-                  <Text className="text-white font-bold text-base ml-2">
-                    Lancement...
-                  </Text>
-                </View>
-              ) : (
-                <View className="flex-row items-center">
-                  <Play size={20} color="#FFFFFF" />
-                  <Text className="text-white font-bold text-base ml-2">
-                    🚀 LANCER LA PARTIE
-                  </Text>
-                </View>
-              )}
-            </TouchableOpacity>
-          </View>
-        ) : (
-          <View className="bg-surface rounded-2xl border border-line p-4 mb-6 flex-col items-center">
-            <Text className="text-txt-60 text-xs font-semibold text-center mb-1">
-              Attente de l&apos;hôte...
-            </Text>
-            <Text className="text-txt text-sm font-bold text-center">
-              L&apos;hôte démarrera la partie quand tout le monde sera prêt
-            </Text>
-          </View>
+        {/* Manager Control Panel */}
+        {isManager && (
+          <ManagerPanel
+            session={session}
+            code={(code as string) || ''}
+            isStarting={isStarting}
+            canStart={canStart}
+            isDeletingSession={isDeletingSession}
+            onNavigateToQuestions={() =>
+              router.push(`/session/${code}/questions?sessionId=${session.id}` as any)
+            }
+            onManagerStartClick={handleManagerStartClick}
+            onLeave={handleLeave}
+            onDeleteSession={handleDeleteSession}
+          />
         )}
 
-        {/* Players Grid / List */}
-        <View className="bg-surface rounded-3xl border border-line p-4 mb-6 flex-col">
-          <Text className="text-txt font-bold text-base mb-3">
-            Joueurs dans le lobby ({players.length})
-          </Text>
+        {/* Connected Players Grid */}
+        <PlayerGrid
+          players={players}
+          currentUserId={user?.id}
+          isManager={isManager}
+          questionMode={session.questionMode}
+          sessionMode={session.sessionMode}
+          avatarMap={avatarMap}
+          kickingPlayerId={kickingPlayerId}
+          onSelectPlayer={(p) => setSelectedLobbyPlayer(p)}
+          onEditCategories={(p) => handleEditPlayerCategories(p)}
+          onKickPlayer={(id, name) => handleKickPlayer(id, name)}
+        />
 
-          {players.map((player) => {
-            const isPlayerHost = player.userId === session.managerId;
-            const isMe = player.userId === user?.id;
-
-            return (
-              <View
-                key={player.id || player.userId}
-                className="flex-row items-center justify-between py-3 border-b border-line/40"
-              >
-                <View className="flex-row items-center flex-1 mr-2">
-                  <View className="w-10 h-10 rounded-full bg-accent/15 flex-col items-center justify-center mr-3">
-                    <Text className="text-accent font-bold text-base">
-                      {player.name?.charAt(0).toUpperCase() || 'P'}
-                    </Text>
-                  </View>
-                  <View className="flex-col flex-1">
-                    <Text className="text-txt font-bold text-sm" numberOfLines={1}>
-                      {player.name} {isMe ? '(Moi)' : ''}
-                    </Text>
-                    {isPlayerHost ? (
-                      <View className="flex-row items-center mt-0.5">
-                        <Crown size={12} color={palette.gold} />
-                        <Text className="text-gold text-[10px] font-bold ml-1">
-                          HÔTE
-                        </Text>
-                      </View>
-                    ) : null}
-                  </View>
-                </View>
-
-                <View className="px-3 py-1 rounded-full bg-good/15">
-                  <Text className="text-good text-xs font-bold">
-                    PRÊT
-                  </Text>
-                </View>
-              </View>
-            );
-          })}
-        </View>
-
-        {/* Non-manager Quit Button */}
-        {!isManager ? (
-          <TouchableOpacity
-            onPress={handleLeave}
-            activeOpacity={0.8}
-            className="w-full py-3.5 rounded-2xl bg-buzz/10 border border-buzz/30 flex-row items-center justify-center mb-4"
-          >
-            <DoorOpen size={18} color={palette.bad} />
-            <Text className="text-buzz font-bold text-sm ml-2">
-              Quitter la session
-            </Text>
-          </TouchableOpacity>
-        ) : null}
+        {/* Teams Section (for Arcade Teams mode) */}
+        {teams && teams.length > 0 && (
+          <ArcadeTeamsSection
+            teams={teams}
+            currentPlayerId={currentPlayer?.id ?? null}
+            isManager={isManager}
+            userId={user?.id}
+            avatarMap={avatarMap}
+            onChangeTeam={() => {
+              if (currentPlayer) {
+                setTeamPickerTargetPlayer({ id: currentPlayer.id, name: currentPlayer.name });
+                setShowTeamPicker(true);
+              }
+            }}
+            onManagerReassign={(id, name) => {
+              setTeamPickerTargetPlayer({ id, name });
+              setShowTeamPicker(true);
+            }}
+          />
+        )}
       </ScrollView>
+
+      {/* QR Code Modal */}
+      <QRCodeModal
+        visible={showQRModal}
+        onClose={() => setShowQRModal(false)}
+        type="session"
+        id={session.id}
+        code={(code as string) || ''}
+        title="Rejoindre la partie"
+      />
+
+      {/* Team Picker Modal */}
+      <TeamPickerModal
+        visible={showTeamPicker}
+        teams={teams || []}
+        targetPlayer={teamPickerTargetPlayer}
+        isChangingTeam={isChangingTeam}
+        onAssignTeam={(playerId, teamId) => {
+          handleAssignTeam(playerId, teamId);
+        }}
+        onClose={() => {
+          setShowTeamPicker(false);
+          setTeamPickerTargetPlayer(null);
+        }}
+      />
+
+      {/* Question Limit Adjustment Modal */}
+      <QuestionLimitModal
+        visible={showQLimit}
+        session={session}
+        realPlayerCount={realPlayerCount}
+        adjustedQPerCat={adjustedQPerCat}
+        setAdjustedQPerCat={setAdjustedQPerCat}
+        isSavingConfig={isSavingConfig}
+        isStarting={isStarting}
+        onClose={() => setShowQLimit(false)}
+        onStartWithAdjustedQ={handleStartWithAdjustedQ}
+      />
+
+      {/* Player Detail Modal */}
+      <LobbyPlayerDetailModal
+        visible={Boolean(selectedLobbyPlayer)}
+        player={selectedLobbyPlayer}
+        currentUserId={user?.id}
+        isManager={isManager}
+        questionMode={session.questionMode}
+        sessionMode={session.sessionMode}
+        teams={teams || []}
+        avatarMap={avatarMap}
+        onClose={() => setSelectedLobbyPlayer(null)}
+        onViewStats={(userId) => {
+          setSelectedLobbyPlayer(null);
+          router.push(`/profile/${userId}` as any);
+        }}
+        onEditCategories={(p) => {
+          setSelectedLobbyPlayer(null);
+          handleEditPlayerCategories(p);
+        }}
+        onKickPlayer={(id, name) => {
+          setSelectedLobbyPlayer(null);
+          handleKickPlayer(id, name);
+        }}
+        categoryEmojiMap={CATEGORY_EMOJI}
+      />
     </SafeAreaView>
   );
 }
