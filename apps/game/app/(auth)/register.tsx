@@ -80,10 +80,11 @@ export default function RegisterScreen() {
                 style={{
                   fontFamily: font.nativeFamily.display,
                   fontSize: 30,
-                  lineHeight: 38,
+                  lineHeight: 42,
                   letterSpacing: -0.5,
                   color: palette.txt,
-                  paddingTop: 2,
+                  paddingTop: 12,
+                  paddingBottom: 4,
                 }}
               >
                 Créer un compte.
@@ -95,7 +96,7 @@ export default function RegisterScreen() {
                   fontStyle: 'italic',
                   fontSize: 16,
                   color: palette.inkSoft,
-                  marginTop: 4,
+                  marginTop: 2,
                 }}
               >
                 Rejoins l&apos;arène du buzzer !

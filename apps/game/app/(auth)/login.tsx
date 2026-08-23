@@ -78,15 +78,16 @@ export default function LoginScreen() {
             </View>
 
             {/* Title & Subtitle */}
-            <View style={{ marginBottom: 28 }}>
+            <View style={{ marginBottom: 26 }}>
               <Text
                 style={{
                   fontFamily: font.nativeFamily.display,
                   fontSize: 30,
-                  lineHeight: 38,
+                  lineHeight: 42,
                   letterSpacing: -0.5,
                   color: palette.txt,
-                  paddingTop: 2,
+                  paddingTop: 12,
+                  paddingBottom: 4,
                 }}
               >
                 Connecte-toi à ton compte.
@@ -98,7 +99,7 @@ export default function LoginScreen() {
                   fontStyle: 'italic',
                   fontSize: 16,
                   color: palette.inkSoft,
-                  marginTop: 6,
+                  marginTop: 2,
                 }}
               >
                 Ravi de te revoir !
