@@ -15,20 +15,21 @@ import {
   User,
   LogOut,
   Edit3,
-  Bell,
   Lock,
   Trophy,
-  Award,
   Zap,
   Check,
   X,
   Shield,
+  HelpCircle,
+  FileText,
+  ArrowRight,
 } from 'lucide-react-native';
 
 import { useAuthStore } from '~/stores/useAuthStore';
 import { useMyGlobalRank, useDashboard } from '~/lib/query/hooks';
 import * as usersApi from '~/lib/api/users';
-import { palette } from '~/lib/theme/tokens';
+import { palette, font } from '~/lib/theme/tokens';
 import { Avatar } from '~/components/shared/Avatar';
 import { notify, notifyApiError } from '~/lib/ui/notify';
 import { confirmAsync } from '~/lib/ui/confirm';
@@ -44,6 +45,7 @@ export default function ProfileScreen() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [resendingEmail, setResendingEmail] = useState(false);
 
   const { data: myRank, isLoading: isRankLoading, refetch: refetchRank } = useMyGlobalRank();
   const { data: dashboard, isLoading: isDashboardLoading, refetch: refetchDashboard } = useDashboard();
@@ -52,6 +54,18 @@ export default function ProfileScreen() {
     setRefreshing(true);
     await Promise.all([refetchRank(), refetchDashboard()]);
     setRefreshing(false);
+  };
+
+  const handleResendEmail = async () => {
+    setResendingEmail(true);
+    try {
+      await usersApi.resendVerificationEmail();
+      notify.success('Email de confirmation renvoyé !');
+    } catch (err: any) {
+      notifyApiError(err, "Impossible de renvoyer l'email");
+    } finally {
+      setResendingEmail(false);
+    }
   };
 
   const handleLogout = async () => {
@@ -99,9 +113,9 @@ export default function ProfileScreen() {
     }
   };
 
-  const username = user?.username || 'Joueur';
+  const username = user?.username || 'Momo';
   const totalGames = myRank?.totalGames || 0;
-  const rank = myRank?.rank || 1;
+  const rank = myRank?.rank || 154;
   const totalWins = myRank?.totalWins || 0;
   const winRatePct = myRank?.winRate != null ? Math.round(myRank.winRate) : 0;
   const glickoRating = myRank?.glickoRating != null ? Math.round(myRank.glickoRating) : 1500;
@@ -109,132 +123,210 @@ export default function ProfileScreen() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: palette.bg }}>
       <ScrollView
-        contentContainerStyle={{ padding: 16, paddingBottom: 110, gap: 18 }}
+        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 12, paddingBottom: 120, gap: 16 }}
         showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={palette.primary} />
-        }
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={palette.primary} />}
       >
-        {/* Profile Hero Card */}
-        <View
-          style={{
-            backgroundColor: palette.surface,
-            borderRadius: 24,
-            borderWidth: 1,
-            borderColor: palette.line,
-            padding: 24,
-            alignItems: 'center',
-            gap: 12,
-          }}
-        >
-          <View style={{ position: 'relative' }}>
-            <Avatar
-              name={username}
-              avatarUrl={user?.avatarUrl}
-              size={88}
-              hue={30}
-              ring={palette.primary}
-            />
+        {/* Avatar & User info */}
+        <View style={{ alignItems: 'center', marginVertical: 6 }}>
+          <View style={{ position: 'relative', width: 88, height: 88, marginBottom: 12 }}>
+            <Avatar name={username} avatarUrl={user?.avatarUrl} size={88} hue={30} />
             <TouchableOpacity
               onPress={() => router.push('/profile/edit' as any)}
               activeOpacity={0.8}
               style={{
                 position: 'absolute',
-                bottom: 0,
-                right: 0,
+                bottom: -2,
+                right: -2,
                 width: 28,
                 height: 28,
                 borderRadius: 14,
-                backgroundColor: palette.primary,
+                backgroundColor: palette.surface,
+                borderWidth: 1,
+                borderColor: palette.line,
                 alignItems: 'center',
                 justifyContent: 'center',
-                borderWidth: 2,
-                borderColor: palette.surface,
+                shadowColor: '#000',
+                shadowOpacity: 0.1,
+                shadowRadius: 4,
+                elevation: 2,
               }}
             >
-              <Edit3 size={14} color={palette.primaryInk} />
+              <Text style={{ fontSize: 13, color: palette.txt }}>✎</Text>
             </TouchableOpacity>
           </View>
 
-          <View style={{ alignItems: 'center', gap: 2 }}>
-            <Text style={{ fontSize: 22, fontWeight: '800', color: palette.txt }}>
-              {username}
-            </Text>
-            {user?.email && (
-              <Text style={{ fontSize: 13, color: palette.inkSoft }}>
-                {user.email}
-              </Text>
-            )}
-          </View>
-
-          {/* Quick Level / Rating Pill */}
-          <View
+          <Text
             style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 6,
-              backgroundColor: palette.gold + '26',
-              paddingHorizontal: 12,
-              paddingVertical: 6,
-              borderRadius: 9999,
+              fontFamily: font.nativeFamily.display,
+              fontSize: 22,
+              letterSpacing: -0.3,
+              color: palette.txt,
+              marginBottom: 8,
             }}
           >
-            <Trophy size={14} color={palette.gold} />
-            <Text style={{ color: palette.gold, fontSize: 12, fontWeight: '800' }}>
-              Cote {glickoRating} pts · Rang #{rank}
-            </Text>
+            {username}
+          </Text>
+
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
+            <View
+              style={{
+                paddingHorizontal: 12,
+                paddingVertical: 5,
+                borderRadius: 9999,
+                backgroundColor: palette.surface2,
+              }}
+            >
+              <Text style={{ fontSize: 12, fontWeight: '600', color: palette.inkSoft }}>
+                👤 Joueur
+              </Text>
+            </View>
+
+            {!user?.email || !user.emailVerified ? (
+              <TouchableOpacity
+                onPress={handleResendEmail}
+                disabled={resendingEmail}
+                activeOpacity={0.8}
+                style={{
+                  paddingHorizontal: 12,
+                  paddingVertical: 5,
+                  borderRadius: 9999,
+                  backgroundColor: 'rgba(184, 70, 42, 0.15)',
+                  borderWidth: 1,
+                  borderColor: 'rgba(184, 70, 42, 0.3)',
+                }}
+              >
+                <Text style={{ fontSize: 12, fontWeight: '600', color: palette.bad }}>
+                  {resendingEmail ? 'Envoi…' : '⚠ Email non confirmé'}
+                </Text>
+              </TouchableOpacity>
+            ) : (
+              <View
+                style={{
+                  paddingHorizontal: 12,
+                  paddingVertical: 5,
+                  borderRadius: 9999,
+                  backgroundColor: 'rgba(45, 133, 89, 0.15)',
+                  borderWidth: 1,
+                  borderColor: 'rgba(45, 133, 89, 0.3)',
+                }}
+              >
+                <Text style={{ fontSize: 12, fontWeight: '600', color: palette.good }}>
+                  ✓ Email confirmé
+                </Text>
+              </View>
+            )}
           </View>
         </View>
 
-        {/* Stats Grid */}
-        <View
-          style={{
-            backgroundColor: palette.surface,
-            borderRadius: 20,
-            borderWidth: 1,
-            borderColor: palette.line,
-            padding: 16,
-            flexDirection: 'row',
-            justifyContent: 'space-around',
-          }}
-        >
-          <View style={{ alignItems: 'center' }}>
-            <Text style={{ fontSize: 20, fontWeight: '800', color: palette.good }}>
-              {totalWins}
+        {/* Stats 2x2 Grid */}
+        <View style={{ flexDirection: 'row', gap: 10 }}>
+          {/* Rang Global */}
+          <View
+            style={{
+              flex: 1,
+              backgroundColor: palette.surface,
+              borderRadius: 24,
+              borderWidth: 1,
+              borderColor: palette.line,
+              padding: 16,
+            }}
+          >
+            <Text style={{ fontSize: 18, marginBottom: 6 }}>🏆</Text>
+            <Text
+              style={{
+                fontFamily: font.nativeFamily.display,
+                fontSize: 20,
+                color: palette.gold,
+              }}
+            >
+              #{rank}
             </Text>
-            <Text style={{ fontSize: 11, color: palette.inkSoft, marginTop: 2 }}>
-              Victoires
-            </Text>
+            <Text style={{ fontSize: 11.5, color: palette.inkSoft, marginTop: 2 }}>Rang global</Text>
           </View>
 
-          <View style={{ width: 1, height: 32, backgroundColor: palette.line }} />
+          {/* Glicko Rating */}
+          <View
+            style={{
+              flex: 1,
+              backgroundColor: palette.surface,
+              borderRadius: 24,
+              borderWidth: 1,
+              borderColor: palette.line,
+              padding: 16,
+            }}
+          >
+            <Text style={{ fontSize: 18, marginBottom: 6 }}>⚡</Text>
+            <Text
+              style={{
+                fontFamily: font.nativeFamily.display,
+                fontSize: 20,
+                color: palette.primary,
+              }}
+            >
+              {glickoRating}
+            </Text>
+            <Text style={{ fontSize: 11.5, color: palette.inkSoft, marginTop: 2 }}>Cote Glicko-2</Text>
+          </View>
+        </View>
 
-          <View style={{ alignItems: 'center' }}>
-            <Text style={{ fontSize: 20, fontWeight: '800', color: palette.txt }}>
+        <View style={{ flexDirection: 'row', gap: 10 }}>
+          {/* Total Games */}
+          <View
+            style={{
+              flex: 1,
+              backgroundColor: palette.surface,
+              borderRadius: 24,
+              borderWidth: 1,
+              borderColor: palette.line,
+              padding: 16,
+            }}
+          >
+            <Text style={{ fontSize: 18, marginBottom: 6 }}>🎮</Text>
+            <Text
+              style={{
+                fontFamily: font.nativeFamily.display,
+                fontSize: 20,
+                color: palette.txt,
+              }}
+            >
               {totalGames}
             </Text>
-            <Text style={{ fontSize: 11, color: palette.inkSoft, marginTop: 2 }}>
-              Parties
-            </Text>
+            <Text style={{ fontSize: 11.5, color: palette.inkSoft, marginTop: 2 }}>Parties jouées</Text>
           </View>
 
-          <View style={{ width: 1, height: 32, backgroundColor: palette.line }} />
-
-          <View style={{ alignItems: 'center' }}>
-            <Text style={{ fontSize: 20, fontWeight: '800', color: palette.primary }}>
+          {/* Win Rate */}
+          <View
+            style={{
+              flex: 1,
+              backgroundColor: palette.surface,
+              borderRadius: 24,
+              borderWidth: 1,
+              borderColor: palette.line,
+              padding: 16,
+            }}
+          >
+            <Text style={{ fontSize: 18, marginBottom: 6 }}>🎯</Text>
+            <Text
+              style={{
+                fontFamily: font.nativeFamily.display,
+                fontSize: 20,
+                color: palette.good,
+              }}
+            >
               {winRatePct}%
             </Text>
-            <Text style={{ fontSize: 11, color: palette.inkSoft, marginTop: 2 }}>
-              Précision
+            <Text style={{ fontSize: 11.5, color: palette.inkSoft, marginTop: 2 }}>
+              {totalWins} victoires
             </Text>
           </View>
         </View>
 
-        {/* Menu Actions */}
+        {/* Action Menu */}
         <View
           style={{
             backgroundColor: palette.surface,
-            borderRadius: 20,
+            borderRadius: 24,
             borderWidth: 1,
             borderColor: palette.line,
             overflow: 'hidden',
@@ -246,40 +338,19 @@ export default function ProfileScreen() {
             style={{
               flexDirection: 'row',
               alignItems: 'center',
+              justifyContent: 'space-between',
               padding: 16,
               borderBottomWidth: 1,
               borderBottomColor: palette.line,
-              gap: 14,
             }}
           >
-            <View style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: palette.primary + '26', alignItems: 'center', justifyContent: 'center' }}>
-              <User size={18} color={palette.primary} />
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+              <User size={18} color={palette.txt} />
+              <Text style={{ fontSize: 14, fontWeight: '600', color: palette.txt }}>
+                Modifier le profil
+              </Text>
             </View>
-            <Text style={{ fontSize: 15, fontWeight: '600', color: palette.txt, flex: 1 }}>
-              Modifier mon profil
-            </Text>
-            <Text style={{ color: palette.inkSoft, fontSize: 14 }}>→</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => router.push('/notifications' as any)}
-            activeOpacity={0.7}
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              padding: 16,
-              borderBottomWidth: 1,
-              borderBottomColor: palette.line,
-              gap: 14,
-            }}
-          >
-            <View style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: palette.gold + '26', alignItems: 'center', justifyContent: 'center' }}>
-              <Bell size={18} color={palette.gold} />
-            </View>
-            <Text style={{ fontSize: 15, fontWeight: '600', color: palette.txt, flex: 1 }}>
-              Notifications
-            </Text>
-            <Text style={{ color: palette.inkSoft, fontSize: 14 }}>→</Text>
+            <ArrowRight size={16} color={palette.inkSoft} />
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -288,162 +359,214 @@ export default function ProfileScreen() {
             style={{
               flexDirection: 'row',
               alignItems: 'center',
+              justifyContent: 'space-between',
               padding: 16,
-              gap: 14,
+              borderBottomWidth: 1,
+              borderBottomColor: palette.line,
             }}
           >
-            <View style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: palette.violet + '26', alignItems: 'center', justifyContent: 'center' }}>
-              <Lock size={18} color={palette.violet} />
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+              <Lock size={18} color={palette.txt} />
+              <Text style={{ fontSize: 14, fontWeight: '600', color: palette.txt }}>
+                Changer le mot de passe
+              </Text>
             </View>
-            <Text style={{ fontSize: 15, fontWeight: '600', color: palette.txt, flex: 1 }}>
-              Changer de mot de passe
-            </Text>
-            <Text style={{ color: palette.inkSoft, fontSize: 14 }}>→</Text>
+            <ArrowRight size={16} color={palette.inkSoft} />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => router.push('/support' as any)}
+            activeOpacity={0.7}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: 16,
+              borderBottomWidth: 1,
+              borderBottomColor: palette.line,
+            }}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+              <HelpCircle size={18} color={palette.txt} />
+              <Text style={{ fontSize: 14, fontWeight: '600', color: palette.txt }}>
+                Aide &amp; Support
+              </Text>
+            </View>
+            <ArrowRight size={16} color={palette.inkSoft} />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => router.push('/privacy' as any)}
+            activeOpacity={0.7}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: 16,
+              borderBottomWidth: 1,
+              borderBottomColor: palette.line,
+            }}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+              <Shield size={18} color={palette.txt} />
+              <Text style={{ fontSize: 14, fontWeight: '600', color: palette.txt }}>
+                Confidentialité
+              </Text>
+            </View>
+            <ArrowRight size={16} color={palette.inkSoft} />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => router.push('/terms' as any)}
+            activeOpacity={0.7}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: 16,
+              borderBottomWidth: 1,
+              borderBottomColor: palette.line,
+            }}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+              <FileText size={18} color={palette.txt} />
+              <Text style={{ fontSize: 14, fontWeight: '600', color: palette.txt }}>
+                Conditions &amp; CLUF
+              </Text>
+            </View>
+            <ArrowRight size={16} color={palette.inkSoft} />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={handleLogout}
+            activeOpacity={0.7}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: 16,
+            }}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+              <LogOut size={18} color={palette.bad} />
+              <Text style={{ fontSize: 14, fontWeight: '700', color: palette.bad }}>
+                Se déconnecter
+              </Text>
+            </View>
+            <ArrowRight size={16} color={palette.bad} />
           </TouchableOpacity>
         </View>
-
-        {/* Logout Button */}
-        <TouchableOpacity
-          onPress={handleLogout}
-          activeOpacity={0.8}
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 10,
-            paddingVertical: 16,
-            borderRadius: 18,
-            backgroundColor: palette.bad + '1A',
-            borderWidth: 1,
-            borderColor: palette.bad + '40',
-          }}
-        >
-          <LogOut size={18} color={palette.bad} />
-          <Text style={{ color: palette.bad, fontSize: 15, fontWeight: '700' }}>
-            Se déconnecter
-          </Text>
-        </TouchableOpacity>
       </ScrollView>
 
       {/* Change Password Modal */}
-      <Modal
-        visible={showPasswordModal}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowPasswordModal(false)}
-      >
-        <View
-          style={{
-            flex: 1,
-            backgroundColor: 'rgba(0,0,0,0.7)',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: 20,
-          }}
-        >
+      <Modal visible={showPasswordModal} transparent animationType="fade" onRequestClose={() => setShowPasswordModal(false)}>
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.55)', justifyContent: 'center', padding: 20 }}>
           <View
             style={{
               backgroundColor: palette.surface,
-              borderRadius: 24,
+              borderRadius: 28,
               borderWidth: 1,
               borderColor: palette.line,
-              padding: 24,
-              width: '100%',
-              maxWidth: 400,
-              gap: 14,
+              padding: 20,
+              shadowColor: '#000',
+              shadowOpacity: 0.15,
+              shadowRadius: 20,
+              elevation: 6,
             }}
           >
-            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-              <Text style={{ fontSize: 18, fontWeight: '700', color: palette.txt }}>
-                Changer de mot de passe
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+              <Text style={{ fontFamily: font.nativeFamily.display, fontSize: 18, color: palette.txt }}>
+                Changer le mot de passe
               </Text>
-              <TouchableOpacity onPress={() => setShowPasswordModal(false)} activeOpacity={0.7}>
-                <X size={20} color={palette.inkSoft} />
+              <TouchableOpacity
+                onPress={() => setShowPasswordModal(false)}
+                activeOpacity={0.7}
+                style={{
+                  width: 30,
+                  height: 30,
+                  borderRadius: 15,
+                  backgroundColor: palette.surface2,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <X size={16} color={palette.txt} />
               </TouchableOpacity>
             </View>
 
-            <View style={{ gap: 10 }}>
-              <View>
-                <Text style={{ color: palette.inkSoft, fontSize: 12, fontWeight: '700', marginBottom: 4 }}>
-                  Mot de passe actuel
-                </Text>
-                <TextInput
-                  value={currentPassword}
-                  onChangeText={setCurrentPassword}
-                  secureTextEntry
-                  placeholder="••••••••"
-                  placeholderTextColor={palette.inkSoft}
-                  style={{
-                    backgroundColor: palette.bg,
-                    borderRadius: 12,
-                    borderWidth: 1,
-                    borderColor: palette.line,
-                    paddingHorizontal: 14,
-                    paddingVertical: 10,
-                    color: palette.txt,
-                    fontSize: 14,
-                  }}
-                />
-              </View>
+            <Text style={{ color: palette.txt, fontWeight: '600', fontSize: 12, marginBottom: 4 }}>
+              Mot de passe actuel
+            </Text>
+            <TextInput
+              secureTextEntry
+              value={currentPassword}
+              onChangeText={setCurrentPassword}
+              placeholder="••••••••"
+              placeholderTextColor={palette.inkSoft}
+              style={{
+                backgroundColor: palette.bg,
+                borderRadius: 14,
+                borderWidth: 1,
+                borderColor: palette.line,
+                padding: 12,
+                color: palette.txt,
+                fontSize: 14,
+                marginBottom: 12,
+              }}
+            />
 
-              <View>
-                <Text style={{ color: palette.inkSoft, fontSize: 12, fontWeight: '700', marginBottom: 4 }}>
-                  Nouveau mot de passe
-                </Text>
-                <TextInput
-                  value={newPassword}
-                  onChangeText={setNewPassword}
-                  secureTextEntry
-                  placeholder="Min. 6 caractères"
-                  placeholderTextColor={palette.inkSoft}
-                  style={{
-                    backgroundColor: palette.bg,
-                    borderRadius: 12,
-                    borderWidth: 1,
-                    borderColor: palette.line,
-                    paddingHorizontal: 14,
-                    paddingVertical: 10,
-                    color: palette.txt,
-                    fontSize: 14,
-                  }}
-                />
-              </View>
+            <Text style={{ color: palette.txt, fontWeight: '600', fontSize: 12, marginBottom: 4 }}>
+              Nouveau mot de passe
+            </Text>
+            <TextInput
+              secureTextEntry
+              value={newPassword}
+              onChangeText={setNewPassword}
+              placeholder="Au moins 6 caractères"
+              placeholderTextColor={palette.inkSoft}
+              style={{
+                backgroundColor: palette.bg,
+                borderRadius: 14,
+                borderWidth: 1,
+                borderColor: palette.line,
+                padding: 12,
+                color: palette.txt,
+                fontSize: 14,
+                marginBottom: 12,
+              }}
+            />
 
-              <View>
-                <Text style={{ color: palette.inkSoft, fontSize: 12, fontWeight: '700', marginBottom: 4 }}>
-                  Confirmer le mot de passe
-                </Text>
-                <TextInput
-                  value={confirmPassword}
-                  onChangeText={setConfirmPassword}
-                  secureTextEntry
-                  placeholder="••••••••"
-                  placeholderTextColor={palette.inkSoft}
-                  style={{
-                    backgroundColor: palette.bg,
-                    borderRadius: 12,
-                    borderWidth: 1,
-                    borderColor: palette.line,
-                    paddingHorizontal: 14,
-                    paddingVertical: 10,
-                    color: palette.txt,
-                    fontSize: 14,
-                  }}
-                />
-              </View>
-            </View>
+            <Text style={{ color: palette.txt, fontWeight: '600', fontSize: 12, marginBottom: 4 }}>
+              Confirmer le nouveau mot de passe
+            </Text>
+            <TextInput
+              secureTextEntry
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              placeholder="••••••••"
+              placeholderTextColor={palette.inkSoft}
+              style={{
+                backgroundColor: palette.bg,
+                borderRadius: 14,
+                borderWidth: 1,
+                borderColor: palette.line,
+                padding: 12,
+                color: palette.txt,
+                fontSize: 14,
+                marginBottom: 18,
+              }}
+            />
 
             <TouchableOpacity
               onPress={handleChangePassword}
               disabled={isChangingPassword}
-              activeOpacity={0.8}
+              activeOpacity={0.85}
               style={{
                 backgroundColor: palette.primary,
-                borderRadius: 14,
-                paddingVertical: 12,
+                paddingVertical: 14,
+                borderRadius: 9999,
                 alignItems: 'center',
                 justifyContent: 'center',
-                marginTop: 6,
               }}
             >
               {isChangingPassword ? (

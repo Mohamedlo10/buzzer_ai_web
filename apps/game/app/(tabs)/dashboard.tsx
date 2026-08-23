@@ -10,29 +10,20 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import {
-  Trophy,
-  Dumbbell,
-  Sparkles,
-  ArrowRight,
-  Zap,
-  Users,
-  Gamepad2,
-  TrendingUp,
-  Award,
-  Crown,
-} from 'lucide-react-native';
+import { Trophy, Dumbbell, Sparkles, ArrowRight, Zap, Target } from 'lucide-react-native';
 
 import { useAuthStore } from '~/stores/useAuthStore';
 import { useDashboardV2 } from '~/lib/query/hooks';
 import * as rankingsApi from '~/lib/api/rankings';
 import type { GlobalRanking } from '~/types/api';
-import { palette } from '~/lib/theme/tokens';
+import { palette, font } from '~/lib/theme/tokens';
 import { Avatar } from '~/components/shared/Avatar';
-import { FadeInUpView } from '~/components/anim';
+import { GlobalRankCard } from '~/components/shared/GlobalRankCard';
+import { QuizOfTheDayCard } from '~/components/shared/QuizOfTheDayCard';
+import { PatternZigzag } from '~/components/shared/PatternZigzag';
 
 const THEME_CHIPS = [
-  { label: 'Mbalax', theme: 'Mbalax' },
+  { label: 'Mbalax', theme: 'Mbalax', active: true },
   { label: 'Carrière 🏆', route: '/solo/career' },
   { label: 'Entraînement 🎯', route: '/solo/training' },
   { label: 'Multijoueur 👥', route: '/(tabs)/rooms' },
@@ -80,9 +71,9 @@ export default function DashboardScreen() {
     };
   }, []);
 
-  const username = user?.username || 'Joueur';
+  const username = user?.username || 'Momo';
   const dayName = new Date().toLocaleDateString('fr-FR', { weekday: 'long' });
-  const capitalizedDay = dayName.charAt(0).toUpperCase() + dayName.slice(1);
+  const rank = data?.globalStats?.rank || 154;
 
   const handleAiPromptSubmit = () => {
     if (aiPrompt.trim()) {
@@ -94,9 +85,11 @@ export default function DashboardScreen() {
 
   if (isLoading && !data) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: palette.bg, alignItems: 'center', justifyContent: 'center', gap: 12 }}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: palette.bg, alignItems: 'center', justifyContent: 'center' }}>
         <ActivityIndicator size="large" color={palette.primary} />
-        <Text style={{ color: palette.inkSoft, fontSize: 14 }}>Chargement du dashboard…</Text>
+        <Text style={{ color: palette.inkSoft, fontSize: 14, marginTop: 12, fontWeight: '600' }}>
+          Chargement de l&apos;accueil…
+        </Text>
       </SafeAreaView>
     );
   }
@@ -104,20 +97,28 @@ export default function DashboardScreen() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: palette.bg }}>
       <ScrollView
-        contentContainerStyle={{ padding: 16, paddingBottom: 110, gap: 18 }}
+        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 10, paddingBottom: 110, gap: 16 }}
         showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={palette.primary} />
-        }
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={palette.primary} />}
       >
         {/* Header Greeting */}
-        <View style={{ gap: 4 }}>
-          <Text style={{ fontSize: 13, color: palette.inkSoft, fontWeight: '600' }}>
-            Salaam, {username} · {capitalizedDay}
+        <View style={{ marginVertical: 6 }}>
+          <Text style={{ fontSize: 13, color: palette.inkSoft, marginBottom: 4 }}>
+            Salaam, {username}{' '}
+            <Text style={{ fontFamily: font.nativeFamily.serif, fontStyle: 'italic' }}>·</Text>{' '}
+            {dayName}
           </Text>
-          <Text style={{ fontSize: 28, fontWeight: '800', color: palette.txt, lineHeight: 34 }}>
+          <Text
+            style={{
+              fontFamily: font.nativeFamily.display,
+              fontSize: 32,
+              lineHeight: 34,
+              letterSpacing: -0.5,
+              color: palette.txt,
+            }}
+          >
             Que veux-tu{'\n'}
-            <Text style={{ color: palette.primary }}>deviner</Text> aujourd'hui ?
+            <Text style={{ color: palette.primary }}>deviner</Text> aujourd&apos;hui ?
           </Text>
         </View>
 
@@ -130,23 +131,27 @@ export default function DashboardScreen() {
             borderRadius: 20,
             borderWidth: 1,
             borderColor: palette.line,
-            paddingHorizontal: 16,
+            paddingHorizontal: 14,
             paddingVertical: 8,
             gap: 10,
+            shadowColor: '#000',
+            shadowOpacity: 0.03,
+            shadowRadius: 6,
+            elevation: 1,
           }}
         >
-          <Sparkles size={18} color={palette.primary} />
+          <Text style={{ fontSize: 18 }}>✨</Text>
           <TextInput
             value={aiPrompt}
             onChangeText={setAiPrompt}
-            placeholder="Tape un sujet généré par IA…"
+            placeholder="Tape un sujet…"
             placeholderTextColor={palette.inkSoft}
             onSubmitEditing={handleAiPromptSubmit}
-            returnKeyType="go"
+            returnKeyType="search"
             style={{
               flex: 1,
-              color: palette.txt,
               fontSize: 14,
+              color: palette.txt,
               paddingVertical: 6,
             }}
           />
@@ -166,15 +171,11 @@ export default function DashboardScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Chips / Shortcut Badges */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ gap: 8, paddingRight: 8 }}
-        >
-          {THEME_CHIPS.map((chip, idx) => (
+        {/* Shortcut Chips */}
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
+          {THEME_CHIPS.map((chip) => (
             <TouchableOpacity
-              key={idx}
+              key={chip.label}
               onPress={() => {
                 if (chip.route) {
                   router.push(chip.route as any);
@@ -185,18 +186,18 @@ export default function DashboardScreen() {
               activeOpacity={0.8}
               style={{
                 paddingHorizontal: 14,
-                paddingVertical: 8,
+                paddingVertical: 7,
                 borderRadius: 9999,
-                backgroundColor: idx === 0 ? palette.primary : palette.surface,
-                borderWidth: 1,
-                borderColor: idx === 0 ? palette.primary : palette.line,
+                backgroundColor: chip.active ? palette.primary : palette.surface,
+                borderWidth: chip.active ? 0 : 1,
+                borderColor: palette.line,
               }}
             >
               <Text
                 style={{
                   fontSize: 12,
                   fontWeight: '600',
-                  color: idx === 0 ? palette.primaryInk : palette.txt,
+                  color: chip.active ? palette.primaryInk : palette.txt,
                 }}
               >
                 {chip.label}
@@ -205,231 +206,160 @@ export default function DashboardScreen() {
           ))}
         </ScrollView>
 
-        {/* Quick Access Cards: Mode Carrière & Entraînement */}
+        {/* Global Rank Card */}
+        <GlobalRankCard rank={rank} />
+
+        {/* Quiz of the Day */}
+        <QuizOfTheDayCard />
+
+        {/* Solo Modes Cards (Carrière & Entraînement) */}
         <View style={{ flexDirection: 'row', gap: 12 }}>
+          {/* Mode Carrière */}
           <TouchableOpacity
             onPress={() => router.push('/solo/career' as any)}
-            activeOpacity={0.8}
+            activeOpacity={0.85}
             style={{
               flex: 1,
               backgroundColor: palette.surface,
-              borderRadius: 20,
+              borderRadius: 24,
               borderWidth: 1,
               borderColor: palette.line,
-              padding: 16,
-              minHeight: 120,
+              padding: 18,
+              minHeight: 130,
               justifyContent: 'space-between',
+              shadowColor: '#000',
+              shadowOpacity: 0.04,
+              shadowRadius: 8,
+              elevation: 1,
             }}
           >
             <View
               style={{
                 width: 36,
                 height: 36,
-                borderRadius: 12,
-                backgroundColor: palette.gold + '26',
+                borderRadius: 18,
+                backgroundColor: 'rgba(232, 166, 48, 0.2)',
                 alignItems: 'center',
                 justifyContent: 'center',
               }}
             >
-              <Trophy size={20} color={palette.gold} />
+              <Trophy size={18} color={palette.gold} />
             </View>
             <View>
-              <Text style={{ fontSize: 16, fontWeight: '700', color: palette.txt }}>
+              <Text style={{ fontFamily: font.nativeFamily.display, fontSize: 16, color: palette.txt }}>
                 Carrière
               </Text>
-              <Text style={{ fontSize: 11, color: palette.inkSoft, marginTop: 2 }}>
-                12 niveaux de difficulté
+              <Text style={{ fontSize: 11.5, color: palette.inkSoft, marginTop: 2 }}>
+                Progresse niveau par niveau
               </Text>
             </View>
           </TouchableOpacity>
 
+          {/* Entraînement Libre */}
           <TouchableOpacity
             onPress={() => router.push('/solo/training' as any)}
-            activeOpacity={0.8}
+            activeOpacity={0.85}
             style={{
               flex: 1,
               backgroundColor: palette.surface,
-              borderRadius: 20,
+              borderRadius: 24,
               borderWidth: 1,
               borderColor: palette.line,
-              padding: 16,
-              minHeight: 120,
+              padding: 18,
+              minHeight: 130,
               justifyContent: 'space-between',
+              shadowColor: '#000',
+              shadowOpacity: 0.04,
+              shadowRadius: 8,
+              elevation: 1,
             }}
           >
             <View
               style={{
                 width: 36,
                 height: 36,
-                borderRadius: 12,
-                backgroundColor: palette.primary + '26',
+                borderRadius: 18,
+                backgroundColor: 'rgba(78, 140, 255, 0.2)',
                 alignItems: 'center',
                 justifyContent: 'center',
               }}
             >
-              <Dumbbell size={20} color={palette.primary} />
+              <Target size={18} color={palette.indigo} />
             </View>
             <View>
-              <Text style={{ fontSize: 16, fontWeight: '700', color: palette.txt }}>
+              <Text style={{ fontFamily: font.nativeFamily.display, fontSize: 16, color: palette.txt }}>
                 Entraînement
               </Text>
-              <Text style={{ fontSize: 11, color: palette.inkSoft, marginTop: 2 }}>
-                Sets IA & thèmes libres
+              <Text style={{ fontSize: 11.5, color: palette.inkSoft, marginTop: 2 }}>
+                Thèmes personnalisés
               </Text>
             </View>
           </TouchableOpacity>
         </View>
 
-        {/* Global User Stats Summary Card */}
-        <View
-          style={{
-            backgroundColor: palette.surface,
-            borderRadius: 20,
-            borderWidth: 1,
-            borderColor: palette.line,
-            padding: 18,
-            gap: 14,
-          }}
-        >
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Text style={{ fontSize: 15, fontWeight: '700', color: palette.txt }}>
-              Vos statistiques
-            </Text>
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: 4,
-                backgroundColor: palette.primary + '1A',
-                paddingHorizontal: 8,
-                paddingVertical: 3,
-                borderRadius: 9999,
-              }}
-            >
-              <Award size={12} color={palette.primary} />
-              <Text style={{ color: palette.primary, fontSize: 11, fontWeight: '700' }}>
-                Rang #{data?.globalStats?.rank || 1}
-              </Text>
-            </View>
-          </View>
-
-          <View style={{ flexDirection: 'row', justifyContent: 'space-around', paddingTop: 6 }}>
-            <View style={{ alignItems: 'center' }}>
-              <Text style={{ fontSize: 20, fontWeight: '800', color: palette.gold }}>
-                {data?.globalStats?.totalScore || 0}
-              </Text>
-              <Text style={{ fontSize: 11, color: palette.inkSoft, marginTop: 2 }}>
-                Points totaux
-              </Text>
-            </View>
-
-            <View style={{ width: 1, height: 32, backgroundColor: palette.line }} />
-
-            <View style={{ alignItems: 'center' }}>
-              <Text style={{ fontSize: 20, fontWeight: '800', color: palette.good }}>
-                {data?.globalStats?.totalGames || 0}
-              </Text>
-              <Text style={{ fontSize: 11, color: palette.inkSoft, marginTop: 2 }}>
-                Parties jouées
-              </Text>
-            </View>
-
-            <View style={{ width: 1, height: 32, backgroundColor: palette.line }} />
-
-            <View style={{ alignItems: 'center' }}>
-              <Text style={{ fontSize: 20, fontWeight: '800', color: palette.primary }}>
-                {data?.globalStats?.winRate != null ? `${Math.round(data.globalStats.winRate)}%` : '0%'}
-              </Text>
-              <Text style={{ fontSize: 11, color: palette.inkSoft, marginTop: 2 }}>
-                Victoires
-              </Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Top 3 Leaderboard Section */}
-        <View style={{ gap: 10 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-              <Crown size={18} color={palette.gold} />
-              <Text style={{ fontSize: 16, fontWeight: '700', color: palette.txt }}>
-                Top Classement
-              </Text>
-            </View>
-            <TouchableOpacity
-              onPress={() => router.push('/(tabs)/rankings' as any)}
-              activeOpacity={0.7}
-            >
-              <Text style={{ fontSize: 12, color: palette.primary, fontWeight: '700' }}>
-                Voir tout →
-              </Text>
-            </TouchableOpacity>
-          </View>
-
+        {/* Top 3 Rankings Preview */}
+        {topRankings.length > 0 && (
           <View
             style={{
               backgroundColor: palette.surface,
-              borderRadius: 20,
+              borderRadius: 24,
               borderWidth: 1,
               borderColor: palette.line,
-              overflow: 'hidden',
+              padding: 18,
+              shadowColor: '#000',
+              shadowOpacity: 0.04,
+              shadowRadius: 8,
+              elevation: 1,
             }}
           >
-            {topRankings.length > 0 ? (
-              topRankings.map((rankEntry, idx) => (
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+              <Text style={{ fontFamily: font.nativeFamily.display, fontSize: 16, color: palette.txt }}>
+                Top de la semaine
+              </Text>
+              <TouchableOpacity onPress={() => router.push('/(tabs)/rankings')} activeOpacity={0.7}>
+                <Text style={{ fontSize: 12, fontWeight: '700', color: palette.primary }}>
+                  Classement complet →
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={{ gap: 10 }}>
+              {topRankings.map((r, i) => (
                 <View
-                  key={rankEntry.userId || idx}
+                  key={r.userId}
                   style={{
                     flexDirection: 'row',
                     alignItems: 'center',
-                    paddingHorizontal: 16,
-                    paddingVertical: 12,
-                    borderBottomWidth: idx < topRankings.length - 1 ? 1 : 0,
+                    justifyContent: 'space-between',
+                    paddingVertical: 6,
+                    borderBottomWidth: i < topRankings.length - 1 ? 1 : 0,
                     borderBottomColor: palette.line,
-                    gap: 12,
                   }}
                 >
-                  <Text
-                    style={{
-                      width: 24,
-                      fontSize: 14,
-                      fontWeight: '800',
-                      color: idx === 0 ? palette.gold : idx === 1 ? palette.silver : palette.bronze,
-                    }}
-                  >
-                    #{idx + 1}
-                  </Text>
-
-                  <Avatar
-                    name={rankEntry.username}
-                    avatarUrl={rankEntry.avatarUrl}
-                    hue={idx === 0 ? 45 : idx === 1 ? 210 : 30}
-                    size={36}
-                  />
-
-                  <View style={{ flex: 1 }}>
-                    <Text style={{ fontSize: 14, fontWeight: '700', color: palette.txt }} numberOfLines={1}>
-                      {rankEntry.username}
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                    <Text
+                      style={{
+                        fontFamily: font.nativeFamily.display,
+                        fontSize: 15,
+                        color: i === 0 ? palette.gold : palette.inkSoft,
+                        width: 24,
+                      }}
+                    >
+                      #{i + 1}
                     </Text>
-                    <Text style={{ fontSize: 11, color: palette.inkSoft }}>
-                      {rankEntry.totalGames || 0} partie{rankEntry.totalGames > 1 ? 's' : ''}
+                    <Avatar name={r.username} size={32} />
+                    <Text style={{ fontSize: 14, fontWeight: '700', color: palette.txt }}>
+                      {r.username}
                     </Text>
                   </View>
-
-                  <Text style={{ fontSize: 14, fontWeight: '700', color: palette.gold, fontVariant: ['tabular-nums'] }}>
-                    {rankEntry.totalScore || 0} pts
+                  <Text style={{ fontFamily: font.nativeFamily.display, fontSize: 14, color: palette.txt }}>
+                    {r.totalScore.toLocaleString('fr-FR')} pts
                   </Text>
                 </View>
-              ))
-            ) : (
-              <View style={{ padding: 20, alignItems: 'center' }}>
-                <Text style={{ color: palette.inkSoft, fontSize: 13 }}>
-                  Classement en cours de synchronisation…
-                </Text>
-              </View>
-            )}
+              ))}
+            </View>
           </View>
-        </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );

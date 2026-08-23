@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Tabs } from 'expo-router';
 import { Grid, Gamepad2, Trophy, Users, User } from 'lucide-react-native';
 import { useAuthStore } from '~/stores/useAuthStore';
-import { palette, inkAlpha } from '~/lib/theme/tokens';
+import { palette, font } from '~/lib/theme/tokens';
 
 export type TabBarProps = Parameters<
   NonNullable<React.ComponentProps<typeof Tabs>['tabBar']>
@@ -28,8 +28,21 @@ export function TabBar({ state, descriptors, navigation }: TabBarProps) {
 
   return (
     <View
-      style={{ paddingBottom: Math.max(insets.bottom, 8) }}
-      className="flex-row items-center justify-around bg-surface border-t border-line pt-2 px-1 z-50 shadow-sm"
+      style={{
+        paddingBottom: Math.max(insets.bottom, 10),
+        paddingTop: 8,
+        paddingHorizontal: 8,
+        backgroundColor: palette.surface,
+        borderTopWidth: 1,
+        borderTopColor: palette.line,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-around',
+        shadowColor: '#000',
+        shadowOpacity: 0.05,
+        shadowRadius: 10,
+        elevation: 8,
+      }}
     >
       {state.routes.map((route, index) => {
         const { options } = descriptors[route.key];
@@ -53,29 +66,59 @@ export function TabBar({ state, descriptors, navigation }: TabBarProps) {
           }
         };
 
-        const iconColor = isFocused ? palette.primary : inkAlpha.muted;
+        const iconColor = isFocused ? palette.primary : palette.inkSoft;
 
         return (
           <TouchableOpacity
             key={route.key}
             onPress={onPress}
-            activeOpacity={0.7}
+            activeOpacity={0.75}
             accessibilityRole="button"
             accessibilityState={isFocused ? { selected: true } : {}}
             accessibilityLabel={options.tabBarAccessibilityLabel}
             testID={options.tabBarButtonTestID}
-            className="flex-1 flex-col items-center justify-center py-1.5"
+            style={{
+              flex: 1,
+              alignItems: 'center',
+              justifyContent: 'center',
+              paddingVertical: 4,
+            }}
           >
-            <View className="relative flex-col items-center justify-center">
-              <IconComponent size={22} color={iconColor} />
+            <View
+              style={{
+                position: 'relative',
+                alignItems: 'center',
+                justifyContent: 'center',
+                paddingHorizontal: 12,
+                paddingVertical: 3,
+                borderRadius: 9999,
+                backgroundColor: isFocused ? 'rgba(224, 86, 36, 0.12)' : 'transparent',
+              }}
+            >
+              <IconComponent size={20} color={iconColor} />
               {route.name === 'profile' && showUnconfirmedBadge ? (
-                <View className="absolute -top-0.5 -right-1 w-2.5 h-2.5 rounded-full bg-bad border border-bg" />
+                <View
+                  style={{
+                    position: 'absolute',
+                    top: 1,
+                    right: 8,
+                    width: 7,
+                    height: 7,
+                    borderRadius: 3.5,
+                    backgroundColor: palette.bad,
+                    borderWidth: 1,
+                    borderColor: palette.surface,
+                  }}
+                />
               ) : null}
             </View>
             <Text
-              className={`text-[10.5px] font-semibold mt-1 ${
-                isFocused ? 'text-accent' : 'text-txt-40'
-              }`}
+              style={{
+                fontSize: 10.5,
+                fontWeight: isFocused ? '700' : '600',
+                color: isFocused ? palette.primary : palette.inkSoft,
+                marginTop: 2,
+              }}
             >
               {config.label}
             </Text>

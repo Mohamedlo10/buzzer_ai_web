@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Modal,
+  ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FlashList } from '@shopify/flash-list';
@@ -14,15 +15,14 @@ import {
   Search,
   X,
   Info,
-  Award,
   Crown,
-  Sparkles,
+  ChevronRight,
 } from 'lucide-react-native';
 
 import { useAuthStore } from '~/stores/useAuthStore';
 import * as rankingsApi from '~/lib/api/rankings';
 import type { GlobalRanking } from '~/types/api';
-import { palette } from '~/lib/theme/tokens';
+import { palette, font } from '~/lib/theme/tokens';
 import { Avatar } from '~/components/shared/Avatar';
 
 const PAGE_SIZE = 30;
@@ -83,352 +83,255 @@ export default function RankingsScreen() {
     }, 400);
   };
 
-  const top3 = rankings.slice(0, 3);
-  const rest = rankings.slice(3);
-
-  const renderRankingItem = ({ item, index }: { item: GlobalRanking; index: number }) => {
-    const isMe = item.userId === user?.id;
-    const rankNumber = index + 4; // Because first 3 are in the podium header
-
-    return (
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          backgroundColor: isMe ? palette.primary + '1A' : palette.surface,
-          borderRadius: 16,
-          borderWidth: 1,
-          borderColor: isMe ? palette.primary + '60' : palette.line,
-          paddingHorizontal: 16,
-          paddingVertical: 12,
-          marginBottom: 8,
-          gap: 12,
-        }}
-      >
-        <Text
-          style={{
-            width: 32,
-            fontSize: 14,
-            fontWeight: '800',
-            color: palette.inkSoft,
-            fontVariant: ['tabular-nums'],
-          }}
-        >
-          #{rankNumber}
-        </Text>
-
-        <Avatar
-          name={item.username}
-          avatarUrl={item.avatarUrl}
-          size={38}
-        />
-
-        <View style={{ flex: 1 }}>
-          <Text style={{ fontSize: 14, fontWeight: '700', color: isMe ? palette.primary : palette.txt }} numberOfLines={1}>
-            {item.username} {isMe ? '(Moi)' : ''}
-          </Text>
-          <Text style={{ fontSize: 11, color: palette.inkSoft }}>
-            {item.totalGames || 0} partie{item.totalGames > 1 ? 's' : ''} · {Math.round(item.winRate || 0)}% victoires
-          </Text>
-        </View>
-
-        <Text
-          style={{
-            fontSize: 14,
-            fontWeight: '800',
-            color: palette.gold,
-            fontVariant: ['tabular-nums'],
-          }}
-        >
-          {item.totalScore || 0} pts
-        </Text>
-      </View>
-    );
-  };
-
-  const ListHeader = () => (
-    <View style={{ gap: 16, marginBottom: 12 }}>
-      {/* Top 3 Podium Cards */}
-      {!searchUsername && top3.length >= 3 && (
-        <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'center', gap: 10, paddingTop: 10, paddingBottom: 6 }}>
-          {/* 2nd Place */}
-          <View
-            style={{
-              flex: 1,
-              backgroundColor: palette.surface,
-              borderRadius: 20,
-              borderWidth: 1,
-              borderColor: palette.silver + '60',
-              padding: 12,
-              alignItems: 'center',
-              gap: 6,
-            }}
-          >
-            <View
-              style={{
-                width: 24,
-                height: 24,
-                borderRadius: 12,
-                backgroundColor: palette.silver + '33',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Text style={{ color: palette.silver, fontSize: 12, fontWeight: '800' }}>2</Text>
-            </View>
-            <Avatar name={top3[1]?.username} avatarUrl={top3[1]?.avatarUrl} size={48} hue={210} />
-            <Text style={{ fontSize: 13, fontWeight: '700', color: palette.txt }} numberOfLines={1}>
-              {top3[1]?.username}
-            </Text>
-            <Text style={{ fontSize: 12, fontWeight: '800', color: palette.gold }}>
-              {top3[1]?.totalScore || 0} pts
-            </Text>
-          </View>
-
-          {/* 1st Place */}
-          <View
-            style={{
-              flex: 1.15,
-              backgroundColor: palette.surface,
-              borderRadius: 22,
-              borderWidth: 1.5,
-              borderColor: palette.gold,
-              padding: 16,
-              alignItems: 'center',
-              gap: 6,
-              transform: [{ translateY: -10 }],
-              shadowColor: palette.gold,
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.25,
-              shadowRadius: 8,
-              elevation: 4,
-            }}
-          >
-            <Crown size={22} color={palette.gold} />
-            <Avatar name={top3[0]?.username} avatarUrl={top3[0]?.avatarUrl} size={56} hue={45} ring={palette.gold} />
-            <Text style={{ fontSize: 14, fontWeight: '800', color: palette.txt }} numberOfLines={1}>
-              {top3[0]?.username}
-            </Text>
-            <Text style={{ fontSize: 14, fontWeight: '800', color: palette.gold }}>
-              {top3[0]?.totalScore || 0} pts
-            </Text>
-          </View>
-
-          {/* 3rd Place */}
-          <View
-            style={{
-              flex: 1,
-              backgroundColor: palette.surface,
-              borderRadius: 20,
-              borderWidth: 1,
-              borderColor: palette.bronze + '60',
-              padding: 12,
-              alignItems: 'center',
-              gap: 6,
-            }}
-          >
-            <View
-              style={{
-                width: 24,
-                height: 24,
-                borderRadius: 12,
-                backgroundColor: palette.bronze + '33',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Text style={{ color: palette.bronze, fontSize: 12, fontWeight: '800' }}>3</Text>
-            </View>
-            <Avatar name={top3[2]?.username} avatarUrl={top3[2]?.avatarUrl} size={48} hue={30} />
-            <Text style={{ fontSize: 13, fontWeight: '700', color: palette.txt }} numberOfLines={1}>
-              {top3[2]?.username}
-            </Text>
-            <Text style={{ fontSize: 12, fontWeight: '800', color: palette.gold }}>
-              {top3[2]?.totalScore || 0} pts
-            </Text>
-          </View>
-        </View>
-      )}
-
-      {/* Search Input */}
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          backgroundColor: palette.surface,
-          borderRadius: 16,
-          borderWidth: 1,
-          borderColor: palette.line,
-          paddingHorizontal: 14,
-          paddingVertical: 8,
-          gap: 10,
-        }}
-      >
-        <Search size={18} color={palette.inkSoft} />
-        <TextInput
-          value={searchUsername}
-          onChangeText={handleSearchChange}
-          placeholder="Chercher un joueur dans le classement…"
-          placeholderTextColor={palette.inkSoft}
-          autoCapitalize="none"
-          style={{
-            flex: 1,
-            color: palette.txt,
-            fontSize: 14,
-            paddingVertical: 6,
-          }}
-        />
-        {searchUsername.length > 0 && (
-          <TouchableOpacity
-            onPress={() => {
-              setSearchUsername('');
-              fetchRankings(0, '');
-            }}
-            activeOpacity={0.7}
-          >
-            <X size={16} color={palette.inkSoft} />
-          </TouchableOpacity>
-        )}
-      </View>
-    </View>
-  );
+  const podiumList = rankings.length >= 3 ? [rankings[1], rankings[0], rankings[2]] : [];
+  const listItems = !searchUsername && rankings.length >= 3 ? rankings.slice(3) : rankings;
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: palette.bg }}>
-      {/* Header */}
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          paddingHorizontal: 16,
-          paddingVertical: 14,
-          borderBottomWidth: 1,
-          borderBottomColor: palette.line,
-          backgroundColor: palette.bg,
-        }}
-      >
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-          <Trophy size={24} color={palette.gold} />
-          <Text style={{ fontSize: 24, fontWeight: '800', color: palette.txt }}>
-            Classement
-          </Text>
-        </View>
-
-        <TouchableOpacity
-          onPress={() => setShowInfoModal(true)}
-          activeOpacity={0.7}
-          style={{
-            width: 36,
-            height: 36,
-            borderRadius: 18,
-            backgroundColor: palette.surface,
-            alignItems: 'center',
-            justifyContent: 'center',
-            borderWidth: 1,
-            borderColor: palette.line,
-          }}
-        >
-          <Info size={18} color={palette.inkSoft} />
-        </TouchableOpacity>
-      </View>
-
-      {/* Main FlashList */}
-      <View style={{ flex: 1, paddingHorizontal: 16, paddingTop: 12 }}>
-        {isLoading && !isRefreshing ? (
-          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 }}>
-            <ActivityIndicator size="large" color={palette.primary} />
-            <Text style={{ color: palette.inkSoft, fontSize: 14 }}>
-              Chargement du classement…
+      <View style={{ flex: 1, paddingHorizontal: 20, paddingTop: 10 }}>
+        {/* Header */}
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+          <View>
+            <Text
+              style={{
+                fontFamily: font.nativeFamily.display,
+                fontSize: 26,
+                letterSpacing: -0.4,
+                color: palette.txt,
+              }}
+            >
+              Classement
+            </Text>
+            <Text style={{ fontSize: 12.5, color: palette.inkSoft, marginTop: 2 }}>
+              {totalElements} joueurs classés
             </Text>
           </View>
-        ) : (
-          <FlashList
-            data={searchUsername ? rankings : rest}
-            renderItem={({ item, index }) =>
-              renderRankingItem({
-                item,
-                index: searchUsername ? index - 3 : index,
-              })
-            }
-            ListHeaderComponent={ListHeader}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingBottom: 110 }}
-            refreshing={isRefreshing}
-            onRefresh={onRefresh}
-            ListEmptyComponent={
-              <View style={{ alignItems: 'center', paddingVertical: 40 }}>
-                <Text style={{ color: palette.inkSoft, fontSize: 14 }}>
-                  Aucun joueur trouvé
-                </Text>
-              </View>
-            }
+
+          <TouchableOpacity
+            onPress={() => setShowInfoModal(true)}
+            activeOpacity={0.7}
+            style={{
+              width: 34,
+              height: 34,
+              borderRadius: 17,
+              backgroundColor: palette.surface,
+              borderWidth: 1,
+              borderColor: palette.line,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Info size={16} color={palette.inkSoft} />
+          </TouchableOpacity>
+        </View>
+
+        {/* Podium Section (when not searching) */}
+        {!searchUsername && podiumList.length === 3 && (
+          <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 10, marginBottom: 16 }}>
+            {podiumList.map((p, i) => {
+              const rankNum = i === 1 ? 1 : i === 0 ? 2 : 3;
+              const isFirst = rankNum === 1;
+              const isSecond = rankNum === 2;
+              const name = p?.username || 'Joueur';
+              const score = Math.round(p?.glickoRating ?? p?.totalScore ?? 0);
+
+              return (
+                <View key={p?.userId || rankNum} style={{ flex: isFirst ? 1.15 : 1, alignItems: 'center' }}>
+                  <View style={{ position: 'relative', marginBottom: 8 }}>
+                    <Avatar
+                      name={name}
+                      avatarUrl={p?.avatarUrl}
+                      size={isFirst ? 64 : 50}
+                      hue={isFirst ? 45 : isSecond ? 320 : 200}
+                    />
+                    {isFirst && (
+                      <View style={{ position: 'absolute', top: -14, left: '50%', transform: [{ translateX: -10 }] }}>
+                        <Text style={{ fontSize: 18 }}>👑</Text>
+                      </View>
+                    )}
+                  </View>
+
+                  <View
+                    style={{
+                      width: '100%',
+                      backgroundColor: palette.surface,
+                      borderRadius: 20,
+                      borderWidth: 1,
+                      borderColor: isFirst ? palette.gold : palette.line,
+                      paddingVertical: 10,
+                      paddingHorizontal: 6,
+                      alignItems: 'center',
+                    }}
+                  >
+                    <Text style={{ fontSize: 16, marginBottom: 2 }}>
+                      {isFirst ? '🥇' : isSecond ? '🥈' : '🥉'}
+                    </Text>
+                    <Text
+                      style={{
+                        fontFamily: font.nativeFamily.display,
+                        fontSize: 13,
+                        color: palette.txt,
+                      }}
+                      numberOfLines={1}
+                    >
+                      {name}
+                    </Text>
+                    <Text style={{ fontSize: 10.5, color: palette.inkSoft, marginTop: 1 }}>
+                      {score.toLocaleString('fr-FR')} pts
+                    </Text>
+                  </View>
+                </View>
+              );
+            })}
+          </View>
+        )}
+
+        {/* Search Bar */}
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            backgroundColor: palette.surface,
+            borderRadius: 9999,
+            borderWidth: 1,
+            borderColor: palette.line,
+            paddingHorizontal: 14,
+            paddingVertical: 8,
+            gap: 8,
+            marginBottom: 12,
+          }}
+        >
+          <Search size={16} color={palette.inkSoft} />
+          <TextInput
+            value={searchUsername}
+            onChangeText={handleSearchChange}
+            placeholder="Rechercher un joueur…"
+            placeholderTextColor={palette.inkSoft}
+            style={{ flex: 1, color: palette.txt, fontSize: 13.5 }}
           />
+          {searchUsername ? (
+            <TouchableOpacity onPress={() => handleSearchChange('')} activeOpacity={0.7}>
+              <X size={16} color={palette.inkSoft} />
+            </TouchableOpacity>
+          ) : null}
+        </View>
+
+        {/* Rankings List */}
+        {isLoading && rankings.length === 0 ? (
+          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+            <ActivityIndicator size="large" color={palette.primary} />
+          </View>
+        ) : (
+          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingBottom: 110 }}>
+            {listItems.map((item, index) => {
+              const rankNumber = !searchUsername && rankings.length >= 3 ? index + 4 : index + 1;
+              const isMe = item.userId === user?.id;
+              const score = Math.round(item.glickoRating ?? item.totalScore ?? 0);
+
+              return (
+                <View
+                  key={item.userId}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    backgroundColor: isMe ? 'rgba(224, 86, 36, 0.1)' : palette.surface,
+                    borderRadius: 20,
+                    borderWidth: 1,
+                    borderColor: isMe ? palette.primary : palette.line,
+                    paddingHorizontal: 14,
+                    paddingVertical: 12,
+                  }}
+                >
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}>
+                    <Text
+                      style={{
+                        fontFamily: font.nativeFamily.display,
+                        fontSize: 14,
+                        color: rankNumber <= 3 ? palette.gold : palette.inkSoft,
+                        width: 28,
+                        textAlign: 'center',
+                      }}
+                    >
+                      #{rankNumber}
+                    </Text>
+                    <Avatar name={item.username} avatarUrl={item.avatarUrl} size={36} />
+                    <View style={{ flex: 1 }}>
+                      <Text
+                        style={{
+                          fontFamily: font.nativeFamily.display,
+                          fontSize: 14,
+                          color: palette.txt,
+                        }}
+                        numberOfLines={1}
+                      >
+                        {item.username} {isMe ? '(toi)' : ''}
+                      </Text>
+                      <Text style={{ fontSize: 11, color: palette.inkSoft }}>
+                        {item.totalGames || 0} parties · {item.totalWins || 0} victoires
+                      </Text>
+                    </View>
+                  </View>
+
+                  <Text
+                    style={{
+                      fontFamily: font.nativeFamily.display,
+                      fontSize: 14,
+                      color: palette.txt,
+                    }}
+                  >
+                    {score.toLocaleString('fr-FR')} pts
+                  </Text>
+                </View>
+              );
+            })}
+          </ScrollView>
         )}
       </View>
 
-      {/* Glicko-2 Info Modal */}
-      <Modal
-        visible={showInfoModal}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowInfoModal(false)}
-      >
-        <View
-          style={{
-            flex: 1,
-            backgroundColor: 'rgba(0,0,0,0.7)',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: 24,
-          }}
-        >
+      {/* Info Modal */}
+      <Modal visible={showInfoModal} transparent animationType="fade" onRequestClose={() => setShowInfoModal(false)}>
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.55)', justifyContent: 'center', padding: 20 }}>
           <View
             style={{
               backgroundColor: palette.surface,
-              borderRadius: 24,
+              borderRadius: 28,
               borderWidth: 1,
               borderColor: palette.line,
-              padding: 24,
-              width: '100%',
-              maxWidth: 400,
-              gap: 16,
+              padding: 20,
+              shadowColor: '#000',
+              shadowOpacity: 0.15,
+              shadowRadius: 20,
+              elevation: 6,
             }}
           >
-            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-              <Text style={{ fontSize: 18, fontWeight: '700', color: palette.txt }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+              <Text style={{ fontFamily: font.nativeFamily.display, fontSize: 18, color: palette.txt }}>
                 Système de classement
               </Text>
-              <TouchableOpacity onPress={() => setShowInfoModal(false)} activeOpacity={0.7}>
-                <X size={20} color={palette.inkSoft} />
+              <TouchableOpacity
+                onPress={() => setShowInfoModal(false)}
+                activeOpacity={0.7}
+                style={{
+                  width: 30,
+                  height: 30,
+                  borderRadius: 15,
+                  backgroundColor: palette.surface2,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <X size={16} color={palette.txt} />
               </TouchableOpacity>
             </View>
 
-            <Text style={{ color: palette.txt, fontSize: 14, lineHeight: 22 }}>
-              Le classement mondial s'appuie sur le modèle mathématique <Text style={{ color: palette.primary, fontWeight: '700' }}>Glicko-2</Text>.
+            <Text style={{ color: palette.inkSoft, fontSize: 13.5, lineHeight: 20, marginBottom: 12 }}>
+              Le classement utilise l&apos;algorithme <Text style={{ color: palette.txt, fontWeight: '700' }}>Glicko-2</Text>. Il évalue votre niveau de jeu relatif par rapport aux autres compétiteurs en temps réel.
             </Text>
 
-            <Text style={{ color: palette.inkSoft, fontSize: 13, lineHeight: 20 }}>
-              • Chaque victoire contre un adversaire redoutable augmente significativement votre cote.{'\n'}
-              • La régularité et l'activité affinent votre rang.{'\n'}
-              • Les scores se mettent à jour automatiquement à l'issue de chaque session.
+            <Text style={{ color: palette.inkSoft, fontSize: 13.5, lineHeight: 20 }}>
+              <Text style={{ color: palette.primary, fontWeight: '700' }}>Bonus de série :</Text> Plus vous enchaînez de victoires consécutives, plus votre cote grimpe rapidement.
             </Text>
-
-            <TouchableOpacity
-              onPress={() => setShowInfoModal(false)}
-              activeOpacity={0.8}
-              style={{
-                backgroundColor: palette.primary,
-                borderRadius: 14,
-                paddingVertical: 12,
-                alignItems: 'center',
-                marginTop: 6,
-              }}
-            >
-              <Text style={{ color: palette.primaryInk, fontWeight: '700', fontSize: 14 }}>
-                Compris !
-              </Text>
-            </TouchableOpacity>
           </View>
         </View>
       </Modal>

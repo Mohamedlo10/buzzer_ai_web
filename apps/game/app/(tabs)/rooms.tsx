@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -11,14 +11,21 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { X, Plus, ArrowRight, Zap, Users, Trophy, QrCode } from 'lucide-react-native';
+import { X, Plus, ArrowRight, Zap, Users, QrCode } from 'lucide-react-native';
 import { useRoomsData } from '~/lib/hooks/useRoomsData';
-import { palette, inkAlpha } from '~/lib/theme/tokens';
+import { palette, font } from '~/lib/theme/tokens';
 import { QRScannerModal } from '~/components/shared/QRScannerModal';
+import { PatternZigzag } from '~/components/shared/PatternZigzag';
+import { GlobalRankCard } from '~/components/shared/GlobalRankCard';
+import { QuizOfTheDayCard } from '~/components/shared/QuizOfTheDayCard';
+import { AllRoomsModal } from '~/components/shared/AllRoomsModal';
+import { Avatar } from '~/components/shared/Avatar';
 
 export default function RoomsScreen() {
   const router = useRouter();
   const [showScanner, setShowScanner] = useState(false);
+  const [showAllRoomsModal, setShowAllRoomsModal] = useState(false);
+
   const {
     data,
     isLoading,
@@ -29,8 +36,6 @@ export default function RoomsScreen() {
     activeSessionInfo,
     showJoinModal,
     setShowJoinModal,
-    showAllRooms,
-    setShowAllRooms,
     code,
     setCode,
     isJoining,
@@ -43,13 +48,11 @@ export default function RoomsScreen() {
     },
   });
 
-  const displayedRooms = showAllRooms ? recentRooms : recentRooms.slice(0, 3);
-
-  if (isLoading) {
+  if (isLoading && !data) {
     return (
-      <SafeAreaView className="flex-1 bg-bg flex-col items-center justify-center">
+      <SafeAreaView style={{ flex: 1, backgroundColor: palette.bg, alignItems: 'center', justifyContent: 'center' }}>
         <ActivityIndicator size="large" color={palette.primary} />
-        <Text className="text-txt-60 text-sm mt-3 font-medium">
+        <Text style={{ color: palette.inkSoft, fontSize: 14, marginTop: 12, fontWeight: '600' }}>
           Chargement des salons...
         </Text>
       </SafeAreaView>
@@ -58,61 +61,92 @@ export default function RoomsScreen() {
 
   if (isError || !data) {
     return (
-      <SafeAreaView className="flex-1 bg-bg px-6 flex-col items-center justify-center">
-        <View className="w-16 h-16 rounded-full bg-surface2 flex-col items-center justify-center mb-4">
-          <Text className="text-3xl">😵</Text>
+      <SafeAreaView style={{ flex: 1, backgroundColor: palette.bg, alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+        <View style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: palette.surface2, alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+          <Text style={{ fontSize: 32 }}>😵</Text>
         </View>
-        <Text className="text-buzz text-lg font-bold mb-2 text-center">
+        <Text style={{ color: palette.bad, fontSize: 18, fontWeight: '700', marginBottom: 8, textAlign: 'center' }}>
           Erreur de chargement
         </Text>
-        <Text className="text-txt-60 text-sm text-center mb-6">
+        <Text style={{ color: palette.inkSoft, fontSize: 14, textAlign: 'center', marginBottom: 20 }}>
           Impossible de charger les salons
         </Text>
         <TouchableOpacity
           onPress={() => refetch()}
           activeOpacity={0.8}
-          className="px-6 py-3.5 rounded-xl bg-buzz flex-row items-center justify-center"
+          style={{ paddingHorizontal: 24, paddingVertical: 14, borderRadius: 14, backgroundColor: palette.primary }}
         >
-          <Text className="text-white font-bold text-base">Réessayer</Text>
+          <Text style={{ color: palette.primaryInk, fontWeight: '700', fontSize: 15 }}>Réessayer</Text>
         </TouchableOpacity>
       </SafeAreaView>
     );
   }
 
+  const activeRoom = recentRooms.find((r) => r.hasActiveSession) || null;
+
   return (
-    <SafeAreaView className="flex-1 bg-bg">
+    <SafeAreaView style={{ flex: 1, backgroundColor: palette.bg }}>
       <ScrollView
-        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 10, paddingBottom: 100 }}
-        refreshControl={
-          <RefreshControl
-            refreshing={isLoading}
-            onRefresh={refetch}
-            tintColor={palette.primary}
-          />
-        }
+        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 10, paddingBottom: 110, gap: 16 }}
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refetch} tintColor={palette.primary} />}
       >
         {/* Header Title */}
-        <View className="flex-col my-3">
-          <Text className="text-txt font-bold text-3xl tracking-tight mb-1">
-            Hub des <Text className="text-accent">salons</Text>
+        <View style={{ marginVertical: 6 }}>
+          <Text
+            style={{
+              fontFamily: font.nativeFamily.display,
+              fontSize: 28,
+              lineHeight: 30,
+              letterSpacing: -0.5,
+              color: palette.txt,
+              marginBottom: 4,
+            }}
+          >
+            Hub des <Text style={{ color: palette.primary }}>salons</Text>
           </Text>
-          <Text className="text-txt-60 text-sm">
+          <Text style={{ fontSize: 13.5, color: palette.inkSoft, lineHeight: 18 }}>
             Tes buzzers sont prêts. Prêt à tester ta stratégie ?
           </Text>
         </View>
 
         {/* Active Session Banner */}
-        {activeSessionInfo ? (
-          <View className="bg-surface rounded-2xl border border-line p-3.5 mb-4 flex-row items-center justify-between shadow-sm">
-            <View className="flex-row items-center flex-1 mr-3">
-              <View className="w-10 h-10 rounded-full bg-gold/25 flex-col items-center justify-center mr-3">
-                <Zap size={20} color={palette.gold} />
+        {activeSessionInfo && (
+          <View
+            style={{
+              backgroundColor: palette.surface,
+              borderRadius: 20,
+              borderWidth: 1,
+              borderColor: palette.line,
+              padding: 14,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              shadowColor: '#000',
+              shadowOpacity: 0.05,
+              shadowRadius: 8,
+              elevation: 2,
+            }}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, marginRight: 10 }}>
+              <View
+                style={{
+                  width: 38,
+                  height: 38,
+                  borderRadius: 19,
+                  backgroundColor: 'rgba(232, 166, 48, 0.25)',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginRight: 12,
+                }}
+              >
+                <Text style={{ fontSize: 18 }}>⚡</Text>
               </View>
-              <View className="flex-col flex-1">
-                <Text className="text-gold text-[11px] font-bold tracking-wider uppercase">
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: 10.5, fontWeight: '700', letterSpacing: 0.8, textTransform: 'uppercase', color: palette.gold }}>
                   Session en cours #{activeSessionInfo.code || 'ACTIVE'}
                 </Text>
-                <Text className="text-txt font-bold text-sm mt-0.5">
+                <Text style={{ fontSize: 13, fontWeight: '700', color: palette.txt, marginTop: 2 }} numberOfLines={1}>
                   Une partie est toujours active !
                 </Text>
               </View>
@@ -121,28 +155,64 @@ export default function RoomsScreen() {
             <TouchableOpacity
               onPress={handleReconnectSession}
               activeOpacity={0.8}
-              className="px-4 py-2.5 rounded-full bg-buzz flex-row items-center justify-center"
+              style={{
+                backgroundColor: palette.primary,
+                paddingHorizontal: 16,
+                paddingVertical: 9,
+                borderRadius: 9999,
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 4,
+              }}
             >
-              <Text className="text-white text-xs font-bold mr-1">
-                Rejoindre
-              </Text>
-              <ArrowRight size={14} color="#FFFFFF" />
+              <Text style={{ color: palette.primaryInk, fontSize: 12.5, fontWeight: '700' }}>Rejoindre</Text>
+              <ArrowRight size={14} color={palette.primaryInk} />
             </TouchableOpacity>
           </View>
-        ) : null}
+        )}
 
         {/* Quick Action Cards */}
-        <View className="flex-row gap-3 mb-5">
+        <View style={{ flexDirection: 'row', gap: 12 }}>
           {/* Nouveau salon Card */}
           <TouchableOpacity
             onPress={() => router.push('/room/create' as any)}
-            activeOpacity={0.8}
-            className="flex-1 bg-buzz rounded-2xl p-4 flex-col justify-between shadow-sm min-h-[110px]"
+            activeOpacity={0.85}
+            style={{
+              flex: 1,
+              backgroundColor: palette.primary,
+              borderRadius: 24,
+              padding: 18,
+              position: 'relative',
+              overflow: 'hidden',
+              minHeight: 120,
+              justifyContent: 'space-between',
+              shadowColor: palette.primary,
+              shadowOpacity: 0.25,
+              shadowRadius: 10,
+              elevation: 4,
+            }}
           >
-            <View className="w-9 h-9 rounded-full bg-white/20 flex-col items-center justify-center mb-4">
+            <PatternZigzag color="#FFFFFF" opacity={0.18} size={18} />
+            <View
+              style={{
+                width: 34,
+                height: 34,
+                borderRadius: 17,
+                backgroundColor: 'rgba(255, 255, 255, 0.25)',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
               <Plus size={20} color="#FFFFFF" />
             </View>
-            <Text className="text-white font-bold text-base">
+            <Text
+              style={{
+                fontFamily: font.nativeFamily.display,
+                fontSize: 16,
+                letterSpacing: -0.2,
+                color: palette.primaryInk,
+              }}
+            >
               Nouveau salon
             </Text>
           </TouchableOpacity>
@@ -150,260 +220,313 @@ export default function RoomsScreen() {
           {/* Rejoindre Card */}
           <TouchableOpacity
             onPress={() => setShowJoinModal(true)}
-            activeOpacity={0.8}
-            className="flex-1 bg-surface border border-line rounded-2xl p-4 flex-col justify-between shadow-sm min-h-[110px]"
+            activeOpacity={0.85}
+            style={{
+              flex: 1,
+              backgroundColor: palette.surface,
+              borderRadius: 24,
+              borderWidth: 1,
+              borderColor: palette.line,
+              padding: 18,
+              minHeight: 120,
+              justifyContent: 'space-between',
+              shadowColor: '#000',
+              shadowOpacity: 0.04,
+              shadowRadius: 8,
+              elevation: 1,
+            }}
           >
-            <View className="w-9 h-9 rounded-full border border-line flex-col items-center justify-center mb-2">
-              <ArrowRight size={18} color={palette.primary} />
+            <View
+              style={{
+                width: 34,
+                height: 34,
+                borderRadius: 17,
+                borderWidth: 1.5,
+                borderColor: palette.line,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <ArrowRight size={16} color={palette.primary} />
             </View>
-            <View className="flex-col">
-              <Text className="text-txt font-bold text-base">
+            <View>
+              <Text
+                style={{
+                  fontFamily: font.nativeFamily.display,
+                  fontSize: 16,
+                  letterSpacing: -0.2,
+                  color: palette.txt,
+                }}
+              >
                 Rejoindre
               </Text>
-              <Text className="text-txt-60 text-xs mt-0.5">
+              <Text style={{ fontSize: 11.5, color: palette.inkSoft, marginTop: 2 }}>
                 scan &amp; code
               </Text>
             </View>
           </TouchableOpacity>
         </View>
 
-        {/* Global Rank Banner */}
-        <View className="bg-surface rounded-2xl border border-line p-4 mb-5 flex-row items-center justify-between">
-          <View className="flex-row items-center">
-            <View className="w-10 h-10 rounded-full bg-gold/15 flex-col items-center justify-center mr-3">
-              <Trophy size={20} color={palette.gold} />
-            </View>
-            <View className="flex-col">
-              <Text className="text-txt-60 text-xs font-semibold">
-                Classement mondial
-              </Text>
-              <Text className="text-txt font-bold text-lg">
-                RANG #{rank || 154}
-              </Text>
-            </View>
-          </View>
-          <TouchableOpacity
-            onPress={() => router.push('/(tabs)/rankings')}
-            activeOpacity={0.7}
-          >
-            <Text className="text-accent text-xs font-bold">
-              Voir tout →
-            </Text>
-          </TouchableOpacity>
-        </View>
+        {/* Global Rank Card */}
+        <GlobalRankCard rank={rank || 154} />
 
-        {/* Rooms List Header */}
-        <View className="flex-row items-center justify-between mb-3">
-          <View className="flex-col">
-            <Text className="text-txt font-bold text-lg">
+        {/* Quiz Of The Day Card */}
+        <QuizOfTheDayCard activeRoom={activeRoom} />
+
+        {/* Rooms Section Header */}
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 }}>
+          <View>
+            <Text
+              style={{
+                fontFamily: font.nativeFamily.display,
+                fontSize: 18.5,
+                letterSpacing: -0.3,
+                color: palette.txt,
+              }}
+            >
               Mes Salons ({recentRooms.length})
             </Text>
-            <Text className="text-txt-60 text-xs">
+            <Text style={{ fontSize: 11.5, color: palette.inkSoft, marginTop: 2 }}>
               Rejoins et consulte les détails de tes salons
             </Text>
           </View>
 
-          {recentRooms.length > 3 ? (
-            <TouchableOpacity
-              onPress={() => setShowAllRooms(!showAllRooms)}
-              activeOpacity={0.7}
-              className="px-3 py-1.5 rounded-full bg-gold/15"
-            >
-              <Text className="text-accent text-xs font-bold">
-                {showAllRooms ? 'Réduire ↑' : 'Voir tout →'}
-              </Text>
-            </TouchableOpacity>
-          ) : null}
+          <TouchableOpacity
+            onPress={() => setShowAllRoomsModal(true)}
+            activeOpacity={0.7}
+            style={{
+              paddingHorizontal: 12,
+              paddingVertical: 6,
+              borderRadius: 9999,
+              backgroundColor: 'rgba(232, 166, 48, 0.15)',
+            }}
+          >
+            <Text style={{ fontSize: 12, fontWeight: '700', color: palette.primary }}>
+              Tous les salons →
+            </Text>
+          </TouchableOpacity>
         </View>
 
-        {/* Rooms List Items */}
+        {/* Rooms List */}
         {recentRooms.length > 0 ? (
-          <View className="flex-col gap-3 mb-6">
-            {displayedRooms.map((room) => (
+          <View style={{ gap: 10 }}>
+            {recentRooms.slice(0, 3).map((room) => (
               <TouchableOpacity
                 key={room.id}
                 onPress={() => router.push(`/room/${room.id}` as any)}
-                activeOpacity={0.8}
-                className="bg-surface rounded-2xl border border-line p-4 flex-col shadow-sm"
+                activeOpacity={0.85}
+                style={{
+                  backgroundColor: palette.surface,
+                  borderRadius: 22,
+                  borderWidth: 1,
+                  borderColor: palette.line,
+                  padding: 16,
+                  shadowColor: '#000',
+                  shadowOpacity: 0.03,
+                  shadowRadius: 6,
+                  elevation: 1,
+                }}
               >
-                <View className="flex-row items-start justify-between mb-2">
-                  <View className="flex-row items-center flex-1 mr-2">
-                    <View className="w-10 h-10 rounded-full bg-accent/15 flex-col items-center justify-center mr-3">
-                      <Text className="text-accent font-bold text-base">
-                        {room.ownerName?.charAt(0).toUpperCase() || 'S'}
-                      </Text>
-                    </View>
-                    <View className="flex-col flex-1">
-                      <Text className="text-txt font-bold text-base" numberOfLines={1}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1, marginRight: 10 }}>
+                    <Avatar name={room.ownerName} size={38} />
+                    <View style={{ flex: 1 }}>
+                      <Text
+                        style={{
+                          fontFamily: font.nativeFamily.display,
+                          fontSize: 16,
+                          color: palette.txt,
+                        }}
+                        numberOfLines={1}
+                      >
                         {room.name}
                       </Text>
-                      <Text className="text-txt-60 text-xs">
-                        Hôte: {room.ownerName}
+                      <Text style={{ fontSize: 12, color: palette.inkSoft, marginTop: 2 }}>
+                        Par {room.ownerName} · {room.memberCount} membres
                       </Text>
                     </View>
                   </View>
 
-                  <View className="px-2.5 py-1 rounded-full bg-gold/15">
-                    <Text className="text-gold text-xs font-bold uppercase">
-                      #{room.code}
+                  <View
+                    style={{
+                      paddingHorizontal: 10,
+                      paddingVertical: 5,
+                      borderRadius: 9999,
+                      backgroundColor: room.hasActiveSession ? 'rgba(232, 166, 48, 0.15)' : palette.surface2,
+                      borderWidth: room.hasActiveSession ? 1 : 0,
+                      borderColor: palette.gold,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        fontSize: 11,
+                        fontWeight: '700',
+                        color: room.hasActiveSession ? palette.gold : palette.inkSoft,
+                      }}
+                    >
+                      {room.hasActiveSession ? '⚡ En cours' : `#${room.code}`}
                     </Text>
                   </View>
-                </View>
-
-                <View className="h-[1px] bg-line my-2.5" />
-
-                <View className="flex-row items-center justify-between">
-                  <View className="flex-row items-center">
-                    <Users size={14} color={inkAlpha.muted} />
-                    <Text className="text-txt-60 text-xs font-medium ml-1.5">
-                      {room.memberCount} membre{room.memberCount > 1 ? 's' : ''}
-                      {room.hasActiveSession ? ' · 🔴 Partie en cours' : ''}
-                    </Text>
-                  </View>
-
-                  <Text className="text-accent text-xs font-bold">
-                    Consulter →
-                  </Text>
                 </View>
               </TouchableOpacity>
             ))}
           </View>
         ) : (
-          <View className="bg-surface rounded-2xl border border-line p-6 mb-6 flex-col items-center justify-center">
-            <Text className="text-txt-60 text-sm text-center mb-3">
-              Aucun salon rejoint pour le moment.
+          <View
+            style={{
+              backgroundColor: palette.surface,
+              borderRadius: 22,
+              borderWidth: 1,
+              borderColor: palette.line,
+              padding: 24,
+              alignItems: 'center',
+            }}
+          >
+            <Text style={{ color: palette.inkSoft, fontSize: 13.5, textAlign: 'center' }}>
+              Tu n&apos;as pas encore rejoint de salon. Crée un salon ou rejoins-en un avec un code !
             </Text>
-            <TouchableOpacity
-              onPress={() => setShowJoinModal(true)}
-              activeOpacity={0.8}
-              className="px-5 py-2.5 rounded-full bg-buzz"
-            >
-              <Text className="text-white text-xs font-bold">
-                Rejoindre avec un code
-              </Text>
-            </TouchableOpacity>
           </View>
         )}
       </ScrollView>
 
-      {/* Join Code Modal */}
-      <Modal
-        visible={showJoinModal}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowJoinModal(false)}
-      >
-        <View className="flex-1 bg-black/50 flex-col items-center justify-center p-4">
-          <View className="w-full max-w-sm bg-surface border border-line rounded-3xl p-5 flex-col shadow-lg">
-            {/* Modal Header */}
-            <View className="flex-row items-center justify-between mb-4">
-              <Text className="text-txt font-bold text-xl">
+      {/* All Rooms Modal */}
+      <AllRoomsModal
+        visible={showAllRoomsModal}
+        onClose={() => setShowAllRoomsModal(false)}
+        rooms={recentRooms}
+      />
+
+      {/* Join Modal */}
+      <Modal visible={showJoinModal} transparent animationType="fade" onRequestClose={() => setShowJoinModal(false)}>
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.55)', justifyContent: 'center', padding: 20 }}>
+          <View
+            style={{
+              backgroundColor: palette.surface,
+              borderRadius: 28,
+              borderWidth: 1,
+              borderColor: palette.line,
+              padding: 20,
+              shadowColor: '#000',
+              shadowOpacity: 0.15,
+              shadowRadius: 20,
+              elevation: 6,
+            }}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+              <Text style={{ fontFamily: font.nativeFamily.display, fontSize: 20, color: palette.txt }}>
                 Rejoindre
               </Text>
               <TouchableOpacity
                 onPress={() => setShowJoinModal(false)}
                 activeOpacity={0.7}
-                className="w-8 h-8 rounded-full bg-surface2 flex-col items-center justify-center"
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: 16,
+                  backgroundColor: palette.surface2,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
               >
-                <X size={18} color={inkAlpha.soft} />
+                <X size={16} color={palette.txt} />
               </TouchableOpacity>
             </View>
 
-            {/* Subtitle instructions */}
-            <View className="bg-bg rounded-xl p-3 mb-4">
-              <Text className="text-txt-60 text-xs text-center leading-relaxed">
+            <View style={{ backgroundColor: palette.bg, borderRadius: 14, padding: 12, marginBottom: 14 }}>
+              <Text style={{ color: palette.inkSoft, fontSize: 12.5, textAlign: 'center', lineHeight: 18 }}>
                 Entre le code de la partie (6 chiffres) ou de la salle permanente pour la rejoindre.
               </Text>
             </View>
 
-            {/* Input Code */}
-            <Text className="text-txt font-semibold text-xs mb-2">
+            <Text style={{ color: palette.txt, fontWeight: '700', fontSize: 12, marginBottom: 6 }}>
               Code secret
             </Text>
+
             <TextInput
               value={code}
-              onChangeText={setCode}
+              onChangeText={(t) => setCode(t.toUpperCase().replace(/[^A-Z0-9-]/g, ''))}
               placeholder="Ex : ABC123"
-              placeholderTextColor={inkAlpha.faint}
+              placeholderTextColor={palette.inkSoft}
+              maxLength={20}
               autoCapitalize="characters"
               autoCorrect={false}
-              maxLength={20}
-              editable={!isJoining}
-              onSubmitEditing={() => handleJoinCode(code)}
-              className={`w-full bg-bg rounded-xl px-4 py-3 text-txt text-center font-bold text-xl tracking-widest border ${
-                joinError ? 'border-buzz' : 'border-line'
-              }`}
+              style={{
+                backgroundColor: palette.bg,
+                borderRadius: 14,
+                borderWidth: 1,
+                borderColor: joinError ? palette.bad : palette.line,
+                paddingVertical: 14,
+                paddingHorizontal: 16,
+                fontSize: 20,
+                fontFamily: font.nativeFamily.display,
+                color: palette.txt,
+                textAlign: 'center',
+                letterSpacing: 2,
+                marginBottom: joinError ? 8 : 16,
+              }}
             />
 
-            {/* Scan QR CTA */}
-            <TouchableOpacity
-              onPress={() => {
-                setShowJoinModal(false);
-                setShowScanner(true);
-              }}
-              activeOpacity={0.8}
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 8,
-                paddingVertical: 12,
-                borderRadius: 14,
-                backgroundColor: palette.surface2,
-                marginTop: 12,
-              }}
-            >
-              <QrCode size={18} color={palette.primary} />
-              <Text style={{ color: palette.txt, fontWeight: '700', fontSize: 13 }}>
-                Scanner un QR code
-              </Text>
-            </TouchableOpacity>
-
-            {/* Error Display */}
             {joinError ? (
-              <View className="mt-3 p-3 rounded-xl bg-buzz/10 border border-buzz/30 flex-row items-center">
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 14, paddingHorizontal: 4 }}>
                 <X size={14} color={palette.bad} />
-                <Text className="text-buzz text-xs font-semibold ml-2 flex-1">
+                <Text style={{ color: palette.bad, fontSize: 12, fontWeight: '600', flex: 1 }}>
                   {joinError}
                 </Text>
               </View>
             ) : null}
 
-            {/* Join CTA */}
             <TouchableOpacity
               onPress={() => handleJoinCode(code)}
               disabled={isJoining || !code.trim()}
-              activeOpacity={0.8}
-              className={`w-full py-3.5 rounded-full flex-row items-center justify-center mt-4 ${
-                isJoining || !code.trim()
-                  ? 'bg-surface2 opacity-60'
-                  : 'bg-buzz'
-              }`}
+              activeOpacity={0.85}
+              style={{
+                backgroundColor: isJoining || !code.trim() ? palette.surface2 : palette.primary,
+                paddingVertical: 14,
+                borderRadius: 9999,
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: 14,
+              }}
             >
               {isJoining ? (
-                <View className="flex-row items-center">
-                  <ActivityIndicator size="small" color="#FFFFFF" />
-                  <Text className="text-white font-bold text-sm ml-2">
-                    Connexion...
-                  </Text>
-                </View>
+                <ActivityIndicator size="small" color={palette.primaryInk} />
               ) : (
-                <Text className="text-white font-bold text-sm">
-                  Rejoindre avec ce code
+                <Text
+                  style={{
+                    color: isJoining || !code.trim() ? palette.inkSoft : palette.primaryInk,
+                    fontWeight: '700',
+                    fontSize: 14,
+                  }}
+                >
+                  Rejoindre
                 </Text>
               )}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => {
+                setShowJoinModal(false);
+                setShowScanner(true);
+              }}
+              activeOpacity={0.7}
+              style={{ alignItems: 'center', paddingVertical: 4 }}
+            >
+              <Text style={{ color: palette.primary, fontWeight: '700', fontSize: 13 }}>
+                ▦ Scanner un QR code
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
       </Modal>
 
-      {/* Native QR Scanner Modal */}
+      {/* QR Scanner Modal */}
       <QRScannerModal
         visible={showScanner}
         onClose={() => setShowScanner(false)}
-        onScan={(scannedCode) => {
+        onScan={async (scannedCode) => {
+          setShowScanner(false);
           setCode(scannedCode);
-          handleJoinCode(scannedCode);
+          setShowJoinModal(true);
         }}
       />
     </SafeAreaView>
