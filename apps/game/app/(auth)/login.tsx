@@ -14,7 +14,8 @@ import { Eye, EyeOff, User, Mail, Lock, ArrowRight, Sparkles, Crown } from 'luci
 import { useLoginForm } from '~/lib/hooks/useLoginForm';
 import { GoogleSignInButton } from '~/components/auth/GoogleSignInButton';
 import { AppleSignInButton } from '~/components/auth/AppleSignInButton';
-import { palette, inkAlpha } from '~/lib/theme/tokens';
+import { XalaatMark } from '~/components/shared/XalaatMark';
+import { palette, font, inkAlpha } from '~/lib/theme/tokens';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -40,37 +41,89 @@ export default function LoginScreen() {
   });
 
   return (
-    <SafeAreaView className="flex-1 bg-bg">
+    <SafeAreaView edges={['top', 'bottom']} style={{ flex: 1, backgroundColor: palette.bg }}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        className="flex-1"
+        style={{ flex: 1 }}
       >
         <ScrollView
-          contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }}
-          className="px-6 py-8"
+          contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', paddingHorizontal: 24, paddingVertical: 32 }}
           keyboardShouldPersistTaps="handled"
         >
           {/* Header Branding */}
-          <View className="flex-col items-center mb-8">
-            <View className="w-24 h-24 rounded-full bg-accent/15 flex-col items-center justify-center mb-4 border border-line">
-              <Sparkles size={44} color={palette.primary} />
+          <View style={{ alignItems: 'center', marginBottom: 28 }}>
+            <View
+              style={{
+                width: 72,
+                height: 72,
+                borderRadius: 22,
+                backgroundColor: palette.primary,
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: 12,
+                shadowColor: palette.primary,
+                shadowOpacity: 0.3,
+                shadowRadius: 10,
+                elevation: 4,
+              }}
+            >
+              <XalaatMark size={40} color={palette.primaryInk} accent={palette.gold} />
             </View>
 
-            <Text className="text-txt font-bold text-4xl mb-1 tracking-tight">
+            <Text
+              style={{
+                fontFamily: font.nativeFamily.display,
+                fontSize: 34,
+                lineHeight: 44,
+                letterSpacing: -0.5,
+                color: palette.txt,
+                paddingTop: 4,
+              }}
+            >
               Xalaat
             </Text>
 
-            <View className="flex-row items-center mt-2 px-4 py-1.5 rounded-full bg-gold/15 border border-gold/30">
-              <Crown size={14} color={palette.gold} />
-              <Text className="text-gold text-xs font-semibold ml-2 tracking-wide">
-                QUIZ BY MOUHADEV
-              </Text>
-            </View>
+            <Text
+              style={{
+                fontFamily: font.nativeFamily.serif,
+                fontStyle: 'italic',
+                fontSize: 15,
+                color: palette.inkSoft,
+                marginTop: 2,
+              }}
+            >
+              Quiz by MouhaDev · Le jeu de buzzer
+            </Text>
           </View>
 
           {/* Form Card */}
-          <View className="w-full max-w-md self-center bg-surface rounded-3xl p-6 border border-line shadow-md">
-            <Text className="text-txt text-2xl font-bold mb-6 text-center">
+          <View
+            style={{
+              width: '100%',
+              maxWidth: 420,
+              alignSelf: 'center',
+              backgroundColor: palette.surface,
+              borderRadius: 28,
+              padding: 24,
+              borderWidth: 1,
+              borderColor: palette.line,
+              shadowColor: '#000',
+              shadowOpacity: 0.06,
+              shadowRadius: 12,
+              elevation: 2,
+            }}
+          >
+            <Text
+              style={{
+                fontFamily: font.nativeFamily.display,
+                fontSize: 22,
+                lineHeight: 30,
+                color: palette.txt,
+                textAlign: 'center',
+                paddingTop: 2,
+                marginBottom: 20,
+              }}
+            >
               Connexion
             </Text>
 

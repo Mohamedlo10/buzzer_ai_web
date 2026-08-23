@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, TextInput, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ArrowLeft, HelpCircle, Mail, MessageSquare, CheckCircle, Send, Sparkles } from 'lucide-react-native';
-import { palette, inkAlpha } from '~/lib/theme/tokens';
+import { ArrowLeft, HelpCircle, Mail, MessageSquare, CheckCircle, Send } from 'lucide-react-native';
+import { palette, font, inkAlpha } from '~/lib/theme/tokens';
 import { notify } from '~/lib/ui/notify';
 
 export default function SupportScreen() {
@@ -29,30 +29,91 @@ export default function SupportScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-bg">
+    <SafeAreaView style={{ flex: 1, backgroundColor: palette.bg }}>
       {/* Top Bar */}
-      <View className="flex-row items-center px-6 py-4 border-b border-line bg-bg">
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          paddingHorizontal: 20,
+          paddingVertical: 12,
+          borderBottomWidth: 1,
+          borderBottomColor: palette.line,
+          backgroundColor: palette.bg,
+          gap: 12,
+        }}
+      >
         <TouchableOpacity
           onPress={() => router.back()}
           activeOpacity={0.7}
-          className="w-10 h-10 rounded-full bg-surface border border-line flex-row items-center justify-center mr-4"
+          style={{
+            width: 38,
+            height: 38,
+            borderRadius: 19,
+            backgroundColor: palette.surface,
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderWidth: 1,
+            borderColor: palette.line,
+          }}
         >
-          <ArrowLeft size={20} color={palette.txt} />
+          <ArrowLeft size={18} color={palette.txt} />
         </TouchableOpacity>
-        <Text className="text-txt font-bold text-xl font-display">Centre d&apos;aide & Support</Text>
+        <Text
+          style={{
+            fontFamily: font.nativeFamily.display,
+            fontSize: 20,
+            lineHeight: 26,
+            color: palette.txt,
+            paddingTop: 4,
+            flex: 1,
+          }}
+        >
+          Centre d&apos;aide & Support
+        </Text>
       </View>
 
-      <ScrollView className="flex-1 px-6 py-6" showsVerticalScrollIndicator={false}>
-        <View className="max-w-2xl self-center w-full pb-12">
+      <ScrollView style={{ flex: 1, paddingHorizontal: 20, paddingVertical: 20 }} showsVerticalScrollIndicator={false}>
+        <View style={{ maxWidth: 600, alignSelf: 'center', width: '100%', paddingBottom: 48 }}>
           {/* Header Badge */}
-          <View className="flex-col items-center mb-8">
-            <View className="w-16 h-16 rounded-2xl bg-accent/15 border border-accent/30 flex-col items-center justify-center mb-4">
+          <View style={{ alignItems: 'center', marginBottom: 28 }}>
+            <View
+              style={{
+                width: 64,
+                height: 64,
+                borderRadius: 20,
+                backgroundColor: palette.primary + '1A',
+                borderWidth: 1,
+                borderColor: palette.primary + '33',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: 14,
+              }}
+            >
               <HelpCircle size={32} color={palette.primary} />
             </View>
-            <Text className="text-txt font-bold text-2xl font-display text-center mb-2">
+            <Text
+              style={{
+                fontFamily: font.nativeFamily.display,
+                fontSize: 24,
+                lineHeight: 32,
+                color: palette.txt,
+                textAlign: 'center',
+                paddingTop: 2,
+                marginBottom: 6,
+              }}
+            >
               Comment pouvons-nous vous aider ?
             </Text>
-            <Text className="text-txt-60 text-sm text-center">
+            <Text
+              style={{
+                fontFamily: font.nativeFamily.serif,
+                fontStyle: 'italic',
+                fontSize: 14,
+                color: palette.inkSoft,
+                textAlign: 'center',
+              }}
+            >
               L&apos;équipe Xalaat est disponible pour répondre à vos questions.
             </Text>
           </View>

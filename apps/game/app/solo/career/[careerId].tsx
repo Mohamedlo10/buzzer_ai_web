@@ -24,7 +24,7 @@ import {
 import * as soloApi from '~/lib/api/solo';
 import { useSoloStore } from '~/stores/useSoloStore';
 import type { SoloCareerProgressResponse, LevelInfo } from '~/types/solo';
-import { palette } from '~/lib/theme/tokens';
+import { palette, font } from '~/lib/theme/tokens';
 import { notify, notifyApiError } from '~/lib/ui/notify';
 import { confirmAsync } from '~/lib/ui/confirm';
 
@@ -124,7 +124,7 @@ export default function CareerDetailScreen() {
         style={{
           flexDirection: 'row',
           alignItems: 'center',
-          paddingHorizontal: 16,
+          paddingHorizontal: 20,
           paddingVertical: 12,
           borderBottomWidth: 1,
           borderBottomColor: palette.line,
@@ -136,9 +136,9 @@ export default function CareerDetailScreen() {
           onPress={() => router.back()}
           activeOpacity={0.7}
           style={{
-            width: 40,
-            height: 40,
-            borderRadius: 20,
+            width: 38,
+            height: 38,
+            borderRadius: 19,
             backgroundColor: palette.surface,
             alignItems: 'center',
             justifyContent: 'center',
@@ -146,11 +146,20 @@ export default function CareerDetailScreen() {
             borderColor: palette.line,
           }}
         >
-          <ArrowLeft size={20} color={palette.txt} />
+          <ArrowLeft size={18} color={palette.txt} />
         </TouchableOpacity>
 
         <View style={{ flex: 1 }}>
-          <Text style={{ fontSize: 18, fontWeight: '800', color: palette.txt }} numberOfLines={1}>
+          <Text
+            style={{
+              fontFamily: font.nativeFamily.display,
+              fontSize: 18,
+              lineHeight: 24,
+              color: palette.txt,
+              paddingTop: 2,
+            }}
+            numberOfLines={1}
+          >
             {career.category}
           </Text>
           <Text style={{ fontSize: 12, color: palette.gold, fontWeight: '700' }}>

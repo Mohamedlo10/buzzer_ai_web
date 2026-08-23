@@ -11,7 +11,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, Play, DoorOpen, Users, Crown, Gamepad2, Share2, Copy, PenLine } from 'lucide-react-native';
 import { useLobbySession } from '~/lib/hooks/useLobbySession';
 import { useAppStateReconnect } from '~/lib/websocket';
-import { palette, inkAlpha } from '~/lib/theme/tokens';
+import { palette, font, inkAlpha } from '~/lib/theme/tokens';
 
 export default function LobbyScreen() {
   const router = useRouter();
@@ -43,7 +43,16 @@ export default function LobbyScreen() {
         <View className="w-16 h-16 rounded-full bg-accent/15 flex-col items-center justify-center mb-4 border border-line">
           <Gamepad2 size={32} color={palette.primary} />
         </View>
-        <Text className="text-txt font-bold text-base tracking-widest">
+        <Text
+          style={{
+            fontFamily: font.nativeFamily.display,
+            fontSize: 16,
+            lineHeight: 22,
+            color: palette.txt,
+            paddingTop: 2,
+            letterSpacing: 1,
+          }}
+        >
           CHARGEMENT DU LOBBY...
         </Text>
       </SafeAreaView>
@@ -69,7 +78,15 @@ export default function LobbyScreen() {
         </TouchableOpacity>
 
         <View className="flex-col items-center">
-          <Text className="text-txt font-bold text-lg">
+          <Text
+            style={{
+              fontFamily: font.nativeFamily.display,
+              fontSize: 18,
+              lineHeight: 24,
+              color: palette.txt,
+              paddingTop: 2,
+            }}
+          >
             Lobby #{code}
           </Text>
           <View className="flex-row items-center mt-0.5">
@@ -90,7 +107,17 @@ export default function LobbyScreen() {
           <Text className="text-txt-40 text-xs font-bold tracking-widest uppercase mb-1">
             Code de la partie
           </Text>
-          <Text className="text-accent text-3xl font-bold tracking-widest mb-3 select-all">
+          <Text
+            style={{
+              fontFamily: font.nativeFamily.display,
+              fontSize: 32,
+              lineHeight: 40,
+              color: palette.primary,
+              letterSpacing: 2,
+              paddingTop: 4,
+              marginBottom: 12,
+            }}
+          >
             {code}
           </Text>
 

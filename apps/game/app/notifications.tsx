@@ -26,7 +26,7 @@ import * as friendsApi from '~/lib/api/friends';
 import * as invitationsApi from '~/lib/api/invitations';
 import * as roomsApi from '~/lib/api/rooms';
 import { notify, notifyApiError } from '~/lib/ui/notify';
-import { palette } from '~/lib/theme/tokens';
+import { palette, font } from '~/lib/theme/tokens';
 import { Avatar } from '~/components/shared/Avatar';
 
 export default function NotificationsScreen() {
@@ -101,7 +101,7 @@ export default function NotificationsScreen() {
         style={{
           flexDirection: 'row',
           alignItems: 'center',
-          paddingHorizontal: 16,
+          paddingHorizontal: 20,
           paddingVertical: 12,
           borderBottomWidth: 1,
           borderBottomColor: palette.line,
@@ -113,9 +113,9 @@ export default function NotificationsScreen() {
           onPress={() => router.back()}
           activeOpacity={0.7}
           style={{
-            width: 40,
-            height: 40,
-            borderRadius: 20,
+            width: 38,
+            height: 38,
+            borderRadius: 19,
             backgroundColor: palette.surface,
             alignItems: 'center',
             justifyContent: 'center',
@@ -127,7 +127,15 @@ export default function NotificationsScreen() {
         </TouchableOpacity>
 
         <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-          <Text style={{ fontSize: 20, fontWeight: '800', color: palette.txt }}>
+          <Text
+            style={{
+              fontFamily: font.nativeFamily.display,
+              fontSize: 22,
+              lineHeight: 28,
+              color: palette.txt,
+              paddingTop: 4,
+            }}
+          >
             Notifications
           </Text>
           {data && data.total > 0 && (

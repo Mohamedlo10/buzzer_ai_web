@@ -21,7 +21,7 @@ import {
 
 import * as soloApi from '~/lib/api/solo';
 import type { SoloTrainingPlanResponse } from '~/types/solo';
-import { palette } from '~/lib/theme/tokens';
+import { palette, font } from '~/lib/theme/tokens';
 
 export default function TrainingHubScreen() {
   const router = useRouter();
@@ -65,7 +65,7 @@ export default function TrainingHubScreen() {
         style={{
           flexDirection: 'row',
           alignItems: 'center',
-          paddingHorizontal: 16,
+          paddingHorizontal: 20,
           paddingVertical: 12,
           borderBottomWidth: 1,
           borderBottomColor: palette.line,
@@ -77,9 +77,9 @@ export default function TrainingHubScreen() {
           onPress={() => router.back()}
           activeOpacity={0.7}
           style={{
-            width: 40,
-            height: 40,
-            borderRadius: 20,
+            width: 38,
+            height: 38,
+            borderRadius: 19,
             backgroundColor: palette.surface,
             alignItems: 'center',
             justifyContent: 'center',
@@ -87,10 +87,19 @@ export default function TrainingHubScreen() {
             borderColor: palette.line,
           }}
         >
-          <ArrowLeft size={20} color={palette.txt} />
+          <ArrowLeft size={18} color={palette.txt} />
         </TouchableOpacity>
 
-        <Text style={{ fontSize: 20, fontWeight: '800', color: palette.txt, flex: 1 }}>
+        <Text
+          style={{
+            fontFamily: font.nativeFamily.display,
+            fontSize: 22,
+            lineHeight: 28,
+            color: palette.txt,
+            paddingTop: 4,
+            flex: 1,
+          }}
+        >
           Entraînement
         </Text>
       </View>

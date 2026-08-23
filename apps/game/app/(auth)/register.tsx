@@ -14,7 +14,8 @@ import { Eye, EyeOff, User, Mail, Lock, ArrowRight, Sparkles, Crown } from 'luci
 import { useRegisterForm } from '~/lib/hooks/useRegisterForm';
 import { GoogleSignInButton } from '~/components/auth/GoogleSignInButton';
 import { AppleSignInButton } from '~/components/auth/AppleSignInButton';
-import { palette, inkAlpha } from '~/lib/theme/tokens';
+import { XalaatMark } from '~/components/shared/XalaatMark';
+import { palette, font, inkAlpha } from '~/lib/theme/tokens';
 
 export default function RegisterScreen() {
   const router = useRouter();
@@ -41,37 +42,89 @@ export default function RegisterScreen() {
   });
 
   return (
-    <SafeAreaView className="flex-1 bg-bg">
+    <SafeAreaView edges={['top', 'bottom']} style={{ flex: 1, backgroundColor: palette.bg }}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        className="flex-1"
+        style={{ flex: 1 }}
       >
         <ScrollView
-          contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }}
-          className="px-6 py-8"
+          contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', paddingHorizontal: 24, paddingVertical: 32 }}
           keyboardShouldPersistTaps="handled"
         >
           {/* Header Branding */}
-          <View className="flex-col items-center mb-6">
-            <View className="w-20 h-20 rounded-full bg-accent/15 flex-col items-center justify-center mb-3 border border-line">
-              <Sparkles size={36} color={palette.primary} />
+          <View style={{ alignItems: 'center', marginBottom: 24 }}>
+            <View
+              style={{
+                width: 68,
+                height: 68,
+                borderRadius: 20,
+                backgroundColor: palette.primary,
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: 10,
+                shadowColor: palette.primary,
+                shadowOpacity: 0.3,
+                shadowRadius: 10,
+                elevation: 4,
+              }}
+            >
+              <XalaatMark size={36} color={palette.primaryInk} accent={palette.gold} />
             </View>
 
-            <Text className="text-txt font-bold text-3xl mb-1 tracking-tight">
+            <Text
+              style={{
+                fontFamily: font.nativeFamily.display,
+                fontSize: 32,
+                lineHeight: 42,
+                letterSpacing: -0.5,
+                color: palette.txt,
+                paddingTop: 4,
+              }}
+            >
               Xalaat
             </Text>
 
-            <View className="flex-row items-center mt-1 px-3 py-1 rounded-full bg-gold/15 border border-gold/30">
-              <Crown size={12} color={palette.gold} />
-              <Text className="text-gold text-xs font-semibold ml-1.5 tracking-wide">
-                QUIZ BY MOUHADEV
-              </Text>
-            </View>
+            <Text
+              style={{
+                fontFamily: font.nativeFamily.serif,
+                fontStyle: 'italic',
+                fontSize: 14.5,
+                color: palette.inkSoft,
+                marginTop: 2,
+              }}
+            >
+              Rejoins la communauté des joueurs de quiz
+            </Text>
           </View>
 
           {/* Form Card */}
-          <View className="w-full max-w-md self-center bg-surface rounded-3xl p-6 border border-line shadow-md">
-            <Text className="text-txt text-2xl font-bold mb-6 text-center">
+          <View
+            style={{
+              width: '100%',
+              maxWidth: 420,
+              alignSelf: 'center',
+              backgroundColor: palette.surface,
+              borderRadius: 28,
+              padding: 24,
+              borderWidth: 1,
+              borderColor: palette.line,
+              shadowColor: '#000',
+              shadowOpacity: 0.06,
+              shadowRadius: 12,
+              elevation: 2,
+            }}
+          >
+            <Text
+              style={{
+                fontFamily: font.nativeFamily.display,
+                fontSize: 22,
+                lineHeight: 30,
+                color: palette.txt,
+                textAlign: 'center',
+                paddingTop: 2,
+                marginBottom: 20,
+              }}
+            >
               Créer un compte
             </Text>
 

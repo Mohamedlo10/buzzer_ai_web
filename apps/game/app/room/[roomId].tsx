@@ -23,7 +23,7 @@ import {
   Users,
 } from 'lucide-react-native';
 import { useRoomDetail } from '~/lib/hooks/useRoomDetail';
-import { palette, inkAlpha } from '~/lib/theme/tokens';
+import { palette, font, inkAlpha } from '~/lib/theme/tokens';
 
 export default function RoomDetailScreen() {
   const router = useRouter();
@@ -98,7 +98,19 @@ export default function RoomDetailScreen() {
           <ChevronLeft size={20} color={palette.primary} />
         </TouchableOpacity>
 
-        <Text className="text-txt font-bold text-lg flex-1 mx-3 text-center" numberOfLines={1}>
+        <Text
+          style={{
+            fontFamily: font.nativeFamily.display,
+            fontSize: 18,
+            lineHeight: 24,
+            color: palette.txt,
+            paddingTop: 2,
+            flex: 1,
+            marginHorizontal: 12,
+            textAlign: 'center',
+          }}
+          numberOfLines={1}
+        >
           {room.name}
         </Text>
 
@@ -122,7 +134,17 @@ export default function RoomDetailScreen() {
           <Text className="text-txt-40 text-xs font-bold tracking-widest uppercase mb-1">
             Code du salon
           </Text>
-          <Text className="text-accent text-3xl font-bold tracking-widest mb-3">
+          <Text
+            style={{
+              fontFamily: font.nativeFamily.display,
+              fontSize: 32,
+              lineHeight: 40,
+              color: palette.primary,
+              letterSpacing: 2,
+              paddingTop: 4,
+              marginBottom: 12,
+            }}
+          >
             #{room.code}
           </Text>
 

@@ -2,9 +2,10 @@ import { useState } from 'react';
 import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Wrench, RefreshCw, Sparkles } from 'lucide-react-native';
+import { Wrench, RefreshCw } from 'lucide-react-native';
 import { apiClient } from '@xalaat/core';
-import { palette } from '~/lib/theme/tokens';
+import { palette, font } from '~/lib/theme/tokens';
+import { XalaatMark } from '~/components/shared/XalaatMark';
 
 export default function MaintenanceScreen() {
   const router = useRouter();
@@ -25,24 +26,84 @@ export default function MaintenanceScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-bg">
-      <View className="flex-1 flex-col items-center justify-center px-6 text-center">
+    <SafeAreaView style={{ flex: 1, backgroundColor: palette.bg }}>
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24 }}>
         {/* Header Logo */}
-        <View className="flex-col items-center mb-10">
-          <View className="w-16 h-16 rounded-full bg-accent/15 flex-col items-center justify-center mb-3 border border-line">
-            <Sparkles size={28} color={palette.primary} />
+        <View style={{ alignItems: 'center', marginBottom: 32 }}>
+          <View
+            style={{
+              width: 64,
+              height: 64,
+              borderRadius: 20,
+              backgroundColor: palette.primary,
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginBottom: 10,
+              shadowColor: palette.primary,
+              shadowOpacity: 0.3,
+              shadowRadius: 10,
+              elevation: 4,
+            }}
+          >
+            <XalaatMark size={34} color={palette.primaryInk} accent={palette.gold} />
           </View>
-          <Text className="text-txt font-bold text-2xl font-display">Xalaat</Text>
+          <Text
+            style={{
+              fontFamily: font.nativeFamily.display,
+              fontSize: 28,
+              lineHeight: 36,
+              color: palette.txt,
+              paddingTop: 4,
+            }}
+          >
+            Xalaat
+          </Text>
         </View>
 
         {/* Maintenance Card */}
-        <View className="w-full max-w-md bg-surface rounded-3xl p-8 border border-line flex-col items-center text-center shadow-md">
-          <View className="w-20 h-20 rounded-2xl bg-gold/15 border border-gold/30 flex-col items-center justify-center mb-6">
-            <Wrench size={40} color={palette.gold} />
+        <View
+          style={{
+            width: '100%',
+            maxWidth: 420,
+            backgroundColor: palette.surface,
+            borderRadius: 28,
+            padding: 28,
+            borderWidth: 1,
+            borderColor: palette.line,
+            alignItems: 'center',
+            shadowColor: '#000',
+            shadowOpacity: 0.06,
+            shadowRadius: 12,
+            elevation: 2,
+          }}
+        >
+          <View
+            style={{
+              width: 64,
+              height: 64,
+              borderRadius: 20,
+              backgroundColor: palette.gold + '26',
+              borderWidth: 1,
+              borderColor: palette.gold + '4D',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginBottom: 16,
+            }}
+          >
+            <Wrench size={32} color={palette.gold} />
           </View>
 
-          <h1 className="hidden">Maintenance en cours</h1>
-          <Text className="text-txt font-bold text-2xl mb-3 font-display text-center">
+          <Text
+            style={{
+              fontFamily: font.nativeFamily.display,
+              fontSize: 22,
+              lineHeight: 30,
+              color: palette.txt,
+              textAlign: 'center',
+              paddingTop: 2,
+              marginBottom: 10,
+            }}
+          >
             Maintenance en cours
           </Text>
 

@@ -25,7 +25,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import * as friendsApi from '~/lib/api/friends';
 import { useFriendStore } from '~/stores/useFriendStore';
 import type { FriendshipStatus } from '~/types/api';
-import { palette } from '~/lib/theme/tokens';
+import { palette, font } from '~/lib/theme/tokens';
 import { Avatar } from '~/components/shared/Avatar';
 import { notify, notifyApiError } from '~/lib/ui/notify';
 import { confirmAsync } from '~/lib/ui/confirm';
@@ -133,7 +133,7 @@ export default function UserProfileScreen() {
         style={{
           flexDirection: 'row',
           alignItems: 'center',
-          paddingHorizontal: 16,
+          paddingHorizontal: 20,
           paddingVertical: 12,
           borderBottomWidth: 1,
           borderBottomColor: palette.line,
@@ -145,9 +145,9 @@ export default function UserProfileScreen() {
           onPress={() => router.back()}
           activeOpacity={0.7}
           style={{
-            width: 40,
-            height: 40,
-            borderRadius: 20,
+            width: 38,
+            height: 38,
+            borderRadius: 19,
             backgroundColor: palette.surface,
             alignItems: 'center',
             justifyContent: 'center',
@@ -155,10 +155,19 @@ export default function UserProfileScreen() {
             borderColor: palette.line,
           }}
         >
-          <ArrowLeft size={20} color={palette.txt} />
+          <ArrowLeft size={18} color={palette.txt} />
         </TouchableOpacity>
 
-        <Text style={{ fontSize: 18, fontWeight: '700', color: palette.txt, flex: 1 }}>
+        <Text
+          style={{
+            fontFamily: font.nativeFamily.display,
+            fontSize: 20,
+            lineHeight: 26,
+            color: palette.txt,
+            paddingTop: 4,
+            flex: 1,
+          }}
+        >
           Profil joueur
         </Text>
       </View>
@@ -182,7 +191,15 @@ export default function UserProfileScreen() {
           <Avatar name={profile.username} avatarUrl={profile.avatarUrl} size={88} hue={30} />
 
           <View style={{ alignItems: 'center', gap: 2 }}>
-            <Text style={{ fontSize: 22, fontWeight: '800', color: palette.txt }}>
+            <Text
+              style={{
+                fontFamily: font.nativeFamily.display,
+                fontSize: 22,
+                lineHeight: 30,
+                color: palette.txt,
+                paddingTop: 4,
+              }}
+            >
               {profile.username}
             </Text>
           </View>

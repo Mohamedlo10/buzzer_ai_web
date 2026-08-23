@@ -20,7 +20,7 @@ import {
 
 import * as soloApi from '~/lib/api/solo';
 import type { SoloCareerProgressResponse } from '~/types/solo';
-import { palette } from '~/lib/theme/tokens';
+import { palette, font } from '~/lib/theme/tokens';
 import { notify, notifyApiError } from '~/lib/ui/notify';
 import { confirmAsync } from '~/lib/ui/confirm';
 
@@ -78,7 +78,7 @@ export default function CareerListScreen() {
         style={{
           flexDirection: 'row',
           alignItems: 'center',
-          paddingHorizontal: 16,
+          paddingHorizontal: 20,
           paddingVertical: 12,
           borderBottomWidth: 1,
           borderBottomColor: palette.line,
@@ -90,9 +90,9 @@ export default function CareerListScreen() {
           onPress={() => router.back()}
           activeOpacity={0.7}
           style={{
-            width: 40,
-            height: 40,
-            borderRadius: 20,
+            width: 38,
+            height: 38,
+            borderRadius: 19,
             backgroundColor: palette.surface,
             alignItems: 'center',
             justifyContent: 'center',
@@ -100,10 +100,19 @@ export default function CareerListScreen() {
             borderColor: palette.line,
           }}
         >
-          <ArrowLeft size={20} color={palette.txt} />
+          <ArrowLeft size={18} color={palette.txt} />
         </TouchableOpacity>
 
-        <Text style={{ fontSize: 20, fontWeight: '800', color: palette.txt, flex: 1 }}>
+        <Text
+          style={{
+            fontFamily: font.nativeFamily.display,
+            fontSize: 22,
+            lineHeight: 28,
+            color: palette.txt,
+            paddingTop: 4,
+            flex: 1,
+          }}
+        >
           Mes Carrières
         </Text>
 
@@ -275,7 +284,15 @@ export default function CareerListScreen() {
                 </View>
 
                 <View>
-                  <Text style={{ fontSize: 17, fontWeight: '800', color: palette.txt }}>
+                  <Text
+                    style={{
+                      fontFamily: font.nativeFamily.display,
+                      fontSize: 17,
+                      lineHeight: 22,
+                      color: palette.txt,
+                      paddingTop: 2,
+                    }}
+                  >
                     {career.category}
                   </Text>
                   <Text style={{ fontSize: 12, color: palette.gold, fontWeight: '700', marginTop: 2 }}>

@@ -13,7 +13,8 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Mail, ArrowLeft, CheckCircle, Sparkles } from 'lucide-react-native';
 import { authApi } from '@xalaat/core';
-import { palette, inkAlpha } from '~/lib/theme/tokens';
+import { palette, font, inkAlpha } from '~/lib/theme/tokens';
+import { XalaatMark } from '~/components/shared/XalaatMark';
 
 export default function ForgotPasswordScreen() {
   const router = useRouter();
@@ -47,45 +48,100 @@ export default function ForgotPasswordScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-bg">
+    <SafeAreaView edges={['top', 'bottom']} style={{ flex: 1, backgroundColor: palette.bg }}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        className="flex-1"
+        style={{ flex: 1 }}
       >
         <ScrollView
-          contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }}
-          className="px-6 py-8"
+          contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', paddingHorizontal: 24, paddingVertical: 32 }}
           keyboardShouldPersistTaps="handled"
         >
           {/* Header Branding */}
-          <View className="flex-col items-center mb-8">
-            <View className="w-20 h-20 rounded-full bg-accent/15 flex-col items-center justify-center mb-3 border border-line">
-              <Sparkles size={36} color={palette.primary} />
+          <View style={{ alignItems: 'center', marginBottom: 28 }}>
+            <View
+              style={{
+                width: 68,
+                height: 68,
+                borderRadius: 20,
+                backgroundColor: palette.primary,
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: 10,
+                shadowColor: palette.primary,
+                shadowOpacity: 0.3,
+                shadowRadius: 10,
+                elevation: 4,
+              }}
+            >
+              <XalaatMark size={36} color={palette.primaryInk} accent={palette.gold} />
             </View>
-            <Text className="text-txt font-bold text-3xl mb-1 tracking-tight font-display">
+            <Text
+              style={{
+                fontFamily: font.nativeFamily.display,
+                fontSize: 32,
+                lineHeight: 42,
+                letterSpacing: -0.5,
+                color: palette.txt,
+                paddingTop: 4,
+              }}
+            >
               Xalaat
             </Text>
           </View>
 
           {/* Form Card */}
-          <View className="w-full max-w-md self-center bg-surface rounded-3xl p-6 border border-line shadow-md">
+          <View
+            style={{
+              width: '100%',
+              maxWidth: 420,
+              alignSelf: 'center',
+              backgroundColor: palette.surface,
+              borderRadius: 28,
+              padding: 24,
+              borderWidth: 1,
+              borderColor: palette.line,
+              shadowColor: '#000',
+              shadowOpacity: 0.06,
+              shadowRadius: 12,
+              elevation: 2,
+            }}
+          >
             <TouchableOpacity
               onPress={() => router.back()}
               activeOpacity={0.7}
-              className="flex-row items-center gap-2 mb-6"
+              style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 20 }}
             >
               <ArrowLeft size={18} color={palette.txt} />
-              <Text className="text-txt-60 text-sm font-semibold">Retour</Text>
+              <Text style={{ color: palette.inkSoft, fontSize: 13, fontWeight: '600' }}>Retour</Text>
             </TouchableOpacity>
 
             {!submitted ? (
               <>
-                <View className="w-14 h-14 rounded-2xl bg-accent/15 border border-accent/30 flex-col items-center justify-center mb-5">
-                  <Mail size={28} color={palette.primary} />
+                <View
+                  style={{
+                    width: 48,
+                    height: 48,
+                    borderRadius: 16,
+                    backgroundColor: palette.primary + '1A',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginBottom: 16,
+                  }}
+                >
+                  <Mail size={24} color={palette.primary} />
                 </View>
 
-                <h1 className="hidden">Mot de passe oublié</h1>
-                <Text className="text-txt font-bold text-2xl mb-2 font-display">
+                <Text
+                  style={{
+                    fontFamily: font.nativeFamily.display,
+                    fontSize: 22,
+                    lineHeight: 30,
+                    color: palette.txt,
+                    paddingTop: 2,
+                    marginBottom: 8,
+                  }}
+                >
                   Mot de passe oublié ?
                 </Text>
                 <Text className="text-txt-60 text-sm mb-6 leading-relaxed">

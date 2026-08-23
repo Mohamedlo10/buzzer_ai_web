@@ -4,7 +4,8 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Zap, Users, Trophy, Brain, Target, ArrowRight, ChevronRight, Crown, Sparkles } from 'lucide-react-native';
 import { appStorage } from '~/lib/utils/storage';
-import { palette } from '~/lib/theme/tokens';
+import { palette, font } from '~/lib/theme/tokens';
+import { XalaatMark } from '~/components/shared/XalaatMark';
 
 interface Slide {
   id: string;
@@ -90,44 +91,109 @@ export default function OnboardingScreen() {
   const isLast = currentIndex === slides.length - 1;
 
   return (
-    <SafeAreaView className="flex-1 bg-bg">
-      <View className="flex-1 flex-col justify-between p-6">
+    <SafeAreaView style={{ flex: 1, backgroundColor: palette.bg }}>
+      <View style={{ flex: 1, justifyContent: 'space-between', padding: 24 }}>
         {/* Header */}
-        <View className="flex-row items-center justify-between">
-          <View className="flex-row items-center gap-2">
-            <View className="w-8 h-8 rounded-full bg-accent/15 flex-row items-center justify-center border border-line">
-              <Sparkles size={16} color={palette.primary} />
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+            <View
+              style={{
+                width: 34,
+                height: 34,
+                borderRadius: 10,
+                backgroundColor: palette.primary,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <XalaatMark size={18} color={palette.primaryInk} accent={palette.gold} />
             </View>
-            <Text className="text-txt font-bold text-lg font-display">Xalaat</Text>
+            <Text
+              style={{
+                fontFamily: font.nativeFamily.display,
+                fontSize: 18,
+                lineHeight: 22,
+                color: palette.txt,
+                paddingTop: 2,
+              }}
+            >
+              Xalaat
+            </Text>
           </View>
 
           <TouchableOpacity
             onPress={() => goTo('/(tabs)/rooms')}
             activeOpacity={0.7}
-            className="px-3 py-1.5 rounded-full bg-surface border border-line"
+            style={{
+              paddingHorizontal: 14,
+              paddingVertical: 6,
+              borderRadius: 9999,
+              backgroundColor: palette.surface,
+              borderWidth: 1,
+              borderColor: palette.line,
+            }}
           >
-            <Text className="text-txt-60 text-xs font-semibold">Passer</Text>
+            <Text style={{ color: palette.inkSoft, fontSize: 12, fontWeight: '600' }}>Passer</Text>
           </TouchableOpacity>
         </View>
 
         {/* Slide Card Hero */}
-        <View className="flex-col items-center my-auto py-6">
+        <View style={{ alignItems: 'center', marginVertical: 'auto', paddingVertical: 20 }}>
           <View
-            className="w-32 h-32 rounded-3xl flex-col items-center justify-center mb-8 border border-line shadow-sm"
-            style={{ backgroundColor: currentSlide.accentBg }}
+            style={{
+              width: 120,
+              height: 120,
+              borderRadius: 28,
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginBottom: 24,
+              backgroundColor: currentSlide.accentBg,
+              borderWidth: 1,
+              borderColor: palette.line,
+              shadowColor: '#000',
+              shadowOpacity: 0.05,
+              shadowRadius: 8,
+              elevation: 2,
+            }}
           >
             {currentSlide.icon}
           </View>
 
-          <Text className="text-txt-40 text-xs font-bold uppercase tracking-widest mb-2">
+          <Text
+            style={{
+              fontFamily: font.nativeFamily.serif,
+              fontStyle: 'italic',
+              fontSize: 16,
+              color: palette.primary,
+              marginBottom: 6,
+            }}
+          >
             {currentSlide.subtitle}
           </Text>
 
-          <Text className="text-txt font-bold text-3xl text-center mb-4 font-display">
+          <Text
+            style={{
+              fontFamily: font.nativeFamily.display,
+              fontSize: 28,
+              lineHeight: 36,
+              color: palette.txt,
+              textAlign: 'center',
+              paddingTop: 4,
+              marginBottom: 12,
+            }}
+          >
             {currentSlide.title}
           </Text>
 
-          <Text className="text-txt-60 text-base text-center leading-relaxed max-w-xs">
+          <Text
+            style={{
+              fontSize: 14.5,
+              color: palette.inkSoft,
+              textAlign: 'center',
+              lineHeight: 22,
+              maxWidth: 300,
+            }}
+          >
             {currentSlide.description}
           </Text>
         </View>

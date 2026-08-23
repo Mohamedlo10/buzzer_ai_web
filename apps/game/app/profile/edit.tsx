@@ -22,7 +22,7 @@ import { useMutation } from '@tanstack/react-query';
 import { useAuthStore } from '~/stores/useAuthStore';
 import * as usersApi from '~/lib/api/users';
 import { AVATAR_STYLES, AVATAR_SEEDS, getAvatarUrl } from '~/lib/utils/avatar';
-import { palette } from '~/lib/theme/tokens';
+import { palette, font } from '~/lib/theme/tokens';
 import { Avatar } from '~/components/shared/Avatar';
 import { GoogleSignInButton } from '~/components/auth/GoogleSignInButton';
 import { notify, notifyApiError } from '~/lib/ui/notify';
@@ -99,7 +99,7 @@ export default function EditProfileScreen() {
         style={{
           flexDirection: 'row',
           alignItems: 'center',
-          paddingHorizontal: 16,
+          paddingHorizontal: 20,
           paddingVertical: 12,
           borderBottomWidth: 1,
           borderBottomColor: palette.line,
@@ -111,9 +111,9 @@ export default function EditProfileScreen() {
           onPress={() => router.back()}
           activeOpacity={0.7}
           style={{
-            width: 40,
-            height: 40,
-            borderRadius: 20,
+            width: 38,
+            height: 38,
+            borderRadius: 19,
             backgroundColor: palette.surface,
             alignItems: 'center',
             justifyContent: 'center',
@@ -121,11 +121,20 @@ export default function EditProfileScreen() {
             borderColor: palette.line,
           }}
         >
-          <ArrowLeft size={20} color={palette.txt} />
+          <ArrowLeft size={18} color={palette.txt} />
         </TouchableOpacity>
 
-        <Text style={{ fontSize: 18, fontWeight: '700', color: palette.txt, flex: 1 }}>
-          Modifier mon profil
+        <Text
+          style={{
+            fontFamily: font.nativeFamily.display,
+            fontSize: 20,
+            lineHeight: 26,
+            color: palette.txt,
+            paddingTop: 4,
+            flex: 1,
+          }}
+        >
+          Modifier le profil
         </Text>
 
         <TouchableOpacity

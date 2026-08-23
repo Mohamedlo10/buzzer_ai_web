@@ -18,7 +18,7 @@ import {
 } from 'lucide-react-native';
 
 import * as soloApi from '~/lib/api/solo';
-import { palette } from '~/lib/theme/tokens';
+import { palette, font } from '~/lib/theme/tokens';
 import { notify, notifyApiError } from '~/lib/ui/notify';
 
 export default function NewCareerScreen() {
@@ -57,7 +57,7 @@ export default function NewCareerScreen() {
         style={{
           flexDirection: 'row',
           alignItems: 'center',
-          paddingHorizontal: 16,
+          paddingHorizontal: 20,
           paddingVertical: 12,
           borderBottomWidth: 1,
           borderBottomColor: palette.line,
@@ -69,9 +69,9 @@ export default function NewCareerScreen() {
           onPress={() => router.back()}
           activeOpacity={0.7}
           style={{
-            width: 40,
-            height: 40,
-            borderRadius: 20,
+            width: 38,
+            height: 38,
+            borderRadius: 19,
             backgroundColor: palette.surface,
             alignItems: 'center',
             justifyContent: 'center',
@@ -79,10 +79,19 @@ export default function NewCareerScreen() {
             borderColor: palette.line,
           }}
         >
-          <ArrowLeft size={20} color={palette.txt} />
+          <ArrowLeft size={18} color={palette.txt} />
         </TouchableOpacity>
 
-        <Text style={{ fontSize: 20, fontWeight: '800', color: palette.txt, flex: 1 }}>
+        <Text
+          style={{
+            fontFamily: font.nativeFamily.display,
+            fontSize: 22,
+            lineHeight: 28,
+            color: palette.txt,
+            paddingTop: 4,
+            flex: 1,
+          }}
+        >
           Nouvelle Carrière
         </Text>
       </View>
@@ -115,7 +124,15 @@ export default function NewCareerScreen() {
             <Trophy size={22} color={palette.gold} />
           </View>
 
-          <Text style={{ fontSize: 17, fontWeight: '800', color: palette.txt }}>
+          <Text
+            style={{
+              fontFamily: font.nativeFamily.display,
+              fontSize: 17,
+              lineHeight: 22,
+              color: palette.txt,
+              paddingTop: 2,
+            }}
+          >
             Règles du Mode Carrière
           </Text>
 
