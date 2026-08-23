@@ -115,12 +115,12 @@ concentre presque tout le code incompatible RN (tables, recharts).
   - `profile/edit` contient un upload d'avatar
   - Fini quand : modifier son profil et son avatar fonctionne
 
-- [ ] **5.3** — Mode solo : hub, career, training, `solo/game`, `solo/results`
+- [x] **5.3** — Mode solo : hub, career, training, `solo/game`, `solo/results`
   - 8 pages sous `(tabs)/solo/` + 2 hors onglets
   - Réf. : `SOLO_MODE_FRONTEND_GUIDE.md` à la racine du projet
   - Fini quand : une partie solo se joue de bout en bout
 
-- [ ] **5.4** — Capacités natives *(groupe TOUTES les dépendances natives ici)*
+- [x] **5.4** — Capacités natives *(groupe TOUTES les dépendances natives ici)*
   - `QRScannerModal` : `getUserMedia` + `<canvas>` + `jsqr` → `expo-camera` `CameraView`
     avec `onBarcodeScanned`. Le résultat sera **plus court** (~40 l. contre 196).
   - `QRCodeModal` : `navigator.share` / `clipboard` → `expo-sharing` / `expo-clipboard`

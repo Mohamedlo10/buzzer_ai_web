@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   View,
   Text,
@@ -13,9 +14,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { X, Plus, ArrowRight, Zap, Users, Trophy, QrCode } from 'lucide-react-native';
 import { useRoomsData } from '~/lib/hooks/useRoomsData';
 import { palette, inkAlpha } from '~/lib/theme/tokens';
+import { QRScannerModal } from '~/components/shared/QRScannerModal';
 
 export default function RoomsScreen() {
   const router = useRouter();
+  const [showScanner, setShowScanner] = useState(false);
   const {
     data,
     isLoading,
@@ -332,6 +335,30 @@ export default function RoomsScreen() {
               }`}
             />
 
+            {/* Scan QR CTA */}
+            <TouchableOpacity
+              onPress={() => {
+                setShowJoinModal(false);
+                setShowScanner(true);
+              }}
+              activeOpacity={0.8}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 8,
+                paddingVertical: 12,
+                borderRadius: 14,
+                backgroundColor: palette.surface2,
+                marginTop: 12,
+              }}
+            >
+              <QrCode size={18} color={palette.primary} />
+              <Text style={{ color: palette.txt, fontWeight: '700', fontSize: 13 }}>
+                Scanner un QR code
+              </Text>
+            </TouchableOpacity>
+
             {/* Error Display */}
             {joinError ? (
               <View className="mt-3 p-3 rounded-xl bg-buzz/10 border border-buzz/30 flex-row items-center">
@@ -347,7 +374,7 @@ export default function RoomsScreen() {
               onPress={() => handleJoinCode(code)}
               disabled={isJoining || !code.trim()}
               activeOpacity={0.8}
-              className={`w-full py-3.5 rounded-full flex-row items-center justify-center mt-5 ${
+              className={`w-full py-3.5 rounded-full flex-row items-center justify-center mt-4 ${
                 isJoining || !code.trim()
                   ? 'bg-surface2 opacity-60'
                   : 'bg-buzz'
@@ -362,13 +389,23 @@ export default function RoomsScreen() {
                 </View>
               ) : (
                 <Text className="text-white font-bold text-sm">
-                  Rejoindre
+                  Rejoindre avec ce code
                 </Text>
               )}
             </TouchableOpacity>
           </View>
         </View>
       </Modal>
+
+      {/* Native QR Scanner Modal */}
+      <QRScannerModal
+        visible={showScanner}
+        onClose={() => setShowScanner(false)}
+        onScan={(scannedCode) => {
+          setCode(scannedCode);
+          handleJoinCode(scannedCode);
+        }}
+      />
     </SafeAreaView>
   );
 }
