@@ -1,29 +1,39 @@
-import { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   ScrollView,
-  ActivityIndicator,
+  Share,
   Modal,
-  Image,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
-  ChevronLeft,
+  ArrowLeft,
   Settings,
   Trash2,
   Play,
   UserPlus,
   LogOut,
   Sparkles,
-  QrCode,
+  History,
   Eye,
-  Users,
 } from 'lucide-react-native';
+import * as Clipboard from 'expo-clipboard';
+
 import { useRoomDetail } from '~/lib/hooks/useRoomDetail';
+import * as qrcodeApi from '~/lib/api/qrcode';
 import { palette, font, inkAlpha } from '~/lib/theme/tokens';
+import { notify } from '~/lib/ui/notify';
+
+// Dedicated Room Components
+import { RoomCodeCard } from '~/components/room/RoomCodeCard';
+import { ActiveSessionCard } from '~/components/room/ActiveSessionCard';
+import { MembersWithStats } from '~/components/room/MembersWithStats';
+import { HistoryModal } from '~/components/room/HistoryModal';
+import { InviteFriendsModal } from '~/components/room/InviteFriendsModal';
+import { SessionConfigForm } from '~/components/session/SessionConfigForm';
 
 export default function RoomDetailScreen() {
   const router = useRouter();
@@ -38,243 +48,407 @@ export default function RoomDetailScreen() {
     setShowInviteModal,
     showHistoryModal,
     setShowHistoryModal,
+    showQrExpanded,
+    setShowQrExpanded,
     user,
     room,
     isOwner,
     members,
+    rankings,
     activeSessions,
     pastSessions,
     navigateToSession,
+    handleSessionCreated,
+    handleSendFriendRequest,
     handleLeaveRoom,
+    handleDeleteSession,
     handleDeleteRoom,
   } = useRoomDetail({
-    roomId: roomId ?? '',
+    roomId: (roomId as string) ?? '',
     onNavigate: (path) => router.push(path as any),
     onReplaceRoute: (path) => router.replace(path as any),
   });
 
-  const [showQrExpanded, setShowQrExpanded] = useState(false);
+  const [qrImage, setQrImage] = useState<string | null>(null);
+  const [qrLoading, setQrLoading] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
+
+  const loadQR = useCallback(async (rId: string) => {
+    setQrLoading(true);
+    try {
+      const blob = await qrcodeApi.getRoomQR(rId);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setQrImage(reader.result as string);
+        setQrLoading(false);
+      };
+      reader.onerror = () => setQrLoading(false);
+      reader.readAsDataURL(blob);
+    } catch {
+      setQrLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (room?.id) loadQR(room.id);
+  }, [room?.id, loadQR]);
+
+  const handleCopyCode = async () => {
+    if (!room?.code) return;
+    try {
+      await Clipboard.setStringAsync(room.code);
+      setIsCopied(true);
+      notify.success('Code copié !');
+      setTimeout(() => setIsCopied(false), 2000);
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleShare = async () => {
+    if (!room?.code) return;
+    const msg = `Rejoins mon salon « ${room.name} » sur Xalaat ! Code : ${room.code}`;
+    try {
+      await Share.share({
+        message: msg,
+        title: `Salon ${room.name} — Xalaat`,
+      });
+    } catch {
+      // ignore
+    }
+  };
 
   if (isLoading) {
     return (
-      <SafeAreaView className="flex-1 bg-bg flex-col items-center justify-center">
-        <View className="w-20 h-20 rounded-full bg-accent/15 flex-col items-center justify-center mb-4 border border-line">
-          <Sparkles size={40} color={palette.primary} />
+      <SafeAreaView edges={['top', 'bottom']} style={{ flex: 1, backgroundColor: palette.bg, alignItems: 'center', justifyContent: 'center' }}>
+        <View
+          style={{
+            width: 64,
+            height: 64,
+            borderRadius: 32,
+            backgroundColor: `${palette.primary}18`,
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginBottom: 16,
+            borderWidth: 1,
+            borderColor: `${palette.primary}33`,
+          }}
+        >
+          <Sparkles size={32} color={palette.primary} />
         </View>
-        <Text className="text-txt font-semibold text-base">Chargement du salon...</Text>
+        <Text style={{ fontFamily: font.nativeFamily.display, fontSize: 16, color: palette.txt }}>
+          Chargement du salon...
+        </Text>
       </SafeAreaView>
     );
   }
 
   if (!room) {
     return (
-      <SafeAreaView className="flex-1 bg-bg flex-col items-center justify-center px-6">
-        <View className="w-24 h-24 rounded-full bg-surface flex-col items-center justify-center mb-4 border border-line">
-          <Eye size={48} color={inkAlpha.muted} />
+      <SafeAreaView edges={['top', 'bottom']} style={{ flex: 1, backgroundColor: palette.bg, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24 }}>
+        <View
+          style={{
+            width: 64,
+            height: 64,
+            borderRadius: 32,
+            backgroundColor: palette.surface,
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginBottom: 16,
+            borderWidth: 1,
+            borderColor: palette.line,
+          }}
+        >
+          <Eye size={32} color={palette.inkSoft} />
         </View>
-        <Text className="text-txt-60 text-base text-center mb-6">
-          Salle introuvable
+        <Text style={{ fontSize: 16, fontWeight: '700', color: palette.txt, marginBottom: 16 }}>
+          Salon introuvable
         </Text>
         <TouchableOpacity
           onPress={() => router.back()}
           activeOpacity={0.8}
-          className="bg-buzz px-8 py-3.5 rounded-2xl flex-row items-center justify-center"
+          style={{
+            backgroundColor: palette.primary,
+            paddingHorizontal: 24,
+            paddingVertical: 12,
+            borderRadius: 14,
+          }}
         >
-          <Text className="text-white font-bold text-base">Retour</Text>
+          <Text style={{ color: palette.primaryInk, fontWeight: '700', fontSize: 14 }}>
+            Retour
+          </Text>
         </TouchableOpacity>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-bg">
-      {/* Header */}
-      <View className="flex-row items-center px-4 py-3 bg-bg border-b border-line justify-between">
+    <SafeAreaView edges={['top', 'bottom']} style={{ flex: 1, backgroundColor: palette.bg }}>
+      {/* Top Header */}
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          paddingHorizontal: 16,
+          paddingVertical: 12,
+          borderBottomWidth: 1,
+          borderBottomColor: palette.line,
+          backgroundColor: palette.bg,
+          gap: 10,
+        }}
+      >
         <TouchableOpacity
           onPress={() => router.back()}
           activeOpacity={0.7}
-          className="w-10 h-10 rounded-full bg-surface border border-line flex-col items-center justify-center"
+          style={{
+            width: 38,
+            height: 38,
+            borderRadius: 19,
+            backgroundColor: palette.surface,
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderWidth: 1,
+            borderColor: palette.line,
+          }}
         >
-          <ChevronLeft size={20} color={palette.primary} />
+          <ArrowLeft size={18} color={palette.txt} />
         </TouchableOpacity>
 
-        <Text
-          style={{
-            fontFamily: font.nativeFamily.display,
-            fontSize: 18,
-            lineHeight: 24,
-            color: palette.txt,
-            paddingTop: 2,
-            flex: 1,
-            marginHorizontal: 12,
-            textAlign: 'center',
-          }}
-          numberOfLines={1}
-        >
-          {room.name}
-        </Text>
+        <View style={{ flex: 1, alignItems: 'center' }}>
+          <Text
+            style={{
+              fontFamily: font.nativeFamily.display,
+              fontSize: 17,
+              lineHeight: 24,
+              color: palette.txt,
+              paddingTop: 2,
+            }}
+            numberOfLines={1}
+          >
+            {room.name}
+          </Text>
+          <Text style={{ fontSize: 11.5, color: palette.inkSoft }}>
+            {members.length} membre{members.length > 1 ? 's' : ''}
+          </Text>
+        </View>
 
-        <View className="flex-row items-center gap-2">
-          {isOwner ? (
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+          <TouchableOpacity
+            onPress={() => setShowHistoryModal(true)}
+            activeOpacity={0.7}
+            style={{
+              width: 38,
+              height: 38,
+              borderRadius: 19,
+              backgroundColor: palette.surface,
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderWidth: 1,
+              borderColor: palette.line,
+            }}
+          >
+            <History size={17} color={palette.txt} />
+          </TouchableOpacity>
+
+          {isOwner && (
             <TouchableOpacity
               onPress={() => router.push(`/room/${roomId}/edit` as any)}
               activeOpacity={0.7}
-              className="w-10 h-10 rounded-full bg-surface border border-line flex-col items-center justify-center"
+              style={{
+                width: 38,
+                height: 38,
+                borderRadius: 19,
+                backgroundColor: palette.surface,
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderWidth: 1,
+                borderColor: palette.line,
+              }}
             >
-              <Settings size={20} color={inkAlpha.soft} />
+              <Settings size={17} color={palette.txt} />
             </TouchableOpacity>
-          ) : null}
+          )}
         </View>
       </View>
 
       {/* Main Content */}
-      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 100 }}>
-        {/* Room Code Card */}
-        <View className="bg-surface rounded-3xl border border-line p-5 flex-col items-center mb-4 shadow-sm">
-          <Text className="text-txt-40 text-xs font-bold tracking-widest uppercase mb-1">
-            Code du salon
-          </Text>
-          <Text
-            style={{
-              fontFamily: font.nativeFamily.display,
-              fontSize: 32,
-              lineHeight: 40,
-              color: palette.primary,
-              letterSpacing: 2,
-              paddingTop: 4,
-              marginBottom: 12,
-            }}
-          >
-            #{room.code}
-          </Text>
+      <ScrollView
+        contentContainerStyle={{
+          paddingHorizontal: 16,
+          paddingTop: 16,
+          paddingBottom: 40,
+          maxWidth: 540,
+          width: '100%',
+          alignSelf: 'center',
+        }}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Room Code Card with QR Code (Full fidelity) */}
+        <RoomCodeCard
+          code={room.code}
+          qrImage={qrImage}
+          qrLoading={qrLoading}
+          isCopied={isCopied}
+          showQrExpanded={showQrExpanded}
+          membersCount={members.length}
+          onCopy={handleCopyCode}
+          onShare={handleShare}
+          onToggleQr={() => setShowQrExpanded(!showQrExpanded)}
+        />
 
-          <View className="flex-row items-center bg-bg px-3 py-1.5 rounded-full border border-line">
-            <Users size={14} color={palette.gold} />
-            <Text className="text-txt-60 text-xs font-semibold ml-1.5">
-              {members.length} membre{members.length > 1 ? 's' : ''} connecté{members.length > 1 ? 's' : ''}
-            </Text>
-          </View>
-        </View>
+        {/* Invite Friends Button */}
+        <TouchableOpacity
+          onPress={() => setShowInviteModal(true)}
+          activeOpacity={0.85}
+          style={{
+            height: 48,
+            borderRadius: 16,
+            backgroundColor: `${palette.primary}18`,
+            borderWidth: 1.5,
+            borderColor: `${palette.primary}33`,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 8,
+            marginBottom: 16,
+          }}
+        >
+          <UserPlus size={18} color={palette.primary} />
+          <Text style={{ fontSize: 14, fontWeight: '700', color: palette.primary }}>
+            Inviter des amis
+          </Text>
+        </TouchableOpacity>
 
-        {/* Active Session Card or Launch Session Button */}
+        {/* Active Sessions or Create & Launch CTA */}
         {activeSessions.length > 0 ? (
-          <View className="mb-4">
-            <Text className="text-txt-40 text-xs font-bold tracking-widest uppercase mb-2">
-              Session active en cours
+          <View style={{ marginBottom: 8 }}>
+            <Text style={{ fontSize: 11, fontWeight: '700', letterSpacing: 1.5, color: palette.inkSoft, textTransform: 'uppercase', marginBottom: 8 }}>
+              Session active
             </Text>
             {activeSessions.map((session) => (
-              <TouchableOpacity
+              <ActiveSessionCard
                 key={session.id}
+                session={session}
+                members={members}
                 onPress={() => navigateToSession(session)}
-                activeOpacity={0.8}
-                className="bg-surface border border-line rounded-2xl p-4 flex-col mb-2 shadow-sm"
-              >
-                <View className="flex-row items-center justify-between mb-2">
-                  <View className="flex-row items-center">
-                    <View className="w-2.5 h-2.5 rounded-full bg-buzz mr-2" />
-                    <Text className="text-txt font-bold text-base">
-                      Session #{session.code}
-                    </Text>
-                  </View>
-                  <Text className="text-gold text-xs font-bold uppercase">
-                    {session.status}
-                  </Text>
-                </View>
-                <TouchableOpacity
-                  onPress={() => navigateToSession(session)}
-                  activeOpacity={0.8}
-                  className="mt-2 py-2.5 rounded-xl bg-buzz flex-row items-center justify-center"
-                >
-                  <Text className="text-white text-xs font-bold">
-                    Rejoindre la partie →
-                  </Text>
-                </TouchableOpacity>
-              </TouchableOpacity>
+                onDelete={() => handleDeleteSession(session.id, session.code)}
+                canDelete={isOwner || session.managerId === user?.id}
+                isOwner={isOwner}
+              />
             ))}
           </View>
         ) : (
           <TouchableOpacity
-            onPress={() => {
-              // Direct navigation to session create
-              router.push(`/session/create?roomId=${roomId}` as any);
+            onPress={() => setShowConfigModal(true)}
+            activeOpacity={0.85}
+            style={{
+              height: 52,
+              borderRadius: 16,
+              backgroundColor: palette.primary,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+              marginBottom: 16,
+              shadowColor: palette.primary,
+              shadowOpacity: 0.3,
+              shadowRadius: 8,
+              elevation: 3,
             }}
-            activeOpacity={0.8}
-            className="w-full py-4 rounded-2xl bg-buzz flex-row items-center justify-center shadow-md mb-4"
           >
-            <Play size={20} color="#FFFFFF" />
-            <Text className="text-white font-bold text-base ml-2">
-              🚀 CRÉER &amp; LANCER UNE SESSION
+            <Play size={18} color={palette.primaryInk} fill="currentColor" />
+            <Text style={{ color: palette.primaryInk, fontSize: 15, fontWeight: '700' }}>
+              CRÉER & LANCER UNE SESSION
             </Text>
           </TouchableOpacity>
         )}
 
-        {/* Members List */}
-        <View className="bg-surface rounded-3xl border border-line p-4 mb-4 flex-col">
-          <View className="flex-row items-center justify-between mb-3">
-            <Text className="text-txt font-bold text-base">
-              Membres ({members.length})
-            </Text>
-          </View>
-
-          {members.map((member) => (
-            <View
-              key={member.userId}
-              className="flex-row items-center justify-between py-2.5 border-b border-line/40"
-            >
-              <View className="flex-row items-center">
-                <View className="w-9 h-9 rounded-full bg-accent/15 flex-col items-center justify-center mr-3">
-                  <Text className="text-accent font-bold text-sm">
-                    {member.username?.charAt(0).toUpperCase() || 'M'}
-                  </Text>
-                </View>
-                <View className="flex-col">
-                  <Text className="text-txt font-semibold text-sm">
-                    {member.username}
-                  </Text>
-                  {member.userId === room.ownerId ? (
-                    <Text className="text-gold text-[10px] font-bold">
-                      HÔTE
-                    </Text>
-                  ) : null}
-                </View>
-              </View>
-
-              <View
-                className={`w-2.5 h-2.5 rounded-full ${
-                  member.isOnline ? 'bg-good' : 'bg-line'
-                }`}
-              />
-            </View>
-          ))}
-        </View>
+        {/* Members & Stats List */}
+        <MembersWithStats
+          members={members}
+          rankings={rankings}
+          currentUserId={user?.id ?? ''}
+          onAddFriend={handleSendFriendRequest}
+        />
 
         {/* Danger Zone */}
-        <View className="bg-surface rounded-2xl border border-line overflow-hidden mb-4 flex-col">
+        <View
+          style={{
+            backgroundColor: palette.surface,
+            borderRadius: 20,
+            borderWidth: 1,
+            borderColor: palette.line,
+            overflow: 'hidden',
+            marginTop: 4,
+          }}
+        >
           {!isOwner ? (
             <TouchableOpacity
               onPress={handleLeaveRoom}
               activeOpacity={0.7}
-              className="flex-row items-center px-4 py-3.5"
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                paddingHorizontal: 16,
+                paddingVertical: 14,
+                gap: 10,
+              }}
             >
-              <LogOut size={18} color={palette.bad} />
-              <Text className="text-buzz font-medium text-sm ml-3">
-                Quitter la salle
+              <LogOut size={16} color={palette.bad} />
+              <Text style={{ fontSize: 14, fontWeight: '600', color: palette.bad }}>
+                Quitter le salon
               </Text>
             </TouchableOpacity>
           ) : (
             <TouchableOpacity
               onPress={handleDeleteRoom}
               activeOpacity={0.7}
-              className="flex-row items-center px-4 py-3.5"
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                paddingHorizontal: 16,
+                paddingVertical: 14,
+                gap: 10,
+              }}
             >
-              <Trash2 size={18} color={palette.bad} />
-              <Text className="text-buzz font-medium text-sm ml-3">
-                Supprimer la salle
+              <Trash2 size={16} color={palette.bad} />
+              <Text style={{ fontSize: 14, fontWeight: '600', color: palette.bad }}>
+                Supprimer le salon
               </Text>
             </TouchableOpacity>
           )}
         </View>
       </ScrollView>
+
+      {/* History Modal */}
+      <HistoryModal
+        visible={showHistoryModal}
+        sessions={pastSessions}
+        onNavigate={navigateToSession}
+        onClose={() => setShowHistoryModal(false)}
+      />
+
+      {/* Invite Friends Modal */}
+      <InviteFriendsModal
+        visible={showInviteModal}
+        roomId={(roomId as string) ?? ''}
+        memberUserIds={members.map((m) => m.userId)}
+        pendingInvitationUserIds={roomData?.pendingInvitationUserIds ?? []}
+        onClose={() => setShowInviteModal(false)}
+      />
+
+      {/* Session Config Modal */}
+      {showConfigModal && (
+        <Modal visible={showConfigModal} animationType="slide" onRequestClose={() => setShowConfigModal(false)}>
+          <SessionConfigForm
+            roomId={(roomId as string) ?? ''}
+            onSuccess={handleSessionCreated}
+            onClose={() => setShowConfigModal(false)}
+            initialMaxPlayers={members.length || undefined}
+          />
+        </Modal>
+      )}
     </SafeAreaView>
   );
 }
