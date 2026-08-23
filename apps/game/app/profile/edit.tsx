@@ -24,6 +24,7 @@ import * as usersApi from '~/lib/api/users';
 import { AVATAR_STYLES, AVATAR_SEEDS, getAvatarUrl } from '~/lib/utils/avatar';
 import { palette } from '~/lib/theme/tokens';
 import { Avatar } from '~/components/shared/Avatar';
+import { GoogleSignInButton } from '~/components/auth/GoogleSignInButton';
 import { notify, notifyApiError } from '~/lib/ui/notify';
 
 export default function EditProfileScreen() {
@@ -349,6 +350,27 @@ export default function EditProfileScreen() {
               }}
             />
           </View>
+        </View>
+
+        {/* Linked Accounts Section */}
+        <View
+          style={{
+            backgroundColor: palette.surface,
+            borderRadius: 24,
+            borderWidth: 1,
+            borderColor: palette.line,
+            padding: 20,
+            gap: 12,
+          }}
+        >
+          <Text style={{ color: palette.inkSoft, fontSize: 12, fontWeight: '700', textTransform: 'uppercase' }}>
+            Comptes associés
+          </Text>
+          <GoogleSignInButton
+            onSuccess={() => {
+              notify.success('Compte Google synchronisé !');
+            }}
+          />
         </View>
       </ScrollView>
     </SafeAreaView>

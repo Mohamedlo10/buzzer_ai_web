@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, Animated, Easing } from 'react-native';
+import { View, Text, TouchableOpacity, Animated, Easing, Platform } from 'react-native';
 import { Zap } from 'lucide-react-native';
 import { palette } from '~/lib/theme/tokens';
 import Svg, { Path } from 'react-native-svg';
@@ -73,6 +73,21 @@ export function BuzzerButton({
       };
     }
   }, [isActive]); // eslint-disable-line
+
+  // Web keyboard shortcut (SPACE)
+  useEffect(() => {
+    if (Platform.OS !== 'web' || !isActive) return;
+    const handleKeyDown = (e: any) => {
+      if (e.code === 'Space' || e.key === ' ') {
+        e.preventDefault?.();
+        onBuzz();
+      }
+    };
+    if (typeof window !== 'undefined') {
+      window.addEventListener('keydown', handleKeyDown);
+      return () => window.removeEventListener('keydown', handleKeyDown);
+    }
+  }, [isActive, onBuzz]);
 
   const handleClick = () => {
     if (!isActive) return;

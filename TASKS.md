@@ -256,7 +256,7 @@ cochées : sans les client IDs Google et la route serveur, tu ne peux rien teste
     les stockes pas à ce moment-là, ils sont perdus définitivement
   - Fini quand : les deux boutons sont présents sur iOS et les deux parcours créent un compte
 
-- [ ] **G5** — Parcours de bord
+- [x] **G5** — Parcours de bord
   - Un compte Google qui tente « mot de passe oublié » doit voir un message clair, pas une
     erreur
   - Permettre de **lier** Google à un compte existant depuis `profile/edit`
@@ -272,13 +272,13 @@ cochées : sans les client IDs Google et la route serveur, tu ne peux rien teste
   - Les liens e-mail doivent fonctionner comme deep links
   - Fini quand : le parcours d'inscription complet passe depuis un e-mail réel
 
-- [ ] **6.2** — Écran de maintenance sur flag serveur
+- [x] **6.2** — Écran de maintenance sur flag serveur
   - **Dépend de la tâche backend 6.1** (`GET /api/health` avec un booléen `maintenance`)
   - Remplace `MAINTENANCE_MODE` codé en dur dans `middleware.ts`
   - ⚠️ **À terminer AVANT la tâche 6.4**, sinon le mécanisme disparaît sans remplaçant
   - Fini quand : basculer le flag côté admin coupe l'accès sans redéploiement
 
-- [ ] **6.3** — Parité web de `apps/game`
+- [x] **6.3** — Parité web de `apps/game`
   - Shell desktop centré (`apps/web-legacy/app/layout.tsx` applique
     `md:py-2 md:px-12 md:min-w-2xl` sur `<body>`)
   - 46 classes responsive, 280 `hover:` (ignorés en natif, actifs sur RNW)

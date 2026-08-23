@@ -25,6 +25,9 @@ import { useRouter } from 'expo-router';
 
 SplashScreen.preventAutoHideAsync();
 
+import { Platform, View } from 'react-native';
+import { apiClient } from '@xalaat/core';
+
 export default function RootLayout() {
   const router = useRouter();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -43,6 +46,21 @@ export default function RootLayout() {
       SplashScreen.hideAsync();
     }
   }, [loaded, error]);
+
+  // Server maintenance check
+  useEffect(() => {
+    const checkHealth = async () => {
+      try {
+        const res = await apiClient.get<{ status: string; maintenance?: boolean }>('/api/health');
+        if (res.data?.maintenance) {
+          router.replace('/maintenance');
+        }
+      } catch {}
+    };
+    checkHealth();
+    const interval = setInterval(checkHealth, 60000);
+    return () => clearInterval(interval);
+  }, [router]);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -68,14 +86,26 @@ export default function RootLayout() {
     return null;
   }
 
+  const stackContent = (
+    <Stack
+      screenOptions={{
+        headerShown: false,
+        contentStyle: { backgroundColor: palette.bg },
+      }}
+    />
+  );
+
   return (
     <QueryClientProvider client={queryClient}>
-      <Stack
-        screenOptions={{
-          headerShown: false,
-          contentStyle: { backgroundColor: palette.bg },
-        }}
-      />
+      {Platform.OS === 'web' ? (
+        <View style={{ flex: 1, width: '100%', backgroundColor: '#EAD7BA', alignItems: 'center' }}>
+          <View style={{ flex: 1, width: '100%', maxWidth: 672, backgroundColor: palette.bg }}>
+            {stackContent}
+          </View>
+        </View>
+      ) : (
+        stackContent
+      )}
     </QueryClientProvider>
   );
 }
