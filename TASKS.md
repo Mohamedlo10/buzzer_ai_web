@@ -58,7 +58,7 @@
 
 ### Phase 4 (fin) — compléter la boucle de jeu
 
-- [ ] **4.1** — Écran `session/[code]/questions`
+- [x] **4.1** — Écran `session/[code]/questions`
   - Réf. : `apps/web-legacy/app/session/[code]/questions/page.tsx` (653 l.)
   - Contient **deux APIs sans équivalent RN** :
     - `<input type="file">` (import XLSX) → `expo-document-picker`
@@ -67,12 +67,12 @@
   - ⚠️ **Dépendances natives → rebuild du dev client.** Groupe-les avec la tâche 5.4.
   - Fini quand : import d'un fichier XLSX fonctionne sur iPhone, export partage un fichier
 
-- [ ] **4.2** — Mode Sprint (`SprintGame`)
+- [x] **4.2** — Mode Sprint (`SprintGame`)
   - Réf. : `apps/web-legacy/components/game/sprint/SprintGame.tsx` (293 l.)
   - Le dossier `apps/game/components/game/sprint/` existe déjà — vérifie ce qu'il contient
   - Fini quand : une partie sprint se joue de bout en bout sur iPhone
 
-- [ ] **4.3** — Les 17 animations en Reanimated
+- [x] **4.3** — Les 17 animations en Reanimated
   - `AnswerRevealOverlay` et `ProgressiveQuestionDisplay` en dépendent
   - Keyframes source : `apps/web-legacy/global.css`
   - Crée une bibliothèque réutilisable dans `apps/game/components/anim/`

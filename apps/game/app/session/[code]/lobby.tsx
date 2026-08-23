@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ChevronLeft, Play, DoorOpen, Users, Crown, Gamepad2, Share2, Copy } from 'lucide-react-native';
+import { ChevronLeft, Play, DoorOpen, Users, Crown, Gamepad2, Share2, Copy, PenLine } from 'lucide-react-native';
 import { useLobbySession } from '~/lib/hooks/useLobbySession';
 import { useAppStateReconnect } from '~/lib/websocket';
 import { palette, inkAlpha } from '~/lib/theme/tokens';
@@ -106,30 +106,45 @@ export default function LobbyScreen() {
 
         {/* Manager Start CTA */}
         {isManager ? (
-          <TouchableOpacity
-            onPress={handleStartGame}
-            disabled={isStarting}
-            activeOpacity={0.8}
-            className={`w-full py-4 rounded-2xl flex-row items-center justify-center shadow-md mb-6 ${
-              isStarting ? 'bg-surface2 opacity-70' : 'bg-buzz'
-            }`}
-          >
-            {isStarting ? (
-              <View className="flex-row items-center">
-                <ActivityIndicator size="small" color="#FFFFFF" />
-                <Text className="text-white font-bold text-base ml-2">
-                  Lancement...
+          <View className="gap-3 mb-6">
+            {session.questionMode === 'MANUAL' && (
+              <TouchableOpacity
+                onPress={() => router.push(`/session/${code}/questions?sessionId=${session.id}` as any)}
+                activeOpacity={0.8}
+                className="w-full py-3.5 rounded-2xl bg-surface border border-line flex-row items-center justify-center gap-2"
+              >
+                <PenLine size={18} color={palette.gold} />
+                <Text className="text-txt font-bold text-sm">
+                  📝 Configurer les questions manuelles
                 </Text>
-              </View>
-            ) : (
-              <View className="flex-row items-center">
-                <Play size={20} color="#FFFFFF" />
-                <Text className="text-white font-bold text-base ml-2">
-                  🚀 LANCER LA PARTIE
-                </Text>
-              </View>
+              </TouchableOpacity>
             )}
-          </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={handleStartGame}
+              disabled={isStarting}
+              activeOpacity={0.8}
+              className={`w-full py-4 rounded-2xl flex-row items-center justify-center shadow-md ${
+                isStarting ? 'bg-surface2 opacity-70' : 'bg-buzz'
+              }`}
+            >
+              {isStarting ? (
+                <View className="flex-row items-center">
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                  <Text className="text-white font-bold text-base ml-2">
+                    Lancement...
+                  </Text>
+                </View>
+              ) : (
+                <View className="flex-row items-center">
+                  <Play size={20} color="#FFFFFF" />
+                  <Text className="text-white font-bold text-base ml-2">
+                    🚀 LANCER LA PARTIE
+                  </Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          </View>
         ) : (
           <View className="bg-surface rounded-2xl border border-line p-4 mb-6 flex-col items-center">
             <Text className="text-txt-60 text-xs font-semibold text-center mb-1">

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Modal, View, Text, TouchableOpacity, StatusBar } from 'react-native';
 import { palette } from '~/lib/theme/tokens';
+import { PopView, RiseView, FadeInView } from '~/components/anim';
 
 interface AnswerRevealOverlayProps {
   visible: boolean;
@@ -19,7 +20,7 @@ interface AnswerRevealOverlayProps {
  *
  * Implémenté via Modal RN (pas de zIndex inter-parents) pour garantir
  * la stabilité Android. Port de web-legacy AnswerRevealOverlay.tsx.
- * Keyframes CSS fadein/pop → transitions RN (opacity, scale).
+ * Keyframes CSS fadein/pop/rise → Reanimated 4.5.
  */
 export function AnswerRevealOverlay({
   visible,
@@ -79,7 +80,7 @@ export function AnswerRevealOverlay({
         }}
       >
         {/* Diamond pattern (simplified — 2 concentric lozenges) */}
-        <View style={{ position: 'absolute', alignItems: 'center', justifyContent: 'center', opacity: 0.12 }}>
+        <FadeInView style={{ position: 'absolute', alignItems: 'center', justifyContent: 'center', opacity: 0.12 }} duration={500}>
           {[240, 160].map((size, i) => (
             <View
               key={i}
@@ -93,10 +94,10 @@ export function AnswerRevealOverlay({
               }}
             />
           ))}
-        </View>
+        </FadeInView>
 
-        {/* Card */}
-        <View
+        {/* Card with pop animation */}
+        <PopView
           style={{
             width: '100%',
             maxWidth: 440,
@@ -107,9 +108,10 @@ export function AnswerRevealOverlay({
             padding: 32,
             alignItems: 'center',
           }}
+          duration={400}
         >
           {/* Status badge */}
-          <View
+          <RiseView
             style={{
               flexDirection: 'row',
               alignItems: 'center',
@@ -120,29 +122,32 @@ export function AnswerRevealOverlay({
               backgroundColor: headerBg,
               marginBottom: 20,
             }}
+            delay={50}
           >
             <View style={{ width: 20, height: 20, borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.25)', alignItems: 'center', justifyContent: 'center' }}>
               <Text style={{ color: '#FFFFFF', fontSize: 11, fontWeight: '800' }}>{isWinner ? '✓' : '✕'}</Text>
             </View>
             <Text style={{ color: '#FFFFFF', fontSize: 13, fontWeight: '700', letterSpacing: 0.6 }}>{statusLabel}</Text>
-          </View>
+          </RiseView>
 
           {/* Hero text */}
-          <Text
-            style={{
-              fontSize: 32,
-              fontWeight: '700',
-              color: isWinner ? palette.good : palette.txt,
-              textAlign: 'center',
-              lineHeight: 38,
-              marginBottom: 16,
-            }}
-          >
-            {heroText}
-          </Text>
+          <RiseView delay={120}>
+            <Text
+              style={{
+                fontSize: 32,
+                fontWeight: '700',
+                color: isWinner ? palette.good : palette.txt,
+                textAlign: 'center',
+                lineHeight: 38,
+                marginBottom: 16,
+              }}
+            >
+              {heroText}
+            </Text>
+          </RiseView>
 
           {/* Correct answer card */}
-          <View
+          <RiseView
             style={{
               backgroundColor: palette.bg,
               borderRadius: 16,
@@ -152,6 +157,7 @@ export function AnswerRevealOverlay({
               width: '100%',
               marginBottom: 20,
             }}
+            delay={200}
           >
             <Text style={{ fontSize: 11, letterSpacing: 1.2, textTransform: 'uppercase', color: palette.inkSoft, fontWeight: '700', marginBottom: 6 }}>
               {isWinner ? 'Réponse validée' : 'La bonne réponse était'}
@@ -159,7 +165,7 @@ export function AnswerRevealOverlay({
             <Text style={{ fontSize: 22, fontWeight: '700', color: palette.txt }}>
               {correctAnswer}
             </Text>
-          </View>
+          </RiseView>
 
           {/* Action */}
           {allAnswersWrong && onAdvance && isManager ? (
@@ -189,8 +195,9 @@ export function AnswerRevealOverlay({
               </Text>
             </View>
           )}
-        </View>
+        </PopView>
       </View>
     </Modal>
   );
 }
+

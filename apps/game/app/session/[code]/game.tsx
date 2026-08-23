@@ -11,7 +11,7 @@ import { useGameSocket } from '~/lib/websocket/useGameSocket';
 import * as gameApi from '~/lib/api/game';
 import { appStorage } from '~/lib/utils/storage';
 import { palette } from '~/lib/theme/tokens';
-import { Alert } from 'react-native';
+import { notifyApiError } from '~/lib/ui/notify';
 
 const POLL_WS_CONNECTED_MS = 3000;
 const POLL_WS_DISCONNECTED_MS = 2000;
@@ -148,7 +148,7 @@ export default function GamePage() {
     try {
       await pauseSession(session.id);
     } catch (err: any) {
-      Alert.alert('Erreur', 'Impossible de mettre en pause');
+      notifyApiError(err, 'Impossible de mettre en pause');
     } finally {
       setIsPauseToggling(false);
     }
@@ -160,7 +160,7 @@ export default function GamePage() {
     try {
       await resumeSession(session.id);
     } catch (err: any) {
-      Alert.alert('Erreur', 'Impossible de reprendre');
+      notifyApiError(err, 'Impossible de reprendre');
     } finally {
       setIsPauseToggling(false);
     }

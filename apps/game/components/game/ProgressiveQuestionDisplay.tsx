@@ -1,5 +1,6 @@
 import { View, Text } from 'react-native';
 import { palette } from '~/lib/theme/tokens';
+import { BlinkingCursor, FadeInUpView } from '~/components/anim';
 
 interface ProgressiveQuestionDisplayProps {
   text: string;
@@ -10,7 +11,7 @@ interface ProgressiveQuestionDisplayProps {
 
 /**
  * Affiche la question mot par mot (portage de l'original web).
- * Curseur clignotant → un simple '|' affiché à la fin (pas de CSS).
+ * Curseur clignotant animé en Reanimated UI thread.
  */
 export function ProgressiveQuestionDisplay({
   text,
@@ -55,11 +56,11 @@ export function ProgressiveQuestionDisplay({
       >
         {revealedText}
         {!isFullyRevealed && isRunning ? (
-          <Text style={{ color: palette.txt, opacity: 0.5 }}>|</Text>
+          <BlinkingCursor color={palette.txt} size={19} />
         ) : null}
       </Text>
       {showRiskBadge && !isFullyRevealed && isRunning && (
-        <View
+        <FadeInUpView
           style={{
             flexDirection: 'row',
             alignSelf: 'flex-start',
@@ -71,12 +72,14 @@ export function ProgressiveQuestionDisplay({
             borderWidth: 1,
             borderColor: palette.warn + '50',
           }}
+          duration={250}
         >
           <Text style={{ color: palette.warn, fontSize: 11, fontWeight: '600' }}>
             ⚡ Lecture en cours — buzz risqué
           </Text>
-        </View>
+        </FadeInUpView>
       )}
     </View>
   );
 }
+
