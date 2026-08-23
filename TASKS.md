@@ -105,13 +105,13 @@ concentre presque tout le code incompatible RN (tables, recharts).
 
 ### Phase 5 — Social, solo, capacités natives
 
-- [ ] **5.1** — Onglets sociaux : `dashboard`, `profile`, `friends`, `rankings`
+- [x] **5.1** — Onglets sociaux : `dashboard`, `profile`, `friends`, `rankings`
   - Les écrans existent en coquille dans `apps/game/app/(tabs)/` — à compléter
   - Réf. : les pages équivalentes de `apps/web-legacy/app/(tabs)/`
   - `rankings` : listes longues → utilise `FlashList`, pas `ScrollView`
   - Fini quand : les 4 onglets affichent des données réelles sur iPhone
 
-- [ ] **5.2** — `notifications`, `profile/[userId]`, `profile/edit`
+- [x] **5.2** — `notifications`, `profile/[userId]`, `profile/edit`
   - `profile/edit` contient un upload d'avatar
   - Fini quand : modifier son profil et son avatar fonctionne
 
