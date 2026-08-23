@@ -1,6 +1,9 @@
-import { View, Text } from 'react-native';
+import { useState } from 'react';
+import { View, Text, TouchableOpacity } from 'react-native';
+import { Flag } from 'lucide-react-native';
 import { palette } from '~/lib/theme/tokens';
 import { BlinkingCursor, FadeInUpView } from '~/components/anim';
+import { QuestionReportModal } from './shared/QuestionReportModal';
 
 interface ProgressiveQuestionDisplayProps {
   text: string;
@@ -19,6 +22,7 @@ export function ProgressiveQuestionDisplay({
   isRunning,
   showRiskBadge = true,
 }: ProgressiveQuestionDisplayProps) {
+  const [showReport, setShowReport] = useState(false);
   const words = text.split(' ');
   const isFullyRevealed = wordIndex >= words.length - 1;
   const revealedText = words.slice(0, wordIndex + 1).join(' ');
@@ -33,18 +37,33 @@ export function ProgressiveQuestionDisplay({
         padding: 18,
       }}
     >
-      <Text
-        style={{
-          color: palette.inkSoft,
-          fontSize: 9.5,
-          fontWeight: '700',
-          letterSpacing: 1.5,
-          textTransform: 'uppercase',
-          marginBottom: 10,
-        }}
-      >
-        Question
-      </Text>
+      <QuestionReportModal
+        visible={showReport}
+        questionText={text}
+        onClose={() => setShowReport(false)}
+      />
+
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+        <Text
+          style={{
+            color: palette.inkSoft,
+            fontSize: 9.5,
+            fontWeight: '700',
+            letterSpacing: 1.5,
+            textTransform: 'uppercase',
+            flex: 1,
+          }}
+        >
+          Question
+        </Text>
+        <TouchableOpacity
+          onPress={() => setShowReport(true)}
+          activeOpacity={0.7}
+          style={{ padding: 4 }}
+        >
+          <Flag size={14} color={palette.inkSoft} />
+        </TouchableOpacity>
+      </View>
       <Text
         style={{
           color: palette.txt,

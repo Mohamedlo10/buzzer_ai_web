@@ -286,7 +286,7 @@ cochées : sans les client IDs Google et la route serveur, tu ne peux rien teste
     `if (Platform.OS !== 'web') return;` dans le `useEffect`
   - Fini quand : `apps/game` en web couvre 100 % des routes de `web-legacy` hors `/admin`
 
-- [ ] **6.4** — Page d'atterrissage publique *(exigée par les stores)*
+- [x] **6.4** — Page d'atterrissage publique *(exigée par les stores)*
   - **Bloquant pour la phase 7** : l'App Store et le Play Store exigent tous deux une
     **URL de politique de confidentialité et une URL de support publiquement accessibles**
   - Marque, badges stores, confidentialité, support
@@ -317,7 +317,7 @@ cochées : sans les client IDs Google et la route serveur, tu ne peux rien teste
   - Cible : **p95 ≤ latence du web actuel + 30 ms**
   - Fini quand : les chiffres web / iOS / Android sont mesurés et consignés ici
 
-- [ ] **7.4** — `eas.json` et builds de production
+- [x] **7.4** — `eas.json` et builds de production
   - Aucun `eas.json` n'existe aujourd'hui
   - Fini quand : `eas build --profile production` produit un binaire iOS et un Android
 
@@ -327,7 +327,7 @@ cochées : sans les client IDs Google et la route serveur, tu ne peux rien teste
   - Compte de test à fournir au reviewer Apple
   - Fini quand : les deux comptes sont actifs et les certificats générés
 
-- [ ] **7.6** — Conformité contenu généré par IA
+- [x] **7.6** — Conformité contenu généré par IA
   - ⚠️ `QuestionGenerationService` génère des questions par IA via OpenRouter.
     Les guidelines Apple 1.2 et 4.7 exigent un **mécanisme de signalement**, un CLUF et
     souvent une modération. **Le premier dépôt est rejeté dans une majorité de cas.**
