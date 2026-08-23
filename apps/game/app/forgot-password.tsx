@@ -15,6 +15,7 @@ import { Mail, ArrowLeft, CheckCircle, Sparkles } from 'lucide-react-native';
 import { authApi } from '@xalaat/core';
 import { palette, font, inkAlpha } from '~/lib/theme/tokens';
 import { XalaatMark } from '~/components/shared/XalaatMark';
+import { FormInput } from '~/components/shared/FormInput';
 
 export default function ForgotPasswordScreen() {
   const router = useRouter();
@@ -148,52 +149,46 @@ export default function ForgotPasswordScreen() {
                   Entrez votre adresse email et nous vous enverrons un lien pour réinitialiser votre mot de passe.
                 </Text>
 
-                <View className="flex-col mb-5">
-                  <Text className="text-txt-60 text-sm font-medium mb-2">Email</Text>
-                  <View className="relative flex-col justify-center">
-                    <View className="absolute left-4 z-10">
-                      <Mail size={20} color={inkAlpha.muted} />
-                    </View>
-                    <TextInput
-                      value={email}
-                      onChangeText={(t) => {
-                        setEmail(t);
-                        setError('');
-                      }}
-                      placeholder="votre@email.com"
-                      placeholderTextColor={inkAlpha.faint}
-                      keyboardType="email-address"
-                      autoCapitalize="none"
-                      autoCorrect={false}
-                      editable={!isLoading}
-                      onSubmitEditing={handleSubmit}
-                      className={`w-full pl-12 pr-4 py-4 rounded-2xl bg-bg text-txt text-base border ${
-                        error ? 'border-buzz' : 'border-line'
-                      }`}
-                    />
-                  </View>
-                  {error ? (
-                    <Text className="text-buzz text-sm mt-1.5 ml-2">{error}</Text>
-                  ) : null}
-                </View>
+                <FormInput
+                  label="Adresse email"
+                  leftIcon={Mail}
+                  value={email}
+                  onChangeText={(t) => {
+                    setEmail(t);
+                    setError('');
+                  }}
+                  placeholder="votre@email.com"
+                  error={error}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  editable={!isLoading}
+                  onSubmitEditing={handleSubmit}
+                />
 
                 <TouchableOpacity
                   onPress={handleSubmit}
                   disabled={isLoading}
                   activeOpacity={0.8}
-                  className={`w-full py-4 rounded-2xl flex-row items-center justify-center ${
-                    isLoading ? 'bg-surface2 opacity-70' : 'bg-buzz'
-                  }`}
+                  style={{
+                    height: 52,
+                    borderRadius: 16,
+                    backgroundColor: palette.primary,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    shadowColor: palette.primary,
+                    shadowOpacity: 0.3,
+                    shadowRadius: 8,
+                    elevation: 3,
+                    opacity: isLoading ? 0.7 : 1,
+                    marginTop: 8,
+                  }}
                 >
                   {isLoading ? (
-                    <View className="flex-row items-center">
-                      <ActivityIndicator size="small" color="#FFFFFF" />
-                      <Text className="text-white font-bold text-lg ml-2">
-                        Envoi...
-                      </Text>
-                    </View>
+                    <ActivityIndicator size="small" color={palette.primaryInk} />
                   ) : (
-                    <Text className="text-white font-bold text-lg">
+                    <Text style={{ color: palette.primaryInk, fontWeight: '700', fontSize: 16 }}>
                       Envoyer le lien
                     </Text>
                   )}
