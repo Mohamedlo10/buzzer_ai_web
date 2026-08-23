@@ -1,48 +1,33 @@
-import { toast } from 'sonner';
+export interface ToastHandler {
+  error: (message: string) => void;
+  success: (message: string) => void;
+  info: (message: string) => void;
+}
 
-/**
- * Messages non bloquants — remplace les 37 `alert()` du projet.
- *
- * ────────────────────────────────────────────────────────────────────────────
- * POURQUOI PASSER PAR UNE INDIRECTION
- * ────────────────────────────────────────────────────────────────────────────
- * `alert()` n'existe pas en React Native, et son remplaçant naturel
- * (`Alert.alert`) n'est pas une fonction bloquante : il ne rend pas la main, il
- * rappelle. Réécrire 37 sites d'appel au moment du portage, à l'aveugle sur
- * simulateur, serait bien plus coûteux que de les faire passer dès maintenant
- * par une API dont la signature ne changera pas.
- *
- * `notify.error(msg)` s'écrit pareil sur les trois plateformes. Seule
- * l'implémentation change : `sonner` ici, `react-native-toast-message` en
- * natif (module `.native.ts`, phase 3).
- *
- * ────────────────────────────────────────────────────────────────────────────
- * POURQUOI C'EST AUSSI UN GAIN IMMÉDIAT SUR LE WEB
- * ────────────────────────────────────────────────────────────────────────────
- * `alert()` gèle le thread principal. Dans un jeu de buzzer temps réel, cela
- * signifie que pendant qu'une boîte de dialogue attend un clic, les trames
- * WebSocket ne sont plus traitées et l'horloge de jeu dérive. Sur `window.alert`
- * en plein match — il y en avait 5 dans `ModeratedGame.tsx` — c'est un vrai
- * problème, pas une question de style.
- */
+let activeHandler: ToastHandler = {
+  error: (msg) => console.error('[Notify Error]', msg),
+  success: (msg) => console.log('[Notify Success]', msg),
+  info: (msg) => console.info('[Notify Info]', msg),
+};
 
-/** Durées calées sur la longueur des messages du projet. */
-const DURATION = { error: 5000, success: 3000, info: 4000 } as const;
+export function setNotifyHandler(handler: ToastHandler) {
+  activeHandler = handler;
+}
 
 export const notify = {
   /** Échec d'une action. Le plus fréquent : « Impossible de… ». */
   error(message: string) {
-    toast.error(message, { duration: DURATION.error });
+    activeHandler.error(message);
   },
 
   /** Action réussie dont le résultat n'est pas visible à l'écran. */
   success(message: string) {
-    toast.success(message, { duration: DURATION.success });
+    activeHandler.success(message);
   },
 
   /** Information neutre. */
   info(message: string) {
-    toast(message, { duration: DURATION.info });
+    activeHandler.info(message);
   },
 };
 

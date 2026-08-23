@@ -302,11 +302,11 @@ cochées : sans les client IDs Google et la route serveur, tu ne peux rien teste
 
 ### Phase 7 — Durcissement et publication
 
-- [ ] **7.1** — Performance sur Android d'entrée de gamme (4 Go — le marché cible)
-  - Les 22 `backdrop-blur` coûtent cher : envisage un fond semi-opaque sur Android
+- [x] **7.1** — Performance sur Android d'entrée de gamme (4 Go — le marché cible)
+  - Les 22 `backdrop-blur` coûtent cher : fonds semi-opaques alpha sans GPU blur sur Android
   - Fini quand : le jeu reste fluide sur un appareil 4 Go
 
-- [ ] **7.2** — Clavier et accessibilité
+- [x] **7.2** — Clavier et accessibilité
   - 57 `<TextInput>` sur ~10 écrans de formulaire
   - Fini quand : aucun champ n'est masqué par le clavier sur iOS
 
@@ -350,7 +350,7 @@ cochées : sans les client IDs Google et la route serveur, tu ne peux rien teste
       la vraie cause (probablement `typeRoots` ou l'ordre de résolution), supprime le
       contournement.
 
-- [ ] **D2** — `packages/core/src/lib/ui/notify.ts` importe `sonner`, une librairie **web
+- [x] **D2** — `packages/core/src/lib/ui/notify.ts` importe `sonner`, une librairie **web
       uniquement**. À séparer en `.web.ts` / `.native.ts`
       (`react-native-toast-message` côté natif) pour sortir `sonner` des dépendances de core.
 

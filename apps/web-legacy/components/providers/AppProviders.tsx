@@ -2,12 +2,19 @@
 
 import { QueryClientProvider } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
-import { Toaster } from 'sonner';
+import { toast, Toaster } from 'sonner';
 import { queryClient } from '~/lib/query/queryClient';
 import { useAuthStore } from '~/stores/useAuthStore';
 import { ThemeProvider } from '~/components/providers/ThemeProvider';
 import { AuthGate } from '~/components/providers/AuthGate';
 import { ConfirmHost } from '~/components/providers/ConfirmHost';
+import { setNotifyHandler } from '~/lib/ui/notify';
+
+setNotifyHandler({
+  error: (msg) => toast.error(msg, { duration: 5000 }),
+  success: (msg) => toast.success(msg, { duration: 3000 }),
+  info: (msg) => toast(msg, { duration: 4000 }),
+});
 
 export function AppProviders({ children }: { children: React.ReactNode }) {
   const [ready, setReady] = useState(false);
