@@ -8,5 +8,6 @@ export * as rankingsApi from './rankings';
 export * as dashboardApi from './dashboard';
 export * as invitationsApi from './invitations';
 export * as adminApi from './admin';
+export * as devicesApi from './devices';
 
 export { apiClient, getWebSocketUrl, getWebSocketBaseUrl } from './client';

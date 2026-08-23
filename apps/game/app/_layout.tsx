@@ -15,9 +15,20 @@ import { InstrumentSerif_400Regular_Italic } from '@expo-google-fonts/instrument
 import { font, palette } from '~/lib/theme/tokens';
 import '../global.css';
 
+import { useAuthStore } from '@xalaat/core';
+import {
+  registerForPushNotificationsAsync,
+  unregisterPushNotificationsAsync,
+} from '~/native/notifications/pushNotifications';
+import * as Notifications from 'expo-notifications';
+import { useRouter } from 'expo-router';
+
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
+  const router = useRouter();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+
   const [loaded, error] = useFonts({
     [font.nativeFamily.display]: Boldonse_400Regular,
     [font.nativeFamily.ui]: Manrope_400Regular,
@@ -32,6 +43,26 @@ export default function RootLayout() {
       SplashScreen.hideAsync();
     }
   }, [loaded, error]);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      registerForPushNotificationsAsync();
+    } else {
+      unregisterPushNotificationsAsync();
+    }
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    const subscription = Notifications.addNotificationResponseReceivedListener((response) => {
+      const data = response.notification.request.content.data;
+      if (data?.url) {
+        router.push(data.url as any);
+      } else if (data?.code) {
+        router.push(`/session/${data.code}/lobby` as any);
+      }
+    });
+    return () => subscription.remove();
+  }, [router]);
 
   if (!loaded && !error) {
     return null;

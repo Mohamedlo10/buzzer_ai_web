@@ -42,3 +42,14 @@ export async function forgotPassword(email: string): Promise<void> {
 export async function resetPassword(token: string, newPassword: string): Promise<void> {
   await apiClient.post('/api/auth/reset-password', { token, newPassword } as ResetPasswordRequest);
 }
+
+export async function loginWithGoogle(idToken: string): Promise<AuthResponse> {
+  const res = await apiClient.post<AuthResponse>('/api/auth/google', { idToken });
+  return res.data;
+}
+
+export async function loginWithApple(identityToken: string): Promise<AuthResponse> {
+  const res = await apiClient.post<AuthResponse>('/api/auth/apple', { identityToken });
+  return res.data;
+}
+

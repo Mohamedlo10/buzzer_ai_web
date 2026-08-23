@@ -7,7 +7,7 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
-    "scheme": "buzzmaster",
+    "scheme": ["buzzmaster", "com.googleusercontent.apps.buzzmaster-ai"],
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -49,7 +49,8 @@
             "usesCleartextTraffic": true
           }
         }
-      ]
+      ],
+      "expo-web-browser"
     ]
   }
 }

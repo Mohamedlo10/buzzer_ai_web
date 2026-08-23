@@ -7,3 +7,7 @@ export * from './stores/useSessionStore';
 export * from './types/api';
 export * from './types/solo';
 export * from './types/websocket';
+export * from './lib/hooks/useGoogleAuth';
+export * from './lib/hooks/useAppleAuth';
+
+

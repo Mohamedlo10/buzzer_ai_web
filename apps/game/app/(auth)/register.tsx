@@ -12,6 +12,8 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Eye, EyeOff, User, Mail, Lock, ArrowRight, Sparkles, Crown } from 'lucide-react-native';
 import { useRegisterForm } from '~/lib/hooks/useRegisterForm';
+import { GoogleSignInButton } from '~/components/auth/GoogleSignInButton';
+import { AppleSignInButton } from '~/components/auth/AppleSignInButton';
 import { palette, inkAlpha } from '~/lib/theme/tokens';
 
 export default function RegisterScreen() {
@@ -240,6 +242,26 @@ export default function RegisterScreen() {
                 </View>
               )}
             </TouchableOpacity>
+
+            {/* Divider */}
+            <View className="flex-row items-center my-4">
+              <View className="flex-1 h-px bg-line" />
+              <Text className="text-txt-40 text-xs font-semibold px-3 uppercase tracking-wider">
+                ou
+              </Text>
+              <View className="flex-1 h-px bg-line" />
+            </View>
+
+            {/* Google & Apple Sign In */}
+            <GoogleSignInButton
+              onSuccess={() => router.replace('/(tabs)/rooms')}
+              disabled={isLoading}
+            />
+
+            <AppleSignInButton
+              onSuccess={() => router.replace('/(tabs)/rooms')}
+              disabled={isLoading}
+            />
 
             {/* Login Link */}
             <View className="mt-5 flex-row items-center justify-center flex-wrap">

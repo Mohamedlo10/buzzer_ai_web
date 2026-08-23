@@ -11,6 +11,8 @@ interface AuthState {
   isLoading: boolean;
 
   login: (username: string, password: string) => Promise<void>;
+  loginWithGoogle: (idToken: string) => Promise<void>;
+  loginWithApple: (identityToken: string) => Promise<void>;
   register: (username: string, email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   restoreSession: () => Promise<boolean>;
@@ -26,6 +28,30 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ isLoading: true });
     try {
       const response = await authApi.login({ username, password });
+      await tokenStorage.setTokens(response.accessToken, response.refreshToken);
+      await appStorage.setUserProfile(response.user);
+      set({ user: response.user, isAuthenticated: true });
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  loginWithGoogle: async (idToken: string) => {
+    set({ isLoading: true });
+    try {
+      const response = await authApi.loginWithGoogle(idToken);
+      await tokenStorage.setTokens(response.accessToken, response.refreshToken);
+      await appStorage.setUserProfile(response.user);
+      set({ user: response.user, isAuthenticated: true });
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  loginWithApple: async (identityToken: string) => {
+    set({ isLoading: true });
+    try {
+      const response = await authApi.loginWithApple(identityToken);
       await tokenStorage.setTokens(response.accessToken, response.refreshToken);
       await appStorage.setUserProfile(response.user);
       set({ user: response.user, isAuthenticated: true });

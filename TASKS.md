@@ -191,7 +191,7 @@ Surface mesurée : **16 fichiers, 4 123 lignes**, et seulement ces imports de `c
   - Fini quand : un scan QR ouvre le bon salon ; `buzzmaster://join/room/ABC` ouvre l'app
     sur le bon écran **depuis un état tué**
 
-- [ ] **5.5** — Client push notifications
+- [x] **5.5** — Client push notifications
   - **Dépend de la tâche backend 5.1** (endpoint `POST /api/devices`)
   - `expo-notifications` : demander la permission, récupérer le token Expo,
     l'envoyer au backend après login, **le révoquer au logout**
@@ -211,7 +211,7 @@ serveur le vérifie et renvoie **le même DTO** que `POST /api/auth/login` — d
 ⚠️ **Dépend des tâches backend 5bis.3 et 5bis.5.** Ne commence pas avant qu'elles soient
 cochées : sans les client IDs Google et la route serveur, tu ne peux rien tester.
 
-- [ ] **G1** — Installer et configurer `expo-auth-session`
+- [x] **G1** — Installer et configurer `expo-auth-session`
   - ⚠️ **Choix imposé : `expo-auth-session`, pas `@react-native-google-signin`.** Le second
     est natif uniquement et obligerait à écrire un second chemin pour le web — contraire au
     principe « un seul codebase » de ce projet. `expo-auth-session/providers/google` couvre
@@ -223,7 +223,7 @@ cochées : sans les client IDs Google et la route serveur, tu ne peux rien teste
   - Les 3 client IDs (Web / iOS / Android) viennent du `.env`, **jamais en dur**
   - Fini quand : `npx expo run:ios --device` passe et l'app démarre toujours
 
-- [ ] **G2** — Hook `useGoogleAuth` dans `packages/core/src/lib/hooks/`
+- [x] **G2** — Hook `useGoogleAuth` dans `packages/core/src/lib/hooks/`
   - ⚠️ **Contrainte de pureté** : le hook ne doit importer ni `next/*` ni d'API DOM. Or
     `expo-auth-session` est une dépendance native. **Découpe donc en deux :**
     - la partie **portable** (échange de l'ID token contre les JWT, mise à jour du store)
@@ -234,7 +234,7 @@ cochées : sans les client IDs Google et la route serveur, tu ne peux rien teste
     `useAuthStore.login` — **ne réécris pas la gestion de session**
   - Fini quand : `grep -rn "from 'next/\|window\.\|document\.\|expo-" packages/core/src/lib/hooks/` ne renvoie rien
 
-- [ ] **G3** — Bouton « Continuer avec Google » sur `login` et `register`
+- [x] **G3** — Bouton « Continuer avec Google » sur `login` et `register`
   - Écrans : `apps/game/app/(auth)/login.tsx` et `register.tsx`
   - Réutilise les composants existants — n'invente pas un nouveau bouton si un équivalent
     stylé existe déjà
@@ -244,7 +244,7 @@ cochées : sans les client IDs Google et la route serveur, tu ne peux rien teste
     échec réseau (`notifyApiError`)
   - Fini quand : la connexion Google fonctionne sur iPhone **et** sur web
 
-- [ ] **G4** — ⚠️ **Sign in with Apple — bloquant pour l'App Store**
+- [x] **G4** — ⚠️ **Sign in with Apple — bloquant pour l'App Store**
   - **Guideline Apple 4.8** : une app qui propose une connexion tierce (Google) **doit
     aussi** proposer Sign in with Apple, ou une option équivalente qui limite la collecte
     de données. **Sans ça, le dépôt est refusé.**
