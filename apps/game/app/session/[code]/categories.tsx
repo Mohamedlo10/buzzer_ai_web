@@ -9,7 +9,20 @@ import {
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ArrowLeft, Check, Plus, X, Sparkles, AlertCircle, ChevronRight } from 'lucide-react-native';
+import {
+  ArrowLeft,
+  Check,
+  Plus,
+  X,
+  Sparkles,
+  AlertCircle,
+  ChevronRight,
+  Crown,
+  Medal,
+  Award,
+  Flame,
+  TrendingUp,
+} from 'lucide-react-native';
 import { useBuzzStore } from '~/stores/useBuzzStore';
 import { useAuthStore } from '~/stores/useAuthStore';
 import * as sessionsApi from '~/lib/api/sessions';
@@ -18,8 +31,7 @@ import * as roomsApi from '~/lib/api/rooms';
 import { appStorage } from '~/lib/utils/storage';
 import type { CategoryRequest, Difficulty, TeamResponse } from '~/types/api';
 import { teamColor as resolveTeamColor } from '~/lib/game/teamColors';
-import { palette } from '~/lib/theme/tokens';
-import { notify } from '~/lib/ui/notify';
+import { palette, font } from '~/lib/theme/tokens';
 
 const PREDEFINED_CATEGORIES = [
   { name: 'Histoire', emoji: '📜', hexColor: palette.gold },
@@ -35,6 +47,54 @@ const DIFFICULTIES: { value: Difficulty; label: string; hexColor: string }[] = [
   { value: 'INTERMEDIAIRE', label: 'Intermédiaire', hexColor: palette.gold },
   { value: 'EXPERT', label: 'Expert', hexColor: palette.bad },
 ];
+
+const getRankBadgeStyle = (index: number) => {
+  switch (index) {
+    case 0:
+      return {
+        bg: palette.gold + '24',
+        text: palette.gold,
+        border: palette.gold + '44',
+        icon: <Crown size={12} color={palette.gold} strokeWidth={2.5} />,
+      };
+    case 1:
+      return {
+        bg: '#64748B20',
+        text: '#475569',
+        border: '#64748B38',
+        icon: <Medal size={12} color="#475569" strokeWidth={2.5} />,
+      };
+    case 2:
+      return {
+        bg: palette.bronze + '20',
+        text: palette.bronze,
+        border: palette.bronze + '44',
+        icon: <Award size={12} color={palette.bronze} strokeWidth={2.5} />,
+      };
+    case 3:
+      return {
+        bg: palette.primary + '1A',
+        text: palette.primary,
+        border: palette.primary + '38',
+        icon: <Flame size={12} color={palette.primary} strokeWidth={2.5} />,
+      };
+    case 4:
+      return {
+        bg: palette.indigo + '1A',
+        text: palette.indigo,
+        border: palette.indigo + '38',
+        icon: <TrendingUp size={12} color={palette.indigo} strokeWidth={2.5} />,
+      };
+    case 5:
+    default:
+      return {
+        bg: palette.surface2,
+        text: palette.inkSoft,
+        border: palette.line,
+        icon: <Sparkles size={12} color={palette.inkSoft} strokeWidth={2.5} />,
+      };
+  }
+};
 
 /**
  * Sélection des catégories et/ou de l'équipe avant de rejoindre le lobby.
@@ -81,6 +141,9 @@ export default function CategoriesScreen() {
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
   const [isTeamMode, setIsTeamMode] = useState(false);
   const [currentStep, setCurrentStep] = useState<'team' | 'categories'>('categories');
+
+  const [popularCategories, setPopularCategories] = useState<{ name: string; hexColor: string }[]>(PREDEFINED_CATEGORIES);
+  const [isLoadingPopular, setIsLoadingPopular] = useState(true);
 
   const joinSession = useBuzzStore((state) => state.joinSession);
   const joinCheck = useBuzzStore((state) => state.joinCheck);
@@ -207,6 +270,34 @@ export default function CategoriesScreen() {
 
     checkAlreadyJoined();
   }, [user?.id, code]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    const loadPopularCategories = async () => {
+      try {
+        const catNames = await categoriesApi.getPopularCategories(6);
+        let mapped = catNames.map(name => {
+          const predefined = PREDEFINED_CATEGORIES.find(p => p.name.toLowerCase() === name.toLowerCase());
+          if (predefined) return { name: predefined.name, hexColor: predefined.hexColor };
+          const colors = [palette.primary, palette.gold, palette.bad, palette.indigo, palette.violet];
+          const randomColor = colors[Math.floor(Math.random() * colors.length)];
+          return { name, hexColor: randomColor };
+        });
+
+        if (mapped.length < 6) {
+          const needed = 6 - mapped.length;
+          const toAdd = PREDEFINED_CATEGORIES.filter(p => !mapped.some(m => m.name.toLowerCase() === p.name.toLowerCase())).slice(0, needed)
+            .map(p => ({ name: p.name, hexColor: p.hexColor }));
+          mapped = [...mapped, ...toAdd];
+        }
+        setPopularCategories(mapped as any);
+      } catch (err) {
+        // Fallback to PREDEFINED_CATEGORIES which is already set
+      } finally {
+        setIsLoadingPopular(false);
+      }
+    };
+    loadPopularCategories();
+  }, []);
 
   const canAddMore = selectedCategories.length < maxCategories;
 
@@ -352,7 +443,9 @@ export default function CategoriesScreen() {
         <View style={{ width: 80, height: 80, borderRadius: 40, backgroundColor: palette.primary + '26', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
           <Sparkles size={40} color={palette.primary} />
         </View>
-        <Text style={{ color: palette.txt, fontWeight: '600', fontSize: 16 }}>Vérification...</Text>
+        <Text style={{ fontFamily: font.nativeFamily.display, color: palette.txt, fontSize: 16, lineHeight: 22, paddingTop: 6, paddingBottom: 2 }}>
+          Vérification...
+        </Text>
       </SafeAreaView>
     );
   }
@@ -376,8 +469,12 @@ export default function CategoriesScreen() {
             <ArrowLeft size={20} color={palette.txt} />
           </TouchableOpacity>
           <View style={{ flex: 1 }}>
-            <Text style={{ color: palette.txt, fontWeight: '700', fontSize: 18 }}>Choisis ton équipe</Text>
-            <Text style={{ color: palette.inkSoft, fontSize: 12, marginTop: 2 }}>Mode équipes · le buzz est partagé entre coéquipiers</Text>
+            <Text style={{ fontFamily: font.nativeFamily.display, color: palette.txt, fontSize: 18, lineHeight: 26, paddingTop: 6, paddingBottom: 2 }}>
+              Choisis ton équipe
+            </Text>
+            <Text style={{ fontFamily: font.nativeFamily.serif, fontStyle: 'italic', color: palette.inkSoft, fontSize: 13, marginTop: 2 }}>
+              Mode équipes · le buzz est partagé entre coéquipiers
+            </Text>
           </View>
         </View>
 
@@ -410,8 +507,8 @@ export default function CategoriesScreen() {
                         <View style={{ width: 20, height: 20, borderRadius: 10, backgroundColor: tColor }} />
                       </View>
                       <View>
-                        <Text style={{ color: palette.txt, fontWeight: '700', fontSize: 16 }}>{team.name}</Text>
-                        <Text style={{ color: palette.inkSoft, fontSize: 12 }}>
+                        <Text style={{ fontFamily: font.nativeFamily.display, color: palette.txt, fontSize: 16, lineHeight: 22, paddingTop: 4, paddingBottom: 2 }}>{team.name}</Text>
+                        <Text style={{ color: palette.inkSoft, fontSize: 12, marginTop: 2 }}>
                           {team.members?.length ?? 0} joueur{(team.members?.length ?? 0) !== 1 ? 's' : ''}
                         </Text>
                       </View>
@@ -470,7 +567,7 @@ export default function CategoriesScreen() {
               <ActivityIndicator size="small" color="#FFFFFF" />
             ) : (
               <>
-                <Text style={{ color: selectedTeamId ? '#FFFFFF' : palette.inkSoft, fontWeight: '700', fontSize: 18 }}>
+                <Text style={{ fontFamily: font.nativeFamily.display, color: selectedTeamId ? '#FFFFFF' : palette.inkSoft, fontSize: 16, lineHeight: 22, paddingTop: 6, paddingBottom: 2 }}>
                   Continuer vers le salon
                 </Text>
                 <ChevronRight size={22} color={selectedTeamId ? '#FFFFFF' : palette.inkSoft} strokeWidth={2.5} />
@@ -503,10 +600,10 @@ export default function CategoriesScreen() {
           <ArrowLeft size={20} color={palette.txt} />
         </TouchableOpacity>
         <View style={{ flex: 1 }}>
-          <Text style={{ color: palette.txt, fontWeight: '700', fontSize: 18 }}>
+          <Text style={{ fontFamily: font.nativeFamily.display, color: palette.txt, fontSize: 18, lineHeight: 26, paddingTop: 6, paddingBottom: 2 }}>
             {isEditMode ? `Catégories de ${playerName || 'joueur'}` : 'Choisis tes catégories'}
           </Text>
-          <Text style={{ color: palette.primary, fontSize: 12, fontWeight: '600', marginTop: 2 }}>
+          <Text style={{ fontFamily: font.nativeFamily.serif, fontStyle: 'italic', color: palette.primary, fontSize: 13, marginTop: 2 }}>
             {selectedCategories.length} / {maxCategories} · l'IA génère tes questions
           </Text>
         </View>
@@ -515,9 +612,9 @@ export default function CategoriesScreen() {
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 120, gap: 18 }} showsVerticalScrollIndicator={false}>
         {/* Progress bar */}
         <View style={{ backgroundColor: palette.surface, borderRadius: 16, padding: 14, borderWidth: 1, borderColor: palette.line }}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 }}>
-            <Text style={{ color: palette.inkSoft, fontSize: 13 }}>Progression</Text>
-            <Text style={{ color: palette.primary, fontWeight: '700', fontSize: 13 }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+            <Text style={{ fontFamily: font.nativeFamily.display, color: palette.inkSoft, fontSize: 13, lineHeight: 18, paddingTop: 4, paddingBottom: 2 }}>Progression</Text>
+            <Text style={{ fontFamily: font.nativeFamily.display, color: palette.primary, fontSize: 13, lineHeight: 18, paddingTop: 4, paddingBottom: 2 }}>
               {selectedCategories.length}/{maxCategories}
             </Text>
           </View>
@@ -544,15 +641,26 @@ export default function CategoriesScreen() {
             </View>
             <View style={{ gap: 8 }}>
               {selectedCategories.map((category) => {
-                const catInfo = PREDEFINED_CATEGORIES.find(c => c.name === category.name);
+                const popularIdx = popularCategories.findIndex(c => c.name.toLowerCase() === category.name.toLowerCase());
+                const rankStyle = popularIdx >= 0 ? getRankBadgeStyle(popularIdx) : null;
+                const catInfo = popularCategories.find(c => c.name.toLowerCase() === category.name.toLowerCase());
                 return (
                   <View
                     key={category.name}
                     style={{ backgroundColor: palette.surface, borderRadius: 16, padding: 12, borderWidth: 1, borderColor: palette.line, flexDirection: 'row', alignItems: 'center', gap: 10 }}
                   >
-                    <View style={{ width: 34, height: 34, borderRadius: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: (catInfo?.hexColor ?? palette.violet) + '30' }}>
-                      <Text style={{ fontSize: 17 }}>{catInfo?.emoji ?? '✨'}</Text>
-                    </View>
+                    {popularIdx >= 0 ? (
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3, paddingHorizontal: 6, paddingVertical: 3, borderRadius: 6, backgroundColor: rankStyle!.bg, borderWidth: 1, borderColor: rankStyle!.border }}>
+                        {rankStyle!.icon}
+                        <Text style={{ fontSize: 11, fontWeight: '800', color: rankStyle!.text }}>
+                          {popularIdx + 1}
+                        </Text>
+                      </View>
+                    ) : (
+                      <View style={{ width: 26, height: 26, borderRadius: 6, alignItems: 'center', justifyContent: 'center', backgroundColor: palette.surface2, borderWidth: 1, borderColor: palette.line }}>
+                        <Text style={{ fontSize: 12, fontWeight: '700', color: palette.inkSoft }}>#</Text>
+                      </View>
+                    )}
                     <View style={{ flex: 1 }}>
                       <Text style={{ color: palette.txt, fontWeight: '700', fontSize: 14 }}>{category.name}</Text>
                       <View style={{ flexDirection: 'row', gap: 6, marginTop: 6, flexWrap: 'wrap' }}>
@@ -593,36 +701,61 @@ export default function CategoriesScreen() {
           <Text style={{ color: palette.inkSoft, fontSize: 10, fontWeight: '700', letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 10 }}>
             Catégories populaires
           </Text>
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-            {PREDEFINED_CATEGORIES.map((cat) => {
-              const isSelected = !!selectedCategories.find(c => c.name === cat.name);
-              const disabled = !isSelected && !canAddMore;
-              return (
-                <TouchableOpacity
-                  key={cat.name}
-                  onPress={() => toggleCategory(cat.name)}
-                  disabled={disabled}
-                  activeOpacity={0.75}
-                  style={{
-                    width: '47%',
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    gap: 8,
-                    padding: 12,
-                    borderRadius: 14,
-                    borderWidth: 1.5,
-                    borderColor: isSelected ? cat.hexColor : palette.line,
-                    backgroundColor: isSelected ? cat.hexColor + '28' : palette.surface,
-                    opacity: disabled ? 0.4 : 1,
-                  }}
-                >
-                  <Text style={{ fontSize: 20 }}>{cat.emoji}</Text>
-                  <Text style={{ color: palette.txt, fontWeight: '600', fontSize: 13, flex: 1 }}>{cat.name}</Text>
-                  {isSelected && <Check size={16} color={cat.hexColor} />}
-                </TouchableOpacity>
-              );
-            })}
-          </View>
+          {isLoadingPopular ? (
+            <ActivityIndicator color={palette.primary} style={{ marginTop: 10 }} />
+          ) : (
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+              {popularCategories.map((cat, index) => {
+                const isSelected = !!selectedCategories.find(c => c.name === cat.name);
+                const disabled = !isSelected && !canAddMore;
+                const rankStyle = getRankBadgeStyle(index);
+                return (
+                  <TouchableOpacity
+                    key={cat.name}
+                    onPress={() => toggleCategory(cat.name)}
+                    disabled={disabled}
+                    activeOpacity={0.75}
+                    style={{
+                      width: '47%',
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      gap: 8,
+                      paddingVertical: 12,
+                      paddingHorizontal: 10,
+                      borderRadius: 14,
+                      borderWidth: 1.5,
+                      borderColor: isSelected ? cat.hexColor : palette.line,
+                      backgroundColor: isSelected ? cat.hexColor + '28' : palette.surface,
+                      opacity: disabled ? 0.4 : 1,
+                    }}
+                  >
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        gap: 3,
+                        paddingHorizontal: 6,
+                        paddingVertical: 3,
+                        borderRadius: 6,
+                        backgroundColor: rankStyle.bg,
+                        borderWidth: 1,
+                        borderColor: rankStyle.border,
+                      }}
+                    >
+                      {rankStyle.icon}
+                      <Text style={{ fontSize: 11, fontWeight: '800', color: rankStyle.text }}>
+                        {index + 1}
+                      </Text>
+                    </View>
+                    <Text style={{ color: palette.txt, fontWeight: '600', fontSize: 13, flex: 1 }} numberOfLines={1}>
+                      {cat.name}
+                    </Text>
+                    {isSelected && <Check size={16} color={cat.hexColor} />}
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          )}
         </View>
 
         {/* Custom category input */}
@@ -631,7 +764,9 @@ export default function CategoriesScreen() {
             <Text style={{ color: palette.inkSoft, fontSize: 10, fontWeight: '700', letterSpacing: 1.5, textTransform: 'uppercase' }}>
               Catégorie sur mesure
             </Text>
-            <Text style={{ color: palette.inkSoft, fontSize: 10 }}>Virgule ou bouton</Text>
+            <Text style={{ fontFamily: font.nativeFamily.serif, fontStyle: 'italic', color: palette.inkSoft, fontSize: 12 }}>
+              Virgule ou bouton
+            </Text>
           </View>
 
           <View style={{ backgroundColor: palette.surface, borderRadius: 16, borderWidth: 1, borderColor: palette.line, padding: 14 }}>
@@ -710,13 +845,13 @@ export default function CategoriesScreen() {
           {isSubmitting || isJoining ? (
             <>
               <ActivityIndicator size="small" color="#FFFFFF" />
-              <Text style={{ color: '#FFFFFF', fontWeight: '700', fontSize: 18 }}>
+              <Text style={{ fontFamily: font.nativeFamily.display, color: '#FFFFFF', fontSize: 16, lineHeight: 22, paddingTop: 6, paddingBottom: 2 }}>
                 {isEditMode ? 'Enregistrement...' : 'Connexion...'}
               </Text>
             </>
           ) : (
             <>
-              <Text style={{ color: footerDisabled ? palette.inkSoft : '#FFFFFF', fontWeight: '700', fontSize: 18 }}>
+              <Text style={{ fontFamily: font.nativeFamily.display, color: footerDisabled ? palette.inkSoft : '#FFFFFF', fontSize: 16, lineHeight: 22, paddingTop: 6, paddingBottom: 2 }}>
                 {footerLabel}
               </Text>
               <ChevronRight size={22} color={footerDisabled ? palette.inkSoft : '#FFFFFF'} strokeWidth={2.5} />
