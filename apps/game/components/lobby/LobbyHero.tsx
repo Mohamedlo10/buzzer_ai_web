@@ -185,12 +185,13 @@ export function LobbyHero({
         <Text
           style={{
             fontFamily: font.nativeFamily.display,
-            fontSize: 32,
-            lineHeight: 40,
-            letterSpacing: 3,
+            fontSize: 34,
+            lineHeight: 46,
+            letterSpacing: 4,
             color: palette.primary,
-            marginBottom: 14,
-            paddingTop: 2,
+            paddingTop: 12,
+            paddingBottom: 6,
+            textAlign: 'center',
           }}
         >
           {code}
