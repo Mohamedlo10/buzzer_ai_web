@@ -116,7 +116,7 @@ export default function RankingsScreen() {
   const paginationItems = getPaginationRange(currentPage + 1, totalPages);
 
   return (
-    <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: palette.bg }}>
+    <View style={{ flex: 1, backgroundColor: palette.bg }}>
       <AppTopBar title="Xalaat" tag="CLASSEMENT" />
 
       {/* Whole page is scrollable */}
@@ -547,6 +547,6 @@ export default function RankingsScreen() {
           </View>
         </View>
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 }
