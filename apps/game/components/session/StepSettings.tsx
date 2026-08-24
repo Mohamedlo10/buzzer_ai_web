@@ -117,15 +117,16 @@ export function StepSettings({
       <View style={{ gap: 12 }}>
         <Text style={LABEL_STYLE}>Partie</Text>
         <View style={{ flexDirection: 'row', gap: 12, flexWrap: 'wrap' }}>
-          <View style={{ flex: 1, minWidth: '45%' }}>
+          {/* <View style={{ flex: 1, minWidth: '45%' }}>
             <StepperField
               label="Joueurs max"
-              value={config.maxPlayers ?? 20}
+              // value={config.maxPlayers ?? 20}
+              value={30}
               min={2}
               max={50}
               onChange={(v) => setConfig((c) => ({ ...c, maxPlayers: v }))}
             />
-          </View>
+          </View> */}
           {sessionMode !== 'WITHOUT_MODERATOR' && (
             <View style={{ flex: 1, minWidth: '45%' }}>
               <StepperField

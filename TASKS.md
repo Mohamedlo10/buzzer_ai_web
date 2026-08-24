@@ -56,6 +56,34 @@
 
 ## 🔲 À FAIRE
 
+### 🐛 BUG — En sprint, l'hôte ne choisit jamais ses thèmes *(indépendant, à faire en premier)*
+
+📄 **Diagnostic et correctif : `docs/FEATURE_THEMES_IMPOSES.md`, partie A.**
+
+`create.tsx:25` envoie le créateur directement au lobby. En mode `WITH_MODERATOR` c'est
+correct (il arbitre, il ne joue pas). En `WITHOUT_MODERATOR` (sprint) **il joue** — il entre
+donc en partie sans aucun thème, et aucune question n'est générée pour lui.
+
+- [ ] **A1** — Router vers `/categories` après création si `sessionMode === 'WITHOUT_MODERATOR'`
+      (corriger aussi `apps/web-legacy`, qui est en production)
+- [ ] **A2** — Recette : sprint → thèmes → lobby ; modéré → lobby directement
+
+---
+
+### Fonctionnalité — Thèmes imposés par l'hôte *(dépend du backend F6)*
+
+📄 **Spécification complète : `docs/FEATURE_THEMES_IMPOSES.md`, partie B.**
+
+- [ ] **B1** — Types partagés dans `packages/core/src/types/api.ts`
+- [ ] **B2** — Étape « thèmes » dans le formulaire de création (⚠️ **réutiliser** le sélecteur
+      existant de `categories.tsx`, ne pas en écrire un troisième)
+- [ ] **B3** — Sauter l'écran de thèmes quand on rejoint (⚠️ **une seule** fonction partagée,
+      appelée par les 4 points d'entrée)
+- [ ] **B4** — Lobby : thèmes en lecture seule, estimation du nombre de questions corrigée
+- [ ] **B5** — Recette complète des deux modes, iPhone et web
+
+---
+
 ### Phase 4 (fin) — compléter la boucle de jeu
 
 - [x] **4.1** — Écran `session/[code]/questions`
