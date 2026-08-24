@@ -6,6 +6,8 @@ import { ArrowLeft, Sparkles } from 'lucide-react';
 
 import { SafeScreen } from '~/components/layout/SafeScreen';
 import { SessionConfigForm } from '~/components/session/SessionConfigForm';
+import { resolvePostCreationRoute } from '~/lib/game/sessionRouting';
+import type { SessionResponse } from '~/types/api';
 
 export default function CreateSessionPage() {
   const router = useRouter();
@@ -18,8 +20,13 @@ export default function CreateSessionPage() {
     }
   }, [roomId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleSuccess = (sessionId: string, code: string) => {
-    router.replace(`/session/${code}/lobby`);
+  const handleSuccess = (_sessionId: string, code: string, session?: SessionResponse) => {
+    const route = resolvePostCreationRoute({
+      code,
+      sessionMode: session?.sessionMode ?? 'WITHOUT_MODERATOR',
+      categorySelectionMode: session?.categorySelectionMode,
+    });
+    router.replace(route);
   };
 
   if (!roomId) return null;

@@ -131,6 +131,7 @@ export type SessionStatus =
 export type QuestionMode = 'AI' | 'MANUAL';
 export type SessionMode = 'WITH_MODERATOR' | 'WITHOUT_MODERATOR';
 export type QuestionType = 'TEXT' | 'IDENTIFICATION';
+export type CategorySelectionMode = 'PER_PLAYER' | 'MANAGER';
 
 export interface TeamRequest {
   name: string;
@@ -167,6 +168,9 @@ export interface CreateSessionRequest {
   answerTimeSeconds?: number;
   globalQuestionSeconds?: number;
   answerChoicesCount?: number | null;
+  categorySelectionMode?: CategorySelectionMode;
+  targetTotalQuestions?: number;
+  sessionCategories?: CategoryRequest[];
 }
 
 export interface ManualQuestion {
@@ -220,6 +224,9 @@ export interface SessionResponse {
   answerTimeSeconds?: number;
   globalQuestionSeconds?: number;
   answerChoicesCount?: number | null;
+  categorySelectionMode?: CategorySelectionMode;
+  targetTotalQuestions?: number;
+  sessionCategories?: CategoryRequest[];
   createdAt: string;
   startedAt: string | null;
   endedAt: string | null;

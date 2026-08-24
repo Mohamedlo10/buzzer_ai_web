@@ -4,6 +4,8 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { SessionConfigForm } from '~/components/session/SessionConfigForm';
 import { palette } from '~/lib/theme/tokens';
+import { resolvePostCreationRoute } from '~/lib/game/sessionRouting';
+import type { SessionResponse } from '~/types/api';
 
 /**
  * Écran de création de session multi-étapes.
@@ -21,8 +23,13 @@ export default function CreateSessionScreen() {
     }
   }, [roomId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleSuccess = (_sessionId: string, code: string) => {
-    router.replace(`/session/${code}/lobby` as any);
+  const handleSuccess = (_sessionId: string, code: string, session?: SessionResponse) => {
+    const route = resolvePostCreationRoute({
+      code,
+      sessionMode: session?.sessionMode ?? 'WITHOUT_MODERATOR',
+      categorySelectionMode: session?.categorySelectionMode,
+    });
+    router.replace(route as any);
   };
 
   if (!roomId) return null;
@@ -32,7 +39,7 @@ export default function CreateSessionScreen() {
       <SessionConfigForm
         onSuccess={handleSuccess}
         onClose={() => router.back()}
-        onNavigateToLobby={(code) => router.replace(`/session/${code}/lobby` as any)}
+        onNavigate={(route) => router.replace(route as any)}
         roomId={roomId}
       />
     </SafeAreaView>

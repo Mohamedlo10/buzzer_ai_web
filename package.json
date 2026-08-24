@@ -11,10 +11,11 @@
   },
   "scripts": {
     "postinstall": "patch-package",
-    "test": "npm run test:tokens && npm run test:routes && npm run test:confirm",
+    "test": "npm run test:tokens && npm run test:routes && npm run test:confirm && npm run test:session-routing",
     "test:tokens": "node packages/core/src/lib/theme/palette.test.js",
     "test:routes": "node --experimental-strip-types --no-warnings packages/core/src/lib/auth/routePolicy.test.mjs",
     "test:confirm": "node --experimental-strip-types --no-warnings packages/core/src/lib/ui/confirm.test.mjs",
+    "test:session-routing": "node --experimental-strip-types --no-warnings packages/core/src/lib/game/sessionRouting.test.mjs",
     "dev": "npm --workspace apps/web-legacy run dev",
     "build": "npm --workspace apps/web-legacy run build",
     "lint": "npm --workspace apps/web-legacy run lint"

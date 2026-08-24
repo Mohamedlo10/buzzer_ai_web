@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Zap, ArrowLeft, X } from 'lucide-react';
+import type { SessionResponse } from '~/types/api';
 import { StepBar } from './StepBar';
 import { StepGameMode } from './StepGameMode';
 import { StepSettings } from './StepSettings';
@@ -11,7 +12,7 @@ import { StepSummary } from './StepSummary';
 import { useSessionConfig } from '~/lib/hooks/useSessionConfig';
 
 interface SessionConfigFormProps {
-  onSuccess?: (sessionId: string, code: string) => void;
+  onSuccess?: (sessionId: string, code: string, session?: SessionResponse) => void;
   onClose?: () => void;
   roomId?: string;
   initialMaxPlayers?: number;
@@ -53,7 +54,7 @@ export function SessionConfigForm({ onSuccess, onClose, roomId, initialMaxPlayer
     handleCreate,
   } = useSessionConfig({
     onSuccess,
-    onNavigateToLobby: (code) => router.push(`/session/${code}/lobby`),
+    onNavigate: (route) => router.push(route),
     roomId,
     initialMaxPlayers,
   });

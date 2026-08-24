@@ -7,10 +7,12 @@ import { StepBar } from './StepBar';
 import { StepGameMode } from './StepGameMode';
 import { StepSettings } from './StepSettings';
 import { StepTeams } from './StepTeams';
+import type { SessionResponse } from '~/types/api';
 import { StepSummary } from './StepSummary';
 
 interface SessionConfigFormProps {
-  onSuccess?: (sessionId: string, code: string) => void;
+  onSuccess?: (sessionId: string, code: string, session?: SessionResponse) => void;
+  onNavigate?: (route: string) => void;
   onClose?: () => void;
   onNavigateToLobby?: (code: string) => void;
   roomId?: string;
@@ -19,6 +21,7 @@ interface SessionConfigFormProps {
 
 export function SessionConfigForm({
   onSuccess,
+  onNavigate,
   onClose,
   onNavigateToLobby,
   roomId,
@@ -53,6 +56,7 @@ export function SessionConfigForm({
     handleCreate,
   } = useSessionConfig({
     onSuccess,
+    onNavigate,
     onNavigateToLobby,
     roomId,
     initialMaxPlayers,

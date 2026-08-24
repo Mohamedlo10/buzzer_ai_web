@@ -69,7 +69,7 @@ interface BuzzState {
 
 interface BuzzActions {
   // Session actions
-  createSession: (config: CreateSessionRequest) => Promise<{ sessionId: string; code: string }>;
+  createSession: (config: CreateSessionRequest) => Promise<{ sessionId: string; code: string; session: SessionResponse }>;
   joinCheck: (code: string) => Promise<{ sessionId: string; code: string; managerName: string }>;
   joinSession: (sessionId: string, categories: CategoryRequest[], isSpectator: boolean, isManual?: boolean, teamId?: string | null) => Promise<void>;
   fetchSession: (sessionId: string) => Promise<void>;
@@ -162,7 +162,7 @@ export const useBuzzStore = create<BuzzState & BuzzActions>((set, get) => ({
         sessionCode: result.session.code,
         isManager: true,
       });
-      return { sessionId: result.session.id, code: result.session.code };
+      return { sessionId: result.session.id, code: result.session.code, session: result.session };
     } finally {
       set({ isCreating: false });
     }

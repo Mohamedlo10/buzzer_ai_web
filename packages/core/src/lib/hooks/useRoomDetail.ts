@@ -5,7 +5,8 @@ import * as roomsApi from '~/lib/api/rooms';
 import * as friendsApi from '~/lib/api/friends';
 import * as sessionsApi from '~/lib/api/sessions';
 import { appStorage } from '~/lib/utils/storage';
-import type { RoomDetailResponse, RoomSessionResponse } from '~/types/api';
+import type { RoomDetailResponse, RoomSessionResponse, SessionResponse } from '~/types/api';
+import { resolvePostCreationRoute } from '~/lib/game/sessionRouting';
 import { notify } from '~/lib/ui/notify';
 import { confirmAsync } from '~/lib/ui/confirm';
 
@@ -97,9 +98,14 @@ export function useRoomDetail({ roomId, onNavigate, onReplaceRoute }: UseRoomDet
     }
   }, [roomId, onNavigate]);
 
-  const handleSessionCreated = useCallback((_sessionId: string, code: string) => {
+  const handleSessionCreated = useCallback((_sessionId: string, code: string, session?: SessionResponse) => {
     setShowConfigModal(false);
-    onNavigate?.(`/session/${code}/lobby`);
+    const route = resolvePostCreationRoute({
+      code,
+      sessionMode: session?.sessionMode ?? 'WITHOUT_MODERATOR',
+      categorySelectionMode: session?.categorySelectionMode,
+    });
+    onNavigate?.(route);
   }, [onNavigate]);
 
   const handleSendFriendRequest = useCallback(async (targetUserId: string) => {

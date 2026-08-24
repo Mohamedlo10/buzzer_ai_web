@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useBuzzStore } from '~/stores/useBuzzStore';
-import type { CreateSessionRequest, QuestionMode, SessionMode, TeamRequest } from '~/types/api';
+import type { CreateSessionRequest, QuestionMode, SessionMode, TeamRequest, SessionResponse } from '~/types/api';
+import { resolvePostCreationRoute } from '~/lib/game/sessionRouting';
 
 const DEFAULT_TEAMS: TeamRequest[] = [
   { name: 'Rouge', color: 'red' },
@@ -8,14 +9,15 @@ const DEFAULT_TEAMS: TeamRequest[] = [
 ];
 
 export interface UseSessionConfigOptions {
-  onSuccess?: (sessionId: string, code: string) => void;
+  onSuccess?: (sessionId: string, code: string, session?: SessionResponse) => void;
+  onNavigate?: (route: string) => void;
   onNavigateToLobby?: (code: string) => void;
   roomId?: string;
   initialMaxPlayers?: number;
 }
 
 export function useSessionConfig(options: UseSessionConfigOptions = {}) {
-  const { onSuccess, onNavigateToLobby, roomId } = options;
+  const { onSuccess, onNavigate, onNavigateToLobby, roomId } = options;
 
   const [currentStep, setCurrentStep] = useState(0);
   const [questionMode, setQuestionMode] = useState<QuestionMode>('AI');
@@ -93,15 +95,23 @@ export function useSessionConfig(options: UseSessionConfigOptions = {}) {
       };
       const result = await createSession(quickConfig);
 
+      const targetRoute = resolvePostCreationRoute({
+        code: result.session.code,
+        sessionMode: result.session.sessionMode,
+        categorySelectionMode: result.session.categorySelectionMode,
+      });
+
       if (onSuccess) {
-        onSuccess(result.sessionId, result.code);
+        onSuccess(result.sessionId, result.code, result.session);
+      } else if (onNavigate) {
+        onNavigate(targetRoute);
       } else if (onNavigateToLobby) {
         onNavigateToLobby(result.code);
       }
     } catch (err: any) {
       setError(err?.response?.data?.message || 'Erreur lors de la création rapide.');
     }
-  }, [sessionMode, answerTimeSeconds, globalQuestionSeconds, answerChoicesCount, config, createSession, onSuccess, onNavigateToLobby]);
+  }, [sessionMode, answerTimeSeconds, globalQuestionSeconds, answerChoicesCount, config, createSession, onSuccess, onNavigate, onNavigateToLobby]);
 
   const handleCreate = useCallback(async () => {
     setError(null);
@@ -120,8 +130,16 @@ export function useSessionConfig(options: UseSessionConfigOptions = {}) {
         : { ...config, sessionMode, ...withoutModeratorExtras };
       const result = await createSession(finalConfig);
 
+      const targetRoute = resolvePostCreationRoute({
+        code: result.session.code,
+        sessionMode: result.session.sessionMode,
+        categorySelectionMode: result.session.categorySelectionMode,
+      });
+
       if (onSuccess) {
-        onSuccess(result.sessionId, result.code);
+        onSuccess(result.sessionId, result.code, result.session);
+      } else if (onNavigate) {
+        onNavigate(targetRoute);
       } else if (onNavigateToLobby) {
         onNavigateToLobby(result.code);
       }
@@ -142,7 +160,7 @@ export function useSessionConfig(options: UseSessionConfigOptions = {}) {
 
       setError(errorMessage);
     }
-  }, [config, teams, sessionMode, answerTimeSeconds, globalQuestionSeconds, answerChoicesCount, createSession, onSuccess, onNavigateToLobby]);
+  }, [config, teams, sessionMode, answerTimeSeconds, globalQuestionSeconds, answerChoicesCount, createSession, onSuccess, onNavigate, onNavigateToLobby]);
 
   return {
     currentStep,

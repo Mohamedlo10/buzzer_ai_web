@@ -220,7 +220,10 @@ export default function CategoriesScreen() {
         const detail = await sessionsApi.getSession(sid);
         setMaxCategories(detail.session.maxCategoriesPerPlayer || 3);
 
-        const alreadyJoined = detail.players.some(p => p.userId === user.id);
+        const currentPlayer = detail.players.find(p => p.userId === user.id);
+        const hasSelectedCategories = Boolean(currentPlayer?.selectedCategories && currentPlayer.selectedCategories.length > 0);
+        const isSpectator = Boolean(currentPlayer?.isSpectator);
+        const alreadyJoined = Boolean(currentPlayer && (isSpectator || hasSelectedCategories));
         if (alreadyJoined) {
           await appStorage.setActiveSession({ sessionId: detail.session.id, code: detail.session.code });
           useBuzzStore.setState({

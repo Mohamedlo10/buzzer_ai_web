@@ -64,9 +64,9 @@
 correct (il arbitre, il ne joue pas). En `WITHOUT_MODERATOR` (sprint) **il joue** — il entre
 donc en partie sans aucun thème, et aucune question n'est générée pour lui.
 
-- [ ] **A1** — Router vers `/categories` après création si `sessionMode === 'WITHOUT_MODERATOR'`
+- [x] **A1** — Router vers `/categories` après création si `sessionMode === 'WITHOUT_MODERATOR'`
       (corriger aussi `apps/web-legacy`, qui est en production)
-- [ ] **A2** — Recette : sprint → thèmes → lobby ; modéré → lobby directement
+- [x] **A2** — Recette : sprint → thèmes → lobby ; modéré → lobby directement
 
 ---
 
