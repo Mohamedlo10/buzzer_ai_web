@@ -93,22 +93,7 @@ export default function FriendsScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: palette.bg }}>
       <AppTopBar title="Xalaat" tag="AMIS & DUELS" />
-      <View style={{ flex: 1, paddingHorizontal: 20, paddingTop: 4 }}>
-        {/* Header */}
-        <Text
-          style={{
-            fontFamily: font.nativeFamily.display,
-            fontSize: 26,
-            lineHeight: 34,
-            letterSpacing: -0.4,
-            color: palette.txt,
-            paddingTop: 4,
-            marginBottom: 14,
-          }}
-        >
-          Amis
-        </Text>
-
+      <View style={{ flex: 1, paddingHorizontal: 16, paddingTop: 10 }}>
         {/* Tab Switch Pills */}
         <View
           style={{

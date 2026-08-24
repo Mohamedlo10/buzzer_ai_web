@@ -16,7 +16,6 @@ import {
   Info,
   ChevronLeft,
   ChevronRight,
-  Sparkles,
 } from 'lucide-react-native';
 
 import { useAuthStore } from '~/stores/useAuthStore';
@@ -126,58 +125,13 @@ export default function RankingsScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
           paddingHorizontal: 16,
-          paddingTop: 8,
+          paddingTop: 10,
           paddingBottom: 110,
           maxWidth: 540,
           width: '100%',
           alignSelf: 'center',
         }}
       >
-        {/* Header Title & Info button */}
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            marginBottom: 14,
-          }}
-        >
-          <View>
-            <Text
-              style={{
-                fontFamily: font.nativeFamily.display,
-                fontSize: 26,
-                lineHeight: 34,
-                letterSpacing: -0.4,
-                color: palette.txt,
-                paddingTop: 4,
-              }}
-            >
-              Classement
-            </Text>
-            <Text style={{ fontSize: 12.5, color: palette.inkSoft, marginTop: 2 }}>
-              {totalElements} joueurs classés · Page {currentPage + 1} sur {totalPages}
-            </Text>
-          </View>
-
-          <TouchableOpacity
-            onPress={() => setShowInfoModal(true)}
-            activeOpacity={0.7}
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: 18,
-              backgroundColor: palette.surface,
-              borderWidth: 1,
-              borderColor: palette.line,
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <Info size={17} color={palette.inkSoft} />
-          </TouchableOpacity>
-        </View>
-
         {/* "Ton classement" Card (Click to jump to your page) */}
         {currentUserRank ? (
           <TouchableOpacity
@@ -193,7 +147,7 @@ export default function RankingsScreen() {
               flexDirection: 'row',
               alignItems: 'center',
               justifyContent: 'space-between',
-              marginBottom: 14,
+              marginBottom: 12,
             }}
           >
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
@@ -219,7 +173,8 @@ export default function RankingsScreen() {
                     fontSize: 16,
                     lineHeight: 22,
                     color: palette.txt,
-                    paddingTop: 2,
+                    paddingTop: 3,
+                    paddingBottom: 1,
                   }}
                 >
                   Rang #{currentUserRank}
@@ -236,34 +191,53 @@ export default function RankingsScreen() {
           </TouchableOpacity>
         ) : null}
 
-        {/* Search Bar */}
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            backgroundColor: palette.surface,
-            borderRadius: 9999,
-            borderWidth: 1,
-            borderColor: palette.line,
-            paddingHorizontal: 14,
-            paddingVertical: 8,
-            gap: 8,
-            marginBottom: 14,
-          }}
-        >
-          <Search size={16} color={palette.inkSoft} />
-          <TextInput
-            value={searchUsername}
-            onChangeText={handleSearchChange}
-            placeholder="Rechercher un joueur…"
-            placeholderTextColor={palette.inkSoft}
-            style={{ flex: 1, color: palette.txt, fontSize: 13.5 }}
-          />
-          {searchUsername ? (
-            <TouchableOpacity onPress={() => handleSearchChange('')} activeOpacity={0.7}>
-              <X size={16} color={palette.inkSoft} />
-            </TouchableOpacity>
-          ) : null}
+        {/* Search Bar + Info button row */}
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+          <View
+            style={{
+              flex: 1,
+              flexDirection: 'row',
+              alignItems: 'center',
+              backgroundColor: palette.surface,
+              borderRadius: 9999,
+              borderWidth: 1,
+              borderColor: palette.line,
+              paddingHorizontal: 14,
+              paddingVertical: 8,
+              gap: 8,
+            }}
+          >
+            <Search size={16} color={palette.inkSoft} />
+            <TextInput
+              value={searchUsername}
+              onChangeText={handleSearchChange}
+              placeholder="Rechercher un joueur…"
+              placeholderTextColor={palette.inkSoft}
+              style={{ flex: 1, color: palette.txt, fontSize: 13.5 }}
+            />
+            {searchUsername ? (
+              <TouchableOpacity onPress={() => handleSearchChange('')} activeOpacity={0.7}>
+                <X size={16} color={palette.inkSoft} />
+              </TouchableOpacity>
+            ) : null}
+          </View>
+
+          <TouchableOpacity
+            onPress={() => setShowInfoModal(true)}
+            activeOpacity={0.7}
+            style={{
+              width: 38,
+              height: 38,
+              borderRadius: 19,
+              backgroundColor: palette.surface,
+              borderWidth: 1,
+              borderColor: palette.line,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Info size={17} color={palette.inkSoft} />
+          </TouchableOpacity>
         </View>
 
         {/* Podium Section (shown on page 0 without search) */}
@@ -309,15 +283,15 @@ export default function RankingsScreen() {
                     </Text>
                     <Text
                       style={{
-                        fontFamily: font.nativeFamily.display,
                         fontSize: 13,
+                        fontWeight: '700',
                         color: palette.txt,
                       }}
                       numberOfLines={1}
                     >
                       {name}
                     </Text>
-                    <Text style={{ fontSize: 10.5, color: palette.inkSoft, marginTop: 1 }}>
+                    <Text style={{ fontSize: 11, fontWeight: '700', color: palette.primary, marginTop: 2 }}>
                       {score.toLocaleString('fr-FR')} pts
                     </Text>
                   </View>
@@ -342,7 +316,7 @@ export default function RankingsScreen() {
             </Text>
           </View>
         ) : (
-          <View style={{ gap: 8, marginBottom: 20 }}>
+          <View style={{ gap: 8, marginBottom: 16 }}>
             {listItems.map((item, index) => {
               const rankNumber = showPodium
                 ? index + 4
@@ -362,38 +336,37 @@ export default function RankingsScreen() {
                     borderWidth: 1,
                     borderColor: isMe ? palette.primary : palette.line,
                     paddingHorizontal: 12,
-                    paddingVertical: 9,
+                    paddingVertical: 10,
                   }}
                 >
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1, marginRight: 8 }}>
                     <Text
                       style={{
                         fontFamily: font.nativeFamily.display,
-                        fontSize: 12.5,
-                        lineHeight: 16,
+                        fontSize: 13,
+                        lineHeight: 18,
                         color: rankNumber <= 3 ? palette.gold : palette.inkSoft,
-                        minWidth: 34,
-                        paddingTop: 2,
+                        minWidth: 36,
+                        paddingTop: 3,
+                        paddingBottom: 1,
                       }}
                       numberOfLines={1}
                     >
                       #{rankNumber}
                     </Text>
-                    <Avatar name={item.username} avatarUrl={item.avatarUrl} size={32} />
+                    <Avatar name={item.username} avatarUrl={item.avatarUrl} size={34} />
                     <View style={{ flex: 1 }}>
                       <Text
                         style={{
-                          fontFamily: font.nativeFamily.display,
-                          fontSize: 12.5,
-                          lineHeight: 17,
+                          fontSize: 13.5,
+                          fontWeight: '700',
                           color: isMe ? palette.primary : palette.txt,
-                          paddingTop: 1,
                         }}
                         numberOfLines={1}
                       >
                         {item.username} {isMe ? '(toi)' : ''}
                       </Text>
-                      <Text style={{ fontSize: 10.5, color: palette.inkSoft }}>
+                      <Text style={{ fontSize: 11, color: palette.inkSoft, marginTop: 1 }}>
                         {item.totalGames || 0} parties · {item.totalWins || 0} victoires
                       </Text>
                     </View>
@@ -401,11 +374,9 @@ export default function RankingsScreen() {
 
                   <Text
                     style={{
-                      fontFamily: font.nativeFamily.display,
-                      fontSize: 12.5,
-                      lineHeight: 17,
+                      fontSize: 13.5,
+                      fontWeight: '800',
                       color: palette.txt,
-                      paddingTop: 1,
                     }}
                   >
                     {score.toLocaleString('fr-FR')} pts
@@ -424,7 +395,7 @@ export default function RankingsScreen() {
               borderRadius: 20,
               borderWidth: 1,
               borderColor: palette.line,
-              paddingVertical: 12,
+              paddingVertical: 10,
               paddingHorizontal: 10,
               flexDirection: 'row',
               alignItems: 'center',
@@ -460,7 +431,7 @@ export default function RankingsScreen() {
                   <View
                     key={`dots-${idx}`}
                     style={{
-                      width: 32,
+                      width: 28,
                       height: 36,
                       alignItems: 'center',
                       justifyContent: 'center',
