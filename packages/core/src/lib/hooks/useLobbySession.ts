@@ -221,7 +221,9 @@ export function useLobbySession({ code, onNavigate, onReplaceRoute }: UseLobbySe
   const realPlayerCount = players.filter((p) => !p.isSpectator).length;
   const canStart = realPlayerCount >= 2 && (session?.questionMode !== 'MANUAL' || (session?.totalQuestions ?? 0) > 0);
   const isWithoutModerator = session?.sessionMode === 'WITHOUT_MODERATOR';
-  const totalQuestionsEstimate = (session?.maxCategoriesPerPlayer ?? 1) * (session?.questionsPerCategory ?? 1) * Math.max(1, realPlayerCount);
+  const totalQuestionsEstimate = session?.categorySelectionMode === 'MANAGER'
+    ? (session?.targetTotalQuestions ?? 25)
+    : (session?.maxCategoriesPerPlayer ?? 1) * (session?.questionsPerCategory ?? 1) * Math.max(1, realPlayerCount);
 
   return {
     isCopied, setIsCopied, isRefreshing, isDeletingSession, kickingPlayerId, roomInfo,

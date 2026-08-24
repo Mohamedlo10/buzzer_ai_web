@@ -79,8 +79,8 @@ donc en partie sans aucun thème, et aucune question n'est générée pour lui.
       existant de `categories.tsx`, ne pas en écrire un troisième)
 - [x] **B3** — Sauter l'écran de thèmes quand on rejoint (⚠️ **une seule** fonction partagée,
       appelée par les 4 points d'entrée)
-- [ ] **B4** — Lobby : thèmes en lecture seule, estimation du nombre de questions corrigée
-- [ ] **B5** — Recette complète des deux modes, iPhone et web
+- [x] **B4** — Lobby : thèmes en lecture seule, estimation du nombre de questions corrigée
+- [x] **B5** — Recette complète des deux modes, iPhone et web
 
 ---
 

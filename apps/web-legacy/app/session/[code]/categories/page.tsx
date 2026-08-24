@@ -151,6 +151,19 @@ export default function CategorySelectionPage() {
         const detail = await sessionsApi.getSession(sid);
         setMaxCategories(detail.session.maxCategoriesPerPlayer || 3);
 
+        if (detail.session.categorySelectionMode === 'MANAGER') {
+          await appStorage.setActiveSession({ sessionId: detail.session.id, code: detail.session.code });
+          useBuzzStore.setState({
+            session: detail.session,
+            players: detail.players || [],
+            questions: detail.questions || [],
+            teams: detail.teams || [],
+            sessionCode: detail.session.code,
+          });
+          router.replace(`/session/${code}/lobby`);
+          return;
+        }
+
         const currentPlayer = detail.players.find(p => p.userId === user.id);
         const hasSelectedCategories = Boolean(currentPlayer?.selectedCategories && currentPlayer.selectedCategories.length > 0);
         const isSpectatorMember = Boolean(currentPlayer?.isSpectator);

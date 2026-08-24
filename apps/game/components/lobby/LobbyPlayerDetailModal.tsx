@@ -4,7 +4,7 @@ import { Eye, Crown, X, Trash2, Edit3 } from 'lucide-react-native';
 import { Avatar } from '~/components/shared/Avatar';
 import { teamColor, teamColorTint } from '~/lib/game/teamColors';
 import { palette, font } from '~/lib/theme/tokens';
-import type { PlayerResponse, TeamResponse } from '~/types/api';
+import type { PlayerResponse, TeamResponse, CategorySelectionMode } from '~/types/api';
 
 export interface LobbyPlayerDetailModalProps {
   visible: boolean;
@@ -13,6 +13,7 @@ export interface LobbyPlayerDetailModalProps {
   isManager: boolean;
   questionMode?: string;
   sessionMode?: string;
+  categorySelectionMode?: CategorySelectionMode;
   teams: TeamResponse[];
   avatarMap: Record<string, string | null>;
   onClose: () => void;
@@ -29,6 +30,7 @@ export function LobbyPlayerDetailModal({
   isManager,
   questionMode,
   sessionMode,
+  categorySelectionMode,
   teams,
   avatarMap,
   onClose,
@@ -160,7 +162,7 @@ export function LobbyPlayerDetailModal({
 
           {/* Action buttons */}
           <View style={{ gap: 10 }}>
-            {isManager && !isMe && questionMode !== 'MANUAL' && sessionMode === 'WITH_MODERATOR' && (
+            {isManager && !isMe && questionMode !== 'MANUAL' && sessionMode === 'WITH_MODERATOR' && categorySelectionMode !== 'MANAGER' && (
               <TouchableOpacity
                 onPress={() => {
                   onClose();

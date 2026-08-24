@@ -363,7 +363,7 @@ un glob mal recâblé, un commentaire pollué.
 
 ```bash
 cat apps/web-legacy/.next/static/css/*.css | md5
-# Référence actuelle : 39f27fbb53fc1aeb49fbf35d38edda32
+# Référence actuelle : 9efcb2f1d6bb2cfcd5627a6bb1568f7c
 ```
 
 Si le hash change **et que tu n'as pas touché à web-legacy**, tu as cassé quelque chose de

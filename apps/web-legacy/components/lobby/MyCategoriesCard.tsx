@@ -1,8 +1,9 @@
 import { Check } from 'lucide-react';
-import type { PlayerResponse } from '~/types/api';
+import type { PlayerResponse, SessionResponse } from '~/types/api';
 
 export interface MyCategoriesCardProps {
   currentPlayer?: PlayerResponse;
+  session?: SessionResponse | null;
   questionMode?: string;
   onEditCategories: () => void;
   reqOpen: boolean;
@@ -16,6 +17,7 @@ export interface MyCategoriesCardProps {
 
 export function MyCategoriesCard({
   currentPlayer,
+  session,
   questionMode,
   onEditCategories,
   reqOpen,
@@ -30,36 +32,50 @@ export function MyCategoriesCard({
     return null;
   }
 
+  const isManagerMode = session?.categorySelectionMode === 'MANAGER';
+  const sessionThemes = session?.sessionCategories?.map((c) => c.name) ?? [];
+  const selectedCategories = isManagerMode
+    ? (sessionThemes.length > 0 ? sessionThemes : (currentPlayer?.selectedCategories ?? []))
+    : (currentPlayer?.selectedCategories ?? []);
+
   return (
     <div className="bg-surface rounded-2xl border border-line p-3.5 mb-4">
       <div className="flex items-center justify-between mb-2.5">
-        <span className="text-host text-[10px] font-bold tracking-widest uppercase">Mes catégories</span>
-        <button
-          type="button"
-          onClick={onEditCategories}
-          className="px-2.5 py-1 rounded-full text-xs font-semibold bg-host/16 border border-host/30 text-host cursor-pointer"
-        >
-          ✎ Modifier
-        </button>
+        <span className="text-host text-[10px] font-bold tracking-widest uppercase">
+          {isManagerMode ? 'Thèmes imposés (par l’hôte)' : 'Mes catégories'}
+        </span>
+        {!isManagerMode && (
+          <button
+            type="button"
+            onClick={onEditCategories}
+            className="px-2.5 py-1 rounded-full text-xs font-semibold bg-host/16 border border-host/30 text-host cursor-pointer"
+          >
+            ✎ Modifier
+          </button>
+        )}
       </div>
       <div className="flex flex-wrap gap-1.5">
-        {(currentPlayer?.selectedCategories ?? []).map((cat) => (
+        {selectedCategories.map((cat) => (
           <span key={cat} className="px-2 py-1 rounded-full bg-bg border border-line text-txt text-xs">
             {categoryEmojiMap[cat] ? `${categoryEmojiMap[cat]} ` : ''}{cat}
           </span>
         ))}
-        {(currentPlayer?.selectedCategories?.length ?? 0) === 0 && (
-          <span className="text-txt-40 text-xs">Aucune catégorie sélectionnée</span>
+        {selectedCategories.length === 0 && (
+          <span className="text-txt-40 text-xs">
+            {isManagerMode ? 'Aucun thème imposé configuré' : 'Aucune catégorie sélectionnée'}
+          </span>
         )}
-        <button
-          type="button"
-          onClick={() => setReqOpen((v) => !v)}
-          className="px-2 py-1 rounded-full border border-dashed border-line text-txt-60 text-xs hover:bg-surface-2 transition-colors cursor-pointer"
-        >
-          + Demander
-        </button>
+        {!isManagerMode && (
+          <button
+            type="button"
+            onClick={() => setReqOpen((v) => !v)}
+            className="px-2 py-1 rounded-full border border-dashed border-line text-txt-60 text-xs hover:bg-surface-2 transition-colors cursor-pointer"
+          >
+            + Demander
+          </button>
+        )}
       </div>
-      {reqOpen && (
+      {!isManagerMode && reqOpen && (
         <div className="mt-3 flex flex-col gap-2 animate-[rise_0.25s_both]">
           {reqSent ? (
             <div className="flex items-center gap-2 text-accent text-sm">

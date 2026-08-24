@@ -1,6 +1,6 @@
 import { Eye, Crown, X } from 'lucide-react';
 import { Avatar } from '~/components/ui/Avatar';
-import type { PlayerResponse, TeamResponse } from '~/types/api';
+import type { PlayerResponse, TeamResponse, CategorySelectionMode } from '~/types/api';
 import { teamColor, teamColorTint } from '~/lib/game/teamColors';
 
 export interface LobbyPlayerDetailModalProps {
@@ -9,6 +9,7 @@ export interface LobbyPlayerDetailModalProps {
   isManager: boolean;
   questionMode?: string;
   sessionMode?: string;
+  categorySelectionMode?: CategorySelectionMode;
   teams: TeamResponse[];
   avatarMap: Record<string, string | null>;
   onClose: () => void;
@@ -24,6 +25,7 @@ export function LobbyPlayerDetailModal({
   isManager,
   questionMode,
   sessionMode,
+  categorySelectionMode,
   teams,
   avatarMap,
   onClose,
@@ -32,48 +34,58 @@ export function LobbyPlayerDetailModal({
   onKickPlayer,
   categoryEmojiMap,
 }: LobbyPlayerDetailModalProps) {
-  return (
-    <div className="fixed inset-0 bg-scrim flex items-end justify-center z-50 backdrop-blur-sm">
-      <div className="absolute inset-0" onClick={onClose} />
-      
-      <div className="relative rounded-t-3xl w-full max-w-[480px] bg-surface border-t border-line animate-[sheetup_.3s_ease-out_both] p-5 pb-8 z-10">
-        <div className="flex justify-center mb-3">
-          <div className="w-10 h-1.5 rounded-full bg-surface-2" />
-        </div>
+  const isMe = player.userId === currentUserId;
 
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-[fadeIn_0.2s_ease-out]">
+      <div className="relative w-full max-w-sm bg-surface border border-line rounded-3xl p-6 shadow-2xl animate-[scaleUp_0.2s_ease-out]">
         <button
+          type="button"
           onClick={onClose}
-          className="absolute right-4 top-4 w-8 h-8 rounded-full bg-surface-2 flex items-center justify-center hover:opacity-80 transition-opacity cursor-pointer text-txt-60"
+          className="absolute top-4 right-4 p-2 text-txt-40 hover:text-txt transition-colors rounded-full bg-surface-2"
         >
-          <X size={16} />
+          <X size={18} />
         </button>
 
-        <div className="flex flex-col items-center mb-6">
-          <Avatar
-            avatarUrl={player.userId ? (avatarMap[player.userId] ?? player.avatarUrl) : player.avatarUrl}
-            username={player.name}
-            size={72}
-            borderColor={player.isManager ? 'var(--gold)' : player.userId === currentUserId ? 'var(--primary)' : undefined}
-          />
-          <h3 className="text-txt text-lg font-bold mt-3">{player.name}</h3>
-          <div className="flex items-center gap-1.5 mt-1.5">
+        <div className="flex flex-col items-center text-center mb-6">
+          <div className="relative mb-3">
             {player.isSpectator ? (
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-energy/12 text-energy text-[10px] font-bold">
-                <Eye size={10} />
-                SPECTATEUR
-              </span>
+              <div className="w-16 h-16 rounded-full bg-energy/12 border-2 border-energy/40 flex items-center justify-center">
+                <Eye size={24} className="text-energy" />
+              </div>
             ) : (
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-accent/12 text-accent text-[10px] font-bold">
-                JOUEUR
-              </span>
+              <Avatar
+                avatarUrl={player.userId ? (avatarMap[player.userId] ?? player.avatarUrl) : player.avatarUrl}
+                username={player.name}
+                size={64}
+                borderColor={player.isManager ? 'var(--gold)' : isMe ? 'var(--primary)' : undefined}
+              />
             )}
             {player.isManager && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-energy/12 text-energy text-[10px] font-bold">
-                <Crown size={10} fill="var(--gold)" color="var(--gold)" />
-                HOST
+              <div className="absolute -top-1.5 left-1/2 -translate-x-1/2">
+                <Crown size={16} fill="var(--gold)" color="var(--gold)" />
+              </div>
+            )}
+          </div>
+
+          <h3 className="text-lg font-bold text-txt">{player.name}</h3>
+
+          <div className="flex items-center gap-1.5 mt-1.5">
+            {player.isManager && (
+              <span className="text-[10px] font-bold tracking-wider uppercase px-2.5 py-0.5 rounded-full bg-host/15 text-host border border-host/30">
+                Hôte
               </span>
             )}
-            {player.teamId && (() => {
+            {player.isSpectator ? (
+              <span className="text-[10px] font-bold tracking-wider uppercase px-2.5 py-0.5 rounded-full bg-energy/15 text-energy border border-energy/30">
+                Spectateur
+              </span>
+            ) : (
+              <span className="text-[10px] font-bold tracking-wider uppercase px-2.5 py-0.5 rounded-full bg-primary/15 text-primary border border-primary/30">
+                Joueur
+              </span>
+            )}
+            {(() => {
               const team = teams.find((t) => t.id === player.teamId);
               if (!team) return null;
               return (
@@ -126,7 +138,7 @@ export function LobbyPlayerDetailModal({
           
           {isManager && player.userId !== currentUserId && (
             <div className="flex gap-2 mt-2 pt-2 border-t border-line">
-              {questionMode !== 'MANUAL' && sessionMode === 'WITH_MODERATOR' && !player.isManager && (
+              {questionMode !== 'MANUAL' && sessionMode === 'WITH_MODERATOR' && categorySelectionMode !== 'MANAGER' && !player.isManager && (
                 <button
                   type="button"
                   onClick={() => {

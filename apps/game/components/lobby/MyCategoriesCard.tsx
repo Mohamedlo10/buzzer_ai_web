@@ -1,11 +1,12 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, TextInput } from 'react-native';
-import { Check, Edit3, Plus, Send } from 'lucide-react-native';
+import { Check, Edit3, Plus, Send, Lock } from 'lucide-react-native';
 import { palette, font, inkAlpha } from '~/lib/theme/tokens';
-import type { PlayerResponse } from '~/types/api';
+import type { PlayerResponse, SessionResponse } from '~/types/api';
 
 export interface MyCategoriesCardProps {
   currentPlayer?: PlayerResponse;
+  session?: SessionResponse | null;
   questionMode?: string;
   onEditCategories: () => void;
   reqOpen: boolean;
@@ -19,6 +20,7 @@ export interface MyCategoriesCardProps {
 
 export function MyCategoriesCard({
   currentPlayer,
+  session,
   questionMode,
   onEditCategories,
   reqOpen,
@@ -33,7 +35,11 @@ export function MyCategoriesCard({
     return null;
   }
 
-  const selectedCategories = currentPlayer?.selectedCategories ?? [];
+  const isManagerMode = session?.categorySelectionMode === 'MANAGER';
+  const sessionThemes = session?.sessionCategories?.map((c) => c.name) ?? [];
+  const selectedCategories = isManagerMode
+    ? (sessionThemes.length > 0 ? sessionThemes : (currentPlayer?.selectedCategories ?? []))
+    : (currentPlayer?.selectedCategories ?? []);
 
   return (
     <View
@@ -60,28 +66,30 @@ export function MyCategoriesCard({
         }}
       >
         <Text style={{ fontSize: 11, fontWeight: '700', letterSpacing: 1.5, color: palette.primary, textTransform: 'uppercase' }}>
-          Mes catégories
+          {isManagerMode ? 'Thèmes imposés (par l’hôte)' : 'Mes catégories'}
         </Text>
-        <TouchableOpacity
-          onPress={onEditCategories}
-          activeOpacity={0.7}
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 4,
-            paddingHorizontal: 10,
-            paddingVertical: 4,
-            borderRadius: 9999,
-            backgroundColor: `${palette.primary}18`,
-            borderWidth: 1,
-            borderColor: `${palette.primary}33`,
-          }}
-        >
-          <Edit3 size={11} color={palette.primary} />
-          <Text style={{ fontSize: 11.5, fontWeight: '700', color: palette.primary }}>
-            Modifier
-          </Text>
-        </TouchableOpacity>
+        {!isManagerMode && (
+          <TouchableOpacity
+            onPress={onEditCategories}
+            activeOpacity={0.7}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 4,
+              paddingHorizontal: 10,
+              paddingVertical: 4,
+              borderRadius: 9999,
+              backgroundColor: `${palette.primary}18`,
+              borderWidth: 1,
+              borderColor: `${palette.primary}33`,
+            }}
+          >
+            <Edit3 size={11} color={palette.primary} />
+            <Text style={{ fontSize: 11.5, fontWeight: '700', color: palette.primary }}>
+              Modifier
+            </Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* Categories Chips */}
@@ -94,7 +102,7 @@ export function MyCategoriesCard({
               alignItems: 'center',
               backgroundColor: palette.bg,
               borderWidth: 1,
-              borderColor: palette.line,
+              borderColor: isManagerMode ? `${palette.primary}44` : palette.line,
               paddingHorizontal: 10,
               paddingVertical: 5,
               borderRadius: 9999,
@@ -108,34 +116,36 @@ export function MyCategoriesCard({
 
         {selectedCategories.length === 0 && (
           <Text style={{ fontSize: 12.5, color: palette.inkSoft, fontStyle: 'italic', paddingVertical: 4 }}>
-            Aucune catégorie sélectionnée
+            {isManagerMode ? 'Aucun thème imposé configuré' : 'Aucune catégorie sélectionnée'}
           </Text>
         )}
 
-        <TouchableOpacity
-          onPress={() => setReqOpen(!reqOpen)}
-          activeOpacity={0.7}
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 4,
-            borderWidth: 1,
-            borderStyle: 'dashed',
-            borderColor: palette.line,
-            paddingHorizontal: 10,
-            paddingVertical: 5,
-            borderRadius: 9999,
-          }}
-        >
-          <Plus size={12} color={palette.inkSoft} />
-          <Text style={{ fontSize: 12, fontWeight: '600', color: palette.inkSoft }}>
-            Demander
-          </Text>
-        </TouchableOpacity>
+        {!isManagerMode && (
+          <TouchableOpacity
+            onPress={() => setReqOpen(!reqOpen)}
+            activeOpacity={0.7}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 4,
+              borderWidth: 1,
+              borderStyle: 'dashed',
+              borderColor: palette.line,
+              paddingHorizontal: 10,
+              paddingVertical: 5,
+              borderRadius: 9999,
+            }}
+          >
+            <Plus size={12} color={palette.inkSoft} />
+            <Text style={{ fontSize: 12, fontWeight: '600', color: palette.inkSoft }}>
+              Demander
+            </Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* Request Form */}
-      {reqOpen && (
+      {!isManagerMode && reqOpen && (
         <View style={{ marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: palette.line }}>
           {reqSent ? (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 6 }}>

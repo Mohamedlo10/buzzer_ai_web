@@ -175,6 +175,7 @@ export default function LobbyPage() {
 
         <MyCategoriesCard
           currentPlayer={currentPlayer}
+          session={session}
           questionMode={session.questionMode}
           onEditCategories={handleEditMyCategories}
           reqOpen={reqOpen}
@@ -307,6 +308,7 @@ export default function LobbyPage() {
           isManager={isManager}
           questionMode={session.questionMode}
           sessionMode={session.sessionMode}
+          categorySelectionMode={session.categorySelectionMode}
           teams={teams}
           avatarMap={avatarMap}
           onClose={() => setSelectedLobbyPlayer(null)}
