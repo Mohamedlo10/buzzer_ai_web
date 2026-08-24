@@ -358,40 +358,42 @@ export default function RankingsScreen() {
                     alignItems: 'center',
                     justifyContent: 'space-between',
                     backgroundColor: isMe ? `${palette.primary}12` : palette.surface,
-                    borderRadius: 20,
+                    borderRadius: 16,
                     borderWidth: 1,
                     borderColor: isMe ? palette.primary : palette.line,
-                    paddingHorizontal: 14,
-                    paddingVertical: 12,
+                    paddingHorizontal: 12,
+                    paddingVertical: 9,
                   }}
                 >
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 }}>
                     <Text
                       style={{
                         fontFamily: font.nativeFamily.display,
-                        fontSize: 14,
-                        lineHeight: 18,
+                        fontSize: 12.5,
+                        lineHeight: 16,
                         color: rankNumber <= 3 ? palette.gold : palette.inkSoft,
-                        minWidth: 38,
+                        minWidth: 34,
                         paddingTop: 2,
                       }}
                       numberOfLines={1}
                     >
                       #{rankNumber}
                     </Text>
-                    <Avatar name={item.username} avatarUrl={item.avatarUrl} size={36} />
+                    <Avatar name={item.username} avatarUrl={item.avatarUrl} size={32} />
                     <View style={{ flex: 1 }}>
                       <Text
                         style={{
                           fontFamily: font.nativeFamily.display,
-                          fontSize: 14,
+                          fontSize: 12.5,
+                          lineHeight: 17,
                           color: isMe ? palette.primary : palette.txt,
+                          paddingTop: 1,
                         }}
                         numberOfLines={1}
                       >
                         {item.username} {isMe ? '(toi)' : ''}
                       </Text>
-                      <Text style={{ fontSize: 11, color: palette.inkSoft }}>
+                      <Text style={{ fontSize: 10.5, color: palette.inkSoft }}>
                         {item.totalGames || 0} parties · {item.totalWins || 0} victoires
                       </Text>
                     </View>
@@ -400,8 +402,10 @@ export default function RankingsScreen() {
                   <Text
                     style={{
                       fontFamily: font.nativeFamily.display,
-                      fontSize: 14,
+                      fontSize: 12.5,
+                      lineHeight: 17,
                       color: palette.txt,
+                      paddingTop: 1,
                     }}
                   >
                     {score.toLocaleString('fr-FR')} pts
