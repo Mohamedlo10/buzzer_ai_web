@@ -1,4 +1,5 @@
 import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { X, ArrowLeft, Zap } from 'lucide-react-native';
 import { palette, font } from '~/lib/theme/tokens';
 import { useSessionConfig } from '~/lib/hooks/useSessionConfig';
@@ -129,16 +130,16 @@ export function SessionConfigForm({
     : false;
 
   return (
-    <View style={{ flex: 1, backgroundColor: palette.bg }}>
+    <SafeAreaView edges={['top', 'bottom']} style={{ flex: 1, backgroundColor: palette.bg }}>
       {/* Header sticky */}
       <View
         style={{
-          paddingTop: 20,
+          paddingTop: 10,
           paddingBottom: 12,
           paddingHorizontal: 16,
           borderBottomWidth: 1,
           borderBottomColor: palette.line,
-          gap: 12,
+          gap: 10,
         }}
       >
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
@@ -162,7 +163,16 @@ export function SessionConfigForm({
           </TouchableOpacity>
 
           <View style={{ flex: 1, alignItems: 'center' }}>
-            <Text style={{ fontFamily: font.nativeFamily.display, fontSize: 16, lineHeight: 22, color: palette.txt, paddingTop: 2 }}>
+            <Text
+              style={{
+                fontFamily: font.nativeFamily.display,
+                fontSize: 16,
+                lineHeight: 22,
+                color: palette.txt,
+                paddingTop: 4,
+                paddingBottom: 2,
+              }}
+            >
               Créer une session
             </Text>
             <Text style={{ fontFamily: font.nativeFamily.serif, fontStyle: 'italic', fontSize: 13, color: palette.inkSoft }}>
@@ -201,7 +211,7 @@ export function SessionConfigForm({
 
       {/* Scrollable body */}
       <ScrollView
-        contentContainerStyle={{ padding: 16, paddingBottom: 120, gap: 24 }}
+        contentContainerStyle={{ padding: 16, paddingBottom: 110, gap: 20 }}
         showsVerticalScrollIndicator={false}
       >
         {renderStepContent()}
@@ -219,7 +229,7 @@ export function SessionConfigForm({
           borderTopColor: palette.line,
           paddingHorizontal: 16,
           paddingTop: 12,
-          paddingBottom: 32,
+          paddingBottom: 16,
           flexDirection: 'row',
           gap: 12,
           alignItems: 'center',
@@ -284,6 +294,6 @@ export function SessionConfigForm({
           )}
         </TouchableOpacity>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }

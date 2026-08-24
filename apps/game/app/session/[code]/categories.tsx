@@ -629,6 +629,63 @@ export default function CategoriesScreen() {
             />
           </View>
         </View>
+        {/* Custom category input */}
+        <View>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+            <Text style={{ color: palette.inkSoft, fontSize: 10, fontWeight: '700', letterSpacing: 1.5, textTransform: 'uppercase' }}>
+              Catégorie sur mesure
+            </Text>
+            <Text style={{ fontFamily: font.nativeFamily.serif, fontStyle: 'italic', color: palette.inkSoft, fontSize: 12 }}>
+              Virgule ou bouton
+            </Text>
+          </View>
+
+          <View style={{ backgroundColor: palette.surface, borderRadius: 16, borderWidth: 1, borderColor: palette.line, padding: 14 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: palette.bg, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10, borderWidth: 1, borderColor: palette.line }}>
+              <Sparkles size={16} color={palette.primary} />
+              <TextInput
+                value={customCategory}
+                onChangeText={handleCustomCategoryChange}
+                onSubmitEditing={() => commitCustomCategory()}
+                placeholder="Ton thème (ex: Manga, Jazz, Pâtisserie)"
+                placeholderTextColor={palette.inkSoft}
+                returnKeyType="done"
+                style={{ flex: 1, color: palette.txt, fontSize: 14, fontWeight: '500' }}
+              />
+              {customCategory.trim() ? (
+                <TouchableOpacity
+                  onPress={() => commitCustomCategory()}
+                  activeOpacity={0.8}
+                  style={{ paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, backgroundColor: palette.primary }}
+                >
+                  <Text style={{ color: '#FFFFFF', fontSize: 12, fontWeight: '700' }}>Ajouter</Text>
+                </TouchableOpacity>
+              ) : null}
+            </View>
+
+            {showDropdown && customCategory.trim().length >= 2 && (
+              <View style={{ marginTop: 10, flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+                {isSearching ? (
+                  <View style={{ width: '100%', paddingVertical: 8, alignItems: 'center' }}>
+                    <ActivityIndicator size="small" color={palette.primary} />
+                  </View>
+                ) : (
+                  searchResults.map((result) => (
+                    <TouchableOpacity
+                      key={result}
+                      onPress={() => commitCustomCategory(result)}
+                      activeOpacity={0.7}
+                      style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 9999, backgroundColor: palette.surface2, borderWidth: 1, borderColor: palette.line }}
+                    >
+                      <Plus size={12} color={palette.primary} />
+                      <Text style={{ color: palette.txt, fontSize: 12, fontWeight: '600' }}>{result}</Text>
+                    </TouchableOpacity>
+                  ))
+                )}
+              </View>
+            )}
+          </View>
+        </View>
 
         {/* Selected categories */}
         {selectedCategories.length > 0 && (
@@ -675,7 +732,7 @@ export default function CategoriesScreen() {
                               backgroundColor: category.difficulty === diff.value ? diff.hexColor : palette.surface2,
                             }}
                           >
-                            <Text style={{ fontSize: 11, fontWeight: '700', color: category.difficulty === diff.value ? '#1A1410' : palette.inkSoft }}>
+                            <Text style={{ fontSize: 11, fontWeight: '700', color: category.difficulty === diff.value ? '#ffffff' : palette.inkSoft }}>
                               {diff.label}
                             </Text>
                           </TouchableOpacity>
@@ -758,63 +815,7 @@ export default function CategoriesScreen() {
           )}
         </View>
 
-        {/* Custom category input */}
-        <View>
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-            <Text style={{ color: palette.inkSoft, fontSize: 10, fontWeight: '700', letterSpacing: 1.5, textTransform: 'uppercase' }}>
-              Catégorie sur mesure
-            </Text>
-            <Text style={{ fontFamily: font.nativeFamily.serif, fontStyle: 'italic', color: palette.inkSoft, fontSize: 12 }}>
-              Virgule ou bouton
-            </Text>
-          </View>
 
-          <View style={{ backgroundColor: palette.surface, borderRadius: 16, borderWidth: 1, borderColor: palette.line, padding: 14 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: palette.bg, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10, borderWidth: 1, borderColor: palette.line }}>
-              <Sparkles size={16} color={palette.primary} />
-              <TextInput
-                value={customCategory}
-                onChangeText={handleCustomCategoryChange}
-                onSubmitEditing={() => commitCustomCategory()}
-                placeholder="Ton thème (ex: Manga, Jazz, Pâtisserie)"
-                placeholderTextColor={palette.inkSoft}
-                returnKeyType="done"
-                style={{ flex: 1, color: palette.txt, fontSize: 14, fontWeight: '500' }}
-              />
-              {customCategory.trim() ? (
-                <TouchableOpacity
-                  onPress={() => commitCustomCategory()}
-                  activeOpacity={0.8}
-                  style={{ paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, backgroundColor: palette.primary }}
-                >
-                  <Text style={{ color: '#FFFFFF', fontSize: 12, fontWeight: '700' }}>Ajouter</Text>
-                </TouchableOpacity>
-              ) : null}
-            </View>
-
-            {showDropdown && customCategory.trim().length >= 2 && (
-              <View style={{ marginTop: 10, flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
-                {isSearching ? (
-                  <View style={{ width: '100%', paddingVertical: 8, alignItems: 'center' }}>
-                    <ActivityIndicator size="small" color={palette.primary} />
-                  </View>
-                ) : (
-                  searchResults.map((result) => (
-                    <TouchableOpacity
-                      key={result}
-                      onPress={() => commitCustomCategory(result)}
-                      activeOpacity={0.7}
-                      style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 9999, backgroundColor: palette.surface2, borderWidth: 1, borderColor: palette.line }}
-                    >
-                      <Plus size={12} color={palette.primary} />
-                      <Text style={{ color: palette.txt, fontSize: 12, fontWeight: '600' }}>{result}</Text>
-                    </TouchableOpacity>
-                  ))
-                )}
-              </View>
-            )}
-          </View>
-        </View>
 
         {/* Error */}
         {error && (

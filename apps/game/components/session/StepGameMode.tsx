@@ -125,17 +125,6 @@ export function StepGameMode({
         </Text>
         <View style={{ flexDirection: 'row', gap: 12 }}>
           <ModeCard
-            label="Avec modérateur"
-            sublabel="L'hôte valide les réponses"
-            icon={<User size={26} color={sessionMode === 'WITH_MODERATOR' ? palette.primary : palette.inkSoft} />}
-            active={sessionMode === 'WITH_MODERATOR'}
-            accentHex={palette.primary}
-            onClick={() => {
-              setSessionMode('WITH_MODERATOR');
-              setConfig((c) => ({ ...c, debtAmount: 5 }));
-            }}
-          />
-          <ModeCard
             label="Sprint ⚡"
             sublabel="Tous répondent en même temps"
             icon={<Bot size={26} color={sessionMode === 'WITHOUT_MODERATOR' ? palette.violet : palette.inkSoft} />}
@@ -146,6 +135,18 @@ export function StepGameMode({
               setConfig((c) => ({ ...c, isTeamMode: false, debtAmount: 1 }));
             }}
           />
+          <ModeCard
+            label="Avec modérateur"
+            sublabel="L'hôte valide les réponses"
+            icon={<User size={26} color={sessionMode === 'WITH_MODERATOR' ? palette.primary : palette.inkSoft} />}
+            active={sessionMode === 'WITH_MODERATOR'}
+            accentHex={palette.primary}
+            onClick={() => {
+              setSessionMode('WITH_MODERATOR');
+              setConfig((c) => ({ ...c, debtAmount: 5 }));
+            }}
+          />
+
         </View>
       </View>
 
