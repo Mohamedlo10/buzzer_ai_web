@@ -19,13 +19,13 @@ export function useSessionConfig(options: UseSessionConfigOptions = {}) {
 
   const [currentStep, setCurrentStep] = useState(0);
   const [questionMode, setQuestionMode] = useState<QuestionMode>('AI');
-  const [sessionMode, setSessionMode] = useState<SessionMode>('WITH_MODERATOR');
+  const [sessionMode, setSessionMode] = useState<SessionMode>('WITHOUT_MODERATOR');
   const [answerTimeSeconds, setAnswerTimeSeconds] = useState(15);
   const [globalQuestionSeconds, setGlobalQuestionSeconds] = useState(15);
   const [answerChoicesCount, setAnswerChoicesCount] = useState<number | null>(null);
   const [teams, setTeams] = useState<TeamRequest[]>(DEFAULT_TEAMS);
   const [config, setConfig] = useState<CreateSessionRequest>({
-    debtAmount: 5,
+    debtAmount: 1,
     pointsPerCorrectAnswer: 5,
     questionsPerCategory: 5,
     maxPlayers: 20,

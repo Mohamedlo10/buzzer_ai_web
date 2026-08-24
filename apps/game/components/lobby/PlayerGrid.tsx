@@ -34,10 +34,10 @@ export function PlayerGrid({
     <View
       style={{
         backgroundColor: palette.surface,
-        borderRadius: 22,
+        borderRadius: 24,
         borderWidth: 1,
         borderColor: palette.line,
-        padding: 16,
+        padding: 18,
         marginBottom: 16,
         shadowColor: '#000',
         shadowOpacity: 0.03,
@@ -51,176 +51,131 @@ export function PlayerGrid({
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'space-between',
-          marginBottom: 14,
+          marginBottom: 16,
         }}
       >
-        <Text style={{ fontSize: 11, fontWeight: '700', letterSpacing: 1.5, color: palette.inkSoft, textTransform: 'uppercase' }}>
+        <Text
+          style={{
+            fontSize: 11,
+            fontWeight: '700',
+            letterSpacing: 1.5,
+            color: palette.inkSoft,
+            textTransform: 'uppercase',
+          }}
+        >
           Joueurs connectés
         </Text>
         <View
           style={{
-            backgroundColor: palette.bg,
-            borderWidth: 1,
-            borderColor: palette.line,
-            paddingHorizontal: 8,
+            backgroundColor: `${palette.inkSoft}15`,
+            paddingHorizontal: 9,
             paddingVertical: 2,
             borderRadius: 9999,
           }}
         >
-          <Text style={{ fontSize: 11.5, fontWeight: '700', color: palette.txt }}>
+          <Text style={{ fontSize: 12, fontWeight: '700', color: palette.txt }}>
             {players.length}
           </Text>
         </View>
       </View>
 
-      {/* Players List / Grid */}
+      {/* Grid of Players (Matching user reference) */}
       {players.length > 0 ? (
-        <View style={{ gap: 8 }}>
+        <View
+          style={{
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            gap: 16,
+            alignItems: 'flex-start',
+            paddingVertical: 4,
+          }}
+        >
           {players.map((player) => {
             const isYou = player.userId === currentUserId;
-            const isKicking = kickingPlayerId === player.id;
             const avatarUrl = player.userId
               ? (avatarMap[player.userId] ?? player.avatarUrl)
               : player.avatarUrl;
 
             return (
-              <View
+              <TouchableOpacity
                 key={player.id}
+                onPress={() => onSelectPlayer(player)}
+                activeOpacity={0.7}
                 style={{
-                  flexDirection: 'row',
                   alignItems: 'center',
-                  justifyContent: 'space-between',
-                  backgroundColor: isYou ? `${palette.primary}0D` : palette.bg,
-                  borderWidth: 1,
-                  borderColor: isYou ? `${palette.primary}33` : palette.line,
-                  borderRadius: 16,
-                  paddingHorizontal: 12,
-                  paddingVertical: 10,
+                  width: 72,
+                  gap: 6,
                 }}
               >
-                <TouchableOpacity
-                  onPress={() => onSelectPlayer(player)}
-                  activeOpacity={0.7}
-                  style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}
-                >
-                  <View style={{ position: 'relative' }}>
-                    {player.isSpectator ? (
-                      <View
-                        style={{
-                          width: 40,
-                          height: 40,
-                          borderRadius: 20,
-                          backgroundColor: `${palette.indigo}18`,
-                          borderWidth: 1,
-                          borderColor: palette.indigo,
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                        }}
-                      >
-                        <Eye size={18} color={palette.indigo} />
-                      </View>
-                    ) : (
-                      <Avatar name={player.name} avatarUrl={avatarUrl} size={40} />
-                    )}
-
-                    {player.isManager && (
-                      <View
-                        style={{
-                          position: 'absolute',
-                          top: -6,
-                          right: -4,
-                          backgroundColor: palette.gold,
-                          borderRadius: 10,
-                          padding: 2,
-                        }}
-                      >
-                        <Crown size={10} color="#FFFFFF" fill="#FFFFFF" />
-                      </View>
-                    )}
-                  </View>
-
-                  <View style={{ flex: 1 }}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                      <Text
-                        style={{
-                          fontSize: 14,
-                          fontWeight: '700',
-                          color: palette.txt,
-                        }}
-                        numberOfLines={1}
-                      >
-                        {player.name}
-                      </Text>
-                      {isYou && (
-                        <View
-                          style={{
-                            backgroundColor: palette.primary,
-                            paddingHorizontal: 6,
-                            paddingVertical: 1,
-                            borderRadius: 6,
-                          }}
-                        >
-                          <Text style={{ color: palette.primaryInk, fontSize: 10, fontWeight: '700' }}>
-                            Toi
-                          </Text>
-                        </View>
-                      )}
-                    </View>
-
-                    {player.selectedCategories && player.selectedCategories.length > 0 && (
-                      <Text style={{ fontSize: 11.5, color: palette.inkSoft, marginTop: 1 }}>
-                        {player.selectedCategories.length} catégorie{player.selectedCategories.length > 1 ? 's' : ''}
-                      </Text>
-                    )}
-                  </View>
-                </TouchableOpacity>
-
-                {/* Manager Actions */}
-                {isManager && !isYou && (
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                    {questionMode !== 'MANUAL' && sessionMode === 'WITH_MODERATOR' && (
-                      <TouchableOpacity
-                        onPress={() => onEditCategories(player)}
-                        activeOpacity={0.7}
-                        style={{
-                          paddingHorizontal: 8,
-                          paddingVertical: 4,
-                          borderRadius: 8,
-                          backgroundColor: `${palette.primary}18`,
-                          borderWidth: 1,
-                          borderColor: `${palette.primary}33`,
-                        }}
-                      >
-                        <Text style={{ fontSize: 10.5, fontWeight: '700', color: palette.primary }}>
-                          Thèmes
-                        </Text>
-                      </TouchableOpacity>
-                    )}
-
-                    <TouchableOpacity
-                      onPress={() => onKickPlayer(player.id, player.name)}
-                      disabled={isKicking}
-                      activeOpacity={0.7}
+                {/* Avatar with status rings */}
+                <View style={{ position: 'relative' }}>
+                  {player.isSpectator ? (
+                    <View
                       style={{
-                        width: 32,
-                        height: 32,
-                        borderRadius: 10,
-                        backgroundColor: `${palette.bad}18`,
-                        borderWidth: 1,
-                        borderColor: `${palette.bad}33`,
+                        width: 56,
+                        height: 56,
+                        borderRadius: 28,
+                        backgroundColor: `${palette.indigo}18`,
+                        borderWidth: 2,
+                        borderColor: palette.indigo,
                         alignItems: 'center',
                         justifyContent: 'center',
                       }}
                     >
-                      {isKicking ? (
-                        <ActivityIndicator size="small" color={palette.bad} />
-                      ) : (
-                        <Trash2 size={13} color={palette.bad} />
-                      )}
-                    </TouchableOpacity>
-                  </View>
-                )}
-              </View>
+                      <Eye size={22} color={palette.indigo} />
+                    </View>
+                  ) : (
+                    <View
+                      style={{
+                        borderRadius: 30,
+                        borderWidth: 2.5,
+                        borderColor: isYou
+                          ? palette.primary
+                          : player.isManager
+                            ? palette.gold
+                            : 'transparent',
+                        padding: 1.5,
+                      }}
+                    >
+                      <Avatar name={player.name} avatarUrl={avatarUrl} size={54} />
+                    </View>
+                  )}
+
+                  {/* Host Crown Badge */}
+                  {player.isManager && (
+                    <View
+                      style={{
+                        position: 'absolute',
+                        top: -4,
+                        right: -2,
+                        backgroundColor: palette.gold,
+                        borderRadius: 10,
+                        padding: 3,
+                        shadowColor: '#000',
+                        shadowOpacity: 0.2,
+                        shadowRadius: 2,
+                        elevation: 2,
+                      }}
+                    >
+                      <Crown size={10} color="#FFFFFF" fill="#FFFFFF" />
+                    </View>
+                  )}
+                </View>
+
+                {/* Name underneath */}
+                <Text
+                  style={{
+                    fontSize: 13,
+                    fontWeight: isYou ? '800' : '700',
+                    color: isYou ? palette.primary : palette.txt,
+                    textAlign: 'center',
+                    maxWidth: 72,
+                  }}
+                  numberOfLines={1}
+                >
+                  {isYou ? 'Toi' : player.name}
+                </Text>
+              </TouchableOpacity>
             );
           })}
         </View>
@@ -229,6 +184,25 @@ export function PlayerGrid({
           <Users size={28} color={palette.inkSoft} />
           <Text style={{ fontSize: 13, color: palette.inkSoft, marginTop: 8 }}>
             En attente de joueurs…
+          </Text>
+        </View>
+      )}
+
+      {/* Manager Actions Bar if multiple players */}
+      {isManager && players.length > 1 && (
+        <View
+          style={{
+            marginTop: 14,
+            paddingTop: 12,
+            borderTopWidth: 1,
+            borderTopColor: palette.line,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
+          <Text style={{ fontSize: 11.5, color: palette.inkSoft, fontStyle: 'italic' }}>
+            Appuie sur un joueur pour le gérer ou l&apos;exclure
           </Text>
         </View>
       )}
