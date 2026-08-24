@@ -1,5 +1,5 @@
-import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { X, ArrowLeft, Zap } from 'lucide-react-native';
 import { palette, font } from '~/lib/theme/tokens';
 import { useSessionConfig } from '~/lib/hooks/useSessionConfig';
@@ -24,6 +24,10 @@ export function SessionConfigForm({
   roomId,
   initialMaxPlayers,
 }: SessionConfigFormProps) {
+  const insets = useSafeAreaInsets();
+  const topInset = Math.max(insets.top, Platform.OS === 'ios' ? 52 : 16);
+  const bottomInset = Math.max(insets.bottom, Platform.OS === 'ios' ? 34 : 16);
+
   const {
     currentStep,
     totalSteps,
@@ -130,11 +134,11 @@ export function SessionConfigForm({
     : false;
 
   return (
-    <SafeAreaView edges={['top', 'bottom']} style={{ flex: 1, backgroundColor: palette.bg }}>
-      {/* Header sticky */}
+    <View style={{ flex: 1, backgroundColor: palette.bg }}>
+      {/* Header sticky with explicit topInset to clear the notch / Dynamic Island */}
       <View
         style={{
-          paddingTop: 10,
+          paddingTop: topInset,
           paddingBottom: 12,
           paddingHorizontal: 16,
           borderBottomWidth: 1,
@@ -211,7 +215,7 @@ export function SessionConfigForm({
 
       {/* Scrollable body */}
       <ScrollView
-        contentContainerStyle={{ padding: 16, paddingBottom: 110, gap: 20 }}
+        contentContainerStyle={{ padding: 16, paddingBottom: bottomInset + 80, gap: 20 }}
         showsVerticalScrollIndicator={false}
       >
         {renderStepContent()}
@@ -229,7 +233,7 @@ export function SessionConfigForm({
           borderTopColor: palette.line,
           paddingHorizontal: 16,
           paddingTop: 12,
-          paddingBottom: 16,
+          paddingBottom: bottomInset,
           flexDirection: 'row',
           gap: 12,
           alignItems: 'center',
@@ -294,6 +298,6 @@ export function SessionConfigForm({
           )}
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
