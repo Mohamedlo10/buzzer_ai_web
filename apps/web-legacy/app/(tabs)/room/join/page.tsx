@@ -9,6 +9,7 @@ import { Spinner } from '~/components/loading/Spinner';
 import { QRScannerModal } from '~/components/ui/QRScannerModal';
 import * as roomsApi from '~/lib/api/rooms';
 import * as sessionsApi from '~/lib/api/sessions';
+import { resolveJoinRoute } from '~/lib/game/sessionRouting';
 
 export default function JoinRoomPage() {
   const router = useRouter();
@@ -55,7 +56,12 @@ export default function JoinRoomPage() {
     try {
       const check = await sessionsApi.joinCheck(scannedCode);
       if (check?.session) {
-        router.replace(`/session/${scannedCode}/categories`);
+        const route = resolveJoinRoute({
+          code: scannedCode,
+          sessionId: check.session.id,
+          categorySelectionMode: check.session.categorySelectionMode,
+        });
+        router.replace(route);
         return;
       }
     } catch {

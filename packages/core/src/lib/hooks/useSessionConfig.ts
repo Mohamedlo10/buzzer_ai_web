@@ -1,6 +1,14 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useBuzzStore } from '~/stores/useBuzzStore';
-import type { CreateSessionRequest, QuestionMode, SessionMode, TeamRequest, SessionResponse } from '~/types/api';
+import type {
+  CreateSessionRequest,
+  QuestionMode,
+  SessionMode,
+  TeamRequest,
+  SessionResponse,
+  CategorySelectionMode,
+  CategoryRequest,
+} from '~/types/api';
 import { resolvePostCreationRoute } from '~/lib/game/sessionRouting';
 
 const DEFAULT_TEAMS: TeamRequest[] = [
@@ -22,6 +30,9 @@ export function useSessionConfig(options: UseSessionConfigOptions = {}) {
   const [currentStep, setCurrentStep] = useState(0);
   const [questionMode, setQuestionMode] = useState<QuestionMode>('AI');
   const [sessionMode, setSessionMode] = useState<SessionMode>('WITHOUT_MODERATOR');
+  const [categorySelectionMode, setCategorySelectionMode] = useState<CategorySelectionMode>('PER_PLAYER');
+  const [targetTotalQuestions, setTargetTotalQuestions] = useState<number>(25);
+  const [sessionCategories, setSessionCategories] = useState<CategoryRequest[]>([]);
   const [answerTimeSeconds, setAnswerTimeSeconds] = useState(15);
   const [globalQuestionSeconds, setGlobalQuestionSeconds] = useState(15);
   const [answerChoicesCount, setAnswerChoicesCount] = useState<number | null>(null);
@@ -37,6 +48,7 @@ export function useSessionConfig(options: UseSessionConfigOptions = {}) {
     buzzCountdownSeconds: 15,
     roomId,
     questionMode: 'AI',
+    categorySelectionMode: 'PER_PLAYER',
   });
 
   const [error, setError] = useState<string | null>(null);
@@ -91,6 +103,7 @@ export function useSessionConfig(options: UseSessionConfigOptions = {}) {
         buzzCountdownSeconds: 10,
         questionsPerCategory: 5,
         pointsPerCorrectAnswer: 5,
+        categorySelectionMode: 'PER_PLAYER',
         ...withoutModeratorExtras,
       };
       const result = await createSession(quickConfig);
@@ -121,13 +134,32 @@ export function useSessionConfig(options: UseSessionConfigOptions = {}) {
       return;
     }
 
+    if (categorySelectionMode === 'MANAGER' && sessionCategories.length === 0) {
+      setError('Veuillez sélectionner au moins un thème imposé.');
+      return;
+    }
+
     try {
       const withoutModeratorExtras = sessionMode === 'WITHOUT_MODERATOR'
         ? { answerTimeSeconds, globalQuestionSeconds, answerChoicesCount }
         : {};
-      const finalConfig = config.isTeamMode
-        ? { ...config, sessionMode, ...withoutModeratorExtras, teams }
-        : { ...config, sessionMode, ...withoutModeratorExtras };
+      const managerExtras = categorySelectionMode === 'MANAGER'
+        ? {
+            categorySelectionMode: 'MANAGER' as const,
+            targetTotalQuestions,
+            categories: sessionCategories,
+            sessionCategories,
+          }
+        : {
+            categorySelectionMode: 'PER_PLAYER' as const,
+          };
+      const finalConfig: CreateSessionRequest = {
+        ...config,
+        sessionMode,
+        ...withoutModeratorExtras,
+        ...managerExtras,
+        ...(config.isTeamMode ? { teams } : {}),
+      };
       const result = await createSession(finalConfig);
 
       const targetRoute = resolvePostCreationRoute({
@@ -160,7 +192,21 @@ export function useSessionConfig(options: UseSessionConfigOptions = {}) {
 
       setError(errorMessage);
     }
-  }, [config, teams, sessionMode, answerTimeSeconds, globalQuestionSeconds, answerChoicesCount, createSession, onSuccess, onNavigate, onNavigateToLobby]);
+  }, [
+    config,
+    teams,
+    sessionMode,
+    categorySelectionMode,
+    targetTotalQuestions,
+    sessionCategories,
+    answerTimeSeconds,
+    globalQuestionSeconds,
+    answerChoicesCount,
+    createSession,
+    onSuccess,
+    onNavigate,
+    onNavigateToLobby,
+  ]);
 
   return {
     currentStep,
@@ -171,6 +217,12 @@ export function useSessionConfig(options: UseSessionConfigOptions = {}) {
     setQuestionMode,
     sessionMode,
     setSessionMode,
+    categorySelectionMode,
+    setCategorySelectionMode,
+    targetTotalQuestions,
+    setTargetTotalQuestions,
+    sessionCategories,
+    setSessionCategories,
     answerTimeSeconds,
     setAnswerTimeSeconds,
     globalQuestionSeconds,

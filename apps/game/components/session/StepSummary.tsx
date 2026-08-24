@@ -1,12 +1,22 @@
 import { View, Text } from 'react-native';
 import { Zap, User, Bot, Sparkles, PenLine, Timer, Target, Users, Award, AlertCircle } from 'lucide-react-native';
 import { palette } from '~/lib/theme/tokens';
-import type { QuestionMode, SessionMode, CreateSessionRequest, TeamRequest } from '~/types/api';
+import type {
+  QuestionMode,
+  SessionMode,
+  CreateSessionRequest,
+  TeamRequest,
+  CategorySelectionMode,
+  CategoryRequest,
+} from '~/types/api';
 import { SummaryTable, type SummaryRow } from './SummaryTable';
 
 export interface StepSummaryProps {
   sessionMode: SessionMode;
   questionMode: QuestionMode;
+  categorySelectionMode: CategorySelectionMode;
+  targetTotalQuestions: number;
+  sessionCategories: CategoryRequest[];
   globalQuestionSeconds: number;
   answerChoicesCount: number | null;
   config: CreateSessionRequest;
@@ -17,6 +27,9 @@ export interface StepSummaryProps {
 export function StepSummary({
   sessionMode,
   questionMode,
+  categorySelectionMode,
+  targetTotalQuestions,
+  sessionCategories,
   globalQuestionSeconds,
   answerChoicesCount,
   config,
@@ -46,19 +59,37 @@ export function StepSummary({
 
   if (questionMode === 'AI') {
     recapRows.push({
-      label: 'Questions par catégorie',
-      value: config.questionsPerCategory ?? 5,
-      icon: <Target size={16} color={palette.txt} />,
-      iconColor: palette.txt,
-      valueColor: palette.txt,
+      label: 'Sélection des thèmes',
+      value: categorySelectionMode === 'MANAGER' ? `Imposés (${sessionCategories.length} thème${sessionCategories.length !== 1 ? 's' : ''})` : 'Par joueur',
+      icon: <Target size={16} color={palette.primary} />,
+      iconColor: palette.primary,
+      valueColor: palette.primary,
     });
-    recapRows.push({
-      label: 'Catégories maximum',
-      value: config.maxCategoriesPerPlayer ?? 3,
-      icon: <Target size={16} color={palette.txt} />,
-      iconColor: palette.txt,
-      valueColor: palette.txt,
-    });
+
+    if (categorySelectionMode === 'MANAGER') {
+      recapRows.push({
+        label: 'Total de questions',
+        value: `${targetTotalQuestions} questions`,
+        icon: <Target size={16} color={palette.txt} />,
+        iconColor: palette.txt,
+        valueColor: palette.txt,
+      });
+    } else {
+      recapRows.push({
+        label: 'Questions par catégorie',
+        value: config.questionsPerCategory ?? 5,
+        icon: <Target size={16} color={palette.txt} />,
+        iconColor: palette.txt,
+        valueColor: palette.txt,
+      });
+      recapRows.push({
+        label: 'Catégories maximum',
+        value: config.maxCategoriesPerPlayer ?? 3,
+        icon: <Target size={16} color={palette.txt} />,
+        iconColor: palette.txt,
+        valueColor: palette.txt,
+      });
+    }
   }
 
   if (sessionMode === 'WITHOUT_MODERATOR') {

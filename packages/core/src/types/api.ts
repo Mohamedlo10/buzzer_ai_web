@@ -170,6 +170,7 @@ export interface CreateSessionRequest {
   answerChoicesCount?: number | null;
   categorySelectionMode?: CategorySelectionMode;
   targetTotalQuestions?: number;
+  categories?: CategoryRequest[];
   sessionCategories?: CategoryRequest[];
 }
 
@@ -683,6 +684,7 @@ export interface RoomSessionResponse {
   managerFriendshipStatus?: FriendshipStatus;
   playerCount: number;
   maxPlayers: number;
+  categorySelectionMode?: CategorySelectionMode;
   createdAt: string;
 }
 

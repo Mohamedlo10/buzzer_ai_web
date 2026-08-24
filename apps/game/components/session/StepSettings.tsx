@@ -1,12 +1,25 @@
 import { View, Text } from 'react-native';
 import { palette } from '~/lib/theme/tokens';
-import type { QuestionMode, SessionMode, CreateSessionRequest } from '~/types/api';
+import type {
+  QuestionMode,
+  SessionMode,
+  CreateSessionRequest,
+  CategorySelectionMode,
+  CategoryRequest,
+} from '~/types/api';
 import { StepperField } from './StepperField';
 import { ChoiceStrip } from './ChoiceStrip';
+import { CategoryPicker } from './CategoryPicker';
 
 export interface StepSettingsProps {
   sessionMode: SessionMode;
   questionMode: QuestionMode;
+  categorySelectionMode: CategorySelectionMode;
+  setCategorySelectionMode: (v: CategorySelectionMode) => void;
+  targetTotalQuestions: number;
+  setTargetTotalQuestions: (v: number) => void;
+  sessionCategories: CategoryRequest[];
+  setSessionCategories: (v: CategoryRequest[]) => void;
   globalQuestionSeconds: number;
   setGlobalQuestionSeconds: (v: number) => void;
   setAnswerTimeSeconds: (v: number) => void;
@@ -28,6 +41,12 @@ const LABEL_STYLE = {
 export function StepSettings({
   sessionMode,
   questionMode,
+  categorySelectionMode,
+  setCategorySelectionMode,
+  targetTotalQuestions,
+  setTargetTotalQuestions,
+  sessionCategories,
+  setSessionCategories,
   globalQuestionSeconds,
   setGlobalQuestionSeconds,
   setAnswerTimeSeconds,
@@ -86,30 +105,63 @@ export function StepSettings({
         </View>
       )}
 
-      {/* Questions IA */}
+      {/* Thèmes & Questions IA */}
       {questionMode === 'AI' && (
         <View style={{ gap: 12 }}>
-          <Text style={LABEL_STYLE}>Questions IA</Text>
-          <View style={{ flexDirection: 'row', gap: 12 }}>
-            <View style={{ flex: 1 }}>
+          <Text style={LABEL_STYLE}>Thèmes & Questions IA</Text>
+          <ChoiceStrip<CategorySelectionMode>
+            label="Sélection des thèmes"
+            value={categorySelectionMode}
+            onChange={(v) => setCategorySelectionMode(v)}
+            options={[
+              { label: 'Par joueur', value: 'PER_PLAYER' },
+              { label: 'Imposés par l’hôte', value: 'MANAGER' },
+            ]}
+          />
+
+          {categorySelectionMode === 'MANAGER' ? (
+            <View style={{ gap: 14 }}>
               <StepperField
-                label="Questions / cat."
-                value={config.questionsPerCategory ?? 5}
-                min={2}
-                max={15}
-                onChange={(v) => setConfig((c) => ({ ...c, questionsPerCategory: v }))}
+                label="Nombre total de questions"
+                value={targetTotalQuestions}
+                suffix=" q."
+                min={5}
+                max={100}
+                step={5}
+                onChange={setTargetTotalQuestions}
               />
+              <View style={{ marginTop: 4 }}>
+                <Text style={[LABEL_STYLE, { marginBottom: 8 }]}>Thèmes imposés de la session</Text>
+                <CategoryPicker
+                  selectedCategories={sessionCategories}
+                  onChange={setSessionCategories}
+                  maxCategories={10}
+                  showProgress={false}
+                />
+              </View>
             </View>
-            <View style={{ flex: 1 }}>
-              <StepperField
-                label="Catégories max"
-                value={config.maxCategoriesPerPlayer ?? 3}
-                min={1}
-                max={10}
-                onChange={(v) => setConfig((c) => ({ ...c, maxCategoriesPerPlayer: v }))}
-              />
+          ) : (
+            <View style={{ flexDirection: 'row', gap: 12 }}>
+              <View style={{ flex: 1 }}>
+                <StepperField
+                  label="Questions / cat."
+                  value={config.questionsPerCategory ?? 5}
+                  min={2}
+                  max={15}
+                  onChange={(v) => setConfig((c) => ({ ...c, questionsPerCategory: v }))}
+                />
+              </View>
+              <View style={{ flex: 1 }}>
+                <StepperField
+                  label="Catégories max"
+                  value={config.maxCategoriesPerPlayer ?? 3}
+                  min={1}
+                  max={10}
+                  onChange={(v) => setConfig((c) => ({ ...c, maxCategoriesPerPlayer: v }))}
+                />
+              </View>
             </View>
-          </View>
+          )}
         </View>
       )}
 
@@ -117,16 +169,6 @@ export function StepSettings({
       <View style={{ gap: 12 }}>
         <Text style={LABEL_STYLE}>Partie</Text>
         <View style={{ flexDirection: 'row', gap: 12, flexWrap: 'wrap' }}>
-          {/* <View style={{ flex: 1, minWidth: '45%' }}>
-            <StepperField
-              label="Joueurs max"
-              // value={config.maxPlayers ?? 20}
-              value={30}
-              min={2}
-              max={50}
-              onChange={(v) => setConfig((c) => ({ ...c, maxPlayers: v }))}
-            />
-          </View> */}
           {sessionMode !== 'WITHOUT_MODERATOR' && (
             <View style={{ flex: 1, minWidth: '45%' }}>
               <StepperField

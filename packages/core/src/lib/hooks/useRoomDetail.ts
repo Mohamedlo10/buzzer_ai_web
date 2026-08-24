@@ -6,7 +6,7 @@ import * as friendsApi from '~/lib/api/friends';
 import * as sessionsApi from '~/lib/api/sessions';
 import { appStorage } from '~/lib/utils/storage';
 import type { RoomDetailResponse, RoomSessionResponse, SessionResponse } from '~/types/api';
-import { resolvePostCreationRoute } from '~/lib/game/sessionRouting';
+import { resolvePostCreationRoute, resolveJoinRoute } from '~/lib/game/sessionRouting';
 import { notify } from '~/lib/ui/notify';
 import { confirmAsync } from '~/lib/ui/confirm';
 
@@ -86,7 +86,12 @@ export function useRoomDetail({ roomId, onNavigate, onReplaceRoute }: UseRoomDet
     await appStorage.setActiveSession({ sessionId, code });
 
     if (status === 'LOBBY') {
-      onNavigate?.(`/session/${code}/categories?sessionId=${sessionId}`);
+      const joinRoute = resolveJoinRoute({
+        code,
+        sessionId,
+        categorySelectionMode: session.categorySelectionMode,
+      });
+      onNavigate?.(joinRoute);
     } else {
       const routes: Record<string, string> = {
         GENERATING: `/session/${code}/loading`,

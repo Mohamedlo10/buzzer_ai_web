@@ -4,6 +4,8 @@ import { useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { Sparkles } from 'lucide-react';
 
+import * as sessionsApi from '~/lib/api/sessions';
+import { resolveJoinRoute } from '~/lib/game/sessionRouting';
 import { SafeScreen } from '~/components/layout/SafeScreen';
 
 export default function JoinSessionByCodePage() {
@@ -12,9 +14,30 @@ export default function JoinSessionByCodePage() {
   const code = params.code;
 
   useEffect(() => {
-    if (code) {
-      router.replace(`/session/${code}/categories`);
+    if (!code) return;
+    let isMounted = true;
+
+    async function checkRoute() {
+      try {
+        const check = await sessionsApi.joinCheck(code);
+        if (!isMounted) return;
+        const targetRoute = resolveJoinRoute({
+          code,
+          sessionId: check.session.id,
+          categorySelectionMode: check.session.categorySelectionMode,
+        });
+        router.replace(targetRoute);
+      } catch {
+        if (!isMounted) return;
+        router.replace(`/session/${code}/categories`);
+      }
     }
+
+    checkRoute();
+
+    return () => {
+      isMounted = false;
+    };
   }, [code, router]);
 
   return (

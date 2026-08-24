@@ -1,7 +1,7 @@
 import { TouchableOpacity, View, Text, ScrollView } from 'react-native';
 import { palette } from '~/lib/theme/tokens';
 
-export function ChoiceStrip({
+export function ChoiceStrip<T = number | null>({
   label,
   value,
   options,
@@ -9,9 +9,9 @@ export function ChoiceStrip({
   accentHex,
 }: {
   label: string;
-  value: number | null;
-  options: { label: string; value: number | null }[];
-  onChange: (val: number | null) => void;
+  value: T;
+  options: { label: string; value: T }[];
+  onChange: (val: T) => void;
   accentHex?: string;
 }) {
   const color = accentHex ?? palette.primary;

@@ -38,6 +38,12 @@ export function SessionConfigForm({
     questionMode,
     sessionMode,
     setSessionMode,
+    categorySelectionMode,
+    setCategorySelectionMode,
+    targetTotalQuestions,
+    setTargetTotalQuestions,
+    sessionCategories,
+    setSessionCategories,
     globalQuestionSeconds,
     setGlobalQuestionSeconds,
     setAnswerTimeSeconds,
@@ -85,6 +91,12 @@ export function SessionConfigForm({
           <StepSettings
             sessionMode={sessionMode}
             questionMode={questionMode}
+            categorySelectionMode={categorySelectionMode}
+            setCategorySelectionMode={setCategorySelectionMode}
+            targetTotalQuestions={targetTotalQuestions}
+            setTargetTotalQuestions={setTargetTotalQuestions}
+            sessionCategories={sessionCategories}
+            setSessionCategories={setSessionCategories}
             globalQuestionSeconds={globalQuestionSeconds}
             setGlobalQuestionSeconds={setGlobalQuestionSeconds}
             setAnswerTimeSeconds={setAnswerTimeSeconds}
@@ -101,6 +113,9 @@ export function SessionConfigForm({
           <StepSummary
             sessionMode={sessionMode}
             questionMode={questionMode}
+            categorySelectionMode={categorySelectionMode}
+            targetTotalQuestions={targetTotalQuestions}
+            sessionCategories={sessionCategories}
             globalQuestionSeconds={globalQuestionSeconds}
             answerChoicesCount={answerChoicesCount}
             config={config}
@@ -113,6 +128,9 @@ export function SessionConfigForm({
           <StepSummary
             sessionMode={sessionMode}
             questionMode={questionMode}
+            categorySelectionMode={categorySelectionMode}
+            targetTotalQuestions={targetTotalQuestions}
+            sessionCategories={sessionCategories}
             globalQuestionSeconds={globalQuestionSeconds}
             answerChoicesCount={answerChoicesCount}
             config={config}

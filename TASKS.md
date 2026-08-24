@@ -74,10 +74,10 @@ donc en partie sans aucun thème, et aucune question n'est générée pour lui.
 
 📄 **Spécification complète : `docs/FEATURE_THEMES_IMPOSES.md`, partie B.**
 
-- [ ] **B1** — Types partagés dans `packages/core/src/types/api.ts`
-- [ ] **B2** — Étape « thèmes » dans le formulaire de création (⚠️ **réutiliser** le sélecteur
+- [x] **B1** — Types partagés dans `packages/core/src/types/api.ts`
+- [x] **B2** — Étape « thèmes » dans le formulaire de création (⚠️ **réutiliser** le sélecteur
       existant de `categories.tsx`, ne pas en écrire un troisième)
-- [ ] **B3** — Sauter l'écran de thèmes quand on rejoint (⚠️ **une seule** fonction partagée,
+- [x] **B3** — Sauter l'écran de thèmes quand on rejoint (⚠️ **une seule** fonction partagée,
       appelée par les 4 points d'entrée)
 - [ ] **B4** — Lobby : thèmes en lecture seule, estimation du nombre de questions corrigée
 - [ ] **B5** — Recette complète des deux modes, iPhone et web

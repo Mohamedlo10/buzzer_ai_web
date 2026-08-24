@@ -4,6 +4,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Sparkles } from 'lucide-react-native';
 
+import * as sessionsApi from '~/lib/api/sessions';
+import { resolveJoinRoute } from '~/lib/game/sessionRouting';
 import { palette } from '~/lib/theme/tokens';
 
 export default function JoinSessionByCodeScreen() {
@@ -11,9 +13,30 @@ export default function JoinSessionByCodeScreen() {
   const { code } = useLocalSearchParams<{ code: string }>();
 
   useEffect(() => {
-    if (code) {
-      router.replace(`/session/${code}/categories` as any);
+    if (!code) return;
+    let isMounted = true;
+
+    async function checkRoute() {
+      try {
+        const check = await sessionsApi.joinCheck(code);
+        if (!isMounted) return;
+        const targetRoute = resolveJoinRoute({
+          code,
+          sessionId: check.session.id,
+          categorySelectionMode: check.session.categorySelectionMode,
+        });
+        router.replace(targetRoute as any);
+      } catch {
+        if (!isMounted) return;
+        router.replace(`/session/${code}/categories` as any);
+      }
     }
+
+    checkRoute();
+
+    return () => {
+      isMounted = false;
+    };
   }, [code, router]);
 
   return (

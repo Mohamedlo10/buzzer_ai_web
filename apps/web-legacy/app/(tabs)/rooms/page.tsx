@@ -12,6 +12,7 @@ import { useDashboardV2 } from '~/lib/query/hooks';
 import { NotificationsBanner } from '~/components/dashboard';
 import * as roomsApi from '~/lib/api/rooms';
 import * as sessionsApi from '~/lib/api/sessions';
+import { resolveJoinRoute } from '~/lib/game/sessionRouting';
 import { appStorage } from '~/lib/utils/storage';
 import { useAuthStore } from '~/stores/useAuthStore';
 
@@ -106,7 +107,12 @@ function JoinModal({
 
       const status = data?.session?.status;
       if (status === 'LOBBY') {
-        router.push(`/session/${trimmedCode}/categories`);
+        const route = resolveJoinRoute({
+          code: trimmedCode,
+          sessionId: data.session.id,
+          categorySelectionMode: data.session.categorySelectionMode,
+        });
+        router.push(route);
       } else if (status === 'GENERATING') {
         router.push(`/session/${trimmedCode}/loading`);
       } else if (['PLAYING', 'PAUSED'].includes(status)) {
@@ -186,7 +192,14 @@ function JoinModal({
         }
         handleClose();
         const status = data?.session?.status;
-        if (status === 'LOBBY') router.push(`/session/${trimmedCode}/categories`);
+        if (status === 'LOBBY') {
+          const route = resolveJoinRoute({
+            code: trimmedCode,
+            sessionId: data.session.id,
+            categorySelectionMode: data.session.categorySelectionMode,
+          });
+          router.push(route);
+        }
         else if (status === 'GENERATING') router.push(`/session/${trimmedCode}/loading`);
         else if (['PLAYING', 'PAUSED'].includes(status)) router.push(`/session/${trimmedCode}/game`);
         else if (status === 'RESULTS') router.push(`/session/${trimmedCode}/results`);
