@@ -158,6 +158,12 @@ export default function GamePage() {
     },
   });
 
+  useEffect(() => {
+    if (session?.status === 'RESULTS' || game.phase === 'FINISHED') {
+      router.replace(`/session/${code}/results` as any);
+    }
+  }, [session?.status, game.phase, code, router]);
+
   // Polling fallback de secours UNIQUEMENT en cas de déconnexion WebSocket
   useEffect(() => {
     if (isConnected) return;
@@ -188,6 +194,15 @@ export default function GamePage() {
       setIsPauseToggling(false);
     }
   }, [session?.id, resumeSession, isPauseToggling]);
+
+  const handleSkip = useCallback(async () => {
+    if (!session?.id) return;
+    try {
+      await gameApi.skipQuestion(session.id);
+    } catch (err: any) {
+      notifyApiError(err, 'Impossible de passer la question');
+    }
+  }, [session?.id]);
 
   const status = session?.status;
   const notStarted = status === 'LOBBY' || status === 'GENERATING' || status === 'CANCELLED';
@@ -239,6 +254,7 @@ export default function GamePage() {
           isPauseToggling={isPauseToggling}
           handlePause={handlePause}
           handleResume={handleResume}
+          handleSkip={handleSkip}
         />
       ) : (
         <ModeratedGame

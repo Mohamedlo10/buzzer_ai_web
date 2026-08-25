@@ -6,9 +6,10 @@ interface PauseOverlayProps {
   isManager: boolean;
   isPauseToggling: boolean;
   onResume: () => void;
+  onSkip?: () => void;
 }
 
-export function PauseOverlay({ isPaused, isManager, isPauseToggling, onResume }: PauseOverlayProps) {
+export function PauseOverlay({ isPaused, isManager, isPauseToggling, onResume, onSkip }: PauseOverlayProps) {
   if (!isPaused) return null;
 
   return (
@@ -18,15 +19,28 @@ export function PauseOverlay({ isPaused, isManager, isPauseToggling, onResume }:
         <Text style={{ fontFamily: font.nativeFamily.serif, fontStyle: 'italic', color: palette.inkSoft, textAlign: 'center', marginTop: 12, fontSize: 16 }}>Le jeu est en pause</Text>
 
         {isManager && (
-          <TouchableOpacity
-            onPress={onResume}
-            disabled={isPauseToggling}
-            activeOpacity={0.8}
-            style={{ marginTop: 32, paddingHorizontal: 32, paddingVertical: 16, backgroundColor: palette.primary, borderRadius: 16, opacity: isPauseToggling ? 0.6 : 1, flexDirection: 'row', alignItems: 'center', gap: 12 }}
-          >
-            {isPauseToggling && <ActivityIndicator size="small" color="#FFFFFF" />}
-            <Text style={{ fontFamily: font.nativeFamily.display, color: '#FFFFFF', fontSize: 18, paddingTop: 2 }}>Reprendre</Text>
-          </TouchableOpacity>
+          <View style={{ width: '100%', marginTop: 24, gap: 12, alignItems: 'center' }}>
+            <TouchableOpacity
+              onPress={onResume}
+              disabled={isPauseToggling}
+              activeOpacity={0.8}
+              style={{ width: '100%', paddingVertical: 14, backgroundColor: palette.primary, borderRadius: 16, opacity: isPauseToggling ? 0.6 : 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12 }}
+            >
+              {isPauseToggling && <ActivityIndicator size="small" color="#FFFFFF" />}
+              <Text style={{ fontFamily: font.nativeFamily.display, color: '#FFFFFF', fontSize: 16, paddingTop: 2 }}>Reprendre</Text>
+            </TouchableOpacity>
+
+            {onSkip && (
+              <TouchableOpacity
+                onPress={onSkip}
+                disabled={isPauseToggling}
+                activeOpacity={0.8}
+                style={{ width: '100%', paddingVertical: 12, backgroundColor: palette.surface2, borderWidth: 1, borderColor: palette.border, borderRadius: 16, alignItems: 'center', justifyContent: 'center' }}
+              >
+                <Text style={{ fontFamily: font.nativeFamily.display, color: palette.warn, fontSize: 14, paddingTop: 2 }}>Passer la question</Text>
+              </TouchableOpacity>
+            )}
+          </View>
         )}
       </View>
     </View>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { msUntil } from './clock';
 
 /**
@@ -19,15 +19,30 @@ import { msUntil } from './clock';
  * @param deadlineEpochMs échéance en temps serveur, ou null si aucune
  * @returns secondes restantes, arrondies au supérieur, jamais négatives
  */
-export function useDeadlineSeconds(deadlineEpochMs: number | null | undefined): number {
+export function useDeadlineSeconds(
+  deadlineEpochMs: number | null | undefined,
+  isPaused = false
+): number {
   const [remainingMs, setRemainingMs] = useState(() => msUntil(deadlineEpochMs));
+  const frozenMsRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (!deadlineEpochMs) {
       setRemainingMs(0);
+      frozenMsRef.current = null;
       return;
     }
 
+    if (isPaused) {
+      if (frozenMsRef.current == null) {
+        frozenMsRef.current = msUntil(deadlineEpochMs);
+      }
+      setRemainingMs(Math.max(0, frozenMsRef.current));
+      return;
+    }
+
+    // Unpaused: reset frozen ref and start ticking
+    frozenMsRef.current = null;
     setRemainingMs(msUntil(deadlineEpochMs));
 
     // 200 ms : assez fin pour que la seconde affichée change au bon moment,
@@ -39,7 +54,11 @@ export function useDeadlineSeconds(deadlineEpochMs: number | null | undefined): 
     }, 200);
 
     return () => clearInterval(interval);
-  }, [deadlineEpochMs]);
+  }, [deadlineEpochMs, isPaused]);
+
+  if (isPaused && frozenMsRef.current != null) {
+    return Math.ceil(Math.max(0, frozenMsRef.current) / 1000);
+  }
 
   // Synchronous fallback so initial render with a new deadline never sees 0
   const effectiveMs = deadlineEpochMs ? msUntil(deadlineEpochMs) : remainingMs;

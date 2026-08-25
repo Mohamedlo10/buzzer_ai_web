@@ -48,7 +48,7 @@ export function GameHeader({
         </TouchableOpacity>
 
         <View style={{ flex: 1, minWidth: 0 }}>
-          <Text style={{ fontFamily: font.nativeFamily.display, color: palette.txt, fontSize: 17, lineHeight: 22, paddingTop: 3 }}>
+          <Text style={{ fontFamily: font.nativeFamily.display, color: palette.txt, fontSize: 17, lineHeight: 26, paddingTop: 3 }}>
             Question {questionIndex + 1}
             {session.totalQuestions > 0 && (
               <Text style={{ color: palette.inkSoft, fontSize: 14 }}> / {session.totalQuestions}</Text>

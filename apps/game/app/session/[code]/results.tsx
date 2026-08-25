@@ -17,10 +17,12 @@ import {
   Medal,
   Sparkles,
   Award,
+  ChevronRight,
 } from 'lucide-react-native';
 
 import { Podium } from '~/components/game/results/Podium';
 import { TeamLeaderboard } from '~/components/game/TeamLeaderboard';
+import { CategoryQuestionsModal } from '~/components/game/results/CategoryQuestionsModal';
 import { Avatar } from '~/components/shared/Avatar';
 import { useAuthStore } from '~/stores/useAuthStore';
 import { useBuzzStore } from '~/stores/useBuzzStore';
@@ -28,7 +30,7 @@ import * as rankingsApi from '~/lib/api/rankings';
 import { appStorage } from '~/lib/utils/storage';
 import { palette, font } from '~/lib/theme/tokens';
 import { teamColor as resolveTeamColor } from '~/lib/game/teamColors';
-import type { SessionRankingEntry, CategoryRankingResponse } from '~/types/api';
+import type { SessionRankingEntry, CategoryRankingResponse, CategoryRanking } from '~/types/api';
 
 function rankLabel(index: number): string {
   if (index === 0) return 'VAINQUEUR';
@@ -86,6 +88,9 @@ export default function SessionResultsPage() {
 
   const [rankings, setRankings] = useState<SessionRankingEntry[] | null>(null);
   const [categoryRankings, setCategoryRankings] = useState<CategoryRankingResponse | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<CategoryRanking | null>(null);
+  const [selectedCategoryColor, setSelectedCategoryColor] = useState<string>(palette.primary);
+  const [selectedCategoryIcon, setSelectedCategoryIcon] = useState<string>('📚');
   const [isLoading, setIsLoading] = useState(true);
   const [storedSessionId, setStoredSessionId] = useState<string | null>(null);
   const [capturedRoomId, setCapturedRoomId] = useState<string | null>(null);
@@ -786,12 +791,19 @@ export default function SessionResultsPage() {
                 const color = CATEGORY_COLORS[i % CATEGORY_COLORS.length];
                 const icon = getCategoryIcon(cat.name);
                 const top = cat.rankings.slice(0, 4);
+                const qCount = cat.questions?.length ?? 0;
 
                 return (
-                  <View
+                  <TouchableOpacity
                     key={cat.name}
+                    onPress={() => {
+                      setSelectedCategory(cat);
+                      setSelectedCategoryColor(color);
+                      setSelectedCategoryIcon(icon);
+                    }}
+                    activeOpacity={0.75}
                     style={{
-                      width: 155,
+                      width: 165,
                       backgroundColor: palette.surface,
                       borderRadius: 16,
                       borderWidth: 1,
@@ -800,17 +812,35 @@ export default function SessionResultsPage() {
                       gap: 8,
                     }}
                   >
-                    <View
-                      style={{
-                        width: 36,
-                        height: 36,
-                        borderRadius: 10,
-                        backgroundColor: color + '20',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}
-                    >
-                      <Text style={{ fontSize: 18 }}>{icon}</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <View
+                        style={{
+                          width: 36,
+                          height: 36,
+                          borderRadius: 10,
+                          backgroundColor: color + '20',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <Text style={{ fontSize: 18 }}>{icon}</Text>
+                      </View>
+                      {qCount > 0 && (
+                        <View
+                          style={{
+                            paddingHorizontal: 7,
+                            paddingVertical: 3,
+                            borderRadius: 8,
+                            backgroundColor: color + '18',
+                            borderWidth: 1,
+                            borderColor: color + '35',
+                          }}
+                        >
+                          <Text style={{ fontSize: 10, fontWeight: '700', color }}>
+                            {qCount} Q
+                          </Text>
+                        </View>
+                      )}
                     </View>
                     <Text
                       style={{
@@ -859,7 +889,25 @@ export default function SessionResultsPage() {
                         );
                       })}
                     </View>
-                  </View>
+
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: 4,
+                        paddingTop: 8,
+                        marginTop: 2,
+                        borderTopWidth: 1,
+                        borderTopColor: palette.line,
+                      }}
+                    >
+                      <Text style={{ fontSize: 10.5, fontWeight: '700', color: palette.primary }}>
+                        Questions
+                      </Text>
+                      <ChevronRight size={12} color={palette.primary} />
+                    </View>
+                  </TouchableOpacity>
                 );
               })}
             </ScrollView>
@@ -990,6 +1038,16 @@ export default function SessionResultsPage() {
           </Text>
         </TouchableOpacity>
       </ScrollView>
+
+      {/* ── Modal de détails des questions par catégorie ── */}
+      <CategoryQuestionsModal
+        visible={Boolean(selectedCategory)}
+        category={selectedCategory}
+        categoryColor={selectedCategoryColor}
+        categoryIcon={selectedCategoryIcon}
+        isSprint={isSprint}
+        onClose={() => setSelectedCategory(null)}
+      />
     </View>
   );
 }

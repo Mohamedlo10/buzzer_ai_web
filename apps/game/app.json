@@ -31,11 +31,6 @@
     },
     "plugins": [
       "expo-router",
-      "expo-secure-store",
-      "expo-font",
-      "expo-splash-screen",
-      "expo-status-bar",
-      "expo-sharing",
       [
         "expo-camera",
         {
@@ -49,8 +44,7 @@
             "usesCleartextTraffic": true
           }
         }
-      ],
-      "expo-web-browser"
+      ]
     ]
   }
 }

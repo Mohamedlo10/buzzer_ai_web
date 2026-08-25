@@ -16,7 +16,7 @@ export const GlobalTimerBar = memo(function GlobalTimerBar({
   deadlineEpochMs,
   paused = false,
 }: GlobalTimerBarProps) {
-  const internalRemaining = useDeadlineSeconds(deadlineEpochMs);
+  const internalRemaining = useDeadlineSeconds(deadlineEpochMs, paused);
   const remainingSeconds = deadlineEpochMs != null ? internalRemaining : (externalRemaining ?? 0);
 
   const pct = totalSeconds > 0 ? Math.min(100, Math.round((remainingSeconds / totalSeconds) * 100)) : 0;

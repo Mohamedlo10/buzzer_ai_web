@@ -54,7 +54,13 @@ export function ModeratedGame({
         teams={teams}
       />
 
-      <PauseOverlay isPaused={isPaused} isManager={isManager} isPauseToggling={isPauseToggling} onResume={handleResume} />
+      <PauseOverlay
+        isPaused={isPaused}
+        isManager={isManager}
+        isPauseToggling={isPauseToggling}
+        onResume={handleResume}
+        onSkip={handleSkip}
+      />
       <CategoryChangeOverlay currentQuestion={currentQuestion} />
 
       {/* Alerte Buzz 1.5s pour avertir le manager de cesser la lecture */}

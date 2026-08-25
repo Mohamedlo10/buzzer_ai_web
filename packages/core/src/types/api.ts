@@ -772,6 +772,28 @@ export interface GlobalRankingPaginatedResponse extends Page<GlobalRanking> {
   currentUserRank: number | null;
 }
 
+export interface CategoryQuestionSolver {
+  userId: string;
+  username: string;
+  name: string;
+  avatarUrl?: string | null;
+  responseTimeMs?: number | null;
+}
+
+export interface CategoryQuestionSummary {
+  id: string;
+  orderIndex: number;
+  text: string;
+  answer: string;
+  explanation?: string | null;
+  difficulty: Difficulty;
+  isSkipped?: boolean | null;
+  winnerUsername?: string | null;
+  winnerName?: string | null;
+  winnerAvatarUrl?: string | null;
+  solvers?: CategoryQuestionSolver[];
+}
+
 export interface CategoryPlayerRank {
   rank: number;
   userId: string;
@@ -786,6 +808,7 @@ export interface CategoryRankingResponse {
 export interface CategoryRanking {
   name: string;
   rankings: CategoryPlayerRank[];
+  questions?: CategoryQuestionSummary[];
 }
 
 // ──────────────────────────────────────────────

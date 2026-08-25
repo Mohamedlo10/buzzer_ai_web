@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Check, X } from 'lucide-react';
 import { useDeadlineSeconds } from '~/lib/game/useDeadline';
-import { serverNow } from '~/lib/game/clock';
+import { msUntil, serverNow } from '~/lib/game/clock';
 
 interface AnswerChoicesPanelProps {
   choices: string[];
@@ -105,8 +105,8 @@ export function AnswerChoicesPanel({
   const timerColor = displayRemaining > answerTimeSeconds * 0.6
     ? 'var(--good)'
     : displayRemaining > answerTimeSeconds * 0.3
-    ? 'var(--warn)'
-    : 'var(--bad)';
+      ? 'var(--warn)'
+      : 'var(--bad)';
 
   return (
     <div className="flex flex-col gap-4 animate-[rise_0.4s_both]">
@@ -135,19 +135,17 @@ export function AnswerChoicesPanel({
               type="button"
               onClick={() => handleSelect(i, choice)}
               disabled={hasSubmittedRef.current || isSubmitting || !!result}
-              className={`flex items-center gap-2.5 w-full rounded-[14px] border-[1.5px] p-3.5 min-h-[58px] text-left transition-all duration-150 active:scale-[0.98] disabled:cursor-default ${
-                showCorrect ? 'bg-good/20 border-good' :
-                showWrong ? 'bg-buzz/18 border-buzz animate-[shake_0.4s_ease]' :
-                isSelected ? 'bg-indigo/15 border-indigo' :
-                'bg-surface border-line'
-              } ${dimmed ? 'opacity-45' : ''}`}
+              className={`flex items-center gap-2.5 w-full rounded-[14px] border-[1.5px] p-3.5 min-h-[58px] text-left transition-all duration-150 active:scale-[0.98] disabled:cursor-default ${showCorrect ? 'bg-good/20 border-good' :
+                  showWrong ? 'bg-buzz/18 border-buzz animate-[shake_0.4s_ease]' :
+                    isSelected ? 'bg-indigo/15 border-indigo' :
+                      'bg-surface border-line'
+                } ${dimmed ? 'opacity-45' : ''}`}
             >
-              <span className={`w-[30px] h-[30px] rounded-[9px] flex items-center justify-center font-bold text-[13px] shrink-0 ${
-                showCorrect ? 'bg-good text-white' :
-                showWrong ? 'bg-buzz text-white' :
-                isSelected ? 'bg-indigo text-white' :
-                'bg-surface-2 text-txt'
-              }`}>
+              <span className={`w-[30px] h-[30px] rounded-[9px] flex items-center justify-center font-bold text-[13px] shrink-0 ${showCorrect ? 'bg-good text-white' :
+                  showWrong ? 'bg-buzz text-white' :
+                    isSelected ? 'bg-indigo text-white' :
+                      'bg-surface-2 text-txt'
+                }`}>
                 {showCorrect ? <Check size={17} strokeWidth={2.8} /> : showWrong ? <X size={17} strokeWidth={2.8} /> : CHOICE_LABELS[i]}
               </span>
               <span className="text-txt text-[14px] font-semibold leading-snug flex-1">{choice}</span>

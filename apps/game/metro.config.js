@@ -13,4 +13,11 @@ config.resolver.nodeModulesPaths = [
   path.resolve(workspaceRoot, 'node_modules'),
 ];
 
+config.resolver.extraNodeModules = {
+  react: path.resolve(workspaceRoot, 'node_modules/react'),
+  'react-dom': path.resolve(workspaceRoot, 'node_modules/react-dom'),
+  'react-native': path.resolve(workspaceRoot, 'node_modules/react-native'),
+  scheduler: path.resolve(workspaceRoot, 'node_modules/scheduler'),
+};
+
 module.exports = withNativeWind(config, { input: './global.css' });
