@@ -66,6 +66,8 @@ export function handleWSEvent(event: WSEvent, currentUserId?: string): void {
       break;
 
     case 'generation_complete':
+      useGameStore.getState().setPaused(false);
+      useBuzzStore.getState().setPaused(false);
       useBuzzStore.getState().updateStatus('PLAYING');
       break;
 

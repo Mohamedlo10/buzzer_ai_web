@@ -56,6 +56,21 @@ export default function GamePage() {
         router.replace(`/session/${codeRef.current}/results` as any);
         return;
       }
+      // Sync pause state from server — handles cases where WS event was missed
+      if (serverStatus === 'PLAYING' && useBuzzStore.getState().isPaused) {
+        useBuzzStore.getState().setPaused(false);
+      } else if (serverStatus === 'PAUSED' && !useBuzzStore.getState().isPaused) {
+        useBuzzStore.getState().setPaused(true);
+      }
+      // Sync currentQuestion from REST — critical for moderated mode after refresh.
+      // In moderated mode there is no statePacket, so currentQuestion is only set
+      // via the WS question_start event. If the player refreshes mid-game, the store
+      // has currentQuestion=null and the game screen shows "Chargement du jeu" forever.
+      if (gameState.currentQuestion && !useBuzzStore.getState().currentQuestion) {
+        const q = gameState.currentQuestion;
+        const idx = (q as any).orderIndex ?? useBuzzStore.getState().questionIndex;
+        useBuzzStore.getState().setCurrentQuestion(q, idx, useBuzzStore.getState().totalQuestions || 0);
+      }
       if (gameState.statePacket) {
         useBuzzStore.getState().applyStatePacket(gameState.statePacket);
       }
@@ -219,6 +234,10 @@ export default function GamePage() {
           teams={teams}
           isManager={isManager}
           isSpectator={isSpectator}
+          isPaused={isPaused}
+          isPauseToggling={isPauseToggling}
+          handlePause={handlePause}
+          handleResume={handleResume}
         />
       ) : (
         <ModeratedGame

@@ -78,7 +78,7 @@ export default function CreateRoomScreen() {
         }}
       >
         <TouchableOpacity
-          onPress={() => router.back()}
+          onPress={() => router.replace('/(tabs)/dashboard' as any)}
           activeOpacity={0.7}
           style={{
             width: 38,

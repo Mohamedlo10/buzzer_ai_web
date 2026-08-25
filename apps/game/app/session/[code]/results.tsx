@@ -922,8 +922,8 @@ export default function SessionResultsPage() {
               const accentColor = iOwe
                 ? palette.bad
                 : owedToMe
-                ? palette.primary
-                : palette.indigo;
+                  ? palette.primary
+                  : palette.indigo;
 
               return (
                 <View

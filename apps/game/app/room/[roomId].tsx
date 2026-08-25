@@ -66,7 +66,13 @@ export default function RoomDetailScreen() {
   } = useRoomDetail({
     roomId: (roomId as string) ?? '',
     onNavigate: (path) => router.push(path as any),
-    onReplaceRoute: (path) => router.replace(path as any),
+    onReplaceRoute: (path) => {
+      if (path === '/rooms' || path === '/(tabs)/rooms') {
+        router.replace('/(tabs)/dashboard' as any);
+      } else {
+        router.replace(path as any);
+      }
+    },
   });
 
   const [qrImage, setQrImage] = useState<string | null>(null);
@@ -165,7 +171,7 @@ export default function RoomDetailScreen() {
           Salon introuvable
         </Text>
         <TouchableOpacity
-          onPress={() => router.back()}
+          onPress={() => router.replace('/(tabs)/dashboard' as any)}
           activeOpacity={0.8}
           style={{
             backgroundColor: palette.primary,
@@ -175,7 +181,7 @@ export default function RoomDetailScreen() {
           }}
         >
           <Text style={{ color: palette.primaryInk, fontWeight: '700', fontSize: 14 }}>
-            Retour
+            Retour au dashboard
           </Text>
         </TouchableOpacity>
       </SafeAreaView>
@@ -199,7 +205,7 @@ export default function RoomDetailScreen() {
         }}
       >
         <TouchableOpacity
-          onPress={() => router.back()}
+          onPress={() => router.replace('/(tabs)/dashboard' as any)}
           activeOpacity={0.7}
           style={{
             width: 38,

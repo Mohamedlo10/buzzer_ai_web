@@ -1,13 +1,14 @@
 import { useEffect } from 'react';
-import { View, Text, ActivityIndicator, ScrollView } from 'react-native';
+import { View, Text, ActivityIndicator, ScrollView, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
-import { CheckCircle2, XCircle, Eye } from 'lucide-react-native';
+import { CheckCircle2, XCircle, Eye, PauseCircle, PlayCircle } from 'lucide-react-native';
 import { palette, font } from '~/lib/theme/tokens';
 import { useBuzzStore } from '~/stores/useBuzzStore';
 import { AnswerChoicesPanel } from '~/components/game/AnswerChoicesPanel';
 import { GlobalTimerBar } from '~/components/game/GlobalTimerBar';
 import { GameHeader } from '~/components/game/shared/GameHeader';
 import { GameFooter } from '~/components/game/shared/GameFooter';
+import { PauseOverlay } from '~/components/game/shared/PauseOverlay';
 import { useDeadlineSeconds } from '~/lib/game/useDeadline';
 import * as gameApi from '~/lib/api/game';
 import type { PlayerResponse, TeamResponse } from '~/types/api';
@@ -19,6 +20,10 @@ interface SprintGameProps {
   teams?: TeamResponse[];
   isManager?: boolean;
   isSpectator?: boolean;
+  isPaused?: boolean;
+  isPauseToggling?: boolean;
+  handlePause?: () => Promise<void>;
+  handleResume?: () => Promise<void>;
 }
 
 const CHOICE_LABELS = ['A', 'B', 'C', 'D', 'E', 'F'];
@@ -37,6 +42,10 @@ export function SprintGame({
   teams,
   isManager,
   isSpectator,
+  isPaused = false,
+  isPauseToggling = false,
+  handlePause,
+  handleResume,
 }: SprintGameProps) {
   const router = useRouter();
   const {
@@ -129,6 +138,9 @@ export function SprintGame({
           teams={teams ?? []}
         />
       )}
+
+      {/* Pause overlay — blocks UI for all players */}
+      <PauseOverlay isPaused={isPaused} isManager={isManager ?? false} isPauseToggling={isPauseToggling} onResume={handleResume ?? (() => {})} />
 
       <ScrollView contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 24 }} showsVerticalScrollIndicator={false}>
         {/* Timer */}
@@ -244,6 +256,42 @@ export function SprintGame({
           <Text style={{ fontFamily: font.nativeFamily.serif, fontStyle: 'italic', marginTop: 16, textAlign: 'center', color: palette.inkSoft, fontSize: 13 }}>
             Réponse enregistrée — en attente des autres joueurs…
           </Text>
+        )}
+        {/* Manager Pause/Resume button */}
+        {isManager && (
+          <TouchableOpacity
+            onPress={isPaused ? handleResume : handlePause}
+            disabled={isPauseToggling}
+            activeOpacity={0.8}
+            style={{
+              marginHorizontal: 16,
+              marginTop: 8,
+              paddingVertical: 12,
+              borderRadius: 14,
+              backgroundColor: isPaused ? palette.primary : palette.warn + '33',
+              borderWidth: isPaused ? 0 : 1,
+              borderColor: palette.warn + '4D',
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+              opacity: isPauseToggling ? 0.6 : 1,
+            }}
+          >
+            {isPauseToggling ? (
+              <ActivityIndicator size="small" color={isPaused ? '#FFFFFF' : palette.warn} />
+            ) : isPaused ? (
+              <>
+                <PlayCircle size={18} color="#FFFFFF" />
+                <Text style={{ fontFamily: font.nativeFamily.display, fontSize: 14, color: '#FFFFFF', paddingTop: 2 }}>Reprendre</Text>
+              </>
+            ) : (
+              <>
+                <PauseCircle size={18} color={palette.warn} />
+                <Text style={{ fontFamily: font.nativeFamily.display, fontSize: 14, color: palette.warn, paddingTop: 2 }}>Pause</Text>
+              </>
+            )}
+          </TouchableOpacity>
         )}
       </ScrollView>
 
