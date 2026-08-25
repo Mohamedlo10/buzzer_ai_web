@@ -1,15 +1,14 @@
 import { View, Text } from 'react-native';
+import { Sparkles } from 'lucide-react-native';
 import { palette } from '~/lib/theme/tokens';
 import type {
   QuestionMode,
   SessionMode,
   CreateSessionRequest,
   CategorySelectionMode,
-  CategoryRequest,
 } from '~/types/api';
 import { StepperField } from './StepperField';
 import { ChoiceStrip } from './ChoiceStrip';
-import { CategoryPicker } from './CategoryPicker';
 
 export interface StepSettingsProps {
   sessionMode: SessionMode;
@@ -18,8 +17,6 @@ export interface StepSettingsProps {
   setCategorySelectionMode: (v: CategorySelectionMode) => void;
   targetTotalQuestions: number;
   setTargetTotalQuestions: (v: number) => void;
-  sessionCategories: CategoryRequest[];
-  setSessionCategories: (v: CategoryRequest[]) => void;
   globalQuestionSeconds: number;
   setGlobalQuestionSeconds: (v: number) => void;
   setAnswerTimeSeconds: (v: number) => void;
@@ -45,8 +42,6 @@ export function StepSettings({
   setCategorySelectionMode,
   targetTotalQuestions,
   setTargetTotalQuestions,
-  sessionCategories,
-  setSessionCategories,
   globalQuestionSeconds,
   setGlobalQuestionSeconds,
   setAnswerTimeSeconds,
@@ -120,7 +115,7 @@ export function StepSettings({
           />
 
           {categorySelectionMode === 'MANAGER' ? (
-            <View style={{ gap: 14 }}>
+            <View key="settings-manager-view">
               <StepperField
                 label="Nombre total de questions"
                 value={targetTotalQuestions}
@@ -130,19 +125,10 @@ export function StepSettings({
                 step={5}
                 onChange={setTargetTotalQuestions}
               />
-              <View style={{ marginTop: 4 }}>
-                <Text style={[LABEL_STYLE, { marginBottom: 8 }]}>Thèmes imposés de la session</Text>
-                <CategoryPicker
-                  selectedCategories={sessionCategories}
-                  onChange={setSessionCategories}
-                  maxCategories={10}
-                  showProgress={false}
-                />
-              </View>
             </View>
           ) : (
-            <View style={{ flexDirection: 'row', gap: 12 }}>
-              <View style={{ flex: 1 }}>
+            <View key="settings-per-player-view" style={{ flexDirection: 'row', gap: 12 }}>
+              <View style={{ flex: 1, minWidth: 0 }}>
                 <StepperField
                   label="Questions / cat."
                   value={config.questionsPerCategory ?? 5}
@@ -151,7 +137,7 @@ export function StepSettings({
                   onChange={(v) => setConfig((c) => ({ ...c, questionsPerCategory: v }))}
                 />
               </View>
-              <View style={{ flex: 1 }}>
+              <View style={{ flex: 1, minWidth: 0 }}>
                 <StepperField
                   label="Catégories max"
                   value={config.maxCategoriesPerPlayer ?? 3}
@@ -196,6 +182,27 @@ export function StepSettings({
           )}
         </View>
       </View>
+
+      {/* Encart d'information sur les thèmes imposés */}
+      {questionMode === 'AI' && categorySelectionMode === 'MANAGER' && (
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 10,
+            padding: 14,
+            borderRadius: 16,
+            borderWidth: 1,
+            borderColor: palette.primary + '40',
+            backgroundColor: palette.primary + '14',
+          }}
+        >
+          <Sparkles size={16} color={palette.primary} />
+          <Text style={{ color: palette.txt, fontSize: 12, lineHeight: 17, flex: 1 }}>
+            Vous choisirez les thèmes imposés de la session à l'étape suivante.
+          </Text>
+        </View>
+      )}
     </View>
   );
 }

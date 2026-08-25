@@ -14,11 +14,16 @@ import {
   ArrowLeft,
   Lock,
   Play,
-  CheckCircle,
+  Check,
   AlertCircle,
   X,
   Trash2,
   Zap,
+  Target,
+  Sparkles,
+  ChevronRight,
+  Flame,
+  Award,
 } from 'lucide-react-native';
 
 import * as soloApi from '~/lib/api/solo';
@@ -27,6 +32,15 @@ import type { SoloCareerProgressResponse, LevelInfo } from '~/types/solo';
 import { palette, font } from '~/lib/theme/tokens';
 import { notify, notifyApiError } from '~/lib/ui/notify';
 import { confirmAsync } from '~/lib/ui/confirm';
+import { QuizAiLoadingScreen } from '~/components/solo/QuizAiLoadingScreen';
+
+interface StageGroup {
+  title: string;
+  subtitle: string;
+  difficulty: string;
+  color: string;
+  levels: LevelInfo[];
+}
 
 export default function CareerDetailScreen() {
   const router = useRouter();
@@ -37,6 +51,7 @@ export default function CareerDetailScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedLevel, setSelectedLevel] = useState<LevelInfo | null>(null);
   const [isStartingLevel, setIsStartingLevel] = useState(false);
+  const [startingLevelInfo, setStartingLevelInfo] = useState<{ levelNumber: number; difficulty: string } | null>(null);
 
   useEffect(() => {
     const fetchCareerDetail = async () => {
@@ -55,7 +70,7 @@ export default function CareerDetailScreen() {
   const handleAbandon = async () => {
     const ok = await confirmAsync({
       title: 'Abandonner la carrière',
-      message: 'Voulez-vous abandonner cette carrière ? Tous vos progrès seront perdus.',
+      message: `Voulez-vous abandonner votre carrière « ${career?.category} » ? Tous vos progrès seront perdus.`,
       tone: 'danger',
     });
     if (!ok) return;
@@ -69,7 +84,8 @@ export default function CareerDetailScreen() {
     }
   };
 
-  const handleStartLevel = async (levelNumber: number) => {
+  const handleStartLevel = async (levelNumber: number, difficulty: string) => {
+    setStartingLevelInfo({ levelNumber, difficulty });
     setIsStartingLevel(true);
     try {
       const startData = await soloApi.startLevel(careerId!, levelNumber);
@@ -77,9 +93,9 @@ export default function CareerDetailScreen() {
       setSelectedLevel(null);
       router.push(`/solo/game/${startData.sessionId}` as any);
     } catch (err: any) {
-      notifyApiError(err, 'Erreur lors du lancement du niveau');
-    } finally {
+      notifyApiError(err, 'Erreur lors de la génération du quiz IA');
       setIsStartingLevel(false);
+      setStartingLevelInfo(null);
     }
   };
 
@@ -117,19 +133,54 @@ export default function CareerDetailScreen() {
     );
   }
 
+  const completedCount = career.levels.filter((l) => l.status === 'COMPLETED').length;
+  const progressPct = Math.round((completedCount / career.levels.length) * 100);
+
+  // Group levels into 4 stages
+  const stages: StageGroup[] = [
+    {
+      title: 'Étape 1 · Découverte',
+      subtitle: 'Niveaux 1 à 3',
+      difficulty: 'FACILE',
+      color: palette.good,
+      levels: career.levels.slice(0, 3),
+    },
+    {
+      title: 'Étape 2 · Ascension',
+      subtitle: 'Niveaux 4 à 6',
+      difficulty: 'MOYEN',
+      color: palette.gold,
+      levels: career.levels.slice(3, 6),
+    },
+    {
+      title: 'Étape 3 · Défi Avancé',
+      subtitle: 'Niveaux 7 à 9',
+      difficulty: 'DIFFICILE',
+      color: palette.warn,
+      levels: career.levels.slice(6, 9),
+    },
+    {
+      title: 'Étape 4 · Épreuve Ultime',
+      subtitle: 'Niveaux 10 à 12',
+      difficulty: 'EXTRÊME',
+      color: palette.bad,
+      levels: career.levels.slice(9, 12),
+    },
+  ];
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: palette.bg }}>
-      {/* Header */}
+      {/* Top Bar */}
       <View
         style={{
           flexDirection: 'row',
           alignItems: 'center',
-          paddingHorizontal: 20,
+          justifyContent: 'space-between',
+          paddingHorizontal: 16,
           paddingVertical: 12,
           borderBottomWidth: 1,
           borderBottomColor: palette.line,
           backgroundColor: palette.bg,
-          gap: 12,
         }}
       >
         <TouchableOpacity
@@ -149,32 +200,25 @@ export default function CareerDetailScreen() {
           <ArrowLeft size={18} color={palette.txt} />
         </TouchableOpacity>
 
-        <View style={{ flex: 1 }}>
-          <Text
-            style={{
-              fontFamily: font.nativeFamily.display,
-              fontSize: 18,
-              lineHeight: 24,
-              color: palette.txt,
-              paddingTop: 2,
-            }}
-            numberOfLines={1}
-          >
-            {career.category}
-          </Text>
-          <Text style={{ fontSize: 12, color: palette.gold, fontWeight: '700' }}>
-            Score total : {career.totalScore} pts
-          </Text>
-        </View>
+        <Text
+          style={{
+            fontFamily: font.nativeFamily.display,
+            fontSize: 16,
+            color: palette.txt,
+            paddingTop: 2,
+          }}
+        >
+          Mode Carrière
+        </Text>
 
         <TouchableOpacity
           onPress={handleAbandon}
           activeOpacity={0.7}
           style={{
-            width: 40,
-            height: 40,
-            borderRadius: 20,
-            backgroundColor: palette.bad + '1A',
+            width: 38,
+            height: 38,
+            borderRadius: 19,
+            backgroundColor: palette.bad + '18',
             alignItems: 'center',
             justifyContent: 'center',
             borderWidth: 1,
@@ -186,84 +230,221 @@ export default function CareerDetailScreen() {
       </View>
 
       <ScrollView
-        contentContainerStyle={{ padding: 16, paddingBottom: 60, gap: 16 }}
+        contentContainerStyle={{ padding: 16, paddingBottom: 60, gap: 18 }}
         showsVerticalScrollIndicator={false}
       >
-        {/* 12 Levels Grid */}
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12, justifyContent: 'space-between' }}>
-          {career.levels.map((level) => {
-            const isLocked = level.status === 'LOCKED';
-            const isCompleted = level.status === 'COMPLETED';
-            const isCurrent = level.status === 'UNLOCKED' || level.status === 'IN_PROGRESS';
+        {/* ── Hero Theme Banner Card ── */}
+        <View
+          style={{
+            backgroundColor: palette.surface,
+            borderRadius: 24,
+            borderWidth: 1,
+            borderColor: palette.line,
+            padding: 20,
+            gap: 16,
+            shadowColor: '#000000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.04,
+            shadowRadius: 8,
+            elevation: 2,
+          }}
+        >
+          <View style={{ gap: 4 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <Sparkles size={14} color={palette.gold} />
+              <Text style={{ fontSize: 11.5, fontWeight: '700', color: palette.gold, textTransform: 'uppercase', letterSpacing: 0.8 }}>
+                Parcours personnalisé
+              </Text>
+            </View>
+            <Text
+              style={{
+                fontFamily: font.nativeFamily.display,
+                fontSize: 22,
+                color: palette.txt,
+                lineHeight: 28,
+                paddingTop: 4,
+              }}
+            >
+              {career.category}
+            </Text>
+          </View>
 
-            return (
-              <TouchableOpacity
-                key={level.levelNumber}
-                disabled={isLocked}
-                onPress={() => setSelectedLevel(level)}
-                activeOpacity={0.8}
+          {/* Stats Row */}
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              backgroundColor: palette.surface2,
+              borderRadius: 18,
+              paddingVertical: 12,
+              paddingHorizontal: 16,
+              justifyContent: 'space-between',
+            }}
+          >
+            <View style={{ gap: 2 }}>
+              <Text style={{ fontSize: 11, color: palette.inkSoft, fontWeight: '600', textTransform: 'uppercase' }}>
+                Score Cumulé
+              </Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <Trophy size={16} color={palette.gold} />
+                <Text style={{ fontFamily: font.nativeFamily.display, fontSize: 17, color: palette.gold, paddingTop: 2 }}>
+                  {career.totalScore} pts
+                </Text>
+              </View>
+            </View>
+
+            <View style={{ width: 1, height: 28, backgroundColor: palette.line }} />
+
+            <View style={{ gap: 2, alignItems: 'flex-end' }}>
+              <Text style={{ fontSize: 11, color: palette.inkSoft, fontWeight: '600', textTransform: 'uppercase' }}>
+                Progression
+              </Text>
+              <Text style={{ fontFamily: font.nativeFamily.display, fontSize: 16, color: palette.txt, paddingTop: 2 }}>
+                {completedCount} / {career.levels.length} ({progressPct}%)
+              </Text>
+            </View>
+          </View>
+
+          {/* Progress Bar */}
+          <View style={{ height: 7, backgroundColor: palette.surface2, borderRadius: 9999, overflow: 'hidden' }}>
+            <View
+              style={{
+                height: '100%',
+                width: `${progressPct}%`,
+                backgroundColor: completedCount === 12 ? palette.good : palette.primary,
+                borderRadius: 9999,
+              }}
+            />
+          </View>
+        </View>
+
+        {/* ── Stages & Level Cards ── */}
+        {stages.map((stage, sIndex) => (
+          <View key={sIndex} style={{ gap: 10 }}>
+            {/* Stage Header */}
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 4 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: stage.color }} />
+                <Text style={{ fontFamily: font.nativeFamily.display, fontSize: 15, color: palette.txt, paddingTop: 2 }}>
+                  {stage.title}
+                </Text>
+              </View>
+              <View
                 style={{
-                  width: '30%',
-                  aspectRatio: 1,
-                  borderRadius: 20,
-                  borderWidth: 1.5,
-                  borderColor: isCompleted
-                    ? palette.good
-                    : isCurrent
-                    ? palette.gold
-                    : palette.line,
-                  backgroundColor: isCompleted
-                    ? palette.good + '1A'
-                    : isCurrent
-                    ? palette.surface
-                    : palette.surface2,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 4,
-                  opacity: isLocked ? 0.45 : 1,
+                  backgroundColor: stage.color + '1A',
+                  paddingHorizontal: 8,
+                  paddingVertical: 3,
+                  borderRadius: 9999,
+                  borderWidth: 1,
+                  borderColor: stage.color + '33',
                 }}
               >
-                {isCompleted ? (
-                  <CheckCircle size={22} color={palette.good} />
-                ) : isLocked ? (
-                  <Lock size={20} color={palette.inkSoft} />
-                ) : (
-                  <Play size={20} color={palette.gold} />
-                )}
-
-                <Text
-                  style={{
-                    fontSize: 15,
-                    fontWeight: '800',
-                    color: isCompleted
-                      ? palette.good
-                      : isCurrent
-                      ? palette.txt
-                      : palette.inkSoft,
-                  }}
-                >
-                  Niv. {level.levelNumber}
+                <Text style={{ fontSize: 10, fontWeight: '800', color: stage.color }}>
+                  {stage.difficulty}
                 </Text>
+              </View>
+            </View>
 
-                <Text
-                  style={{
-                    fontSize: 9,
-                    fontWeight: '700',
-                    color: palette.inkSoft,
-                    textTransform: 'uppercase',
-                  }}
-                >
-                  {level.difficulty}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
+            {/* 3 Level Cards in Row */}
+            <View style={{ flexDirection: 'row', gap: 10 }}>
+              {stage.levels.map((level) => {
+                const isLocked = level.status === 'LOCKED';
+                const isCompleted = level.status === 'COMPLETED';
+                const isCurrent = level.status === 'UNLOCKED' || level.status === 'IN_PROGRESS';
+
+                return (
+                  <TouchableOpacity
+                    key={level.levelNumber}
+                    disabled={isLocked}
+                    onPress={() => setSelectedLevel(level)}
+                    activeOpacity={0.8}
+                    style={{
+                      flex: 1,
+                      aspectRatio: 0.95,
+                      borderRadius: 20,
+                      borderWidth: isCurrent ? 2 : 1.5,
+                      borderColor: isCompleted
+                        ? palette.good
+                        : isCurrent
+                        ? palette.primary
+                        : palette.line,
+                      backgroundColor: isCompleted
+                        ? palette.good + '18'
+                        : isCurrent
+                        ? palette.surface
+                        : palette.surface2,
+                      padding: 10,
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      opacity: isLocked ? 0.4 : 1,
+                      shadowColor: isCurrent ? palette.primary : '#000000',
+                      shadowOffset: { width: 0, height: isCurrent ? 3 : 1 },
+                      shadowOpacity: isCurrent ? 0.15 : 0.02,
+                      shadowRadius: isCurrent ? 8 : 4,
+                      elevation: isCurrent ? 3 : 1,
+                    }}
+                  >
+                    {/* Top Status Icon */}
+                    <View
+                      style={{
+                        width: 28,
+                        height: 28,
+                        borderRadius: 14,
+                        backgroundColor: isCompleted
+                          ? palette.good
+                          : isCurrent
+                          ? palette.primary
+                          : palette.surface,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      {isCompleted ? (
+                        <Check size={16} color="#FFFFFF" strokeWidth={2.8} />
+                      ) : isLocked ? (
+                        <Lock size={14} color={palette.inkSoft} />
+                      ) : (
+                        <Play size={14} color={palette.primaryInk} style={{ marginLeft: 2 }} />
+                      )}
+                    </View>
+
+                    {/* Level Number */}
+                    <View style={{ alignItems: 'center', gap: 1 }}>
+                      <Text
+                        style={{
+                          fontFamily: font.nativeFamily.display,
+                          fontSize: 15,
+                          color: isCompleted
+                            ? palette.good
+                            : isCurrent
+                            ? palette.txt
+                            : palette.inkSoft,
+                          paddingTop: 2,
+                        }}
+                      >
+                        Niveau {level.levelNumber}
+                      </Text>
+                      {level.bestScore > 0 ? (
+                        <Text style={{ fontSize: 10.5, fontWeight: '700', color: palette.gold }}>
+                          ★ {level.bestScore} pts
+                        </Text>
+                      ) : (
+                        <Text style={{ fontSize: 10, color: palette.inkSoft }}>
+                          {isLocked ? 'Verrouillé' : 'Prêt'}
+                        </Text>
+                      )}
+                    </View>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+        ))}
       </ScrollView>
 
-      {/* Level Details Modal */}
+      {/* ── Level Details Modal ── */}
       <Modal
-        visible={!!selectedLevel}
+        visible={!!selectedLevel && !isStartingLevel}
         transparent
         animationType="fade"
         onRequestClose={() => setSelectedLevel(null)}
@@ -271,77 +452,139 @@ export default function CareerDetailScreen() {
         <View
           style={{
             flex: 1,
-            backgroundColor: 'rgba(0,0,0,0.7)',
+            backgroundColor: 'rgba(0,0,0,0.65)',
             alignItems: 'center',
-            justifyContent: 'center',
-            padding: 20,
+            justifyContent: 'flex-end',
           }}
         >
+          <TouchableOpacity
+            style={{ flex: 1, width: '100%' }}
+            activeOpacity={1}
+            onPress={() => setSelectedLevel(null)}
+          />
+
           {selectedLevel && (
             <View
               style={{
                 backgroundColor: palette.surface,
-                borderRadius: 24,
+                borderTopLeftRadius: 28,
+                borderTopRightRadius: 28,
                 borderWidth: 1,
                 borderColor: palette.line,
-                padding: 24,
+                paddingHorizontal: 22,
+                paddingTop: 14,
+                paddingBottom: 36,
                 width: '100%',
-                maxWidth: 380,
-                gap: 16,
+                maxWidth: 500,
+                gap: 18,
               }}
             >
+              {/* Modal Handle */}
+              <View style={{ alignItems: 'center' }}>
+                <View style={{ width: 44, height: 4, borderRadius: 2, backgroundColor: palette.surface2 }} />
+              </View>
+
+              {/* Header */}
               <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                <Text style={{ fontSize: 18, fontWeight: '800', color: palette.txt }}>
-                  Niveau {selectedLevel.levelNumber} · {selectedLevel.difficulty}
-                </Text>
-                <TouchableOpacity onPress={() => setSelectedLevel(null)} activeOpacity={0.7}>
-                  <X size={20} color={palette.inkSoft} />
+                <View style={{ gap: 2 }}>
+                  <Text style={{ fontFamily: font.nativeFamily.display, fontSize: 19, color: palette.txt, paddingTop: 2 }}>
+                    Niveau {selectedLevel.levelNumber}
+                  </Text>
+                  <Text style={{ fontSize: 12.5, color: palette.primary, fontWeight: '700', textTransform: 'uppercase' }}>
+                    Difficulté : {selectedLevel.difficulty}
+                  </Text>
+                </View>
+
+                <TouchableOpacity
+                  onPress={() => setSelectedLevel(null)}
+                  activeOpacity={0.7}
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: 16,
+                    backgroundColor: palette.surface2,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <X size={16} color={palette.inkSoft} />
                 </TouchableOpacity>
               </View>
 
-              <View style={{ gap: 8 }}>
-                <Text style={{ fontSize: 13, color: palette.inkSoft }}>
-                  • Seuil de réussite : <Text style={{ color: palette.txt, fontWeight: '700' }}>{Math.round(selectedLevel.threshold * 100)}%</Text>
-                </Text>
-                <Text style={{ fontSize: 13, color: palette.inkSoft }}>
-                  • Tentatives précédentes : <Text style={{ color: palette.txt, fontWeight: '700' }}>{selectedLevel.attempts}</Text>
-                </Text>
-                {selectedLevel.bestScore > 0 && (
-                  <Text style={{ fontSize: 13, color: palette.inkSoft }}>
-                    • Meilleur score : <Text style={{ color: palette.gold, fontWeight: '700' }}>{selectedLevel.bestScore} pts</Text>
+              {/* Stats Box */}
+              <View
+                style={{
+                  backgroundColor: palette.surface2,
+                  borderRadius: 18,
+                  padding: 16,
+                  gap: 10,
+                }}
+              >
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Text style={{ fontSize: 13, color: palette.inkSoft }}>Objectif de réussite</Text>
+                  <Text style={{ fontSize: 13, fontWeight: '800', color: palette.good }}>
+                    {Math.round(selectedLevel.threshold * 100)}% de bonnes réponses
                   </Text>
+                </View>
+
+                <View style={{ height: 1, backgroundColor: palette.line }} />
+
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Text style={{ fontSize: 13, color: palette.inkSoft }}>Tentatives précédentes</Text>
+                  <Text style={{ fontSize: 13, fontWeight: '700', color: palette.txt }}>
+                    {selectedLevel.attempts}
+                  </Text>
+                </View>
+
+                {selectedLevel.bestScore > 0 && (
+                  <>
+                    <View style={{ height: 1, backgroundColor: palette.line }} />
+                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <Text style={{ fontSize: 13, color: palette.inkSoft }}>Meilleur score</Text>
+                      <Text style={{ fontSize: 13, fontWeight: '800', color: palette.gold }}>
+                        {selectedLevel.bestScore} pts
+                      </Text>
+                    </View>
+                  </>
                 )}
               </View>
 
+              {/* Start Button */}
               <TouchableOpacity
-                onPress={() => handleStartLevel(selectedLevel.levelNumber)}
-                disabled={isStartingLevel}
-                activeOpacity={0.8}
+                onPress={() => handleStartLevel(selectedLevel.levelNumber, selectedLevel.difficulty)}
+                activeOpacity={0.85}
                 style={{
                   backgroundColor: palette.primary,
-                  borderRadius: 14,
-                  paddingVertical: 14,
+                  borderRadius: 18,
+                  paddingVertical: 15,
                   alignItems: 'center',
                   justifyContent: 'center',
                   flexDirection: 'row',
                   gap: 8,
+                  shadowColor: palette.primary,
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.25,
+                  shadowRadius: 10,
+                  elevation: 4,
                 }}
               >
-                {isStartingLevel ? (
-                  <ActivityIndicator size="small" color={palette.primaryInk} />
-                ) : (
-                  <>
-                    <Play size={16} color={palette.primaryInk} />
-                    <Text style={{ color: palette.primaryInk, fontSize: 15, fontWeight: '700' }}>
-                      Jouer ce niveau
-                    </Text>
-                  </>
-                )}
+                <Zap size={18} color={palette.primaryInk} />
+                <Text style={{ color: palette.primaryInk, fontSize: 16, fontWeight: '800' }}>
+                  Lancer la partie
+                </Text>
               </TouchableOpacity>
             </View>
           )}
         </View>
       </Modal>
+
+      {/* ── AI Brain Loading Screen ── */}
+      <QuizAiLoadingScreen
+        visible={isStartingLevel}
+        theme={career.category}
+        levelLabel={`Niveau ${startingLevelInfo?.levelNumber ?? 1} · ${startingLevelInfo?.difficulty ?? 'FACILE'}`}
+        title="Préparation de la partie en cours"
+      />
     </SafeAreaView>
   );
 }

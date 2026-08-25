@@ -3,7 +3,7 @@ import { Mic, Eye, EyeOff, Target } from 'lucide-react-native';
 import { ExpandableCard } from './ExpandableCard';
 import { ProgressiveQuestionDisplay } from '~/components/game/ProgressiveQuestionDisplay';
 import { IdentificationQuestionDisplay } from '~/components/game/IdentificationQuestionDisplay';
-import { palette } from '~/lib/theme/tokens';
+import { palette, font } from '~/lib/theme/tokens';
 import type { QuestionResponse, ManualQuestion } from '~/types/api';
 
 export interface QuestionAndAnswerDisplayProps {
@@ -41,7 +41,7 @@ export function QuestionAndAnswerDisplay({
               style={{ flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-end', gap: 4, marginBottom: 4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 9999, backgroundColor: palette.surface2 }}
             >
               {showAnswer ? <EyeOff size={11} color="rgba(255,255,255,0.5)" /> : <Eye size={11} color="rgba(255,255,255,0.5)" />}
-              <Text style={{ color: palette.inkSoft, fontSize: 10 }}>{showAnswer ? 'Masquer' : 'Afficher'}</Text>
+              <Text style={{ fontFamily: font.nativeFamily.ui, color: palette.inkSoft, fontSize: 11, fontWeight: '600' }}>{showAnswer ? 'Masquer' : 'Afficher'}</Text>
             </TouchableOpacity>
             
             {showAnswer ? (

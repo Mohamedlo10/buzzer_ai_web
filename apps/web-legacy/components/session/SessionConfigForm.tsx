@@ -31,6 +31,8 @@ export function SessionConfigForm({ onSuccess, onClose, roomId, initialMaxPlayer
 
   const {
     currentStep,
+    steps,
+    currentStepId,
     totalSteps,
     getStepName,
     questionMode,
@@ -63,8 +65,8 @@ export function SessionConfigForm({ onSuccess, onClose, roomId, initialMaxPlayer
   const isLastStep = currentStep === totalSteps - 1;
 
   const renderStepContent = () => {
-    switch (currentStep) {
-      case 0:
+    switch (currentStepId) {
+      case 'mode':
         return (
           <StepGameMode
             handleQuickStart={handleQuickStart}
@@ -77,7 +79,7 @@ export function SessionConfigForm({ onSuccess, onClose, roomId, initialMaxPlayer
             setConfig={setConfig}
           />
         );
-      case 1:
+      case 'settings':
         return (
           <StepSettings
             sessionMode={sessionMode}
@@ -91,21 +93,9 @@ export function SessionConfigForm({ onSuccess, onClose, roomId, initialMaxPlayer
             setConfig={setConfig}
           />
         );
-      case 2:
-        return config.isTeamMode ? (
-          <StepTeams teams={teams} setTeams={setTeams} />
-        ) : (
-          <StepSummary
-            sessionMode={sessionMode}
-            questionMode={questionMode}
-            globalQuestionSeconds={globalQuestionSeconds}
-            answerChoicesCount={answerChoicesCount}
-            config={config}
-            teams={teams}
-            error={error}
-          />
-        );
-      case 3:
+      case 'teams':
+        return <StepTeams teams={teams} setTeams={setTeams} />;
+      case 'summary':
         return (
           <StepSummary
             sessionMode={sessionMode}
@@ -126,16 +116,16 @@ export function SessionConfigForm({ onSuccess, onClose, roomId, initialMaxPlayer
     if (isLastStep) {
       return isCreating ? 'Création...' : 'Créer la session';
     }
-    if (currentStep === 0) {
-      return 'Régler les paramètres';
+    switch (currentStepId) {
+      case 'mode':
+        return 'Régler les paramètres';
+      case 'settings':
+        return config.isTeamMode ? 'Configurer les équipes' : 'Voir le récapitulatif';
+      case 'teams':
+        return 'Voir le récapitulatif';
+      default:
+        return 'Suivant';
     }
-    if (currentStep === 1) {
-      return config.isTeamMode ? 'Configurer les équipes' : 'Voir le récapitulatif';
-    }
-    if (currentStep === 2) {
-      return 'Voir le récapitulatif';
-    }
-    return 'Suivant';
   };
 
   return (

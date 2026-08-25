@@ -17,7 +17,7 @@ import { Avatar } from '~/components/shared/Avatar';
 import { UserProfileModal } from '~/components/shared/UserProfileModal';
 import { notifyApiError } from '~/lib/ui/notify';
 
-type TabType = 'friends' | 'requests' | 'search';
+type TabType = 'friends' | 'requests' | 'blocked' | 'search';
 
 export default function FriendsPage() {
   const [activeTab, setActiveTab] = useState<TabType>('friends');
@@ -32,19 +32,27 @@ export default function FriendsPage() {
     friends,
     pendingRequests,
     sentRequests: storeSentRequests,
+    blockedUsers,
     isLoading,
     fetchFriends,
     fetchPendingRequests,
     fetchSentRequests,
+    fetchBlockedUsers,
     acceptRequest,
     declineRequest,
     cancelRequest,
     sendRequest,
+    unblockUser,
   } = useFriendStore();
 
   const loadData = useCallback(async () => {
-    await Promise.all([fetchFriends(), fetchPendingRequests(), fetchSentRequests()]);
-  }, [fetchFriends, fetchPendingRequests, fetchSentRequests]);
+    await Promise.all([
+      fetchFriends(),
+      fetchPendingRequests(),
+      fetchSentRequests(),
+      fetchBlockedUsers(),
+    ]);
+  }, [fetchFriends, fetchPendingRequests, fetchSentRequests, fetchBlockedUsers]);
 
   useEffect(() => {
     loadData();
@@ -133,6 +141,7 @@ export default function FriendsPage() {
           {[
             { id: 'friends', label: `Amis (${friends.length})` },
             { id: 'requests', label: `Demandes${totalRequests > 0 ? ` (${totalRequests})` : ''}` },
+            { id: 'blocked', label: `Bloqués${blockedUsers.length > 0 ? ` (${blockedUsers.length})` : ''}` },
             { id: 'search', label: 'Recherche' },
           ].map((tab) => {
             const isActive = activeTab === tab.id;
@@ -278,6 +287,67 @@ export default function FriendsPage() {
                   >
                     Aucune demande en attente
                   </div>
+                )}
+              </div>
+            )}
+
+            {activeTab === 'blocked' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {blockedUsers.length === 0 ? (
+                  <div
+                    style={{
+                      background: 'var(--color-surface)',
+                      borderRadius: 'var(--card-radius)',
+                      border: '1px solid var(--color-line)',
+                      padding: 32,
+                      textAlign: 'center',
+                      fontSize: 13,
+                      color: 'var(--color-ink-soft)',
+                    }}
+                  >
+                    Aucun utilisateur bloqué
+                  </div>
+                ) : (
+                  blockedUsers.map((user, i) => (
+                    <div
+                      key={user.id}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 14,
+                        background: 'var(--color-surface)',
+                        border: '1px solid var(--color-line)',
+                        borderRadius: 'var(--card-radius)',
+                        padding: 14,
+                      }}
+                    >
+                      <Avatar name={user.username} avatarUrl={user.avatarUrl} hue={30 + i * 40} size={42} />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 15 }}>
+                          {user.username}
+                        </div>
+                        <div style={{ fontSize: 12, color: 'var(--color-bad)', fontWeight: 600 }}>
+                          Bloqué
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => unblockUser(user.id)}
+                        style={{
+                          background: 'var(--color-surface-2)',
+                          border: '1px solid var(--color-line)',
+                          padding: '6px 14px',
+                          borderRadius: 'var(--radius-pill)',
+                          fontSize: 12,
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          color: 'var(--color-txt)',
+                        }}
+                      >
+                        Débloquer
+                      </button>
+                    </div>
+                  ))
                 )}
               </div>
             )}

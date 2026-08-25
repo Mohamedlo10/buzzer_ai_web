@@ -1,6 +1,6 @@
 import { View, Text, TouchableOpacity } from 'react-native';
 import { Users } from 'lucide-react-native';
-import { palette } from '~/lib/theme/tokens';
+import { palette, font } from '~/lib/theme/tokens';
 import { teamColor as resolveTeamColor } from '~/lib/game/teamColors';
 import type { PlayerResponse, TeamResponse } from '~/types/api';
 
@@ -29,7 +29,7 @@ export function TeamLeaderboard({ teams, players, currentUserId, compact = false
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: palette.line }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
           <Users size={16} color={palette.indigo} />
-          <Text style={{ color: palette.txt, fontWeight: '700', fontSize: 14 }}>Classement équipes</Text>
+          <Text style={{ fontFamily: font.nativeFamily.display, color: palette.txt, fontSize: 15, paddingTop: 2 }}>Classement équipes</Text>
         </View>
         {onCorrectClick ? (
           <TouchableOpacity
@@ -37,10 +37,10 @@ export function TeamLeaderboard({ teams, players, currentUserId, compact = false
             activeOpacity={0.7}
             style={{ paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, backgroundColor: palette.warn + '1A', borderWidth: 1, borderColor: palette.warn + '50' }}
           >
-            <Text style={{ color: palette.warn, fontSize: 12, fontWeight: '600' }}>✎ Corriger</Text>
+            <Text style={{ fontFamily: font.nativeFamily.ui, color: palette.warn, fontSize: 12, fontWeight: '600' }}>✎ Corriger</Text>
           </TouchableOpacity>
         ) : (
-          <Text style={{ color: palette.inkSoft, fontSize: 12, fontWeight: '600' }}>{teamStandings.length} équipes</Text>
+          <Text style={{ fontFamily: font.nativeFamily.serif, fontStyle: 'italic', color: palette.inkSoft, fontSize: 13 }}>{teamStandings.length} équipes</Text>
         )}
       </View>
 
@@ -78,17 +78,17 @@ export function TeamLeaderboard({ teams, players, currentUserId, compact = false
               <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, minWidth: 0 }}>
                 {/* Rank badge */}
                 <View style={{ width: 26, height: 26, borderRadius: 8, backgroundColor: tColor, alignItems: 'center', justifyContent: 'center', marginRight: 10, flexShrink: 0 }}>
-                  <Text style={{ color: '#FFFFFF', fontSize: 12, fontWeight: '700' }}>{index + 1}</Text>
+                  <Text style={{ fontFamily: font.nativeFamily.display, color: '#FFFFFF', fontSize: 13, paddingTop: 2 }}>{index + 1}</Text>
                 </View>
                 {/* Dot */}
                 <View style={{ width: 9, height: 9, borderRadius: 4.5, backgroundColor: tColor, marginRight: 8, flexShrink: 0 }} />
                 {/* Name */}
-                <Text style={{ color: palette.txt, fontWeight: '700', fontSize: 14.5, flex: 1 }} numberOfLines={1}>{team.name}</Text>
+                <Text style={{ fontFamily: font.nativeFamily.ui, color: palette.txt, fontWeight: '700', fontSize: 14.5, flex: 1 }} numberOfLines={1}>{team.name}</Text>
               </View>
               {/* Score */}
-              <Text style={{ color: tColor, fontWeight: '700', fontSize: 16, fontVariant: ['tabular-nums'], marginLeft: 8 }}>
+              <Text style={{ fontFamily: font.nativeFamily.display, color: tColor, fontSize: 16, fontVariant: ['tabular-nums'], marginLeft: 8, paddingTop: 2 }}>
                 {team.totalScore}
-                <Text style={{ color: palette.inkSoft, fontSize: 10, fontWeight: '400' }}> pts</Text>
+                <Text style={{ fontFamily: font.nativeFamily.serif, fontStyle: 'italic', color: palette.inkSoft, fontSize: 11 }}> pts</Text>
               </Text>
             </View>
 
@@ -96,12 +96,12 @@ export function TeamLeaderboard({ teams, players, currentUserId, compact = false
             {!compact && team.members.length > 0 && (
               <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
                 {team.members.slice(0, 5).map((m) => (
-                  <Text key={m.id} style={{ fontSize: 11, color: palette.inkSoft, backgroundColor: palette.surface2, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 9999 }}>
+                  <Text key={m.id} style={{ fontFamily: font.nativeFamily.ui, fontSize: 11, color: palette.inkSoft, backgroundColor: palette.surface2, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 9999 }}>
                     {m.name}
                   </Text>
                 ))}
                 {team.members.length > 5 && (
-                  <Text style={{ fontSize: 11, color: palette.inkSoft }}>+{team.members.length - 5}</Text>
+                  <Text style={{ fontFamily: font.nativeFamily.ui, fontSize: 11, color: palette.inkSoft }}>+{team.members.length - 5}</Text>
                 )}
               </View>
             )}

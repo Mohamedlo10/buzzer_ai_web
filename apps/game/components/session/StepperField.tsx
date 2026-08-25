@@ -28,8 +28,10 @@ export function StepperField({
         borderRadius: 16,
         borderWidth: 1,
         borderColor: palette.line,
-        padding: 16,
-        minHeight: 92,
+        paddingHorizontal: 12,
+        paddingVertical: 14,
+        minHeight: 90,
+        width: '100%',
         justifyContent: 'space-between',
       }}
     >
@@ -38,22 +40,23 @@ export function StepperField({
           color: palette.inkSoft,
           fontSize: 9.5,
           fontWeight: '700',
-          letterSpacing: 1.5,
+          letterSpacing: 1.2,
           textTransform: 'uppercase',
           marginBottom: 8,
         }}
+        numberOfLines={1}
       >
         {label}
       </Text>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
         <TouchableOpacity
           onPress={() => onChange(Math.max(min, value - step))}
           disabled={value <= min}
           activeOpacity={0.7}
           style={{
-            width: 36,
-            height: 36,
-            borderRadius: 18,
+            width: 34,
+            height: 34,
+            borderRadius: 17,
             backgroundColor: palette.surface2,
             borderWidth: 1,
             borderColor: palette.line,
@@ -69,11 +72,13 @@ export function StepperField({
           style={{
             flex: 1,
             textAlign: 'center',
-            fontSize: 22,
+            fontSize: 20,
             fontWeight: '700',
             color,
             fontVariant: ['tabular-nums'],
+            minWidth: 20,
           }}
+          numberOfLines={1}
         >
           {value}{suffix}
         </Text>
@@ -83,9 +88,9 @@ export function StepperField({
           disabled={value >= max}
           activeOpacity={0.7}
           style={{
-            width: 36,
-            height: 36,
-            borderRadius: 18,
+            width: 34,
+            height: 34,
+            borderRadius: 17,
             backgroundColor: palette.surface2,
             borderWidth: 1,
             borderColor: palette.line,

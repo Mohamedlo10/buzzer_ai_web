@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { CheckCircle, XCircle } from 'lucide-react';
+import { Check, X } from 'lucide-react';
 import { useDeadlineSeconds } from '~/lib/game/useDeadline';
 import { serverNow } from '~/lib/game/clock';
 
@@ -44,10 +44,12 @@ export function AnswerChoicesPanel({
   const onSubmitRef = useRef(onSubmit);
   onSubmitRef.current = onSubmit;
 
-  // Mode local (solo) : une échéance est fabriquée une fois par tour. Elle est
-  // recalculée uniquement quand les propositions changent, jamais sur un simple
-  // re-render — c'était la cause du réarmement du garde en pleine soumission.
-  const [localDeadline, setLocalDeadline] = useState<number | null>(null);
+  const [frozenRemaining, setFrozenRemaining] = useState<number | null>(null);
+
+  // Mode local (solo) : initialiser immédiatement l'échéance
+  const [localDeadline, setLocalDeadline] = useState<number | null>(() =>
+    serverDriven ? null : serverNow() + answerTimeSeconds * 1000
+  );
   const choicesKey = choices.join('|');
   useEffect(() => {
     if (serverDriven) {
@@ -55,6 +57,9 @@ export function AnswerChoicesPanel({
       return;
     }
     setLocalDeadline(serverNow() + answerTimeSeconds * 1000);
+    setSelectedIndex(null);
+    setFrozenRemaining(null);
+    hasSubmittedRef.current = false;
   }, [serverDriven, answerTimeSeconds, choicesKey]);
 
   const effectiveDeadline = serverDriven ? deadlineEpochMs : localDeadline;
@@ -63,31 +68,43 @@ export function AnswerChoicesPanel({
   // Le garde ne se réarme qu'au changement de tour, jamais sur un re-render.
   useEffect(() => {
     setSelectedIndex(null);
+    setFrozenRemaining(null);
     hasSubmittedRef.current = false;
   }, [effectiveDeadline]);
+
+  useEffect(() => {
+    if (result && frozenRemaining === null) {
+      setFrozenRemaining(remaining);
+    }
+  }, [result, remaining, frozenRemaining]);
 
   // Auto-soumission au temps écoulé : uniquement en mode local. En multijoueur
   // c'est le serveur qui décide de l'expiration.
   useEffect(() => {
     if (serverDriven || !localDeadline) return;
-    if (remaining > 0 || hasSubmittedRef.current || isSubmitting || result) return;
-    hasSubmittedRef.current = true;
-    onSubmitRef.current('__timeout__');
+    if (hasSubmittedRef.current || isSubmitting || result) return;
+    if (remaining <= 0 && msUntil(localDeadline) <= 0) {
+      hasSubmittedRef.current = true;
+      setFrozenRemaining(0);
+      onSubmitRef.current('__timeout__');
+    }
   }, [serverDriven, localDeadline, remaining, isSubmitting, result]);
 
   const handleSelect = (index: number, answer: string) => {
     if (hasSubmittedRef.current || isSubmitting || result) return;
     hasSubmittedRef.current = true;
+    setFrozenRemaining(remaining);
     setSelectedIndex(index);
     onSubmit(answer);
   };
 
-  const pct = Math.round((remaining / answerTimeSeconds) * 100);
+  const displayRemaining = frozenRemaining !== null ? frozenRemaining : remaining;
+  const pct = Math.max(0, Math.min(100, Math.round((displayRemaining / answerTimeSeconds) * 100)));
   // Vert -> ambre -> rouge : la terracotta de marque ne convient pas ici,
   // elle se lirait comme une alerte dès le début du chrono.
-  const timerColor = remaining > answerTimeSeconds * 0.6
+  const timerColor = displayRemaining > answerTimeSeconds * 0.6
     ? 'var(--good)'
-    : remaining > answerTimeSeconds * 0.3
+    : displayRemaining > answerTimeSeconds * 0.3
     ? 'var(--warn)'
     : 'var(--bad)';
 
@@ -101,7 +118,7 @@ export function AnswerChoicesPanel({
           />
         </div>
         <span className="font-bold text-sm w-8 text-right tabular-nums" style={{ color: timerColor }}>
-          {remaining}s
+          {displayRemaining}s
         </span>
       </div>
 
@@ -131,11 +148,9 @@ export function AnswerChoicesPanel({
                 isSelected ? 'bg-indigo text-white' :
                 'bg-surface-2 text-txt'
               }`}>
-                {CHOICE_LABELS[i]}
+                {showCorrect ? <Check size={17} strokeWidth={2.8} /> : showWrong ? <X size={17} strokeWidth={2.8} /> : CHOICE_LABELS[i]}
               </span>
-              <span className="text-txt text-[14.5px] font-semibold leading-snug flex-1">{choice}</span>
-              {showCorrect && <CheckCircle size={18} className="text-good shrink-0" />}
-              {showWrong && <XCircle size={18} className="text-buzz shrink-0" />}
+              <span className="text-txt text-[14px] font-semibold leading-snug flex-1">{choice}</span>
             </button>
           );
         })}

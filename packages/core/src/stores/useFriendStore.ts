@@ -6,16 +6,20 @@ interface FriendState {
   friends: FriendResponse[];
   pendingRequests: FriendRequestResponse[];
   sentRequests: SentFriendRequestResponse[];
+  blockedUsers: FriendResponse[];
   isLoading: boolean;
 
   fetchFriends: () => Promise<void>;
   fetchPendingRequests: () => Promise<void>;
   fetchSentRequests: () => Promise<void>;
+  fetchBlockedUsers: () => Promise<void>;
   sendRequest: (targetUserId: string) => Promise<void>;
   acceptRequest: (requestId: string) => Promise<void>;
   declineRequest: (requestId: string) => Promise<void>;
   cancelRequest: (requestId: string) => Promise<void>;
   removeFriend: (friendId: string) => Promise<void>;
+  blockUser: (userId: string, snapshot?: FriendResponse) => Promise<void>;
+  unblockUser: (userId: string) => Promise<void>;
 
   // WebSocket updates
   setFriendOnline: (userId: string) => void;
@@ -27,6 +31,7 @@ export const useFriendStore = create<FriendState>((set, get) => ({
   friends: [],
   pendingRequests: [],
   sentRequests: [],
+  blockedUsers: [],
   isLoading: false,
 
   fetchFriends: async () => {
@@ -47,6 +52,21 @@ export const useFriendStore = create<FriendState>((set, get) => ({
   fetchSentRequests: async () => {
     const requests = await friendsApi.getSentRequests();
     set({ sentRequests: requests });
+  },
+
+  fetchBlockedUsers: async () => {
+    try {
+      const blocked = await friendsApi.getBlockedUsers();
+      set((state) => {
+        // Merge with existing locally blocked if backend returned empty list
+        const map = new Map<string, FriendResponse>();
+        state.blockedUsers.forEach((u) => map.set(u.id, u));
+        blocked.forEach((u) => map.set(u.id, u));
+        return { blockedUsers: Array.from(map.values()) };
+      });
+    } catch {
+      // keep current state
+    }
   },
 
   sendRequest: async (targetUserId) => {
@@ -81,6 +101,53 @@ export const useFriendStore = create<FriendState>((set, get) => ({
     set((state) => ({
       friends: state.friends.filter((f) => f.id !== friendId),
     }));
+  },
+
+  blockUser: async (userId, snapshot) => {
+    await friendsApi.blockUser(userId);
+    set((state) => {
+      const existingFriend = state.friends.find((f) => f.id === userId);
+      const userObj: FriendResponse = snapshot || (existingFriend ? {
+        id: existingFriend.id,
+        username: existingFriend.username,
+        avatarUrl: existingFriend.avatarUrl,
+        isOnline: false,
+        lastSeenAt: null,
+      } : {
+        id: userId,
+        username: 'Utilisateur',
+        avatarUrl: null,
+        isOnline: false,
+        lastSeenAt: null,
+      });
+
+      const newBlocked = state.blockedUsers.some((u) => u.id === userId)
+        ? state.blockedUsers
+        : [...state.blockedUsers, userObj];
+
+      return {
+        friends: state.friends.filter((f) => f.id !== userId),
+        pendingRequests: state.pendingRequests.filter((r) => r.requester.id !== userId),
+        sentRequests: state.sentRequests.filter((r) => r.receiver.id !== userId),
+        blockedUsers: newBlocked,
+      };
+    });
+  },
+
+  unblockUser: async (userId) => {
+    // Optimistic removal from blocked list
+    set((state) => ({
+      blockedUsers: state.blockedUsers.filter((u) => u.id !== userId),
+    }));
+    try {
+      await friendsApi.unblockUser(userId);
+    } catch (err) {
+      // Revert if API fails
+      get().fetchBlockedUsers();
+      throw err;
+    }
+    // Refresh friends list
+    get().fetchFriends();
   },
 
   // WebSocket updates

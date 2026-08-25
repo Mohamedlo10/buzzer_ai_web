@@ -474,7 +474,7 @@ export function CategoryPicker({
                       {index + 1}
                     </Text>
                   </View>
-                  <Text style={{ color: palette.txt, fontWeight: '600', fontSize: 13, flex: 1 }} numberOfLines={1}>
+                  <Text style={{ fontFamily: font.nativeFamily.display, color: palette.txt, fontWeight: '600', fontSize: 14, flex: 1, paddingBottom: 2, paddingTop: 4 }} numberOfLines={1}>
                     {cat.name}
                   </Text>
                   {isSelected && <Check size={16} color={cat.hexColor} />}

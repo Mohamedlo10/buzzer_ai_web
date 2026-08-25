@@ -6,6 +6,7 @@ import { useSessionConfig } from '~/lib/hooks/useSessionConfig';
 import { StepBar } from './StepBar';
 import { StepGameMode } from './StepGameMode';
 import { StepSettings } from './StepSettings';
+import { StepCategories } from './StepCategories';
 import { StepTeams } from './StepTeams';
 import type { SessionResponse } from '~/types/api';
 import { StepSummary } from './StepSummary';
@@ -33,6 +34,8 @@ export function SessionConfigForm({
 
   const {
     currentStep,
+    steps,
+    currentStepId,
     totalSteps,
     getStepName,
     questionMode,
@@ -72,8 +75,8 @@ export function SessionConfigForm({
   const isLastStep = currentStep === totalSteps - 1;
 
   const renderStepContent = () => {
-    switch (currentStep) {
-      case 0:
+    switch (currentStepId) {
+      case 'mode':
         return (
           <StepGameMode
             handleQuickStart={handleQuickStart}
@@ -86,7 +89,7 @@ export function SessionConfigForm({
             setConfig={setConfig}
           />
         );
-      case 1:
+      case 'settings':
         return (
           <StepSettings
             sessionMode={sessionMode}
@@ -95,8 +98,6 @@ export function SessionConfigForm({
             setCategorySelectionMode={setCategorySelectionMode}
             targetTotalQuestions={targetTotalQuestions}
             setTargetTotalQuestions={setTargetTotalQuestions}
-            sessionCategories={sessionCategories}
-            setSessionCategories={setSessionCategories}
             globalQuestionSeconds={globalQuestionSeconds}
             setGlobalQuestionSeconds={setGlobalQuestionSeconds}
             setAnswerTimeSeconds={setAnswerTimeSeconds}
@@ -106,24 +107,16 @@ export function SessionConfigForm({
             setConfig={setConfig}
           />
         );
-      case 2:
-        return config.isTeamMode ? (
-          <StepTeams teams={teams} setTeams={setTeams} />
-        ) : (
-          <StepSummary
-            sessionMode={sessionMode}
-            questionMode={questionMode}
-            categorySelectionMode={categorySelectionMode}
-            targetTotalQuestions={targetTotalQuestions}
+      case 'categories':
+        return (
+          <StepCategories
             sessionCategories={sessionCategories}
-            globalQuestionSeconds={globalQuestionSeconds}
-            answerChoicesCount={answerChoicesCount}
-            config={config}
-            teams={teams}
-            error={error}
+            setSessionCategories={setSessionCategories}
           />
         );
-      case 3:
+      case 'teams':
+        return <StepTeams teams={teams} setTeams={setTeams} />;
+      case 'summary':
         return (
           <StepSummary
             sessionMode={sessionMode}
@@ -145,14 +138,27 @@ export function SessionConfigForm({
 
   const getFooterButtonLabel = () => {
     if (isLastStep) return isCreating ? 'Création...' : 'Créer la session';
-    if (currentStep === 0) return 'Régler les paramètres';
-    if (currentStep === 1) return config.isTeamMode ? 'Configurer les équipes' : 'Voir le récapitulatif';
-    if (currentStep === 2) return 'Voir le récapitulatif';
-    return 'Suivant';
+    switch (currentStepId) {
+      case 'mode':
+        return 'Régler les paramètres';
+      case 'settings':
+        if (steps.includes('categories')) return 'Choisir les thèmes';
+        if (steps.includes('teams')) return 'Configurer les équipes';
+        return 'Voir le récapitulatif';
+      case 'categories':
+        if (steps.includes('teams')) return 'Configurer les équipes';
+        return 'Voir le récapitulatif';
+      case 'teams':
+        return 'Voir le récapitulatif';
+      default:
+        return 'Suivant';
+    }
   };
 
   const footerDisabled = isLastStep
     ? isCreating || (config.isTeamMode && teams.length < 2)
+    : currentStepId === 'categories'
+    ? sessionCategories.length === 0
     : false;
 
   return (
@@ -209,21 +215,23 @@ export function SessionConfigForm({
           {!isLastStep ? (
             <TouchableOpacity
               onPress={handleNext}
+              disabled={footerDisabled}
               activeOpacity={0.8}
               style={{
                 paddingHorizontal: 16,
                 paddingVertical: 8,
                 borderRadius: 9999,
-                backgroundColor: palette.primary,
+                backgroundColor: footerDisabled ? palette.surface2 : palette.primary,
                 alignItems: 'center',
                 justifyContent: 'center',
+                opacity: footerDisabled ? 0.5 : 1,
                 shadowColor: palette.primary,
-                shadowOpacity: 0.25,
+                shadowOpacity: footerDisabled ? 0 : 0.25,
                 shadowRadius: 4,
-                elevation: 2,
+                elevation: footerDisabled ? 0 : 2,
               }}
             >
-              <Text style={{ color: palette.primaryInk, fontSize: 13, fontWeight: '700' }}>
+              <Text style={{ color: footerDisabled ? palette.inkSoft : palette.primaryInk, fontSize: 13, fontWeight: '700' }}>
                 Suivant
               </Text>
             </TouchableOpacity>

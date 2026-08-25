@@ -1,5 +1,5 @@
 import { View, Text } from 'react-native';
-import { palette } from '~/lib/theme/tokens';
+import { palette, font } from '~/lib/theme/tokens';
 
 interface GlobalTimerBarProps {
   totalSeconds: number;
@@ -26,13 +26,14 @@ export function GlobalTimerBar({ totalSeconds, remainingSeconds, paused = false 
       </View>
       <Text
         style={{
-          fontSize: 12,
-          fontWeight: '700',
-          width: 28,
+          fontFamily: font.nativeFamily.display,
+          fontSize: 13,
+          width: 32,
           textAlign: 'right',
           color: barColor,
           opacity: paused ? 0.5 : 1,
           fontVariant: ['tabular-nums'],
+          paddingTop: 2,
         }}
       >
         {remainingSeconds}

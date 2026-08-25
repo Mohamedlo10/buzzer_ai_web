@@ -7,37 +7,51 @@ import {
   ScrollView,
   ActivityIndicator,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { Search, UserPlus, Users, X, Check, ArrowRight } from 'lucide-react-native';
+import {
+  Search,
+  Users,
+  UserPlus,
+  X,
+  Check,
+  ArrowRight,
+  Shield,
+  Zap,
+  Clock,
+  Send,
+} from 'lucide-react-native';
 
 import { useFriendStore } from '~/stores/useFriendStore';
 import * as usersApi from '~/lib/api/users';
-import type { UserResponse } from '~/types/api';
+import type { UserResponse, FriendResponse } from '~/types/api';
 import { palette, font } from '~/lib/theme/tokens';
 import { Avatar } from '~/components/shared/Avatar';
 import { AppTopBar } from '~/components/shared/AppTopBar';
+import { BlockedUsersModal } from '~/components/friend/BlockedUsersModal';
 import { notify, notifyApiError } from '~/lib/ui/notify';
 
-type TabType = 'friends' | 'requests' | 'search';
+type FilterType = 'all' | 'online' | 'requests';
 
 export default function FriendsScreen() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<TabType>('friends');
+  const [filter, setFilter] = useState<FilterType>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<UserResponse[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [sentRequests, setSentRequests] = useState<Set<string>>(new Set());
+  const [isBlockedModalOpen, setIsBlockedModalOpen] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const {
     friends,
     pendingRequests,
     sentRequests: storeSentRequests,
+    blockedUsers,
     isLoading,
     fetchFriends,
     fetchPendingRequests,
     fetchSentRequests,
+    fetchBlockedUsers,
     acceptRequest,
     declineRequest,
     cancelRequest,
@@ -45,13 +59,19 @@ export default function FriendsScreen() {
   } = useFriendStore();
 
   const loadData = useCallback(async () => {
-    await Promise.all([fetchFriends(), fetchPendingRequests(), fetchSentRequests()]);
-  }, [fetchFriends, fetchPendingRequests, fetchSentRequests]);
+    await Promise.all([
+      fetchFriends(),
+      fetchPendingRequests(),
+      fetchSentRequests(),
+      fetchBlockedUsers(),
+    ]);
+  }, [fetchFriends, fetchPendingRequests, fetchSentRequests, fetchBlockedUsers]);
 
   useEffect(() => {
     loadData();
   }, [loadData]);
 
+  // Live search debounced
   useEffect(() => {
     if (!searchQuery.trim()) {
       setSearchResults([]);
@@ -60,7 +80,7 @@ export default function FriendsScreen() {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
       performSearch(searchQuery);
-    }, 500);
+    }, 400);
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
@@ -88,65 +108,417 @@ export default function FriendsScreen() {
     }
   };
 
+  const onlineFriends = friends.filter((f) => f.isOnline);
   const totalRequests = pendingRequests.length + storeSentRequests.length;
+  const displayedFriends = filter === 'online' ? onlineFriends : friends;
 
   return (
     <View style={{ flex: 1, backgroundColor: palette.bg }}>
       <AppTopBar title="Xalaat" tag="AMIS & DUELS" />
-      <View style={{ flex: 1, paddingHorizontal: 16, paddingTop: 10 }}>
-        {/* Tab Switch Pills */}
-        <View
-          style={{
-            flexDirection: 'row',
-            backgroundColor: palette.surface2,
-            borderRadius: 9999,
-            padding: 4,
-            marginBottom: 16,
-            gap: 4,
-          }}
-        >
-          {[
-            { id: 'friends', label: `Amis (${friends.length})` },
-            { id: 'requests', label: `Demandes${totalRequests > 0 ? ` (${totalRequests})` : ''}` },
-            { id: 'search', label: 'Recherche' },
-          ].map((tab) => {
-            const isActive = activeTab === tab.id;
-            return (
+
+      <View style={{ flex: 1, paddingHorizontal: 16, paddingTop: 6 }}>
+        {/* ── Search Bar + Quick Blocked Action ── */}
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+          <View
+            style={{
+              flex: 1,
+              flexDirection: 'row',
+              alignItems: 'center',
+              backgroundColor: palette.surface,
+              borderRadius: 20,
+              borderWidth: 1,
+              borderColor: searchQuery ? palette.primary : palette.line,
+              paddingHorizontal: 14,
+              paddingVertical: 10,
+              gap: 10,
+              shadowColor: '#000000',
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.04,
+              shadowRadius: 6,
+              elevation: 1,
+            }}
+          >
+            <Search size={17} color={searchQuery ? palette.primary : palette.inkSoft} />
+            <TextInput
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              placeholder="Rechercher ou ajouter un joueur…"
+              placeholderTextColor={palette.inkSoft}
+              style={{
+                flex: 1,
+                color: palette.txt,
+                fontSize: 14,
+                padding: 0,
+              }}
+            />
+            {searchQuery ? (
+              <TouchableOpacity onPress={() => setSearchQuery('')} activeOpacity={0.7}>
+                <X size={16} color={palette.inkSoft} />
+              </TouchableOpacity>
+            ) : null}
+          </View>
+
+          {/* Shield Button for Blocked Users */}
+          <TouchableOpacity
+            onPress={() => setIsBlockedModalOpen(true)}
+            activeOpacity={0.8}
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: 22,
+              backgroundColor: blockedUsers.length > 0 ? palette.bad + '18' : palette.surface,
+              borderWidth: 1,
+              borderColor: blockedUsers.length > 0 ? palette.bad + '40' : palette.line,
+              alignItems: 'center',
+              justifyContent: 'center',
+              position: 'relative',
+            }}
+          >
+            <Shield size={18} color={blockedUsers.length > 0 ? palette.bad : palette.inkSoft} />
+            {blockedUsers.length > 0 && (
+              <View
+                style={{
+                  position: 'absolute',
+                  top: -2,
+                  right: -2,
+                  minWidth: 16,
+                  height: 16,
+                  borderRadius: 8,
+                  backgroundColor: palette.bad,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  paddingHorizontal: 4,
+                }}
+              >
+                <Text style={{ color: '#FFFFFF', fontSize: 9.5, fontWeight: '700' }}>
+                  {blockedUsers.length}
+                </Text>
+              </View>
+            )}
+          </TouchableOpacity>
+        </View>
+
+        {/* ── If Searching: Live Search Results ── */}
+        {searchQuery.trim().length > 0 ? (
+          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ gap: 10, paddingBottom: 32 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 4, marginVertical: 4 }}>
+              <Text style={{ fontSize: 12, fontWeight: '700', color: palette.inkSoft, textTransform: 'uppercase', letterSpacing: 0.8 }}>
+                Résultats de recherche
+              </Text>
+              {isSearching && <ActivityIndicator size="small" color={palette.primary} />}
+            </View>
+
+            {searchResults.length === 0 && !isSearching ? (
+              <View style={{ backgroundColor: palette.surface, borderRadius: 20, borderWidth: 1, borderColor: palette.line, padding: 32, alignItems: 'center', gap: 6 }}>
+                <Users size={32} color={palette.inkSoft} />
+                <Text style={{ fontFamily: font.nativeFamily.display, fontSize: 15, color: palette.txt, paddingTop: 4 }}>
+                  Aucun joueur trouvé
+                </Text>
+                <Text style={{ fontSize: 12.5, color: palette.inkSoft }}>
+                  Vérifiez l'orthographe du pseudo recherché.
+                </Text>
+              </View>
+            ) : (
+              searchResults.map((u) => (
+                <View
+                  key={u.id}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    backgroundColor: palette.surface,
+                    borderRadius: 20,
+                    borderWidth: 1,
+                    borderColor: palette.line,
+                    padding: 14,
+                  }}
+                >
+                  <TouchableOpacity
+                    onPress={() => router.push(`/profile/${u.id}` as any)}
+                    activeOpacity={0.7}
+                    style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1, marginRight: 8 }}
+                  >
+                    <Avatar name={u.username} avatarUrl={u.avatarUrl} size={42} />
+                    <View style={{ flex: 1 }}>
+                      <Text
+                        style={{
+                          fontFamily: font.nativeFamily.display,
+                          fontSize: 15,
+                          color: palette.txt,
+                          paddingTop: 2,
+                        }}
+                        numberOfLines={1}
+                      >
+                        {u.username}
+                      </Text>
+                      <Text style={{ fontSize: 11.5, color: palette.primary, marginTop: 1, fontWeight: '600' }}>
+                        Voir le profil →
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    onPress={() => handleSendRequest(u.id)}
+                    disabled={sentRequests.has(u.id)}
+                    activeOpacity={0.8}
+                    style={{
+                      backgroundColor: sentRequests.has(u.id) ? palette.surface2 : palette.primary,
+                      paddingHorizontal: 14,
+                      paddingVertical: 8,
+                      borderRadius: 9999,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: sentRequests.has(u.id) ? palette.inkSoft : palette.primaryInk,
+                        fontSize: 12.5,
+                        fontWeight: '700',
+                      }}
+                    >
+                      {sentRequests.has(u.id) ? 'Envoyé ✓' : '+ Ajouter'}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              ))
+            )}
+          </ScrollView>
+        ) : (
+          /* ── Main Social Hub (No search active) ── */
+          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ gap: 14, paddingBottom: 40 }}>
+            {/* ── Filter Chips Bar with Tous, En ligne, Demandes ── */}
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              {/* Tous */}
               <TouchableOpacity
-                key={tab.id}
-                onPress={() => setActiveTab(tab.id as TabType)}
+                onPress={() => setFilter('all')}
                 activeOpacity={0.8}
                 style={{
-                  flex: 1,
-                  paddingVertical: 8,
+                  paddingHorizontal: 14,
+                  paddingVertical: 7,
                   borderRadius: 9999,
-                  backgroundColor: isActive ? palette.primary : 'transparent',
-                  alignItems: 'center',
+                  backgroundColor: filter === 'all' ? palette.primary : palette.surface,
+                  borderWidth: 1,
+                  borderColor: filter === 'all' ? palette.primary : palette.line,
                 }}
               >
                 <Text
                   style={{
                     fontSize: 12.5,
                     fontWeight: '700',
-                    color: isActive ? palette.primaryInk : palette.inkSoft,
+                    color: filter === 'all' ? palette.primaryInk : palette.txt,
                   }}
                 >
-                  {tab.label}
+                  Tous ({friends.length})
                 </Text>
               </TouchableOpacity>
-            );
-          })}
-        </View>
 
-        {/* Tab Content */}
-        {isLoading && friends.length === 0 ? (
-          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-            <ActivityIndicator size="large" color={palette.primary} />
-          </View>
-        ) : (
-          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ gap: 10, paddingBottom: 24 }}>
-            {activeTab === 'friends' && (
-              friends.length === 0 ? (
+              {/* En ligne */}
+              <TouchableOpacity
+                onPress={() => setFilter('online')}
+                activeOpacity={0.8}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 6,
+                  paddingHorizontal: 14,
+                  paddingVertical: 7,
+                  borderRadius: 9999,
+                  backgroundColor: filter === 'online' ? palette.primary : palette.surface,
+                  borderWidth: 1,
+                  borderColor: filter === 'online' ? palette.primary : palette.line,
+                }}
+              >
+                <View
+                  style={{
+                    width: 7,
+                    height: 7,
+                    borderRadius: 3.5,
+                    backgroundColor: filter === 'online' ? palette.primaryInk : palette.good,
+                  }}
+                />
+                <Text
+                  style={{
+                    fontSize: 12.5,
+                    fontWeight: '700',
+                    color: filter === 'online' ? palette.primaryInk : palette.txt,
+                  }}
+                >
+                  En ligne ({onlineFriends.length})
+                </Text>
+              </TouchableOpacity>
+
+              {/* Demandes */}
+              <TouchableOpacity
+                onPress={() => setFilter('requests')}
+                activeOpacity={0.8}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 6,
+                  paddingHorizontal: 14,
+                  paddingVertical: 7,
+                  borderRadius: 9999,
+                  backgroundColor: filter === 'requests' ? palette.primary : palette.surface,
+                  borderWidth: 1,
+                  borderColor: filter === 'requests' ? palette.primary : palette.line,
+                }}
+              >
+                {pendingRequests.length > 0 && (
+                  <View
+                    style={{
+                      width: 7,
+                      height: 7,
+                      borderRadius: 3.5,
+                      backgroundColor: filter === 'requests' ? palette.primaryInk : palette.warn,
+                    }}
+                  />
+                )}
+                <Text
+                  style={{
+                    fontSize: 12.5,
+                    fontWeight: '700',
+                    color: filter === 'requests' ? palette.primaryInk : palette.txt,
+                  }}
+                >
+                  Demandes ({totalRequests})
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* ── View when Filter === 'requests' ── */}
+            {filter === 'requests' ? (
+              <View style={{ gap: 12 }}>
+                {/* Reçues */}
+                <View style={{ gap: 8 }}>
+                  <Text style={{ fontSize: 11.5, fontWeight: '700', color: palette.inkSoft, textTransform: 'uppercase', letterSpacing: 0.8, paddingHorizontal: 4 }}>
+                    Demandes reçues ({pendingRequests.length})
+                  </Text>
+
+                  {pendingRequests.length === 0 ? (
+                    <View style={{ backgroundColor: palette.surface, borderRadius: 20, borderWidth: 1, borderColor: palette.line, padding: 24, alignItems: 'center' }}>
+                      <Text style={{ color: palette.inkSoft, fontSize: 13 }}>
+                        Aucune demande reçue
+                      </Text>
+                    </View>
+                  ) : (
+                    pendingRequests.map((req) => (
+                      <View
+                        key={req.id}
+                        style={{
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          backgroundColor: palette.surface,
+                          borderRadius: 20,
+                          borderWidth: 1,
+                          borderColor: palette.line,
+                          padding: 14,
+                        }}
+                      >
+                        <TouchableOpacity
+                          onPress={() => router.push(`/profile/${req.requester.id}` as any)}
+                          activeOpacity={0.7}
+                          style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1, marginRight: 8 }}
+                        >
+                          <Avatar name={req.requester.username} avatarUrl={req.requester.avatarUrl} size={38} />
+                          <Text style={{ fontFamily: font.nativeFamily.display, fontSize: 14, color: palette.txt, paddingTop: 2 }}>
+                            {req.requester.username}
+                          </Text>
+                        </TouchableOpacity>
+
+                        <View style={{ flexDirection: 'row', gap: 6 }}>
+                          <TouchableOpacity
+                            onPress={() => acceptRequest(req.id)}
+                            activeOpacity={0.8}
+                            style={{
+                              backgroundColor: palette.primary,
+                              paddingHorizontal: 12,
+                              paddingVertical: 7,
+                              borderRadius: 9999,
+                            }}
+                          >
+                            <Text style={{ color: palette.primaryInk, fontSize: 12, fontWeight: '700' }}>
+                              Accepter
+                            </Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity
+                            onPress={() => declineRequest(req.id)}
+                            activeOpacity={0.8}
+                            style={{
+                              backgroundColor: palette.surface2,
+                              paddingHorizontal: 12,
+                              paddingVertical: 7,
+                              borderRadius: 9999,
+                            }}
+                          >
+                            <Text style={{ color: palette.txt, fontSize: 12, fontWeight: '700' }}>
+                              Refuser
+                            </Text>
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+                    ))
+                  )}
+                </View>
+
+                {/* Envoyées */}
+                {storeSentRequests.length > 0 && (
+                  <View style={{ gap: 8, marginTop: 8 }}>
+                    <Text style={{ fontSize: 11.5, fontWeight: '700', color: palette.inkSoft, textTransform: 'uppercase', letterSpacing: 0.8, paddingHorizontal: 4 }}>
+                      Demandes envoyées ({storeSentRequests.length})
+                    </Text>
+
+                    {storeSentRequests.map((req) => (
+                      <View
+                        key={req.id}
+                        style={{
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          backgroundColor: palette.surface,
+                          borderRadius: 20,
+                          borderWidth: 1,
+                          borderColor: palette.line,
+                          padding: 14,
+                        }}
+                      >
+                        <TouchableOpacity
+                          onPress={() => router.push(`/profile/${req.receiver.id}` as any)}
+                          activeOpacity={0.7}
+                          style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1, marginRight: 8 }}
+                        >
+                          <Avatar name={req.receiver.username} avatarUrl={req.receiver.avatarUrl} size={38} />
+                          <View>
+                            <Text style={{ fontFamily: font.nativeFamily.display, fontSize: 14, color: palette.txt, paddingTop: 2 }}>
+                              {req.receiver.username}
+                            </Text>
+                            <Text style={{ fontSize: 11, color: palette.inkSoft }}>
+                              En attente de réponse
+                            </Text>
+                          </View>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                          onPress={() => cancelRequest(req.id)}
+                          activeOpacity={0.8}
+                          style={{
+                            backgroundColor: palette.surface2,
+                            paddingHorizontal: 12,
+                            paddingVertical: 7,
+                            borderRadius: 9999,
+                          }}
+                        >
+                          <Text style={{ color: palette.bad, fontSize: 12, fontWeight: '700' }}>
+                            Annuler
+                          </Text>
+                        </TouchableOpacity>
+                      </View>
+                    ))}
+                  </View>
+                )}
+              </View>
+            ) : (
+              /* ── Friends List (Tous / En ligne) ── */
+              displayedFriends.length === 0 ? (
                 <View
                   style={{
                     backgroundColor: palette.surface,
@@ -155,32 +527,41 @@ export default function FriendsScreen() {
                     borderColor: palette.line,
                     padding: 32,
                     alignItems: 'center',
+                    gap: 8,
+                    marginTop: 8,
                   }}
                 >
-                  <Users size={40} color={palette.inkSoft} style={{ marginBottom: 12 }} />
-                  <Text style={{ fontFamily: font.nativeFamily.display, fontSize: 16, color: palette.txt, marginBottom: 4 }}>
-                    Aucun ami pour le moment
-                  </Text>
-                  <Text style={{ fontSize: 13, color: palette.inkSoft, textAlign: 'center', marginBottom: 16 }}>
-                    Ajoute des amis pour les défier en duel de buzzer !
-                  </Text>
-                  <TouchableOpacity
-                    onPress={() => setActiveTab('search')}
-                    activeOpacity={0.85}
+                  <View
                     style={{
-                      backgroundColor: palette.primary,
-                      paddingHorizontal: 20,
-                      paddingVertical: 10,
-                      borderRadius: 9999,
+                      width: 60,
+                      height: 60,
+                      borderRadius: 30,
+                      backgroundColor: palette.primary + '18',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      marginBottom: 4,
                     }}
                   >
-                    <Text style={{ color: palette.primaryInk, fontSize: 13, fontWeight: '700' }}>
-                      Rechercher des amis
-                    </Text>
-                  </TouchableOpacity>
+                    <Users size={28} color={palette.primary} />
+                  </View>
+                  <Text
+                    style={{
+                      fontFamily: font.nativeFamily.display,
+                      fontSize: 17,
+                      color: palette.txt,
+                      paddingTop: 4,
+                    }}
+                  >
+                    {filter === 'online' ? 'Aucun ami en ligne' : 'Aucun ami pour le moment'}
+                  </Text>
+                  <Text style={{ fontSize: 13, color: palette.inkSoft, textAlign: 'center', lineHeight: 18, paddingHorizontal: 16 }}>
+                    {filter === 'online'
+                      ? 'Vos amis apparaîtront ici dès qu’ils se connectent.'
+                      : 'Recherchez des joueurs ci-dessus pour lancer des parties et des duels de buzzer !'}
+                  </Text>
                 </View>
               ) : (
-                friends.map((friend) => (
+                displayedFriends.map((friend) => (
                   <TouchableOpacity
                     key={friend.id}
                     onPress={() => router.push(`/profile/${friend.id}` as any)}
@@ -190,209 +571,99 @@ export default function FriendsScreen() {
                       alignItems: 'center',
                       justifyContent: 'space-between',
                       backgroundColor: palette.surface,
-                      borderRadius: 20,
+                      borderRadius: 22,
                       borderWidth: 1,
                       borderColor: palette.line,
                       padding: 14,
+                      shadowColor: '#000000',
+                      shadowOffset: { width: 0, height: 1 },
+                      shadowOpacity: 0.03,
+                      shadowRadius: 4,
+                      elevation: 1,
                     }}
                   >
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1, marginRight: 10 }}>
                       <View style={{ position: 'relative' }}>
-                        <Avatar name={friend.username} avatarUrl={friend.avatarUrl} size={42} />
+                        <Avatar name={friend.username} avatarUrl={friend.avatarUrl} size={46} />
                         {friend.isOnline && (
                           <View
                             style={{
                               position: 'absolute',
                               bottom: 0,
                               right: 0,
-                              width: 12,
-                              height: 12,
-                              borderRadius: 6,
+                              width: 13,
+                              height: 13,
+                              borderRadius: 6.5,
                               backgroundColor: palette.good,
-                              borderWidth: 2,
+                              borderWidth: 2.5,
                               borderColor: palette.surface,
                             }}
                           />
                         )}
                       </View>
+
                       <View style={{ flex: 1 }}>
                         <Text
                           style={{
                             fontFamily: font.nativeFamily.display,
-                            fontSize: 15,
+                            fontSize: 15.5,
                             color: palette.txt,
+                            paddingTop: 2,
                           }}
                           numberOfLines={1}
                         >
                           {friend.username}
                         </Text>
-                        <Text style={{ fontSize: 11.5, color: friend.isOnline ? palette.good : palette.inkSoft, marginTop: 2 }}>
-                          {friend.isOnline ? 'En ligne' : 'Hors ligne'}
-                        </Text>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 }}>
+                          <Text
+                            style={{
+                              fontSize: 11.5,
+                              color: friend.isOnline ? palette.good : palette.inkSoft,
+                              fontWeight: friend.isOnline ? '700' : '500',
+                            }}
+                          >
+                            {friend.isOnline ? 'En ligne' : 'Hors ligne'}
+                          </Text>
+                          {friend.globalRank != null && friend.globalRank > 0 && (
+                            <>
+                              <Text style={{ fontSize: 11, color: palette.inkSoft }}>•</Text>
+                              <Text style={{ fontSize: 11, fontWeight: '700', color: palette.primary }}>
+                                Rang #{friend.globalRank}
+                              </Text>
+                            </>
+                          )}
+                        </View>
                       </View>
                     </View>
 
-                    <ArrowRight size={16} color={palette.inkSoft} />
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                      <View
+                        style={{
+                          paddingHorizontal: 12,
+                          paddingVertical: 6,
+                          borderRadius: 9999,
+                          backgroundColor: palette.surface2,
+                        }}
+                      >
+                        <Text style={{ color: palette.txt, fontSize: 12, fontWeight: '700' }}>
+                          Profil
+                        </Text>
+                      </View>
+                      <ArrowRight size={15} color={palette.inkSoft} />
+                    </View>
                   </TouchableOpacity>
                 ))
               )
             )}
-
-            {activeTab === 'requests' && (
-              pendingRequests.length === 0 && storeSentRequests.length === 0 ? (
-                <View
-                  style={{
-                    backgroundColor: palette.surface,
-                    borderRadius: 24,
-                    borderWidth: 1,
-                    borderColor: palette.line,
-                    padding: 32,
-                    alignItems: 'center',
-                  }}
-                >
-                  <Text style={{ color: palette.inkSoft, fontSize: 13.5 }}>
-                    Aucune demande en attente
-                  </Text>
-                </View>
-              ) : (
-                <>
-                  {pendingRequests.map((req) => (
-                    <View
-                      key={req.id}
-                      style={{
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        backgroundColor: palette.surface,
-                        borderRadius: 20,
-                        borderWidth: 1,
-                        borderColor: palette.line,
-                        padding: 14,
-                      }}
-                    >
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}>
-                        <Avatar name={req.requester.username} avatarUrl={req.requester.avatarUrl} size={38} />
-                        <Text style={{ fontFamily: font.nativeFamily.display, fontSize: 14, color: palette.txt }}>
-                          {req.requester.username}
-                        </Text>
-                      </View>
-
-                      <View style={{ flexDirection: 'row', gap: 8 }}>
-                        <TouchableOpacity
-                          onPress={() => acceptRequest(req.id)}
-                          activeOpacity={0.8}
-                          style={{
-                            backgroundColor: palette.primary,
-                            paddingHorizontal: 12,
-                            paddingVertical: 6,
-                            borderRadius: 9999,
-                          }}
-                        >
-                          <Text style={{ color: palette.primaryInk, fontSize: 12, fontWeight: '700' }}>Accepter</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                          onPress={() => declineRequest(req.id)}
-                          activeOpacity={0.8}
-                          style={{
-                            backgroundColor: palette.surface2,
-                            paddingHorizontal: 12,
-                            paddingVertical: 6,
-                            borderRadius: 9999,
-                          }}
-                        >
-                          <Text style={{ color: palette.txt, fontSize: 12, fontWeight: '700' }}>Refuser</Text>
-                        </TouchableOpacity>
-                      </View>
-                    </View>
-                  ))}
-                </>
-              )
-            )}
-
-            {activeTab === 'search' && (
-              <>
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    backgroundColor: palette.surface,
-                    borderRadius: 9999,
-                    borderWidth: 1,
-                    borderColor: palette.line,
-                    paddingHorizontal: 14,
-                    paddingVertical: 8,
-                    gap: 8,
-                    marginBottom: 10,
-                  }}
-                >
-                  <Search size={16} color={palette.inkSoft} />
-                  <TextInput
-                    value={searchQuery}
-                    onChangeText={setSearchQuery}
-                    placeholder="Rechercher par pseudo…"
-                    placeholderTextColor={palette.inkSoft}
-                    style={{ flex: 1, color: palette.txt, fontSize: 13.5 }}
-                  />
-                  {searchQuery ? (
-                    <TouchableOpacity onPress={() => setSearchQuery('')} activeOpacity={0.7}>
-                      <X size={16} color={palette.inkSoft} />
-                    </TouchableOpacity>
-                  ) : null}
-                </View>
-
-                {isSearching ? (
-                  <ActivityIndicator size="small" color={palette.primary} style={{ marginTop: 20 }} />
-                ) : (
-                  searchResults.map((u) => (
-                    <View
-                      key={u.id}
-                      style={{
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        backgroundColor: palette.surface,
-                        borderRadius: 20,
-                        borderWidth: 1,
-                        borderColor: palette.line,
-                        padding: 14,
-                      }}
-                    >
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}>
-                        <Avatar name={u.username} avatarUrl={u.avatarUrl} size={38} />
-                        <Text style={{ fontFamily: font.nativeFamily.display, fontSize: 14, color: palette.txt }}>
-                          {u.username}
-                        </Text>
-                      </View>
-
-                      <TouchableOpacity
-                        onPress={() => handleSendRequest(u.id)}
-                        disabled={sentRequests.has(u.id)}
-                        activeOpacity={0.8}
-                        style={{
-                          backgroundColor: sentRequests.has(u.id) ? palette.surface2 : palette.primary,
-                          paddingHorizontal: 12,
-                          paddingVertical: 6,
-                          borderRadius: 9999,
-                        }}
-                      >
-                        <Text
-                          style={{
-                            color: sentRequests.has(u.id) ? palette.inkSoft : palette.primaryInk,
-                            fontSize: 12,
-                            fontWeight: '700',
-                          }}
-                        >
-                          {sentRequests.has(u.id) ? 'Envoyé ✓' : '+ Ajouter'}
-                        </Text>
-                      </TouchableOpacity>
-                    </View>
-                  ))
-                )}
-              </>
-            )}
           </ScrollView>
         )}
       </View>
+
+      {/* ── Blocked Users Bottom Sheet Modal ── */}
+      <BlockedUsersModal
+        visible={isBlockedModalOpen}
+        onClose={() => setIsBlockedModalOpen(false)}
+      />
     </View>
   );
 }

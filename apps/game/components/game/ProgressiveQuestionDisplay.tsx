@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { Flag } from 'lucide-react-native';
-import { palette } from '~/lib/theme/tokens';
+import { palette, font } from '~/lib/theme/tokens';
 import { BlinkingCursor, FadeInUpView } from '~/components/anim';
 import { QuestionReportModal } from './shared/QuestionReportModal';
 
@@ -46,12 +46,13 @@ export function ProgressiveQuestionDisplay({
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
         <Text
           style={{
+            fontFamily: font.nativeFamily.display,
             color: palette.inkSoft,
-            fontSize: 9.5,
-            fontWeight: '700',
+            fontSize: 11,
             letterSpacing: 1.5,
             textTransform: 'uppercase',
             flex: 1,
+            paddingTop: 2,
           }}
         >
           Question
@@ -66,11 +67,12 @@ export function ProgressiveQuestionDisplay({
       </View>
       <Text
         style={{
+          fontFamily: font.nativeFamily.display,
           color: palette.txt,
           fontSize: 19,
           lineHeight: 28,
-          fontWeight: '500',
           minHeight: 84,
+          paddingTop: 4,
         }}
       >
         {revealedText}
@@ -93,7 +95,7 @@ export function ProgressiveQuestionDisplay({
           }}
           duration={250}
         >
-          <Text style={{ color: palette.warn, fontSize: 11, fontWeight: '600' }}>
+          <Text style={{ fontFamily: font.nativeFamily.ui, color: palette.warn, fontSize: 11, fontWeight: '600' }}>
             ⚡ Lecture en cours — buzz risqué
           </Text>
         </FadeInUpView>

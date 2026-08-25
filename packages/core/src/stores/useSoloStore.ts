@@ -65,8 +65,8 @@ export const useSoloStore = create<SoloState>((set, get) => ({
   },
 
   answerQuestion: async (answer, timeSpentMs) => {
-    const { sessionId, currentQuestion, isSubmitting } = get();
-    if (!sessionId || !currentQuestion || isSubmitting) return;
+    const { sessionId, currentQuestion, isSubmitting, phase } = get();
+    if (!sessionId || !currentQuestion || isSubmitting || phase !== 'QUESTION') return;
 
     set({ isSubmitting: true, error: null });
     try {

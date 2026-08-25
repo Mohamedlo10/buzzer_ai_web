@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
-import { palette } from '~/lib/theme/tokens';
+import { palette, font } from '~/lib/theme/tokens';
 
 export interface ExpandableCardProps {
   icon: ReactNode;
@@ -25,15 +25,15 @@ export function ExpandableCard({ icon, label, content, subContent, bgColor, bord
         <View style={{ width: 28, height: 28, borderRadius: 8, backgroundColor: 'rgba(255,255,255,0.05)', alignItems: 'center', justifyContent: 'center', marginRight: 8 }}>
           {icon}
         </View>
-        <Text style={{ color: palette.primary, fontSize: 10, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 1 }}>{label}</Text>
+        <Text style={{ fontFamily: font.nativeFamily.display, color: palette.primary, fontSize: 11, letterSpacing: 1, paddingTop: 2 }}>{label}</Text>
       </View>
 
-      <Text style={{ color: palette.txt, fontSize: 16, lineHeight: 24, fontWeight: isBold ? '700' : '400' }} numberOfLines={!expanded ? 6 : undefined}>
+      <Text style={{ fontFamily: font.nativeFamily.display, color: palette.txt, fontSize: 16, lineHeight: 24, paddingTop: 2 }} numberOfLines={!expanded ? 6 : undefined}>
         {content}
       </Text>
 
       {subContent && (
-        <Text style={{ color: palette.inkSoft, fontSize: 12, marginTop: 8, lineHeight: 18 }} numberOfLines={!expanded ? 4 : undefined}>
+        <Text style={{ fontFamily: font.nativeFamily.serif, fontStyle: 'italic', color: palette.inkSoft, fontSize: 13, marginTop: 8, lineHeight: 18 }} numberOfLines={!expanded ? 4 : undefined}>
           {subContent}
         </Text>
       )}

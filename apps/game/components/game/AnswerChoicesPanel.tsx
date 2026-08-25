@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
-import { CheckCircle, XCircle } from 'lucide-react-native';
-import { palette } from '~/lib/theme/tokens';
+import { Check, X } from 'lucide-react-native';
+import { palette, font } from '~/lib/theme/tokens';
 import { useDeadlineSeconds } from '~/lib/game/useDeadline';
-import { serverNow } from '~/lib/game/clock';
+import { serverNow, msUntil } from '~/lib/game/clock';
 
 interface AnswerChoicesPanelProps {
   choices: string[];
@@ -12,6 +12,7 @@ interface AnswerChoicesPanelProps {
   onSubmit: (chosenAnswer: string) => void;
   isSubmitting?: boolean;
   result?: 'correct' | 'wrong' | null;
+  correctAnswer?: string | null;
 }
 
 const CHOICE_LABELS = ['A', 'B', 'C', 'D', 'E', 'F'];
@@ -23,15 +24,21 @@ export function AnswerChoicesPanel({
   onSubmit,
   isSubmitting = false,
   result = null,
+  correctAnswer = null,
 }: AnswerChoicesPanelProps) {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const [frozenRemaining, setFrozenRemaining] = useState<number | null>(null);
   const hasSubmittedRef = useRef(false);
   const serverDriven = deadlineEpochMs != null;
 
   const onSubmitRef = useRef(onSubmit);
   onSubmitRef.current = onSubmit;
 
-  const [localDeadline, setLocalDeadline] = useState<number | null>(null);
+  // Mode local (solo) : initialiser immédiatement l'échéance
+  const [localDeadline, setLocalDeadline] = useState<number | null>(() =>
+    serverDriven ? null : serverNow() + answerTimeSeconds * 1000
+  );
+
   const choicesKey = choices.join('|');
   useEffect(() => {
     if (serverDriven) {
@@ -39,34 +46,52 @@ export function AnswerChoicesPanel({
       return;
     }
     setLocalDeadline(serverNow() + answerTimeSeconds * 1000);
-  }, [serverDriven, answerTimeSeconds, choicesKey]); // eslint-disable-line
+    setSelectedIndex(null);
+    setFrozenRemaining(null);
+    hasSubmittedRef.current = false;
+  }, [serverDriven, answerTimeSeconds, choicesKey]);
 
   const effectiveDeadline = serverDriven ? deadlineEpochMs : localDeadline;
   const remaining = useDeadlineSeconds(effectiveDeadline);
 
   useEffect(() => {
     setSelectedIndex(null);
+    setFrozenRemaining(null);
     hasSubmittedRef.current = false;
   }, [effectiveDeadline]);
 
+  // Si un résultat arrive sans sélection explicite (ex: timeout), figer le chrono
+  useEffect(() => {
+    if (result && frozenRemaining === null) {
+      setFrozenRemaining(remaining);
+    }
+  }, [result, remaining, frozenRemaining]);
+
+  // Auto-soumission au temps écoulé uniquement en mode local
   useEffect(() => {
     if (serverDriven || !localDeadline) return;
-    if (remaining > 0 || hasSubmittedRef.current || isSubmitting || result) return;
-    hasSubmittedRef.current = true;
-    onSubmitRef.current('__timeout__');
+    if (hasSubmittedRef.current || isSubmitting || result) return;
+    if (remaining <= 0 && msUntil(localDeadline) <= 0) {
+      hasSubmittedRef.current = true;
+      setFrozenRemaining(0);
+      onSubmitRef.current('__timeout__');
+    }
   }, [serverDriven, localDeadline, remaining, isSubmitting, result]);
 
   const handleSelect = (index: number, answer: string) => {
     if (hasSubmittedRef.current || isSubmitting || result) return;
     hasSubmittedRef.current = true;
+    setFrozenRemaining(remaining);
     setSelectedIndex(index);
     onSubmit(answer);
   };
 
-  const pct = Math.round((remaining / answerTimeSeconds) * 100);
-  const timerColor = remaining > answerTimeSeconds * 0.6
-    ? palette.good
-    : remaining > answerTimeSeconds * 0.3
+  const displayRemaining = frozenRemaining !== null ? frozenRemaining : remaining;
+  const pct = Math.max(0, Math.min(100, Math.round((displayRemaining / answerTimeSeconds) * 100)));
+  const timerColor =
+    displayRemaining > answerTimeSeconds * 0.6
+      ? palette.good
+      : displayRemaining > answerTimeSeconds * 0.3
       ? palette.warn
       : palette.bad;
 
@@ -86,15 +111,16 @@ export function AnswerChoicesPanel({
         </View>
         <Text
           style={{
-            fontWeight: '700',
-            fontSize: 14,
-            width: 32,
+            fontFamily: font.nativeFamily.display,
+            fontSize: 15,
+            width: 36,
             textAlign: 'right',
             color: timerColor,
             fontVariant: ['tabular-nums'],
+            paddingTop: 2,
           }}
         >
-          {remaining}s
+          {displayRemaining}s
         </Text>
       </View>
 
@@ -102,9 +128,10 @@ export function AnswerChoicesPanel({
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
         {choices.map((choice, i) => {
           const isSelected = selectedIndex === i;
-          const showCorrect = result === 'correct' && isSelected;
+          const isThisChoiceCorrect = correctAnswer ? choice === correctAnswer : (result === 'correct' && isSelected);
+          const showCorrect = (result === 'correct' && isSelected) || (result === 'wrong' && isThisChoiceCorrect);
           const showWrong = result === 'wrong' && isSelected;
-          const dimmed = selectedIndex !== null && !isSelected;
+          const dimmed = selectedIndex !== null && !isSelected && !showCorrect;
 
           return (
             <TouchableOpacity
@@ -117,15 +144,29 @@ export function AnswerChoicesPanel({
                 flexDirection: 'row',
                 alignItems: 'center',
                 gap: 10,
-                borderRadius: 14,
+                borderRadius: 16,
                 borderWidth: 1.5,
-                padding: 14,
-                minHeight: 58,
-                borderColor: showCorrect ? palette.good : showWrong ? palette.bad : isSelected ? palette.indigo : palette.line,
-                backgroundColor: showCorrect ? palette.good + '33' : showWrong ? palette.bad + '2E' : isSelected ? palette.indigo + '26' : palette.surface,
+                paddingHorizontal: 12,
+                paddingVertical: 12,
+                minHeight: 60,
+                borderColor: showCorrect
+                  ? palette.good
+                  : showWrong
+                  ? palette.bad
+                  : isSelected
+                  ? palette.indigo
+                  : palette.line,
+                backgroundColor: showCorrect
+                  ? palette.good + '26'
+                  : showWrong
+                  ? palette.bad + '26'
+                  : isSelected
+                  ? palette.indigo + '26'
+                  : palette.surface,
                 opacity: dimmed ? 0.45 : 1,
               }}
             >
+              {/* Badge (Transforme la lettre en Check ou Croix sans modifier l'espace disponible) */}
               <View
                 style={{
                   width: 30,
@@ -134,22 +175,52 @@ export function AnswerChoicesPanel({
                   alignItems: 'center',
                   justifyContent: 'center',
                   flexShrink: 0,
-                  backgroundColor: showCorrect ? palette.good : showWrong ? palette.bad : isSelected ? palette.indigo : palette.surface2,
+                  backgroundColor: showCorrect
+                    ? palette.good
+                    : showWrong
+                    ? palette.bad
+                    : isSelected
+                    ? palette.indigo
+                    : palette.surface2,
                 }}
               >
-                <Text style={{ color: isSelected || showCorrect || showWrong ? '#FFFFFF' : palette.txt, fontWeight: '700', fontSize: 13 }}>
-                  {CHOICE_LABELS[i]}
-                </Text>
+                {showCorrect ? (
+                  <Check size={17} color="#FFFFFF" strokeWidth={2.8} />
+                ) : showWrong ? (
+                  <X size={17} color="#FFFFFF" strokeWidth={2.8} />
+                ) : (
+                  <Text
+                    style={{
+                      fontFamily: font.nativeFamily.display,
+                      color: isSelected ? '#FFFFFF' : palette.txt,
+                      fontSize: 14,
+                      paddingTop: 2,
+                    }}
+                  >
+                    {CHOICE_LABELS[i]}
+                  </Text>
+                )}
               </View>
-              <Text style={{ color: palette.txt, fontSize: 14, fontWeight: '600', flex: 1 }}>{choice}</Text>
-              {showCorrect && <CheckCircle size={18} color={palette.good} style={{ flexShrink: 0 }} />}
-              {showWrong && <XCircle size={18} color={palette.bad} style={{ flexShrink: 0 }} />}
+
+              <Text
+                style={{
+                  fontFamily: font.nativeFamily.ui,
+                  color: palette.txt,
+                  fontSize: 13.5,
+                  fontWeight: '600',
+                  flex: 1,
+                  lineHeight: 18,
+                }}
+                numberOfLines={2}
+              >
+                {choice}
+              </Text>
             </TouchableOpacity>
           );
         })}
       </View>
 
-      <Text style={{ color: palette.inkSoft, fontSize: 12, textAlign: 'center' }}>
+      <Text style={{ fontFamily: font.nativeFamily.serif, fontStyle: 'italic', color: palette.inkSoft, fontSize: 13, textAlign: 'center' }}>
         Réponds vite pour maximiser tes points
       </Text>
     </View>

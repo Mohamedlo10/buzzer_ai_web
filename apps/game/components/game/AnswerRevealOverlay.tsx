@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Modal, View, Text, TouchableOpacity, StatusBar } from 'react-native';
-import { palette } from '~/lib/theme/tokens';
+import { palette, font } from '~/lib/theme/tokens';
 import { PopView, RiseView, FadeInView } from '~/components/anim';
 
 interface AnswerRevealOverlayProps {
@@ -125,21 +125,22 @@ export function AnswerRevealOverlay({
             delay={50}
           >
             <View style={{ width: 20, height: 20, borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.25)', alignItems: 'center', justifyContent: 'center' }}>
-              <Text style={{ color: '#FFFFFF', fontSize: 11, fontWeight: '800' }}>{isWinner ? '✓' : '✕'}</Text>
+              <Text style={{ fontFamily: font.nativeFamily.display, color: '#FFFFFF', fontSize: 11, paddingTop: 1 }}>{isWinner ? '✓' : '✕'}</Text>
             </View>
-            <Text style={{ color: '#FFFFFF', fontSize: 13, fontWeight: '700', letterSpacing: 0.6 }}>{statusLabel}</Text>
+            <Text style={{ fontFamily: font.nativeFamily.display, color: '#FFFFFF', fontSize: 13, letterSpacing: 0.6, paddingTop: 2 }}>{statusLabel}</Text>
           </RiseView>
 
           {/* Hero text */}
           <RiseView delay={120}>
             <Text
               style={{
-                fontSize: 32,
-                fontWeight: '700',
+                fontFamily: font.nativeFamily.display,
+                fontSize: 30,
                 color: isWinner ? palette.good : palette.txt,
                 textAlign: 'center',
                 lineHeight: 38,
                 marginBottom: 16,
+                paddingTop: 4,
               }}
             >
               {heroText}
@@ -159,10 +160,10 @@ export function AnswerRevealOverlay({
             }}
             delay={200}
           >
-            <Text style={{ fontSize: 11, letterSpacing: 1.2, textTransform: 'uppercase', color: palette.inkSoft, fontWeight: '700', marginBottom: 6 }}>
+            <Text style={{ fontFamily: font.nativeFamily.display, fontSize: 11, letterSpacing: 1.2, textTransform: 'uppercase', color: palette.inkSoft, marginBottom: 6, paddingTop: 2 }}>
               {isWinner ? 'Réponse validée' : 'La bonne réponse était'}
             </Text>
-            <Text style={{ fontSize: 22, fontWeight: '700', color: palette.txt }}>
+            <Text style={{ fontFamily: font.nativeFamily.display, fontSize: 22, color: palette.txt, paddingTop: 3 }}>
               {correctAnswer}
             </Text>
           </RiseView>
@@ -183,14 +184,14 @@ export function AnswerRevealOverlay({
                 opacity: isAdvancing ? 0.7 : 1,
               }}
             >
-              <Text style={{ color: '#FFFFFF', fontSize: 15, fontWeight: '700' }}>
+              <Text style={{ fontFamily: font.nativeFamily.display, color: '#FFFFFF', fontSize: 15, paddingTop: 2 }}>
                 {isAdvancing ? 'Passage en cours…' : 'Question suivante →'}
               </Text>
             </TouchableOpacity>
           ) : (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
               <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: palette.primary }} />
-              <Text style={{ color: palette.inkSoft, fontSize: 12, fontWeight: '600' }}>
+              <Text style={{ fontFamily: font.nativeFamily.serif, fontStyle: 'italic', color: palette.inkSoft, fontSize: 13 }}>
                 {isWinner ? 'Passage à la suite…' : 'En attente des autres joueurs…'}
               </Text>
             </View>

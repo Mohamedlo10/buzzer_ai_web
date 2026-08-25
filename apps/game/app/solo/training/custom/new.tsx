@@ -19,6 +19,7 @@ import {
 import * as soloApi from '~/lib/api/solo';
 import { palette } from '~/lib/theme/tokens';
 import { notify, notifyApiError } from '~/lib/ui/notify';
+import { QuizAiLoadingScreen } from '~/components/solo/QuizAiLoadingScreen';
 
 const DIFFICULTIES = [
   { id: 'FACILE', label: 'Facile' },
@@ -232,6 +233,14 @@ export default function NewCustomTrainingScreen() {
           </TouchableOpacity>
         </View>
       </ScrollView>
+
+      {/* AI Brain Loading Screen */}
+      <QuizAiLoadingScreen
+        visible={isGenerating}
+        theme={theme}
+        levelLabel={`Niveau · ${difficulty}`}
+        title="Création de l'entraînement par IA"
+      />
     </SafeAreaView>
   );
 }

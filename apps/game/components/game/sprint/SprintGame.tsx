@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { View, Text, ActivityIndicator, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { CheckCircle2, XCircle, Eye } from 'lucide-react-native';
-import { palette } from '~/lib/theme/tokens';
+import { palette, font } from '~/lib/theme/tokens';
 import { useBuzzStore } from '~/stores/useBuzzStore';
 import { AnswerChoicesPanel } from '~/components/game/AnswerChoicesPanel';
 import { GlobalTimerBar } from '~/components/game/GlobalTimerBar';
@@ -89,7 +89,7 @@ export function SprintGame({
     return (
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 }}>
         <ActivityIndicator size="large" color={palette.primary} />
-        <Text style={{ color: palette.inkSoft, fontSize: 14 }}>Synchronisation avec la partie…</Text>
+        <Text style={{ fontFamily: font.nativeFamily.ui, color: palette.inkSoft, fontSize: 14 }}>Synchronisation avec la partie…</Text>
       </View>
     );
   }
@@ -98,10 +98,10 @@ export function SprintGame({
   if (phase === 'COUNTDOWN') {
     return (
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 16, backgroundColor: palette.primary }}>
-        <Text style={{ fontSize: 96, fontWeight: '700', color: '#FFFFFF', fontVariant: ['tabular-nums'] }}>
+        <Text style={{ fontFamily: font.nativeFamily.display, fontSize: 96, color: '#FFFFFF', fontVariant: ['tabular-nums'] }}>
           {remainingSeconds > 0 ? remainingSeconds : 'GO'}
         </Text>
-        <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 14, fontWeight: '700', letterSpacing: 2, textTransform: 'uppercase' }}>
+        <Text style={{ fontFamily: font.nativeFamily.display, color: 'rgba(255,255,255,0.7)', fontSize: 15, letterSpacing: 2, textTransform: 'uppercase' }}>
           Préparez-vous
         </Text>
       </View>
@@ -141,7 +141,7 @@ export function SprintGame({
 
         {/* Answer count */}
         {phase === 'QUESTION' && game.answeredCount != null && game.expectedAnswerCount != null && (
-          <Text style={{ textAlign: 'center', fontSize: 12, fontWeight: '600', color: palette.inkSoft, fontVariant: ['tabular-nums'] }}>
+          <Text style={{ fontFamily: font.nativeFamily.serif, fontStyle: 'italic', textAlign: 'center', fontSize: 13, color: palette.inkSoft, fontVariant: ['tabular-nums'] }}>
             {game.answeredCount} / {game.expectedAnswerCount} joueurs ont répondu
           </Text>
         )}
@@ -150,13 +150,13 @@ export function SprintGame({
         {isSpectator && (
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: palette.warn + '1A', borderWidth: 1, borderColor: palette.warn + '50', borderRadius: 12, paddingHorizontal: 16, paddingVertical: 10 }}>
             <Eye size={16} color={palette.warn} />
-            <Text style={{ color: palette.warn, fontSize: 12, fontWeight: '600' }}>Mode spectateur — vous observez la partie</Text>
+            <Text style={{ fontFamily: font.nativeFamily.ui, color: palette.warn, fontSize: 12, fontWeight: '600' }}>Mode spectateur — vous observez la partie</Text>
           </View>
         )}
 
         {/* Question text */}
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 16 }}>
-          <Text style={{ fontSize: 22, fontWeight: '700', textAlign: 'center', color: palette.txt }}>
+          <Text style={{ fontFamily: font.nativeFamily.display, fontSize: 21, lineHeight: 30, textAlign: 'center', color: palette.txt, paddingTop: 4 }}>
             {currentQuestion?.text}
           </Text>
         </View>
@@ -196,17 +196,17 @@ export function SprintGame({
                   }}
                 >
                   <View style={{ width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center', backgroundColor: isCorrect ? palette.good : isMineAndWrong ? palette.bad : isMine ? palette.indigo : palette.surface2 }}>
-                    <Text style={{ color: isCorrect || isMineAndWrong || isMine ? '#FFFFFF' : palette.txt, fontSize: 12, fontWeight: '700' }}>
+                    <Text style={{ fontFamily: font.nativeFamily.display, color: isCorrect || isMineAndWrong || isMine ? '#FFFFFF' : palette.txt, fontSize: 13, paddingTop: 2 }}>
                       {CHOICE_LABELS[index] ?? index + 1}
                     </Text>
                   </View>
-                  <Text style={{ color: palette.txt, fontSize: 14, flex: 1, fontWeight: '500' }}>{choice}</Text>
+                  <Text style={{ fontFamily: font.nativeFamily.ui, color: palette.txt, fontSize: 14, flex: 1, fontWeight: '500' }}>{choice}</Text>
                   {isCorrect && <CheckCircle2 size={18} color={palette.good} />}
                   {isMineAndWrong && <XCircle size={18} color={palette.bad} />}
                   {isMine && !isRevealing && (
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 9999, backgroundColor: palette.indigo + '33' }}>
                       <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: palette.indigo }} />
-                      <Text style={{ color: palette.indigo, fontSize: 11, fontWeight: '700' }}>Choix enregistré</Text>
+                      <Text style={{ fontFamily: font.nativeFamily.ui, color: palette.indigo, fontSize: 11, fontWeight: '700' }}>Choix enregistré</Text>
                     </View>
                   )}
                 </View>
@@ -219,21 +219,21 @@ export function SprintGame({
         {isRevealing && (
           <View style={{ marginTop: 16, alignItems: 'center', gap: 4 }}>
             {myChoice === null ? (
-              <Text style={{ color: palette.inkSoft, fontSize: 14, fontWeight: '600' }}>Aucune réponse donnée</Text>
+              <Text style={{ fontFamily: font.nativeFamily.display, color: palette.inkSoft, fontSize: 15 }}>Aucune réponse donnée</Text>
             ) : myAnswerCorrect ? (
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                 <CheckCircle2 size={20} color={palette.good} />
-                <Text style={{ color: palette.good, fontSize: 18, fontWeight: '700' }}>Bonne réponse</Text>
+                <Text style={{ fontFamily: font.nativeFamily.display, color: palette.good, fontSize: 18, paddingTop: 3 }}>Bonne réponse</Text>
               </View>
             ) : (
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                 <XCircle size={20} color={palette.bad} />
-                <Text style={{ color: palette.bad, fontSize: 18, fontWeight: '700' }}>Mauvaise réponse</Text>
+                <Text style={{ fontFamily: font.nativeFamily.display, color: palette.bad, fontSize: 18, paddingTop: 3 }}>Mauvaise réponse</Text>
               </View>
             )}
             {correctAnswer && (
-              <Text style={{ color: palette.inkSoft, fontSize: 12 }}>
-                Réponse attendue : <Text style={{ color: palette.txt, fontWeight: '600' }}>{correctAnswer}</Text>
+              <Text style={{ fontFamily: font.nativeFamily.ui, color: palette.inkSoft, fontSize: 12 }}>
+                Réponse attendue : <Text style={{ color: palette.txt, fontWeight: '700' }}>{correctAnswer}</Text>
               </Text>
             )}
           </View>
@@ -241,7 +241,7 @@ export function SprintGame({
 
         {/* Waiting state */}
         {phase === 'QUESTION' && myChoice !== null && (
-          <Text style={{ marginTop: 16, textAlign: 'center', color: palette.inkSoft, fontSize: 12 }}>
+          <Text style={{ fontFamily: font.nativeFamily.serif, fontStyle: 'italic', marginTop: 16, textAlign: 'center', color: palette.inkSoft, fontSize: 13 }}>
             Réponse enregistrée — en attente des autres joueurs…
           </Text>
         )}

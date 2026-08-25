@@ -67,7 +67,7 @@ export function useLobbySession({ code, onNavigate, onReplaceRoute }: UseLobbySe
 
   useEffect(() => {
     if (!session?.id) return;
-    const interval = setInterval(() => fetchSession(session.id), isConnected ? 8000 : 2000);
+    const interval = setInterval(() => fetchSession(session.id), isConnected ? 3000 : 1000);
     return () => clearInterval(interval);
   }, [session?.id, fetchSession, isConnected]);
 
@@ -79,6 +79,44 @@ export function useLobbySession({ code, onNavigate, onReplaceRoute }: UseLobbySe
     if (!session?.roomId) return;
     roomsApi.getRoomDetail(session.roomId).then((data) => setRoomInfo(data.room)).catch(() => {});
   }, [session?.roomId]);
+
+  useEffect(() => {
+    if (!session?.id || !user?.id) return;
+    if (session.status !== 'LOBBY') return;
+    if (isManager) return;
+
+    const inPlayers = players.some((p) => p.userId === user.id);
+    if (!inPlayers) {
+      if (session.categorySelectionMode === 'MANAGER' || session.questionMode === 'MANUAL') {
+        if (session.isTeamMode) {
+          onReplaceRoute?.(`/session/${code}/categories`);
+        } else {
+          sessionsApi
+            .joinSession(session.id, { categories: [], isSpectator: false })
+            .then(() => fetchSession(session.id))
+            .catch((err) => {
+              if (err?.response?.status === 409) {
+                fetchSession(session.id);
+              }
+            });
+        }
+      } else {
+        onReplaceRoute?.(`/session/${code}/categories`);
+      }
+    }
+  }, [
+    session?.id,
+    session?.status,
+    session?.categorySelectionMode,
+    session?.questionMode,
+    session?.isTeamMode,
+    user?.id,
+    isManager,
+    players,
+    code,
+    fetchSession,
+    onReplaceRoute,
+  ]);
 
   useEffect(() => {
     if (session?.status === 'GENERATING') onReplaceRoute?.(`/session/${code}/loading`);
@@ -120,12 +158,18 @@ export function useLobbySession({ code, onNavigate, onReplaceRoute }: UseLobbySe
     catch (err: any) { notify.error(err?.response?.data?.message || err?.message || 'Impossible de démarrer la partie'); }
   }, [session, code, players, startSession]);
 
-  const handleManagerStartClick = useCallback(() => {
+  const handleManagerStartClick = useCallback(async () => {
     const realCount = players.filter((p) => !p.isSpectator).length;
-    if (realCount < 2) return;
-    if (session!.questionMode === 'MANUAL' && session!.totalQuestions === 0) return;
-    setShowStartConfirm(true);
-  }, [players, session]);
+    if (realCount < 2) {
+      notify.error('Minimum 2 joueurs requis pour lancer la partie');
+      return;
+    }
+    if (session!.questionMode === 'MANUAL' && session!.totalQuestions === 0) {
+      notify.error('Ajoutez des questions manuelles avant de lancer');
+      return;
+    }
+    await handleStartGame();
+  }, [players, session, handleStartGame]);
 
   const handleStartWithAdjustedQ = useCallback(async () => {
     if (!session?.id) return;

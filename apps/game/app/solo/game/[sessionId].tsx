@@ -45,22 +45,23 @@ export default function SoloGameScreen() {
   const hasLoadedRef = useRef(false);
 
   useEffect(() => {
-    resetStore();
     if (sessionId) {
-      loadSession(sessionId)
-        .then(() => {
-          setStartTime(Date.now());
-          hasLoadedRef.current = true;
-        })
-        .catch((err) => {
-          console.error('Failed to load solo session', err);
-        });
+      const state = useSoloStore.getState();
+      if (state.sessionId === sessionId && state.currentQuestion) {
+        setStartTime(Date.now());
+        hasLoadedRef.current = true;
+      } else {
+        loadSession(sessionId)
+          .then(() => {
+            setStartTime(Date.now());
+            hasLoadedRef.current = true;
+          })
+          .catch((err) => {
+            console.error('Failed to load solo session', err);
+          });
+      }
     }
-
-    return () => {
-      resetStore();
-    };
-  }, [sessionId, loadSession, resetStore]);
+  }, [sessionId, loadSession]);
 
   useEffect(() => {
     if (phase === 'QUESTION' && hasLoadedRef.current) {
@@ -69,12 +70,13 @@ export default function SoloGameScreen() {
   }, [phase]);
 
   const handleSubmitAnswer = async (chosenAnswer: string) => {
-    const timeSpentMs = Date.now() - startTime;
+    if (phase !== 'QUESTION') return;
+    const timeSpentMs = Math.max(100, Date.now() - startTime);
     const finalAnswer = chosenAnswer === '__timeout__' ? '' : chosenAnswer;
     try {
       await answerQuestion(finalAnswer, timeSpentMs);
-    } catch (err) {
-      console.error('Failed to submit answer', err);
+    } catch (err: any) {
+      console.error('Failed to submit answer', err?.response?.data || err);
     }
   };
 
@@ -225,6 +227,7 @@ export default function SoloGameScreen() {
           onSubmit={handleSubmitAnswer}
           isSubmitting={isSubmitting}
           result={reveal ? (reveal.correct ? 'correct' : 'wrong') : null}
+          correctAnswer={reveal?.correctAnswer}
         />
 
         {/* Reveal Overlay / Explanations */}

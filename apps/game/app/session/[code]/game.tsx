@@ -10,11 +10,12 @@ import { useAuthStore } from '~/stores/useAuthStore';
 import { useGameSocket } from '~/lib/websocket/useGameSocket';
 import * as gameApi from '~/lib/api/game';
 import { appStorage } from '~/lib/utils/storage';
-import { palette } from '~/lib/theme/tokens';
+import { palette, font } from '~/lib/theme/tokens';
 import { notifyApiError } from '~/lib/ui/notify';
 
-const POLL_WS_CONNECTED_MS = 3000;
-const POLL_WS_DISCONNECTED_MS = 2000;
+const POLL_WS_CONNECTED_MS = 1500;
+const POLL_WS_DISCONNECTED_MS = 1000;
+const POLL_PAUSED_MS = 800;
 
 export default function GamePage() {
   const router = useRouter();
@@ -25,7 +26,7 @@ export default function GamePage() {
 
   const user = useAuthStore((state) => state.user);
   const {
-    session, players, teams, currentQuestion, fetchSession, leaveSession, pauseSession, resumeSession, game
+    session, players, teams, currentQuestion, fetchSession, leaveSession, pauseSession, resumeSession, game, isPaused
   } = useBuzzStore();
 
   const isManager = session?.managerId === user?.id;
@@ -136,11 +137,17 @@ export default function GamePage() {
     },
   });
 
-  // Polling fallback
+  // Polling fallback - accéléré en pause ou déconnecté
   useEffect(() => {
-    const interval = setInterval(syncGameState, isConnected ? POLL_WS_CONNECTED_MS : POLL_WS_DISCONNECTED_MS);
+    const pollInterval = isPaused
+      ? POLL_PAUSED_MS
+      : isConnected
+        ? POLL_WS_CONNECTED_MS
+        : POLL_WS_DISCONNECTED_MS;
+
+    const interval = setInterval(syncGameState, pollInterval);
     return () => clearInterval(interval);
-  }, [isConnected, syncGameState]);
+  }, [isConnected, isPaused, syncGameState]);
 
   const handlePause = useCallback(async () => {
     if (!session?.id || isPauseToggling) return;
@@ -175,18 +182,17 @@ export default function GamePage() {
         <View style={{ width: 80, height: 80, borderRadius: 40, backgroundColor: palette.primary + '26', alignItems: 'center', justifyContent: 'center' }}>
           <Zap size={40} color={palette.primary} />
         </View>
-        <Text style={{ color: palette.txt, fontWeight: '600', textAlign: 'center' }}>
-          {status === 'GENERATING'
-            ? 'Les questions sont en cours de génération…'
-            : status === 'CANCELLED'
-              ? 'Cette partie a été annulée.'
-              : "La partie n'a pas encore été lancée."}
+        <Text style={{ fontFamily: font.nativeFamily.display, color: palette.txt, fontSize: 20, paddingTop: 2 }}>Partie non disponible</Text>
+        <Text style={{ fontFamily: font.nativeFamily.serif, fontStyle: 'italic', color: palette.inkSoft, textAlign: 'center', fontSize: 14 }}>
+          {session.status === 'RESULTS'
+            ? 'La partie est terminée.'
+            : "La partie n'a pas encore été lancée."}
         </Text>
         <TouchableOpacity
           onPress={() => router.replace(`/session/${code}/lobby` as any)}
           style={{ paddingHorizontal: 20, paddingVertical: 10, borderRadius: 9999, backgroundColor: palette.primary }}
         >
-          <Text style={{ color: '#FFFFFF', fontWeight: '700' }}>Retour au lobby</Text>
+          <Text style={{ fontFamily: font.nativeFamily.display, color: '#FFFFFF', fontSize: 14, paddingTop: 2 }}>Retour au lobby</Text>
         </TouchableOpacity>
       </View>
     );
@@ -198,7 +204,7 @@ export default function GamePage() {
         <View style={{ width: 80, height: 80, borderRadius: 40, backgroundColor: palette.primary + '26', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
           <Zap size={40} color={palette.primary} />
         </View>
-        <Text style={{ color: palette.txt, fontWeight: '600' }}>Chargement du jeu...</Text>
+        <Text style={{ fontFamily: font.nativeFamily.display, color: palette.txt, fontSize: 16, paddingTop: 2 }}>Chargement du jeu...</Text>
       </View>
     );
   }

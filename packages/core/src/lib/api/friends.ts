@@ -44,6 +44,28 @@ export async function getFriendProfile(userId: string): Promise<UserStatsRespons
   return res.data;
 }
 
+export async function getBlockedUsers(): Promise<FriendResponse[]> {
+  try {
+    const res = await apiClient.get<FriendResponse[]>('/api/friends/blocked');
+    return res.data;
+  } catch (err) {
+    return [];
+  }
+}
+
 export async function blockUser(userId: string): Promise<void> {
   await apiClient.post(`/api/friends/${userId}/block`);
 }
+
+export async function unblockUser(userId: string): Promise<void> {
+  try {
+    await apiClient.delete(`/api/friends/${userId}`);
+  } catch {
+    try {
+      await apiClient.post(`/api/friends/${userId}/unblock`);
+    } catch {
+      await apiClient.delete(`/api/friends/${userId}/block`);
+    }
+  }
+}
+

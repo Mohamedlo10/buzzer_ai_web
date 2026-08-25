@@ -148,7 +148,7 @@ export default function LoadingScreen() {
   // Polling adaptatif
   useEffect(() => {
     if (!session?.id) return;
-    const ms = isConnected ? 5000 : 1500;
+    const ms = isConnected ? 2000 : 800;
     const interval = setInterval(() => fetchSession(session.id), ms);
     return () => clearInterval(interval);
   }, [session?.id, fetchSession, isConnected]);

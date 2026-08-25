@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, Animated, Easing, Platform } from 'react-native';
 import { Zap } from 'lucide-react-native';
-import { palette } from '~/lib/theme/tokens';
+import { palette, font } from '~/lib/theme/tokens';
 import Svg, { Path } from 'react-native-svg';
 
 interface BuzzerButtonProps {
@@ -100,9 +100,9 @@ export function BuzzerButton({
       <View style={{ alignItems: 'center', paddingVertical: 24 }}>
         <View style={{ width: size, height: size, borderRadius: size / 2, borderWidth: 3, borderColor: palette.line, opacity: 0.6, backgroundColor: palette.surface, alignItems: 'center', justifyContent: 'center' }}>
           <Zap size={36} color={palette.inkSoft} strokeWidth={2} />
-          <Text style={{ color: palette.inkSoft, fontWeight: '700', fontSize: 24, marginTop: 4, letterSpacing: 1 }}>#{queuePosition}</Text>
+          <Text style={{ fontFamily: font.nativeFamily.display, color: palette.inkSoft, fontSize: 24, marginTop: 4, letterSpacing: 1 }}>#{queuePosition}</Text>
         </View>
-        <Text style={{ color: palette.inkSoft, marginTop: 16, fontSize: 14, fontWeight: '500' }}>En file d'attente</Text>
+        <Text style={{ fontFamily: font.nativeFamily.ui, color: palette.inkSoft, marginTop: 16, fontSize: 14, fontWeight: '500' }}>En file d'attente</Text>
       </View>
     );
   }
@@ -117,11 +117,11 @@ export function BuzzerButton({
           ) : (
             <Zap size={44} color={palette.inkSoft} strokeWidth={2} />
           )}
-          <Text style={{ color: palette.inkSoft, fontWeight: '700', fontSize: 18, marginTop: 8, letterSpacing: 1 }}>
+          <Text style={{ fontFamily: font.nativeFamily.display, color: palette.inkSoft, fontSize: 18, marginTop: 8, letterSpacing: 1 }}>
             {teamBuzzed ? 'VERROUILLÉ' : 'BUZZ'}
           </Text>
         </View>
-        <Text style={{ color: palette.inkSoft, marginTop: 12, fontSize: 12, fontWeight: '600' }}>
+        <Text style={{ fontFamily: font.nativeFamily.ui, color: palette.inkSoft, marginTop: 12, fontSize: 12, fontWeight: '600' }}>
           {teamBuzzed ? 'Votre équipe a déjà buzzé' : 'Buzzer désactivé'}
         </Text>
       </View>
@@ -162,14 +162,14 @@ export function BuzzerButton({
               <Path d="M40 6 L74 40 L40 74 L6 40 Z" fill="none" stroke={ink} strokeOpacity="0.45" strokeWidth="2" />
               <Path d="M40 22 L58 40 L40 58 L22 40 Z" fill={ink} fillOpacity="0.95" />
             </Svg>
-            <Text style={{ color: ink, fontSize: size * 0.12, fontWeight: '700', marginTop: 4, letterSpacing: 1 }}>BUZZER</Text>
+            <Text style={{ fontFamily: font.nativeFamily.display, color: ink, fontSize: size * 0.12, marginTop: 4, letterSpacing: 1 }}>BUZZER</Text>
             <View style={{ marginTop: 6, backgroundColor: 'rgba(0,0,0,0.15)', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 }}>
-              <Text style={{ color: ink, fontSize: 10, fontWeight: '600', letterSpacing: 1.2 }}>ESPACE</Text>
+              <Text style={{ fontFamily: font.nativeFamily.display, color: ink, fontSize: 10, letterSpacing: 1.2 }}>ESPACE</Text>
             </View>
           </TouchableOpacity>
         </Animated.View>
       </View>
-      <Text style={{ color: palette.inkSoft, marginTop: 8, fontSize: 12, fontWeight: '600' }}>Appuyer sur l'écran</Text>
+      <Text style={{ fontFamily: font.nativeFamily.serif, fontStyle: 'italic', color: palette.inkSoft, marginTop: 8, fontSize: 13 }}>Appuyer sur l'écran</Text>
     </View>
   );
 }

@@ -282,6 +282,8 @@ export function PulseRingView({ children, style, duration = 2000, ...props }: Vi
   );
 }
 
+export const PulseView = PulseRingView;
+
 // ── 15. Buzz Scale (press / trigger scale 1 -> 0.92 -> 1) ─────────────────────
 export function BuzzScaleView({ children, style, trigger = 0, ...props }: ViewProps & { trigger?: number }) {
   const scale = useSharedValue(1);

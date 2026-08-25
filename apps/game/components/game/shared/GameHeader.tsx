@@ -1,8 +1,9 @@
 import { View, Text, TouchableOpacity } from 'react-native';
 import { ArrowLeft, Crown, Eye, Users } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
-import { palette } from '~/lib/theme/tokens';
-import { teamColor, teamColorTint } from '~/lib/game/teamColors';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { palette, font } from '~/lib/theme/tokens';
+import { teamColor } from '~/lib/game/teamColors';
 import type { PlayerResponse, QuestionResponse, SessionResponse, TeamResponse } from '~/types/api';
 
 interface GameHeaderProps {
@@ -27,12 +28,13 @@ export function GameHeader({
   teams,
 }: GameHeaderProps) {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const sessionMode = session.sessionMode ?? 'WITH_MODERATOR';
   const isWithoutModerator = sessionMode === 'WITHOUT_MODERATOR';
   const isTeamMode = session.isTeamMode ?? false;
 
   return (
-    <View style={{ backgroundColor: palette.bg, paddingTop: 16, paddingBottom: 12, paddingHorizontal: 16, borderBottomWidth: 1, borderBottomColor: palette.line }}>
+    <View style={{ backgroundColor: palette.bg, paddingTop: insets.top + 8, paddingBottom: 10, paddingHorizontal: 16, borderBottomWidth: 1, borderBottomColor: palette.line }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
         <TouchableOpacity
           onPress={() => {
@@ -46,22 +48,22 @@ export function GameHeader({
         </TouchableOpacity>
 
         <View style={{ flex: 1, minWidth: 0 }}>
-          <Text style={{ color: palette.txt, fontWeight: '600', fontSize: 17 }}>
+          <Text style={{ fontFamily: font.nativeFamily.display, color: palette.txt, fontSize: 17, lineHeight: 22, paddingTop: 3 }}>
             Question {questionIndex + 1}
             {session.totalQuestions > 0 && (
-              <Text style={{ color: palette.inkSoft, fontWeight: '400' }}> / {session.totalQuestions}</Text>
+              <Text style={{ color: palette.inkSoft, fontSize: 14 }}> / {session.totalQuestions}</Text>
             )}
           </Text>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 }}>
             <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: isConnected ? palette.primary : palette.bad }} />
-            <Text style={{ color: palette.inkSoft, fontSize: 11 }}>{isConnected ? 'Connecté' : 'Déconnecté'}</Text>
+            <Text style={{ color: palette.inkSoft, fontSize: 11, fontWeight: '500' }}>{isConnected ? 'Connecté' : 'Déconnecté'}</Text>
           </View>
         </View>
 
         {isManager && (
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 9999, backgroundColor: palette.gold + '20', borderWidth: 1, borderColor: palette.gold + '50', flexShrink: 0 }}>
             <Crown size={10} color={palette.goldBright} fill={palette.goldBright} />
-            <Text style={{ color: palette.gold, fontSize: 10, fontWeight: '700' }}>
+            <Text style={{ fontFamily: font.nativeFamily.display, color: palette.gold, fontSize: 11, paddingTop: 2 }}>
               {isWithoutModerator ? 'Host' : 'Manager'}
             </Text>
           </View>
@@ -69,13 +71,13 @@ export function GameHeader({
         {isSpectator && (
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 9999, backgroundColor: palette.gold + '20', flexShrink: 0 }}>
             <Eye size={10} color={palette.gold} />
-            <Text style={{ color: palette.gold, fontSize: 10, fontWeight: '700' }}>Spectateur</Text>
+            <Text style={{ fontFamily: font.nativeFamily.display, color: palette.gold, fontSize: 11, paddingTop: 2 }}>Spectateur</Text>
           </View>
         )}
       </View>
 
       {/* Tags */}
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 10 }}>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
         <View style={{ paddingHorizontal: 8, paddingVertical: 4, borderRadius: 9999, backgroundColor: palette.primary + '20', borderWidth: 1, borderColor: palette.primary + '50' }}>
           <Text style={{ color: palette.primary, fontSize: 11, fontWeight: '600' }}>{currentQuestion?.category}</Text>
         </View>
@@ -107,3 +109,4 @@ export function GameHeader({
     </View>
   );
 }
+

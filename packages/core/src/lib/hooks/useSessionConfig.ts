@@ -55,7 +55,17 @@ export function useSessionConfig(options: UseSessionConfigOptions = {}) {
   const createSession = useBuzzStore((state) => state.createSession);
   const isCreating = useBuzzStore((state) => state.isCreating);
 
-  const totalSteps = config.isTeamMode ? 4 : 3;
+  const steps: ('mode' | 'settings' | 'categories' | 'teams' | 'summary')[] = ['mode', 'settings'];
+  if (questionMode === 'AI' && categorySelectionMode === 'MANAGER') {
+    steps.push('categories');
+  }
+  if (config.isTeamMode) {
+    steps.push('teams');
+  }
+  steps.push('summary');
+
+  const totalSteps = steps.length;
+  const currentStepId = steps[currentStep] || 'mode';
 
   // Sync back current step index if total steps collapses and user is out of bounds
   useEffect(() => {
@@ -82,13 +92,22 @@ export function useSessionConfig(options: UseSessionConfigOptions = {}) {
   }, [currentStep]);
 
   const getStepName = useCallback(() => {
-    if (currentStep === 0) return 'Mode de jeu';
-    if (currentStep === 1) return 'Réglages';
-    if (currentStep === 2) {
-      return config.isTeamMode ? 'Équipes' : 'Récapitulatif';
+    const stepId = steps[currentStep] || 'mode';
+    switch (stepId) {
+      case 'mode':
+        return 'Mode de jeu';
+      case 'settings':
+        return 'Réglages';
+      case 'categories':
+        return 'Thèmes';
+      case 'teams':
+        return 'Équipes';
+      case 'summary':
+        return 'Récapitulatif';
+      default:
+        return 'Configuration';
     }
-    return 'Récapitulatif';
-  }, [currentStep, config.isTeamMode]);
+  }, [steps, currentStep]);
 
   const handleQuickStart = useCallback(async () => {
     setError(null);
@@ -211,6 +230,8 @@ export function useSessionConfig(options: UseSessionConfigOptions = {}) {
   return {
     currentStep,
     setCurrentStep,
+    steps,
+    currentStepId,
     totalSteps,
     getStepName,
     questionMode,

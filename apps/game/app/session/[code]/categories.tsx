@@ -221,23 +221,12 @@ export default function CategoriesScreen() {
         const detail = await sessionsApi.getSession(sid);
         setMaxCategories(detail.session.maxCategoriesPerPlayer || 3);
 
-        if (detail.session.categorySelectionMode === 'MANAGER') {
-          await appStorage.setActiveSession({ sessionId: detail.session.id, code: detail.session.code });
-          useBuzzStore.setState({
-            session: detail.session,
-            players: detail.players || [],
-            questions: detail.questions || [],
-            teams: detail.teams || [],
-            sessionCode: detail.session.code,
-          });
-          router.replace(`/session/${code}/lobby` as any);
-          return;
-        }
-
         const currentPlayer = detail.players.find(p => p.userId === user.id);
-        const hasSelectedCategories = Boolean(currentPlayer?.selectedCategories && currentPlayer.selectedCategories.length > 0);
         const isSpectator = Boolean(currentPlayer?.isSpectator);
-        const alreadyJoined = Boolean(currentPlayer && (isSpectator || hasSelectedCategories));
+        const isManagerMode = detail.session.categorySelectionMode === 'MANAGER';
+        const isManual = detail.session.questionMode === 'MANUAL';
+        const hasSelectedCategories = Boolean(currentPlayer?.selectedCategories && currentPlayer.selectedCategories.length > 0);
+        const alreadyJoined = Boolean(currentPlayer && (isSpectator || isManagerMode || isManual || hasSelectedCategories));
         if (alreadyJoined) {
           await appStorage.setActiveSession({ sessionId: detail.session.id, code: detail.session.code });
           useBuzzStore.setState({
@@ -254,7 +243,7 @@ export default function CategoriesScreen() {
         if (detail.session.isTeamMode && paramIsSpectator !== '1') {
           setIsTeamMode(true);
           setSessionTeams(detail.teams || []);
-          if (detail.session.questionMode === 'MANUAL') {
+          if (isManual || isManagerMode) {
             setIsManualMode(true);
             setCurrentStep('team');
           } else {
@@ -264,19 +253,24 @@ export default function CategoriesScreen() {
           return;
         }
 
-        if (detail.session.questionMode === 'MANUAL') {
+        if (isManual || isManagerMode) {
           setIsManualMode(true);
-          await sessionsApi.joinSession(sid, { categories: [], isSpectator: paramIsSpectator === '1' });
-          const updated = await sessionsApi.getSession(sid);
-          await appStorage.setActiveSession({ sessionId: updated.session.id, code: updated.session.code });
-          useBuzzStore.setState({
-            session: updated.session,
-            players: updated.players || [],
-            questions: updated.questions || [],
-            teams: updated.teams || [],
-            sessionCode: updated.session.code,
-          });
-          router.replace(`/session/${code}/lobby` as any);
+          try {
+            await sessionsApi.joinSession(sid, { categories: [], isSpectator: paramIsSpectator === '1' });
+            const updated = await sessionsApi.getSession(sid);
+            await appStorage.setActiveSession({ sessionId: updated.session.id, code: updated.session.code });
+            useBuzzStore.setState({
+              session: updated.session,
+              players: updated.players || [],
+              questions: updated.questions || [],
+              teams: updated.teams || [],
+              sessionCode: updated.session.code,
+            });
+          } catch (e) {
+            // Force redirect even on failure to avoid being stuck on categories screen
+          } finally {
+            router.replace(`/session/${code}/lobby` as any);
+          }
           return;
         }
       } catch {

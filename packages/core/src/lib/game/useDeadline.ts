@@ -41,5 +41,8 @@ export function useDeadlineSeconds(deadlineEpochMs: number | null | undefined): 
     return () => clearInterval(interval);
   }, [deadlineEpochMs]);
 
-  return Math.ceil(remainingMs / 1000);
+  // Synchronous fallback so initial render with a new deadline never sees 0
+  const effectiveMs = deadlineEpochMs ? msUntil(deadlineEpochMs) : remainingMs;
+
+  return Math.ceil(effectiveMs / 1000);
 }

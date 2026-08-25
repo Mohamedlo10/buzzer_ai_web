@@ -19,6 +19,8 @@ import {
   UserX,
   Target,
   Zap,
+  ShieldAlert,
+  ShieldOff,
 } from 'lucide-react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
@@ -34,7 +36,7 @@ export default function UserProfileScreen() {
   const router = useRouter();
   const { userId } = useLocalSearchParams<{ userId: string }>();
   const queryClient = useQueryClient();
-  const { sendRequest, removeFriend } = useFriendStore();
+  const { sendRequest, removeFriend, blockUser, unblockUser } = useFriendStore();
 
   const { data: profile, isLoading, error } = useQuery({
     queryKey: ['friendProfile', userId],
@@ -45,7 +47,7 @@ export default function UserProfileScreen() {
   const sendRequestMutation = useMutation({
     mutationFn: () => sendRequest(userId!),
     onSuccess: () => {
-      notify.success('Demande d\'ami envoyée !');
+      notify.success("Demande d'ami envoyée !");
       queryClient.invalidateQueries({ queryKey: ['friendProfile', userId] });
     },
     onError: (err: any) => {
@@ -65,6 +67,37 @@ export default function UserProfileScreen() {
     },
   });
 
+  const blockUserMutation = useMutation({
+    mutationFn: () =>
+      blockUser(userId!, profile ? {
+        id: userId!,
+        username: profile.username,
+        avatarUrl: profile.avatarUrl,
+        isOnline: false,
+        lastSeenAt: null,
+      } : undefined),
+    onSuccess: () => {
+      notify.info(`${profile?.username ?? 'Utilisateur'} a été bloqué`);
+      queryClient.invalidateQueries({ queryKey: ['friendProfile', userId] });
+      queryClient.invalidateQueries({ queryKey: ['friends'] });
+    },
+    onError: (err: any) => {
+      notifyApiError(err, 'Impossible de bloquer cet utilisateur');
+    },
+  });
+
+  const unblockUserMutation = useMutation({
+    mutationFn: () => unblockUser(userId!),
+    onSuccess: () => {
+      notify.success(`${profile?.username ?? 'Utilisateur'} a été débloqué`);
+      queryClient.invalidateQueries({ queryKey: ['friendProfile', userId] });
+      queryClient.invalidateQueries({ queryKey: ['friends'] });
+    },
+    onError: (err: any) => {
+      notifyApiError(err, 'Impossible de débloquer cet utilisateur');
+    },
+  });
+
   const handleFriendAction = async () => {
     if (!profile?.friendshipStatus) return;
     const status = profile.friendshipStatus;
@@ -78,7 +111,20 @@ export default function UserProfileScreen() {
       });
       if (!ok) return;
       removeFriendMutation.mutate();
+    } else if (status === 'BLOCKED') {
+      unblockUserMutation.mutate();
     }
+  };
+
+  const handleBlockUser = async () => {
+    if (!profile) return;
+    const ok = await confirmAsync({
+      title: 'Bloquer cet utilisateur',
+      message: `Voulez-vous bloquer ${profile.username} ? Vous ne recevrez plus d'invitations ni de messages de cette personne.`,
+      tone: 'danger',
+    });
+    if (!ok) return;
+    blockUserMutation.mutate();
   };
 
   if (isLoading) {
@@ -118,6 +164,7 @@ export default function UserProfileScreen() {
   }
 
   const friendshipStatus: FriendshipStatus = profile.friendshipStatus || 'NONE';
+  const isBlocked = friendshipStatus === 'BLOCKED';
   const totalWins = profile.totalWins || 0;
   const totalGames = profile.totalGames || 0;
   const winRate = profile.winRate != null
@@ -125,6 +172,12 @@ export default function UserProfileScreen() {
     : totalGames > 0
       ? Math.round((totalWins / totalGames) * 100)
       : 0;
+
+  const isMutating =
+    sendRequestMutation.isPending ||
+    removeFriendMutation.isPending ||
+    blockUserMutation.isPending ||
+    unblockUserMutation.isPending;
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: palette.bg }}>
@@ -190,7 +243,7 @@ export default function UserProfileScreen() {
         >
           <Avatar name={profile.username} avatarUrl={profile.avatarUrl} size={88} hue={30} />
 
-          <View style={{ alignItems: 'center', gap: 2 }}>
+          <View style={{ alignItems: 'center', gap: 4 }}>
             <Text
               style={{
                 fontFamily: font.nativeFamily.display,
@@ -202,53 +255,109 @@ export default function UserProfileScreen() {
             >
               {profile.username}
             </Text>
+
+            {isBlocked && (
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 6,
+                  backgroundColor: palette.bad + '18',
+                  paddingHorizontal: 12,
+                  paddingVertical: 4,
+                  borderRadius: 9999,
+                  borderWidth: 1,
+                  borderColor: palette.bad + '40',
+                }}
+              >
+                <ShieldAlert size={13} color={palette.bad} />
+                <Text style={{ color: palette.bad, fontSize: 12, fontWeight: '700' }}>
+                  Utilisateur bloqué
+                </Text>
+              </View>
+            )}
           </View>
 
           {/* Friendship Action Button */}
           {friendshipStatus !== 'SELF' && (
-            <TouchableOpacity
-              onPress={handleFriendAction}
-              disabled={friendshipStatus === 'PENDING' || sendRequestMutation.isPending || removeFriendMutation.isPending}
-              activeOpacity={0.8}
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: 8,
-                paddingHorizontal: 20,
-                paddingVertical: 10,
-                borderRadius: 14,
-                backgroundColor:
-                  friendshipStatus === 'ACCEPTED'
-                    ? palette.bad + '1A'
-                    : friendshipStatus === 'PENDING'
+            <View style={{ alignItems: 'center', gap: 10, marginTop: 4, width: '100%' }}>
+              <TouchableOpacity
+                onPress={handleFriendAction}
+                disabled={friendshipStatus === 'PENDING' || isMutating}
+                activeOpacity={0.8}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 8,
+                  paddingHorizontal: 24,
+                  paddingVertical: 12,
+                  borderRadius: 14,
+                  backgroundColor:
+                    friendshipStatus === 'BLOCKED'
+                      ? palette.surface2
+                      : friendshipStatus === 'ACCEPTED'
+                      ? palette.bad + '1A'
+                      : friendshipStatus === 'PENDING'
                       ? palette.surface2
                       : palette.primary,
-                marginTop: 4,
-              }}
-            >
-              {friendshipStatus === 'ACCEPTED' ? (
-                <>
-                  <UserCheck size={16} color={palette.bad} />
-                  <Text style={{ color: palette.bad, fontSize: 13, fontWeight: '700' }}>
-                    Retirer des amis
+                  borderWidth: friendshipStatus === 'BLOCKED' ? 1 : 0,
+                  borderColor: palette.line,
+                  minWidth: 180,
+                }}
+              >
+                {isBlocked ? (
+                  <>
+                    <ShieldOff size={16} color={palette.txt} />
+                    <Text style={{ color: palette.txt, fontSize: 13, fontWeight: '700' }}>
+                      Débloquer l'utilisateur
+                    </Text>
+                  </>
+                ) : friendshipStatus === 'ACCEPTED' ? (
+                  <>
+                    <UserCheck size={16} color={palette.bad} />
+                    <Text style={{ color: palette.bad, fontSize: 13, fontWeight: '700' }}>
+                      Retirer des amis
+                    </Text>
+                  </>
+                ) : friendshipStatus === 'PENDING' ? (
+                  <>
+                    <Clock size={16} color={palette.inkSoft} />
+                    <Text style={{ color: palette.inkSoft, fontSize: 13, fontWeight: '700' }}>
+                      Demande envoyée
+                    </Text>
+                  </>
+                ) : (
+                  <>
+                    <UserPlus size={16} color={palette.primaryInk} />
+                    <Text style={{ color: palette.primaryInk, fontSize: 13, fontWeight: '700' }}>
+                      Ajouter en ami
+                    </Text>
+                  </>
+                )}
+              </TouchableOpacity>
+
+              {/* Block user button if not blocked and not self */}
+              {!isBlocked && (
+                <TouchableOpacity
+                  onPress={handleBlockUser}
+                  disabled={isMutating}
+                  activeOpacity={0.7}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: 6,
+                    paddingVertical: 6,
+                    paddingHorizontal: 12,
+                  }}
+                >
+                  <ShieldAlert size={14} color={palette.bad} />
+                  <Text style={{ color: palette.bad, fontSize: 12, fontWeight: '600' }}>
+                    Bloquer cet utilisateur
                   </Text>
-                </>
-              ) : friendshipStatus === 'PENDING' ? (
-                <>
-                  <Clock size={16} color={palette.inkSoft} />
-                  <Text style={{ color: palette.inkSoft, fontSize: 13, fontWeight: '700' }}>
-                    Demande envoyée
-                  </Text>
-                </>
-              ) : (
-                <>
-                  <UserPlus size={16} color={palette.primaryInk} />
-                  <Text style={{ color: palette.primaryInk, fontSize: 13, fontWeight: '700' }}>
-                    Ajouter en ami
-                  </Text>
-                </>
+                </TouchableOpacity>
               )}
-            </TouchableOpacity>
+            </View>
           )}
         </View>
 

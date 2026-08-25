@@ -12,7 +12,7 @@ import { QuestionAndAnswerDisplay } from './QuestionAndAnswerDisplay';
 import { PlayerActionView } from './PlayerActionView';
 import { useModeratedGame } from '~/lib/hooks/useModeratedGame';
 import { teamColor } from '~/lib/game/teamColors';
-import { palette } from '~/lib/theme/tokens';
+import { palette, font } from '~/lib/theme/tokens';
 import type { PlayerResponse, TeamResponse } from '~/types/api';
 
 // TODO: Replace with your actual modal/alert component for RN, simplified here to avoid external deps if not present
@@ -77,7 +77,7 @@ export function ModeratedGame({
   }
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: palette.bg }}>
       <GameHeader
         session={session}
         currentQuestion={currentQuestion}
@@ -94,7 +94,7 @@ export function ModeratedGame({
       
       <BuzzAlertOverlay isManager={isManager} phase={game.phase} firstBuzzer={firstBuzzer} buzzQueue={game.buzzQueue} players={players} myPlayerId={myPlayerId} isTeamMode={isTeamMode} teams={teams} />
 
-      <ScrollView contentContainerStyle={{ paddingBottom: 24 }}>
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 32 }}>
         <QuestionAndAnswerDisplay
           isManager={isManager}
           currentQuestion={currentQuestion}
@@ -104,7 +104,7 @@ export function ModeratedGame({
           setShowAnswer={setShowAnswer}
           displayedWordCount={displayedWordCount}
           phase={game.phase}
-          totalWordCount={game.totalWordCount}
+          totalWordCount={currentQuestion.text ? currentQuestion.text.split(' ').length : 0}
         />
 
         <PlayerActionView
@@ -124,8 +124,8 @@ export function ModeratedGame({
               <View style={{ width: 80, height: 80, borderRadius: 40, backgroundColor: palette.warn + '26', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
                 <Eye size={32} color={palette.warn} />
               </View>
-              <Text style={{ color: palette.warn, fontSize: 20, fontWeight: '700', marginBottom: 8 }}>Mode spectateur</Text>
-              <Text style={{ color: palette.inkSoft }}>Vous observez la partie</Text>
+              <Text style={{ fontFamily: font.nativeFamily.display, color: palette.warn, fontSize: 20, paddingTop: 2, marginBottom: 8 }}>Mode spectateur</Text>
+              <Text style={{ fontFamily: font.nativeFamily.serif, fontStyle: 'italic', color: palette.inkSoft, fontSize: 14 }}>Vous observez la partie</Text>
             </View>
           </View>
         )}
@@ -148,8 +148,8 @@ export function ModeratedGame({
                     <Users size={14} color={tColor} />
                   </View>
                   <View style={{ flex: 1 }}>
-                    <Text style={{ color: palette.txt, fontWeight: '700', fontSize: 13.5 }}>Votre équipe a déjà buzzé</Text>
-                    <Text style={{ color: palette.inkSoft, fontSize: 12, marginTop: 2 }} numberOfLines={1}>
+                    <Text style={{ fontFamily: font.nativeFamily.display, color: palette.txt, fontSize: 13.5, paddingTop: 2 }}>Votre équipe a déjà buzzé</Text>
+                    <Text style={{ fontFamily: font.nativeFamily.ui, color: palette.inkSoft, fontSize: 12, marginTop: 2 }} numberOfLines={1}>
                       <Text style={{ fontWeight: '700' }}>{firstBuzzer.playerName}</Text> répond pour {firstBuzzer.teamName || 'votre équipe'}
                     </Text>
                   </View>
@@ -178,18 +178,18 @@ export function ModeratedGame({
           <View style={{ paddingHorizontal: 16, paddingTop: 12 }}>
             <View style={{ flexDirection: 'row', gap: 8 }}>
               <TouchableOpacity onPress={() => setShowSkipConfirm(true)} disabled={isSkipping} style={{ flex: 1, paddingVertical: 12, borderRadius: 12, backgroundColor: palette.surface2, alignItems: 'center', justifyContent: 'center', opacity: isSkipping ? 0.6 : 1 }}>
-                {isSkipping ? <ActivityIndicator size="small" color="#FFFFFF" /> : <Text style={{ color: palette.inkSoft, fontWeight: '500', fontSize: 14 }}>Passer</Text>}
+                {isSkipping ? <ActivityIndicator size="small" color="#FFFFFF" /> : <Text style={{ fontFamily: font.nativeFamily.display, color: palette.inkSoft, fontSize: 14, paddingTop: 2 }}>Passer</Text>}
               </TouchableOpacity>
               <TouchableOpacity onPress={handleResetBuzzer} disabled={game.buzzQueue.length === 0 || isResettingBuzzer} style={{ flex: 1, paddingVertical: 12, borderRadius: 12, backgroundColor: game.buzzQueue.length > 0 ? palette.bad + '33' : palette.surface2, alignItems: 'center', justifyContent: 'center', opacity: (game.buzzQueue.length === 0 || isResettingBuzzer) ? 0.5 : 1 }}>
-                {isResettingBuzzer ? <ActivityIndicator size="small" color={palette.bad} /> : <Text style={{ fontWeight: '500', fontSize: 14, color: game.buzzQueue.length > 0 ? palette.bad : palette.inkSoft }}>Reset</Text>}
+                {isResettingBuzzer ? <ActivityIndicator size="small" color={palette.bad} /> : <Text style={{ fontFamily: font.nativeFamily.display, fontSize: 14, color: game.buzzQueue.length > 0 ? palette.bad : palette.inkSoft, paddingTop: 2 }}>Reset</Text>}
               </TouchableOpacity>
               <TouchableOpacity onPress={isPaused ? handleResume : handlePause} disabled={isPauseToggling} style={{ flex: 1, paddingVertical: 12, borderRadius: 12, backgroundColor: isPaused ? palette.primary : palette.warn + '33', borderWidth: isPaused ? 0 : 1, borderColor: palette.warn + '4D', alignItems: 'center', justifyContent: 'center', opacity: isPauseToggling ? 0.6 : 1, flexDirection: 'row', gap: 6 }}>
                 {isPauseToggling ? (
                   <ActivityIndicator size="small" color={isPaused ? '#FFFFFF' : palette.warn} />
                 ) : isPaused ? (
-                  <><PlayCircle size={18} color="#FFFFFF" /><Text style={{ fontWeight: '700', fontSize: 14, color: '#FFFFFF' }}>Reprendre</Text></>
+                  <><PlayCircle size={18} color="#FFFFFF" /><Text style={{ fontFamily: font.nativeFamily.display, fontSize: 14, color: '#FFFFFF', paddingTop: 2 }}>Reprendre</Text></>
                 ) : (
-                  <><PauseCircle size={18} color={palette.warn} /><Text style={{ fontWeight: '700', fontSize: 14, color: palette.warn }}>Pause</Text></>
+                  <><PauseCircle size={18} color={palette.warn} /><Text style={{ fontFamily: font.nativeFamily.display, fontSize: 14, color: palette.warn, paddingTop: 2 }}>Pause</Text></>
                 )}
               </TouchableOpacity>
             </View>

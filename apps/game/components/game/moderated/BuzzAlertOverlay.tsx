@@ -1,6 +1,6 @@
 import { View, Text } from 'react-native';
 import { Hand } from 'lucide-react-native';
-import { palette } from '~/lib/theme/tokens';
+import { palette, font } from '~/lib/theme/tokens';
 import { teamColor } from '~/lib/game/teamColors';
 import type { PlayerResponse, TeamResponse } from '~/types/api';
 import type { QueueEntry } from '~/lib/game/packet';
@@ -26,13 +26,13 @@ export function BuzzAlertOverlay({ isManager, phase, firstBuzzer, buzzQueue, pla
           <View style={{ width: 80, height: 80, borderRadius: 40, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
             <Hand size={40} color={palette.bad} />
           </View>
-          <Text style={{ color: palette.txt, fontWeight: '700', fontSize: 40 }}>BUZZ !</Text>
-          <Text style={{ color: 'rgba(26,20,16,0.8)', fontSize: 24, fontWeight: '600', marginTop: 12 }}>{firstBuzzer.playerName}</Text>
-          <Text style={{ color: 'rgba(26,20,16,0.8)', fontSize: 16, marginTop: 4 }}>
+          <Text style={{ fontFamily: font.nativeFamily.display, color: palette.txt, fontSize: 40, paddingTop: 4 }}>BUZZ !</Text>
+          <Text style={{ fontFamily: font.nativeFamily.display, color: 'rgba(26,20,16,0.9)', fontSize: 24, marginTop: 12, paddingTop: 2 }}>{firstBuzzer.playerName}</Text>
+          <Text style={{ fontFamily: font.nativeFamily.ui, color: 'rgba(26,20,16,0.8)', fontSize: 16, marginTop: 4, fontWeight: '500' }}>
             A buzzé en {firstBuzzer.deltaMs < 1000 ? `${firstBuzzer.deltaMs}ms` : `${(firstBuzzer.deltaMs / 1000).toFixed(1)}s`}
           </Text>
           {buzzQueue.length > 1 && (
-            <Text style={{ color: 'rgba(26,20,16,0.8)', fontSize: 14, marginTop: 8 }}>
+            <Text style={{ fontFamily: font.nativeFamily.serif, fontStyle: 'italic', color: 'rgba(26,20,16,0.8)', fontSize: 14, marginTop: 8 }}>
               +{buzzQueue.length - 1} autre{buzzQueue.length > 2 ? 's' : ''} en attente
             </Text>
           )}
@@ -41,7 +41,7 @@ export function BuzzAlertOverlay({ isManager, phase, firstBuzzer, buzzQueue, pla
 
       <View style={{ backgroundColor: 'rgba(0,0,0,0.4)', borderRadius: 20, overflow: 'hidden' }}>
         <View style={{ paddingHorizontal: 16, paddingVertical: 12, backgroundColor: 'rgba(0,0,0,0.3)' }}>
-          <Text style={{ color: '#FFFFFF', fontWeight: '600', textAlign: 'center' }}>File d'attente</Text>
+          <Text style={{ fontFamily: font.nativeFamily.display, color: '#FFFFFF', textAlign: 'center', fontSize: 15, paddingTop: 2 }}>File d'attente</Text>
         </View>
         {buzzQueue.slice(0, 3).map((item, index) => {
           const qPlayer = players.find(p => p.id === item.playerId);

@@ -12,17 +12,54 @@ import {
   Dumbbell,
   ArrowLeft,
   Play,
-  CheckCircle,
+  Check,
   Clock,
   ThumbsUp,
   RotateCcw,
+  Sparkles,
+  Zap,
+  HelpCircle,
+  Award,
+  ChevronRight,
+  Flame,
 } from 'lucide-react-native';
 
 import * as soloApi from '~/lib/api/solo';
 import { useSoloStore } from '~/stores/useSoloStore';
 import type { SoloTrainingPlanResponse, TrainingLevelInfo } from '~/types/solo';
-import { palette } from '~/lib/theme/tokens';
+import { palette, font } from '~/lib/theme/tokens';
 import { notify, notifyApiError } from '~/lib/ui/notify';
+import { QuizAiLoadingScreen } from '~/components/solo/QuizAiLoadingScreen';
+
+const DIFFICULTY_COLORS: Record<string, string> = {
+  FACILE: palette.good,
+  MOYEN: palette.gold,
+  DIFFICILE: palette.warn,
+  EXTREME: palette.bad,
+};
+
+function formatSeriesInfo(subLevel: number, label?: string, subDifficulty?: string) {
+  if (!label) {
+    return {
+      title: `Série ${subLevel}`,
+      subtitle: subDifficulty ? `Niveau ${subDifficulty.toLowerCase()}` : 'Entraînement progressif',
+    };
+  }
+
+  const match = label.match(/^(.*?)\s*\((.*?)\)$/);
+  if (match) {
+    const rawSubtitle = match[2].trim();
+    return {
+      title: `Série ${subLevel} · ${match[1].trim()}`,
+      subtitle: rawSubtitle.charAt(0).toUpperCase() + rawSubtitle.slice(1),
+    };
+  }
+
+  return {
+    title: `Série ${subLevel} · ${label}`,
+    subtitle: 'Série de questions générées par IA',
+  };
+}
 
 export default function TrainingPlanDetailScreen() {
   const router = useRouter();
@@ -56,7 +93,6 @@ export default function TrainingPlanDetailScreen() {
       router.push(`/solo/game/${startData.sessionId}` as any);
     } catch (err: any) {
       notifyApiError(err, 'Erreur lors du lancement de la série');
-    } finally {
       setIsStartingSubLevel(null);
     }
   };
@@ -97,7 +133,8 @@ export default function TrainingPlanDetailScreen() {
         <Text style={{ fontSize: 18, fontWeight: '700', color: palette.txt }}>Plan introuvable</Text>
         <TouchableOpacity
           onPress={() => router.back()}
-          style={{ paddingHorizontal: 20, paddingVertical: 10, borderRadius: 12, backgroundColor: palette.surface }}
+          activeOpacity={0.8}
+          style={{ paddingHorizontal: 20, paddingVertical: 10, borderRadius: 12, backgroundColor: palette.surface, borderWidth: 1, borderColor: palette.line }}
         >
           <Text style={{ color: palette.txt, fontWeight: '700' }}>Retour</Text>
         </TouchableOpacity>
@@ -105,28 +142,32 @@ export default function TrainingPlanDetailScreen() {
     );
   }
 
+  const completedCount = plan.levels.filter((l) => l.userStatus === 'COMPLETED').length;
+  const progressPct = Math.round((completedCount / plan.levels.length) * 100);
+  const diffColor = DIFFICULTY_COLORS[plan.parentDifficulty] || palette.primary;
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: palette.bg }}>
-      {/* Header */}
+      {/* Top Bar */}
       <View
         style={{
           flexDirection: 'row',
           alignItems: 'center',
+          justifyContent: 'space-between',
           paddingHorizontal: 16,
           paddingVertical: 12,
           borderBottomWidth: 1,
           borderBottomColor: palette.line,
           backgroundColor: palette.bg,
-          gap: 12,
         }}
       >
         <TouchableOpacity
           onPress={() => router.back()}
           activeOpacity={0.7}
           style={{
-            width: 40,
-            height: 40,
-            borderRadius: 20,
+            width: 38,
+            height: 38,
+            borderRadius: 19,
             backgroundColor: palette.surface,
             alignItems: 'center',
             justifyContent: 'center',
@@ -134,95 +175,239 @@ export default function TrainingPlanDetailScreen() {
             borderColor: palette.line,
           }}
         >
-          <ArrowLeft size={20} color={palette.txt} />
+          <ArrowLeft size={18} color={palette.txt} />
         </TouchableOpacity>
 
-        <View style={{ flex: 1 }}>
-          <Text style={{ fontSize: 18, fontWeight: '800', color: palette.txt }} numberOfLines={1}>
-            {plan.theme}
-          </Text>
-          <Text style={{ fontSize: 12, color: palette.inkSoft }}>
-            Difficulté : {plan.parentDifficulty}
-          </Text>
-        </View>
+        <Text
+          style={{
+            fontFamily: font.nativeFamily.display,
+            fontSize: 16,
+            color: palette.txt,
+            paddingTop: 2,
+          }}
+        >
+          Entraînement Solo
+        </Text>
+
+        <View style={{ width: 38 }} />
       </View>
 
-      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 60, gap: 16 }} showsVerticalScrollIndicator={false}>
-        {/* 3 Sublevels List */}
-        <View style={{ gap: 12 }}>
-          <Text style={{ fontSize: 16, fontWeight: '800', color: palette.txt }}>
-            Séries d'entraînement (3 niveaux)
-          </Text>
+      <ScrollView
+        contentContainerStyle={{ padding: 16, paddingBottom: 60, gap: 18 }}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* ── Hero Theme Banner Card ── */}
+        <View
+          style={{
+            backgroundColor: palette.surface,
+            borderRadius: 24,
+            borderWidth: 1,
+            borderColor: palette.line,
+            padding: 20,
+            gap: 16,
+            shadowColor: '#000000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.04,
+            shadowRadius: 8,
+            elevation: 2,
+          }}
+        >
+          <View style={{ gap: 4 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <Dumbbell size={14} color={palette.primary} />
+                <Text style={{ fontSize: 11.5, fontWeight: '700', color: palette.primary, textTransform: 'uppercase', letterSpacing: 0.8 }}>
+                  {plan.planType === 'CUSTOM' ? 'Plan Personnalisé' : 'Plan d’entraînement'}
+                </Text>
+              </View>
 
-          {plan.levels.map((level) => {
+              <View
+                style={{
+                  backgroundColor: diffColor + '1A',
+                  paddingHorizontal: 9,
+                  paddingVertical: 3,
+                  borderRadius: 9999,
+                  borderWidth: 1,
+                  borderColor: diffColor + '33',
+                }}
+              >
+                <Text style={{ fontSize: 10.5, fontWeight: '800', color: diffColor }}>
+                  {plan.parentDifficulty}
+                </Text>
+              </View>
+            </View>
+
+            <Text
+              style={{
+                fontFamily: font.nativeFamily.display,
+                fontSize: 22,
+                color: palette.txt,
+                lineHeight: 28,
+                paddingTop: 4,
+              }}
+            >
+              {plan.theme}
+            </Text>
+          </View>
+
+          {/* Progress Overview Bar */}
+          <View style={{ gap: 6 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Text style={{ fontSize: 12, color: palette.inkSoft, fontWeight: '600' }}>
+                Progression globale
+              </Text>
+              <Text style={{ fontSize: 13, fontWeight: '800', color: completedCount === 3 ? palette.good : palette.txt }}>
+                {completedCount} / {plan.levels.length} séries ({progressPct}%)
+              </Text>
+            </View>
+
+            <View style={{ height: 7, backgroundColor: palette.surface2, borderRadius: 9999, overflow: 'hidden' }}>
+              <View
+                style={{
+                  height: '100%',
+                  width: `${progressPct}%`,
+                  backgroundColor: completedCount === 3 ? palette.good : palette.primary,
+                  borderRadius: 9999,
+                }}
+              />
+            </View>
+          </View>
+        </View>
+
+        {/* ── 3 Series Progression List ── */}
+        <View style={{ gap: 12 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 4 }}>
+            <Text style={{ fontSize: 13, fontWeight: '800', color: palette.inkSoft, textTransform: 'uppercase', letterSpacing: 0.8 }}>
+              Séries d'entraînement (3 étapes)
+            </Text>
+          </View>
+
+          {plan.levels.map((level, index) => {
             const isCompleted = level.userStatus === 'COMPLETED';
-            const isStarting = isStartingSubLevel === level.subLevel;
+            const { title, subtitle } = formatSeriesInfo(level.subLevel, level.label, level.subDifficulty);
 
             return (
               <View
                 key={level.subLevel}
                 style={{
                   backgroundColor: palette.surface,
-                  borderRadius: 20,
-                  borderWidth: 1,
-                  borderColor: isCompleted ? palette.good + '40' : palette.line,
-                  padding: 16,
-                  gap: 12,
+                  borderRadius: 22,
+                  borderWidth: isCompleted ? 1.5 : 1,
+                  borderColor: isCompleted ? palette.good + '50' : palette.line,
+                  padding: 18,
+                  gap: 14,
+                  shadowColor: '#000000',
+                  shadowOffset: { width: 0, height: 1 },
+                  shadowOpacity: 0.03,
+                  shadowRadius: 6,
+                  elevation: 1,
                 }}
               >
-                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <View style={{ gap: 2 }}>
-                    <Text style={{ fontSize: 16, fontWeight: '800', color: palette.txt }}>
-                      Série {level.subLevel} · {level.label || level.subDifficulty}
-                    </Text>
-                    <Text style={{ fontSize: 12, color: palette.inkSoft }}>
-                      {level.questionCount} questions
-                    </Text>
+                {/* Header info */}
+                <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 14 }}>
+                  {/* Step Badge */}
+                  <View
+                    style={{
+                      width: 42,
+                      height: 42,
+                      borderRadius: 14,
+                      backgroundColor: isCompleted ? palette.good : palette.primary + '18',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      marginTop: 2,
+                    }}
+                  >
+                    {isCompleted ? (
+                      <Check size={20} color="#FFFFFF" strokeWidth={2.8} />
+                    ) : (
+                      <Text
+                        style={{
+                          fontFamily: font.nativeFamily.display,
+                          fontSize: 16,
+                          color: palette.primary,
+                          paddingTop: 2,
+                        }}
+                      >
+                        0{level.subLevel}
+                      </Text>
+                    )}
                   </View>
 
-                  {isCompleted && (
-                    <View
-                      style={{
-                        backgroundColor: palette.good + '26',
-                        paddingHorizontal: 8,
-                        paddingVertical: 3,
-                        borderRadius: 9999,
-                      }}
-                    >
-                      <Text style={{ color: palette.good, fontSize: 10, fontWeight: '800' }}>
-                        COMPLÉTÉ ✓
+                  <View style={{ flex: 1, gap: 3 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <Text
+                        style={{
+                          fontFamily: font.nativeFamily.display,
+                          fontSize: 16,
+                          color: palette.txt,
+                          paddingTop: 2,
+                        }}
+                      >
+                        {title}
                       </Text>
+
+                      {isCompleted && (
+                        <View
+                          style={{
+                            backgroundColor: palette.good + '22',
+                            paddingHorizontal: 8,
+                            paddingVertical: 3,
+                            borderRadius: 9999,
+                          }}
+                        >
+                          <Text style={{ color: palette.good, fontSize: 10.5, fontWeight: '800' }}>
+                            COMPLÉTÉ ✓
+                          </Text>
+                        </View>
+                      )}
                     </View>
-                  )}
+
+                    <Text style={{ fontSize: 12.5, color: palette.inkSoft, lineHeight: 17 }}>
+                      {subtitle}
+                    </Text>
+
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 4 }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                        <Zap size={13} color={palette.gold} />
+                        <Text style={{ fontSize: 11.5, fontWeight: '700', color: palette.txt }}>
+                          {level.questionCount} questions
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
                 </View>
 
+                {/* Action CTA Button */}
                 <TouchableOpacity
                   onPress={() => handleStartSubLevel(level.subLevel)}
-                  disabled={isStarting}
-                  activeOpacity={0.8}
+                  activeOpacity={0.85}
                   style={{
                     backgroundColor: isCompleted ? palette.surface2 : palette.primary,
-                    borderRadius: 14,
-                    paddingVertical: 12,
+                    borderRadius: 16,
+                    paddingVertical: 13,
                     alignItems: 'center',
                     justifyContent: 'center',
                     flexDirection: 'row',
                     gap: 8,
+                    shadowColor: isCompleted ? 'transparent' : palette.primary,
+                    shadowOffset: { width: 0, height: 3 },
+                    shadowOpacity: isCompleted ? 0 : 0.2,
+                    shadowRadius: 8,
+                    elevation: isCompleted ? 0 : 2,
                   }}
                 >
-                  {isStarting ? (
-                    <ActivityIndicator size="small" color={palette.primaryInk} />
+                  {isCompleted ? (
+                    <>
+                      <RotateCcw size={15} color={palette.txt} />
+                      <Text style={{ color: palette.txt, fontSize: 14, fontWeight: '700' }}>
+                        Rejouer cette série
+                      </Text>
+                    </>
                   ) : (
                     <>
-                      <Play size={16} color={isCompleted ? palette.txt : palette.primaryInk} />
-                      <Text
-                        style={{
-                          color: isCompleted ? palette.txt : palette.primaryInk,
-                          fontSize: 14,
-                          fontWeight: '700',
-                        }}
-                      >
-                        {isCompleted ? 'Rejouer cette série' : 'Démarrer la série'}
+                      <Play size={15} color={palette.primaryInk} style={{ marginLeft: 2 }} />
+                      <Text style={{ color: palette.primaryInk, fontSize: 14.5, fontWeight: '800' }}>
+                        Démarrer la série
                       </Text>
                     </>
                   )}
@@ -232,46 +417,90 @@ export default function TrainingPlanDetailScreen() {
           })}
         </View>
 
-        {/* Community Vote / Regeneration section */}
+        {/* ── Community Vote / Regeneration section ── */}
         {plan.planType === 'PREDEFINED' && (
           <View
             style={{
               backgroundColor: palette.surface,
-              borderRadius: 20,
+              borderRadius: 22,
               borderWidth: 1,
               borderColor: palette.line,
-              padding: 16,
+              padding: 18,
               gap: 12,
             }}
           >
-            <Text style={{ fontSize: 15, fontWeight: '700', color: palette.txt }}>
-              Régénération communautaire
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <Sparkles size={16} color={palette.gold} />
+              <Text style={{ fontFamily: font.nativeFamily.display, fontSize: 15, color: palette.txt, paddingTop: 2 }}>
+                Renouvellement des questions
+              </Text>
+            </View>
+
+            <Text style={{ fontSize: 12.5, color: palette.inkSoft, lineHeight: 18 }}>
+              Ce plan communautaire se régénère par IA dès qu’il atteint son quota de votes.
             </Text>
-            <Text style={{ fontSize: 12, color: palette.inkSoft, lineHeight: 16 }}>
-              {plan.voteCount} / {plan.votesNeeded} votes pour renouveler automatiquement la banque de questions par IA.
-            </Text>
+
+            <View style={{ gap: 6 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Text style={{ fontSize: 12, color: palette.inkSoft, fontWeight: '600' }}>
+                  Votes de la communauté
+                </Text>
+                <Text style={{ fontSize: 12, fontWeight: '800', color: palette.gold }}>
+                  {plan.voteCount} / {plan.votesNeeded}
+                </Text>
+              </View>
+
+              <View style={{ height: 6, backgroundColor: palette.surface2, borderRadius: 9999, overflow: 'hidden' }}>
+                <View
+                  style={{
+                    height: '100%',
+                    width: `${Math.min(100, Math.round((plan.voteCount / plan.votesNeeded) * 100))}%`,
+                    backgroundColor: palette.gold,
+                    borderRadius: 9999,
+                  }}
+                />
+              </View>
+            </View>
+
             <TouchableOpacity
               onPress={handleVote}
               disabled={plan.hasVoted || isVoting}
               activeOpacity={0.8}
               style={{
-                backgroundColor: plan.hasVoted ? palette.surface2 : palette.gold + '26',
-                borderRadius: 12,
-                paddingVertical: 10,
+                backgroundColor: plan.hasVoted ? palette.surface2 : palette.gold + '20',
+                borderWidth: 1,
+                borderColor: plan.hasVoted ? palette.line : palette.gold + '40',
+                borderRadius: 14,
+                paddingVertical: 11,
                 alignItems: 'center',
                 flexDirection: 'row',
                 justifyContent: 'center',
-                gap: 6,
+                gap: 8,
+                marginTop: 2,
               }}
             >
-              <ThumbsUp size={16} color={plan.hasVoted ? palette.inkSoft : palette.gold} />
-              <Text style={{ color: plan.hasVoted ? palette.inkSoft : palette.gold, fontSize: 13, fontWeight: '700' }}>
-                {plan.hasVoted ? 'Vous avez déjà voté' : 'Voter pour de nouvelles questions'}
-              </Text>
+              {isVoting ? (
+                <ActivityIndicator size="small" color={palette.gold} />
+              ) : (
+                <>
+                  <ThumbsUp size={15} color={plan.hasVoted ? palette.inkSoft : palette.gold} />
+                  <Text style={{ color: plan.hasVoted ? palette.inkSoft : palette.gold, fontSize: 13, fontWeight: '700' }}>
+                    {plan.hasVoted ? 'Vous avez déjà voté ✓' : 'Voter pour de nouvelles questions'}
+                  </Text>
+                </>
+              )}
             </TouchableOpacity>
           </View>
         )}
       </ScrollView>
+
+      {/* ── AI Brain Loading Screen ── */}
+      <QuizAiLoadingScreen
+        visible={isStartingSubLevel !== null}
+        theme={plan.theme}
+        levelLabel={`Série ${isStartingSubLevel ?? 1} · ${plan.parentDifficulty}`}
+        title="Préparation de la série en cours"
+      />
     </SafeAreaView>
   );
 }

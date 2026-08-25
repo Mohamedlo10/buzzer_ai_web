@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { View, Text, Animated } from 'react-native';
 import { Layers } from 'lucide-react-native';
-import { palette } from '~/lib/theme/tokens';
+import { palette, font } from '~/lib/theme/tokens';
 import type { QuestionResponse } from '~/types/api';
 
 interface CategoryChangeOverlayProps {
@@ -47,10 +47,10 @@ export function CategoryChangeOverlay({ currentQuestion }: CategoryChangeOverlay
         <View style={{ width: 80, height: 80, borderRadius: 40, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
           <Layers size={40} color={palette.indigo} />
         </View>
-        <Text style={{ color: 'rgba(255,255,255,0.6)', fontSize: 14, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 8 }}>
+        <Text style={{ fontFamily: font.nativeFamily.display, color: 'rgba(255,255,255,0.7)', fontSize: 13, letterSpacing: 2, textTransform: 'uppercase', marginBottom: 8, paddingTop: 2 }}>
           Nouvelle catégorie
         </Text>
-        <Text style={{ color: '#FFFFFF', fontWeight: '700', fontSize: 32, textAlign: 'center' }}>
+        <Text style={{ fontFamily: font.nativeFamily.display, color: '#FFFFFF', fontSize: 32, textAlign: 'center', paddingTop: 4 }}>
           {currentQuestion.category}
         </Text>
       </Animated.View>

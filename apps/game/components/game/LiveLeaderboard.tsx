@@ -1,6 +1,6 @@
 import { View, Text, TouchableOpacity } from 'react-native';
 import { Trophy } from 'lucide-react-native';
-import { palette } from '~/lib/theme/tokens';
+import { palette, font } from '~/lib/theme/tokens';
 import type { PlayerResponse } from '~/types/api';
 
 const MEDAL_COLORS = [palette.goldBright, palette.silver, palette.bronze];
@@ -23,7 +23,7 @@ export function LiveLeaderboard({ players, currentUserId, onPlayerTap, onCorrect
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: palette.line }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
           <Trophy size={15} color={palette.goldBright} />
-          <Text style={{ color: palette.txt, fontWeight: '700', fontSize: 14 }}>Classement</Text>
+          <Text style={{ fontFamily: font.nativeFamily.display, color: palette.txt, fontSize: 15, paddingTop: 2 }}>Classement</Text>
         </View>
         {onCorrectClick ? (
           <TouchableOpacity
@@ -31,10 +31,10 @@ export function LiveLeaderboard({ players, currentUserId, onPlayerTap, onCorrect
             activeOpacity={0.7}
             style={{ paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, backgroundColor: palette.warn + '1A', borderWidth: 1, borderColor: palette.warn + '50' }}
           >
-            <Text style={{ color: palette.warn, fontSize: 12, fontWeight: '600' }}>✎ Corriger</Text>
+            <Text style={{ fontFamily: font.nativeFamily.ui, color: palette.warn, fontSize: 12, fontWeight: '600' }}>✎ Corriger</Text>
           </TouchableOpacity>
         ) : (
-          <Text style={{ color: palette.inkSoft, fontSize: 12 }}>{players.length} joueurs</Text>
+          <Text style={{ fontFamily: font.nativeFamily.serif, fontStyle: 'italic', color: palette.inkSoft, fontSize: 13 }}>{players.length} joueurs</Text>
         )}
       </View>
 
@@ -63,12 +63,12 @@ export function LiveLeaderboard({ players, currentUserId, onPlayerTap, onCorrect
                 }}
               >
                 <View style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: medalColor + '33', borderWidth: 2, borderColor: medalColor, alignItems: 'center', justifyContent: 'center' }}>
-                  <Text style={{ color: medalColor, fontWeight: '700', fontSize: 14 }}>{initial}</Text>
+                  <Text style={{ fontFamily: font.nativeFamily.display, color: medalColor, fontSize: 15, paddingTop: 2 }}>{initial}</Text>
                 </View>
-                <Text style={{ fontSize: 11, fontWeight: '600', textAlign: 'center', color: palette.txt }} numberOfLines={1}>
+                <Text style={{ fontFamily: font.nativeFamily.ui, fontSize: 11.5, fontWeight: '600', textAlign: 'center', color: palette.txt }} numberOfLines={1}>
                   {isYou ? 'Toi' : player.name}
                 </Text>
-                <Text style={{ fontWeight: '600', fontSize: 14, color: medalColor }}>
+                <Text style={{ fontFamily: font.nativeFamily.display, fontSize: 16, color: medalColor, paddingTop: 2 }}>
                   {player.score}
                 </Text>
               </TouchableOpacity>
@@ -96,18 +96,18 @@ export function LiveLeaderboard({ players, currentUserId, onPlayerTap, onCorrect
               backgroundColor: isYou ? palette.primary + '16' : 'transparent',
             }}
           >
-            <Text style={{ width: 18, textAlign: 'center', fontWeight: '600', fontSize: 14, color: palette.inkSoft }}>
+            <Text style={{ fontFamily: font.nativeFamily.display, width: 20, textAlign: 'center', fontSize: 13, color: palette.inkSoft, paddingTop: 2 }}>
               {index + 4}
             </Text>
             <View style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: palette.surface2, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: isYou ? palette.primary : palette.line }}>
-              <Text style={{ color: palette.txt, fontWeight: '700', fontSize: 12 }}>{player.name?.charAt(0).toUpperCase() || '?'}</Text>
+              <Text style={{ fontFamily: font.nativeFamily.display, color: palette.txt, fontSize: 12, paddingTop: 2 }}>{player.name?.charAt(0).toUpperCase() || '?'}</Text>
             </View>
-            <Text style={{ flex: 1, fontSize: 13, fontWeight: '600', color: isYou ? palette.primary : palette.txt }} numberOfLines={1}>
+            <Text style={{ fontFamily: font.nativeFamily.ui, flex: 1, fontSize: 13, fontWeight: '600', color: isYou ? palette.primary : palette.txt }} numberOfLines={1}>
               {isYou ? 'Toi (Vous)' : player.name}
             </Text>
-            <Text style={{ fontSize: 13, fontWeight: '600', color: palette.txt }}>
+            <Text style={{ fontFamily: font.nativeFamily.display, fontSize: 14, color: palette.txt, paddingTop: 2 }}>
               {player.score}{' '}
-              <Text style={{ color: palette.inkSoft, fontSize: 10 }}>pts</Text>
+              <Text style={{ fontFamily: font.nativeFamily.serif, fontStyle: 'italic', color: palette.inkSoft, fontSize: 11 }}>pts</Text>
             </Text>
           </TouchableOpacity>
         );

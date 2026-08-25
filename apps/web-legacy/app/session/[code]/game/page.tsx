@@ -14,8 +14,9 @@ import * as gameApi from '~/lib/api/game';
 import { appStorage } from '~/lib/utils/storage';
 import { notifyApiError } from '~/lib/ui/notify';
 
-const POLL_WS_CONNECTED_MS = 3000;
-const POLL_WS_DISCONNECTED_MS = 2000;
+const POLL_WS_CONNECTED_MS = 1500;
+const POLL_WS_DISCONNECTED_MS = 1000;
+const POLL_PAUSED_MS = 800;
 
 export default function GamePage() {
   const router = useRouter();
@@ -38,6 +39,7 @@ export default function GamePage() {
     pauseSession,
     resumeSession,
     game,
+    isPaused,
   } = useBuzzStore();
 
   const isManager = session?.managerId === user?.id;
@@ -164,11 +166,17 @@ export default function GamePage() {
     },
   });
 
-  // Polling fallback
+  // Polling fallback - accéléré en pause ou déconnecté
   useEffect(() => {
-    const interval = setInterval(syncGameState, isConnected ? POLL_WS_CONNECTED_MS : POLL_WS_DISCONNECTED_MS);
+    const pollInterval = isPaused
+      ? POLL_PAUSED_MS
+      : isConnected
+        ? POLL_WS_CONNECTED_MS
+        : POLL_WS_DISCONNECTED_MS;
+
+    const interval = setInterval(syncGameState, pollInterval);
     return () => clearInterval(interval);
-  }, [isConnected, syncGameState]);
+  }, [isConnected, isPaused, syncGameState]);
 
   const handlePause = useCallback(async () => {
     if (!session?.id || isPauseToggling) return;
