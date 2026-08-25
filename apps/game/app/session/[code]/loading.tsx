@@ -145,11 +145,10 @@ export default function LoadingScreen() {
     }
   }, [session?.status, session?.roomId, code]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Polling adaptatif
+  // Fallback de sécurité uniquement si le WebSocket est déconnecté
   useEffect(() => {
-    if (!session?.id) return;
-    const ms = isConnected ? 2000 : 800;
-    const interval = setInterval(() => fetchSession(session.id), ms);
+    if (!session?.id || isConnected) return;
+    const interval = setInterval(() => fetchSession(session.id), 2500);
     return () => clearInterval(interval);
   }, [session?.id, fetchSession, isConnected]);
 

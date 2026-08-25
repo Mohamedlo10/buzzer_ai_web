@@ -1,6 +1,5 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { wsManager } from './WebSocketManager';
-import { handleWSEvent } from './handlers';
 import type { WSEvent } from '~/types/websocket';
 import { useAuthStore } from '~/stores/useAuthStore';
 
@@ -57,9 +56,6 @@ export function useGameSocket(
         onReconnectRef.current?.();
         return;
       }
-
-      // Dispatch to Zustand stores
-      handleWSEvent(event, currentUserIdRef.current);
 
       // Forward to optional component-level handler
       onEventRef.current?.(event);

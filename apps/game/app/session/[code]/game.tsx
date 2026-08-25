@@ -13,10 +13,6 @@ import { appStorage } from '~/lib/utils/storage';
 import { palette, font } from '~/lib/theme/tokens';
 import { notifyApiError } from '~/lib/ui/notify';
 
-const POLL_WS_CONNECTED_MS = 1500;
-const POLL_WS_DISCONNECTED_MS = 1000;
-const POLL_PAUSED_MS = 800;
-
 export default function GamePage() {
   const router = useRouter();
   const { code, sessionId: paramSessionId } = useLocalSearchParams<{ code: string; sessionId?: string }>();
@@ -162,17 +158,12 @@ export default function GamePage() {
     },
   });
 
-  // Polling fallback - accéléré en pause ou déconnecté
+  // Polling fallback de secours UNIQUEMENT en cas de déconnexion WebSocket
   useEffect(() => {
-    const pollInterval = isPaused
-      ? POLL_PAUSED_MS
-      : isConnected
-        ? POLL_WS_CONNECTED_MS
-        : POLL_WS_DISCONNECTED_MS;
-
-    const interval = setInterval(syncGameState, pollInterval);
+    if (isConnected) return;
+    const interval = setInterval(syncGameState, 2000);
     return () => clearInterval(interval);
-  }, [isConnected, isPaused, syncGameState]);
+  }, [isConnected, syncGameState]);
 
   const handlePause = useCallback(async () => {
     if (!session?.id || isPauseToggling) return;

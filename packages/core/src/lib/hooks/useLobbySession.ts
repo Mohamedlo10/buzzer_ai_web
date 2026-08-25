@@ -5,7 +5,6 @@ import { useGameSocket } from '~/lib/websocket/useGameSocket';
 import { appStorage } from '~/lib/utils/storage';
 import * as roomsApi from '~/lib/api/rooms';
 import * as sessionsApi from '~/lib/api/sessions';
-import { getUserProfile } from '~/lib/api/users';
 import type { RoomInfo, PlayerResponse } from '~/types/api';
 import { notify, notifyApiError } from '~/lib/ui/notify';
 import { confirmAsync } from '~/lib/ui/confirm';
@@ -65,9 +64,10 @@ export function useLobbySession({ code, onNavigate, onReplaceRoute }: UseLobbySe
     loadSession();
   }, [code]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Safety poll fallback ONLY when WebSocket is disconnected
   useEffect(() => {
-    if (!session?.id) return;
-    const interval = setInterval(() => fetchSession(session.id), isConnected ? 3000 : 1000);
+    if (!session?.id || isConnected) return;
+    const interval = setInterval(() => fetchSession(session.id), 3000);
     return () => clearInterval(interval);
   }, [session?.id, fetchSession, isConnected]);
 
@@ -127,19 +127,17 @@ export function useLobbySession({ code, onNavigate, onReplaceRoute }: UseLobbySe
     }
   }, [session?.status, session?.roomId, code]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Derive avatars synchronously from player data — zero N+1 API calls
   useEffect(() => {
     if (!players.length) return;
+    const map: Record<string, string | null> = {};
     players.forEach((player) => {
-      if (!player.userId) return;
-      if (player.userId === user?.id) {
-        setAvatarMap((prev) => ({ ...prev, [player.userId]: user.avatarUrl ?? null }));
-        return;
+      if (player.userId) {
+        map[player.userId] = player.avatarUrl ?? (player.userId === user?.id ? user.avatarUrl ?? null : null);
       }
-      if (player.userId in avatarMap) return;
-      setAvatarMap((prev) => ({ ...prev, [player.userId]: null }));
-      getUserProfile(player.userId).then((p) => setAvatarMap((prev) => ({ ...prev, [player.userId]: p.avatarUrl ?? null }))).catch(() => {});
     });
-  }, [players]); // eslint-disable-line react-hooks/exhaustive-deps
+    setAvatarMap(map);
+  }, [players, user]);
 
   const handleStartGame = useCallback(async () => {
     if (!session?.id || !code) return;

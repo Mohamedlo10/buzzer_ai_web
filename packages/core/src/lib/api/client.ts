@@ -40,40 +40,7 @@ export const apiClientLongTimeout = axios.create({
 });
 
 // ──────────────────────────────────────────────
-// Request Interceptors — attach access token
-// ──────────────────────────────────────────────
-
-apiClient.interceptors.request.use(async (config: InternalAxiosRequestConfig) => {
-  const token = await tokenStorage.getAccessToken();
-  // console.log('🔐 [ApiClient] Making request:', {
-  //   method: config.method?.toUpperCase(),
-  //   url: `${config.baseURL}${config.url}`,
-  //   hasToken: !!token,
-  //   tokenPreview: token ? `${token.slice(0, 20)}...` : null
-  // });
-  
-  if (token && config.headers) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
-
-// Fast client with minimal logging for performance
-apiClientFast.interceptors.request.use(async (config: InternalAxiosRequestConfig) => {
-  const token = await tokenStorage.getAccessToken();
-  // Minimal logging pour les actions rapides
-  if (process.env.NODE_ENV === 'development') {
-    console.log(`⚡ [Fast] ${config.method?.toUpperCase()} ${config.url}`);
-  }
-  
-  if (token && config.headers) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
-
-// ──────────────────────────────────────────────
-// Response Interceptor — refresh on 401
+// Centralized Token Refresh Logic
 // ──────────────────────────────────────────────
 
 let isRefreshing = false;
@@ -93,41 +60,29 @@ function processQueue(error: unknown, token: string | null) {
   failedQueue = [];
 }
 
-apiClient.interceptors.response.use(
-  (response) => {
-    // console.log('✅ [ApiClient] Request successful:', {
-    //   method: response.config.method?.toUpperCase(),
-    //   url: response.config.url,
-    //   status: response.status
-    // });
-    return response;
-  },
-  async (error: AxiosError) => {
-    console.error('❌ [ApiClient] Request failed:', {
-      method: error.config?.method?.toUpperCase(),
-      url: error.config?.url,
-      status: error.response?.status,
-      message: error.message,
-      data: error.response?.data
-    });
+async function requestTokenInterceptor(config: InternalAxiosRequestConfig) {
+  const token = await tokenStorage.getAccessToken();
+  if (token && config.headers) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+}
 
+function createResponseInterceptor(instance: typeof apiClient) {
+  return async (error: AxiosError) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & {
       _retry?: boolean;
     };
 
-    // Only attempt refresh for 401/403 errors on authenticated requests
     const status = error.response?.status;
     if ((status !== 401 && status !== 403) || originalRequest._retry) {
       return Promise.reject(error);
     }
 
-    // Don't refresh on auth endpoints themselves
     const url = originalRequest.url ?? '';
     if (url.includes('/api/auth/')) {
       return Promise.reject(error);
     }
-
-    // console.log(`🔄 [ApiClient] Attempting token refresh for ${status} error...`);
 
     if (isRefreshing) {
       return new Promise<string>((resolve, reject) => {
@@ -136,7 +91,7 @@ apiClient.interceptors.response.use(
         if (originalRequest.headers) {
           originalRequest.headers.Authorization = `Bearer ${token}`;
         }
-        return apiClient(originalRequest);
+        return instance(originalRequest);
       });
     }
 
@@ -149,162 +104,35 @@ apiClient.interceptors.response.use(
         throw new Error('No refresh token');
       }
 
-      // console.log('🔄 [ApiClient] Calling refresh endpoint...');
       const { data } = await axios.post<TokenResponse>(
         `${BASE_URL}/api/auth/refresh`,
         { refreshToken },
         { headers: { 'Content-Type': 'application/json' } },
       );
 
-      // console.log('✅ [ApiClient] Token refresh successful');
       await tokenStorage.setAccessToken(data.accessToken);
-
       processQueue(null, data.accessToken);
 
       if (originalRequest.headers) {
         originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
       }
-      return apiClient(originalRequest);
+      return instance(originalRequest);
     } catch (refreshError) {
       console.error('❌ [ApiClient] Token refresh failed:', refreshError);
       processQueue(refreshError, null);
-      // Token refresh failed — clear tokens and let the app handle logout
       await tokenStorage.clearTokens();
       return Promise.reject(refreshError);
     } finally {
       isRefreshing = false;
     }
-  },
-);
+  };
+}
 
-// ──────────────────────────────────────────────
-// Setup interceptors for fast client
-// ──────────────────────────────────────────────
-
-apiClientFast.interceptors.response.use(
-  (response) => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`⚡ [Fast] ${response.status} ${response.config.url}`);
-    }
-    return response;
-  },
-  async (error: AxiosError) => {
-    const originalRequest = error.config as InternalAxiosRequestConfig & {
-      _retry?: boolean;
-    };
-
-    const status = error.response?.status;
-    if ((status !== 401 && status !== 403) || originalRequest._retry) {
-      return Promise.reject(error);
-    }
-
-    const url = originalRequest.url ?? '';
-    if (url.includes('/api/auth/')) {
-      return Promise.reject(error);
-    }
-
-    try {
-      const refreshToken = await tokenStorage.getRefreshToken();
-      if (!refreshToken) {
-        await tokenStorage.clearTokens();
-        return Promise.reject(error);
-      }
-
-      originalRequest._retry = true;
-      const { data } = await axios.post<TokenResponse>(`${BASE_URL}/api/auth/refresh`, {
-        refreshToken,
-      });
-
-      await tokenStorage.setAccessToken(data.accessToken);
-      
-      if (originalRequest.headers) {
-        originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
-      }
-      return apiClientFast(originalRequest);
-    } catch (refreshError) {
-      await tokenStorage.clearTokens();
-      return Promise.reject(refreshError);
-    }
-  },
-);
-
-// ──────────────────────────────────────────────
-// Setup interceptors for long timeout client
-// ──────────────────────────────────────────────
-
-apiClientLongTimeout.interceptors.request.use(async (config: InternalAxiosRequestConfig) => {
-  const token = await tokenStorage.getAccessToken();
-  console.log('🔐 [ApiClient-Long] Making request:', {
-    method: config.method?.toUpperCase(),
-    url: config.url,
-    hasToken: !!token,
-    tokenPreview: token ? `${token.substring(0, 20)}...` : null,
-  });
-  
-  if (token && config.headers) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
+// Attach shared interceptors to all instances
+[apiClient, apiClientFast, apiClientLongTimeout].forEach((instance) => {
+  instance.interceptors.request.use(requestTokenInterceptor);
+  instance.interceptors.response.use((r) => r, createResponseInterceptor(instance));
 });
-
-apiClientLongTimeout.interceptors.response.use(
-  (response) => {
-    console.log('✅ [ApiClient-Long] Request successful:', {
-      method: response.config.method?.toUpperCase(),
-      url: response.config.url,
-      status: response.status
-    });
-    return response;
-  },
-  async (error: AxiosError) => {
-    console.error('❌ [ApiClient-Long] Request failed:', {
-      method: error.config?.method?.toUpperCase(),
-      url: error.config?.url,
-      status: error.response?.status,
-      message: error.message,
-      data: error.response?.data
-    });
-
-    // Same refresh logic as main client
-    const originalRequest = error.config as InternalAxiosRequestConfig & {
-      _retry?: boolean;
-    };
-
-    const longStatus = error.response?.status;
-    if ((longStatus !== 401 && longStatus !== 403) || originalRequest._retry) {
-      return Promise.reject(error);
-    }
-
-    const url = originalRequest.url ?? '';
-    if (url.includes('/api/auth/')) {
-      return Promise.reject(error);
-    }
-
-    try {
-      const refreshToken = await tokenStorage.getRefreshToken();
-      if (!refreshToken) {
-        await tokenStorage.clearTokens();
-        return Promise.reject(error);
-      }
-
-      originalRequest._retry = true;
-      const { data } = await axios.post<TokenResponse>(`${BASE_URL}/api/auth/refresh`, {
-        refreshToken,
-      });
-
-      await tokenStorage.setAccessToken(data.accessToken);
-      
-      if (originalRequest.headers) {
-        originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
-      }
-      return apiClientLongTimeout(originalRequest);
-    } catch (refreshError) {
-      console.error('❌ [ApiClient-Long] Token refresh failed:', refreshError);
-      await tokenStorage.clearTokens();
-      return Promise.reject(refreshError);
-    }
-  },
-);
 
 // ──────────────────────────────────────────────
 // WebSocket URL helper

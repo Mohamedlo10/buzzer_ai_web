@@ -1,6 +1,7 @@
 import { getWebSocketBaseUrl } from '~/lib/api/client';
 import { tokenStorage } from '~/lib/utils/storage';
 import type { WSEvent } from '~/types/websocket';
+import { handleWSEvent } from './handlers';
 
 type Listener = (event: WSEvent) => void;
 
@@ -945,8 +946,15 @@ export class WebSocketManager {
   }
 
   // ─── Event Dispatch ────────────────────────
-
   private emit(event: WSEvent): void {
+    // Centralized single dispatch to Zustand stores
+    if (!event.type.startsWith('_')) {
+      try {
+        handleWSEvent(event, this.userId ?? undefined);
+      } catch (err) {
+        console.error('[STOMP] Error handling event in store dispatcher:', err);
+      }
+    }
     this.listeners.forEach((fn) => fn(event));
   }
 

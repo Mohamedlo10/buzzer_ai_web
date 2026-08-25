@@ -1,7 +1,6 @@
 import type { WSEvent } from '~/types/websocket';
 import type { PlayerResponse } from '~/types/api';
 import { useBuzzStore } from '~/stores/useBuzzStore';
-import { useGameStore } from '~/stores/useGameStore';
 import { useFriendStore } from '~/stores/useFriendStore';
 
 /**
@@ -66,7 +65,6 @@ export function handleWSEvent(event: WSEvent, currentUserId?: string): void {
       break;
 
     case 'generation_complete':
-      useGameStore.getState().setPaused(false);
       useBuzzStore.getState().setPaused(false);
       useBuzzStore.getState().updateStatus('PLAYING');
       break;
@@ -84,12 +82,6 @@ export function handleWSEvent(event: WSEvent, currentUserId?: string): void {
       // Ensure session status is PLAYING — needed for MANUAL mode where no
       // generation_complete event is sent and the lobby waits on this to navigate.
       useBuzzStore.getState().updateStatus('PLAYING');
-      // Update BOTH stores — game.tsx reads from useBuzzStore
-      useGameStore.getState().setCurrentQuestion(
-        event.question,
-        qIndex,
-        0, // total will be updated from session state
-      );
       useBuzzStore.getState().setCurrentQuestion(
         event.question,
         qIndex,
@@ -99,20 +91,17 @@ export function handleWSEvent(event: WSEvent, currentUserId?: string): void {
     }
 
     case 'game_paused':
-      useGameStore.getState().setPaused(true);
       useBuzzStore.getState().setPaused(true);
       useBuzzStore.getState().updateStatus('PAUSED');
       break;
 
     case 'game_resumed':
-      useGameStore.getState().setPaused(false);
       useBuzzStore.getState().setPaused(false);
       useBuzzStore.getState().updateStatus('PLAYING');
       break;
 
     // ─── End Game ─────────────────────────────
     case 'game_over':
-      useGameStore.getState().setGameOver(true);
       useBuzzStore.getState().setGameOver(true);
       // Handle both formats:
       // - Typed: { finalScores: Record<string, number> }
