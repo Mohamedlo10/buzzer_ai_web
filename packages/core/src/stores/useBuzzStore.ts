@@ -298,7 +298,7 @@ export const useBuzzStore = create<BuzzState & BuzzActions>((set, get) => ({
 
   // ── Game State Updates (WebSocket) ──
   setCurrentQuestion: (question, index, total) => {
-    set({
+    set((state) => ({
       currentQuestion: question,
       questionIndex: index,
       totalQuestions: total,
@@ -310,7 +310,15 @@ export const useBuzzStore = create<BuzzState & BuzzActions>((set, get) => ({
       myChoice: null,
       myAnswerCorrect: null,
       answerReveal: null,
-    });
+      game: {
+        ...state.game,
+        phase: 'READING',
+        packetQuestionId: question?.id ?? null,
+        buzzQueue: [],
+        answeringPlayerId: null,
+        reveal: null,
+      },
+    }));
   },
 
   addToBuzzQueue: (item) =>
@@ -330,13 +338,19 @@ export const useBuzzStore = create<BuzzState & BuzzActions>((set, get) => ({
     }),
 
   fullBuzzerReset: () =>
-    set({
+    set((state) => ({
       buzzQueue: [],
       hasBuzzed: false,
       answeredWrongThisQuestion: false,
       myQueuePosition: null,
       buzzerEnabled: true,
-    }),
+      game: {
+        ...state.game,
+        phase: 'READING',
+        buzzQueue: [],
+        answeringPlayerId: null,
+      },
+    })),
 
   setHasBuzzed: (hasBuzzed) => set({ hasBuzzed }),
   setAnsweredWrongThisQuestion: (wrong) => set({ answeredWrongThisQuestion: wrong }),

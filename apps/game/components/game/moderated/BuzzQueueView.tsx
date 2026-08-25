@@ -24,7 +24,7 @@ export function BuzzQueueView({
   return (
     <View style={{ paddingHorizontal: 16, paddingTop: 8 }}>
       <View style={{ borderRadius: 24, borderWidth: 1, borderColor: buzzQueue.length > 0 ? palette.primary : palette.line, backgroundColor: buzzQueue.length > 0 ? palette.primary + '0D' : palette.surface, overflow: 'hidden' }}>
-        
+
         {/* Header */}
         <View style={{ paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: buzzQueue.length > 0 ? palette.primary + '40' : palette.line, backgroundColor: buzzQueue.length > 0 ? palette.primary + '1A' : 'transparent', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -91,16 +91,109 @@ export function BuzzQueueView({
 
               {/* Manager Controls */}
               {isManager && phase === 'AWAITING_VALIDATION' && (
-                <View style={{ flexDirection: 'row', gap: 8, marginTop: 12 }}>
-                  <TouchableOpacity onPress={() => onValidate(true)} disabled={isValidating} style={{ flex: 1, paddingVertical: 12, borderRadius: 12, backgroundColor: palette.primary, alignItems: 'center', justifyContent: 'center', opacity: isValidating ? 0.6 : 1, flexDirection: 'row', gap: 6 }}>
-                    {isValidating ? <ActivityIndicator size="small" color="#FFFFFF" /> : <><CheckCircle size={18} color="#FFFFFF" /><Text style={{ fontFamily: font.nativeFamily.display, color: '#FFFFFF', fontSize: 14, paddingTop: 2 }}>Correct</Text></>}
+                <View style={{ gap: 8, marginTop: 14 }}>
+                  {/* Primary Success button: Correct (Vert) */}
+                  <TouchableOpacity
+                    onPress={() => onValidate(true)}
+                    disabled={isValidating}
+                    activeOpacity={0.8}
+                    style={{
+                      paddingVertical: 13,
+                      borderRadius: 14,
+                      backgroundColor: palette.good,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      opacity: isValidating ? 0.6 : 1,
+                      flexDirection: 'row',
+                      gap: 8,
+                      shadowColor: palette.good,
+                      shadowOffset: { width: 0, height: 4 },
+                      shadowOpacity: 0.25,
+                      shadowRadius: 8,
+                      elevation: 3,
+                    }}
+                  >
+                    {isValidating ? (
+                      <ActivityIndicator size="small" color="#FFFFFF" />
+                    ) : (
+                      <>
+                        <CheckCircle size={19} color="#FFFFFF" strokeWidth={2.5} />
+                        <Text
+                          style={{
+                            fontFamily: font.nativeFamily.display,
+                            color: '#FFFFFF',
+                            fontSize: 15,
+                            letterSpacing: 0.3,
+                            paddingTop: 2,
+                          }}
+                        >
+                          Correct
+                        </Text>
+                      </>
+                    )}
                   </TouchableOpacity>
-                  <TouchableOpacity onPress={() => onSetPendingWrong({ applyPenalty: false })} disabled={isValidating} style={{ flex: 1, paddingVertical: 12, borderRadius: 12, backgroundColor: palette.bad, alignItems: 'center', justifyContent: 'center', opacity: isValidating ? 0.6 : 1 }}>
-                    <Text style={{ fontFamily: font.nativeFamily.display, color: '#FFFFFF', fontSize: 13, paddingTop: 2 }}>Sans pénalité</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity onPress={() => onSetPendingWrong({ applyPenalty: true })} disabled={isValidating} style={{ paddingHorizontal: 12, paddingVertical: 12, borderRadius: 12, backgroundColor: palette.surface2, alignItems: 'center', justifyContent: 'center', opacity: isValidating ? 0.6 : 1, flexDirection: 'row', gap: 6 }}>
-                    <XCircle size={18} color="#FFFFFF" /><Text style={{ fontFamily: font.nativeFamily.display, color: palette.txt, fontSize: 13, paddingTop: 2 }}>Faux avec -</Text>
-                  </TouchableOpacity>
+
+                  {/* Secondary options: Sans pénalité (mis en avant) / Pénalité (discret) */}
+                  <View style={{ flexDirection: 'row', gap: 8 }}>
+                    {/* Sans pénalité : option d'erreur standard, large et évidente */}
+                    <TouchableOpacity
+                      onPress={() => onSetPendingWrong({ applyPenalty: false })}
+                      disabled={isValidating}
+                      activeOpacity={0.8}
+                      style={{
+                        flex: 1.6,
+                        paddingVertical: 12,
+                        borderRadius: 12,
+                        backgroundColor: palette.bad,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        opacity: isValidating ? 0.6 : 1,
+                        flexDirection: 'row',
+                        gap: 6,
+                      }}
+                    >
+                      <XCircle size={17} color="#FFFFFF" strokeWidth={2} />
+                      <Text
+                        style={{
+                          fontFamily: font.nativeFamily.display,
+                          color: '#FFFFFF',
+                          fontSize: 13.5,
+                          paddingTop: 2,
+                        }}
+                      >
+                        Sans pénalité
+                      </Text>
+                    </TouchableOpacity>
+
+                    {/* Avec pénalité : action punitive délibérée, plus discrète */}
+                    <TouchableOpacity
+                      onPress={() => onSetPendingWrong({ applyPenalty: true })}
+                      disabled={isValidating}
+                      activeOpacity={0.8}
+                      style={{
+                        flex: 1,
+                        paddingVertical: 12,
+                        borderRadius: 12,
+                        backgroundColor: palette.surface2,
+                        borderWidth: 1,
+                        borderColor: palette.bad + '60',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        opacity: isValidating ? 0.6 : 1,
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontFamily: font.nativeFamily.display,
+                          color: palette.bad,
+                          fontSize: 12.5,
+                          paddingTop: 2,
+                        }}
+                      >
+                        Pénalité (-)
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
               )}
             </View>

@@ -78,7 +78,7 @@ export function useModeratedGame({
   // Reset buzz lock when question changes
   useEffect(() => {
     buzzLockRef.current = false;
-  }, [game.packetQuestionId]);
+  }, [game.packetQuestionId, currentQuestion?.id, questionIndex]);
 
   // Load questions with answers for manager
   useEffect(() => {
@@ -102,8 +102,8 @@ export function useModeratedGame({
   }, [sessionId, isManager, session?.questionMode]);
 
   const handleBuzz = useCallback(async () => {
-    if (!buzzerOpen || buzzLockRef.current || isSpectator || !myPlayerId) return;
-    if (game.buzzQueue.some((item) => item.playerId === myPlayerId)) return;
+    if (!buzzerOpen || buzzLockRef.current || isSpectator) return;
+    if (myPlayerId && game.buzzQueue.some((item) => item.playerId === myPlayerId)) return;
 
     buzzLockRef.current = true;
     setIsSubmitting(true);
@@ -112,10 +112,8 @@ export function useModeratedGame({
       await gameApi.buzz(sessionId, serverNow(), true);
       setHasBuzzed(true);
     } catch (err: any) {
-      if (err?.response?.status === 409) {
-        // State mismatch, let packet sync it
-      } else {
-        buzzLockRef.current = false;
+      buzzLockRef.current = false;
+      if (err?.response?.status !== 409) {
         notifyApiError(err, 'Impossible de buzzer');
       }
     } finally {
@@ -180,7 +178,7 @@ export function useModeratedGame({
     }
   }, [sessionId, isResettingBuzzer]);
 
-  const actualHasBuzzed = hasBuzzed || myQueuePosition !== null;
+  const actualHasBuzzed = myQueuePosition !== null || (hasBuzzed && game.buzzQueue.length > 0);
   const amIFirstInQueue = game.buzzQueue.length > 0 && game.buzzQueue[0].playerId === myPlayerId;
   const teamBuzzed = isTeamMode && actualHasBuzzed && myQueuePosition === null && !answeredWrongThisQuestion;
   const firstBuzzer = game.buzzQueue[0];

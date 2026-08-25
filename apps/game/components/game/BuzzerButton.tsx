@@ -89,11 +89,6 @@ export function BuzzerButton({
     }
   }, [isActive, onBuzz]);
 
-  const handleClick = () => {
-    if (!isActive) return;
-    onBuzz();
-  };
-
   // ── Waiting in queue ──
   if (queuePosition !== null) {
     return (
@@ -133,15 +128,15 @@ export function BuzzerButton({
     <View style={{ alignItems: 'center', paddingVertical: 16 }}>
       <View style={{ width: size + 40, height: size + 40, alignItems: 'center', justifyContent: 'center' }}>
         {/* Halos */}
-        <Animated.View style={{ position: 'absolute', width: size + 40, height: size + 40, borderRadius: (size + 40) / 2, backgroundColor: color, opacity: haloOpacity1, transform: [{ scale: haloScale1 }] }} />
-        <Animated.View style={{ position: 'absolute', width: size + 40, height: size + 40, borderRadius: (size + 40) / 2, backgroundColor: color, opacity: haloOpacity2, transform: [{ scale: haloScale2 }] }} />
+        <Animated.View pointerEvents="none" style={{ position: 'absolute', width: size + 40, height: size + 40, borderRadius: (size + 40) / 2, backgroundColor: color, opacity: haloOpacity1, transform: [{ scale: haloScale1 }] }} />
+        <Animated.View pointerEvents="none" style={{ position: 'absolute', width: size + 40, height: size + 40, borderRadius: (size + 40) / 2, backgroundColor: color, opacity: haloOpacity2, transform: [{ scale: haloScale2 }] }} />
         {/* Outer ring fixed */}
-        <View style={{ position: 'absolute', width: size + 18, height: size + 18, borderRadius: (size + 18) / 2, backgroundColor: color, opacity: 0.22 }} />
+        <View pointerEvents="none" style={{ position: 'absolute', width: size + 18, height: size + 18, borderRadius: (size + 18) / 2, backgroundColor: color, opacity: 0.22 }} />
 
         <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
           <TouchableOpacity
-            onPress={handleClick}
-            activeOpacity={0.9}
+            onPress={onBuzz}
+            activeOpacity={0.8}
             style={{
               width: size,
               height: size,
@@ -158,13 +153,15 @@ export function BuzzerButton({
               borderColor: 'rgba(255,255,255,0.1)',
             }}
           >
-            <Svg width={size * 0.32} height={size * 0.32} viewBox="0 0 80 80" style={{ opacity: 0.85 }}>
-              <Path d="M40 6 L74 40 L40 74 L6 40 Z" fill="none" stroke={ink} strokeOpacity="0.45" strokeWidth="2" />
-              <Path d="M40 22 L58 40 L40 58 L22 40 Z" fill={ink} fillOpacity="0.95" />
-            </Svg>
-            <Text style={{ fontFamily: font.nativeFamily.display, color: ink, fontSize: size * 0.12, marginTop: 4, letterSpacing: 1 }}>BUZZER</Text>
-            <View style={{ marginTop: 6, backgroundColor: 'rgba(0,0,0,0.15)', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 }}>
-              <Text style={{ fontFamily: font.nativeFamily.display, color: ink, fontSize: 10, letterSpacing: 1.2 }}>ESPACE</Text>
+            <View pointerEvents="none" style={{ alignItems: 'center', justifyContent: 'center' }}>
+              <Svg width={size * 0.32} height={size * 0.32} viewBox="0 0 80 80" style={{ opacity: 0.85 }}>
+                <Path d="M40 6 L74 40 L40 74 L6 40 Z" fill="none" stroke={ink} strokeOpacity="0.45" strokeWidth="2" />
+                <Path d="M40 22 L58 40 L40 58 L22 40 Z" fill={ink} fillOpacity="0.95" />
+              </Svg>
+              <Text style={{ fontFamily: font.nativeFamily.display, color: ink, fontSize: size * 0.12, marginTop: 4, letterSpacing: 1 }}>BUZZER</Text>
+              <View style={{ marginTop: 6, backgroundColor: 'rgba(0,0,0,0.15)', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 }}>
+                <Text style={{ fontFamily: font.nativeFamily.display, color: ink, fontSize: 10, letterSpacing: 1.2 }}>ESPACE</Text>
+              </View>
             </View>
           </TouchableOpacity>
         </Animated.View>

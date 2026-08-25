@@ -6,7 +6,6 @@ import { GameHeader } from '~/components/game/shared/GameHeader';
 import { PauseOverlay } from '~/components/game/shared/PauseOverlay';
 import { CategoryChangeOverlay } from '~/components/game/shared/CategoryChangeOverlay';
 import { GameFooter } from '~/components/game/shared/GameFooter';
-import { BuzzAlertOverlay } from './BuzzAlertOverlay';
 import { BuzzQueueView } from './BuzzQueueView';
 import { QuestionAndAnswerDisplay } from './QuestionAndAnswerDisplay';
 import { PlayerActionView } from './PlayerActionView';
@@ -91,21 +90,21 @@ export function ModeratedGame({
 
       <PauseOverlay isPaused={isPaused} isManager={isManager} isPauseToggling={isPauseToggling} onResume={handleResume} />
       <CategoryChangeOverlay currentQuestion={currentQuestion} />
-      
-      <BuzzAlertOverlay isManager={isManager} phase={game.phase} firstBuzzer={firstBuzzer} buzzQueue={game.buzzQueue} players={players} myPlayerId={myPlayerId} isTeamMode={isTeamMode} teams={teams} />
 
       <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 32 }}>
-        <QuestionAndAnswerDisplay
-          isManager={isManager}
-          currentQuestion={currentQuestion}
-          questionIndex={questionIndex}
-          manualQuestions={manualQuestions}
-          showAnswer={showAnswer}
-          setShowAnswer={setShowAnswer}
-          displayedWordCount={displayedWordCount}
-          phase={game.phase}
-          totalWordCount={currentQuestion.text ? currentQuestion.text.split(' ').length : 0}
-        />
+        {isManager && (
+          <QuestionAndAnswerDisplay
+            isManager={isManager}
+            currentQuestion={currentQuestion}
+            questionIndex={questionIndex}
+            manualQuestions={manualQuestions}
+            showAnswer={showAnswer}
+            setShowAnswer={setShowAnswer}
+            displayedWordCount={displayedWordCount}
+            phase={game.phase}
+            totalWordCount={currentQuestion.text ? currentQuestion.text.split(' ').length : 0}
+          />
+        )}
 
         <PlayerActionView
           isManager={isManager}

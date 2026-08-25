@@ -31,8 +31,10 @@ export default function GamePage() {
 
   const isManager = session?.managerId === user?.id;
   const isTeamMode = session?.isTeamMode ?? false;
-  const currentPlayer = players.find((p) => p.userId === user?.id);
-  const isSpectator = currentPlayer ? currentPlayer.isSpectator : !isManager;
+  const currentPlayer =
+    players.find((p) => p.userId === user?.id || p.id === user?.id) ||
+    (user?.username ? players.find((p) => p.name === user.username) : undefined);
+  const isSpectator = Boolean(currentPlayer?.isSpectator);
 
   const sessionMode = game.sessionMode ?? session?.sessionMode ?? 'WITH_MODERATOR';
   const isWithoutModerator = sessionMode === 'WITHOUT_MODERATOR';
@@ -62,10 +64,14 @@ export default function GamePage() {
       } else if (serverStatus === 'PAUSED' && !useBuzzStore.getState().isPaused) {
         useBuzzStore.getState().setPaused(true);
       }
+      // Sync players and teams if returned
+      if (gameState.players && gameState.players.length > 0) {
+        useBuzzStore.setState({ players: gameState.players });
+      }
+      if (gameState.teams && gameState.teams.length > 0) {
+        useBuzzStore.setState({ teams: gameState.teams });
+      }
       // Sync currentQuestion from REST — critical for moderated mode after refresh.
-      // In moderated mode there is no statePacket, so currentQuestion is only set
-      // via the WS question_start event. If the player refreshes mid-game, the store
-      // has currentQuestion=null and the game screen shows "Chargement du jeu" forever.
       if (gameState.currentQuestion && !useBuzzStore.getState().currentQuestion) {
         const q = gameState.currentQuestion;
         const idx = (q as any).orderIndex ?? useBuzzStore.getState().questionIndex;
