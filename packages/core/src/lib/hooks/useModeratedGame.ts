@@ -36,6 +36,7 @@ export function useModeratedGame({
     hasBuzzed,
     answeredWrongThisQuestion,
     setHasBuzzed,
+    setAnsweredWrongThisQuestion,
     game,
   } = useBuzzStore();
 
@@ -75,10 +76,25 @@ export function useModeratedGame({
     game.wordRevealIntervalMs
   );
 
-  // Reset buzz lock when question changes
+  // Reset buzz lock and answering state when question changes
+  const wasAnsweringRef = useRef(false);
   useEffect(() => {
     buzzLockRef.current = false;
+    wasAnsweringRef.current = false;
   }, [game.packetQuestionId, currentQuestion?.id, questionIndex]);
+
+  // Tracker si ce joueur a répondu faux sur la question courante
+  useEffect(() => {
+    if (myPlayerId && game.answeringPlayerId === myPlayerId && game.phase === 'AWAITING_VALIDATION') {
+      wasAnsweringRef.current = true;
+    } else if (wasAnsweringRef.current && game.answeringPlayerId !== myPlayerId) {
+      // Ce joueur répondait et n'a plus la main sur la même question -> il a été rejeté (faux)
+      setAnsweredWrongThisQuestion(true);
+      setHasBuzzed(true);
+      buzzLockRef.current = true;
+      wasAnsweringRef.current = false;
+    }
+  }, [game.answeringPlayerId, game.phase, myPlayerId, setAnsweredWrongThisQuestion, setHasBuzzed]);
 
   // Load questions with answers for manager
   useEffect(() => {
@@ -112,8 +128,12 @@ export function useModeratedGame({
       await gameApi.buzz(sessionId, serverNow(), true);
       setHasBuzzed(true);
     } catch (err: any) {
-      buzzLockRef.current = false;
-      if (err?.response?.status !== 409) {
+      if (err?.response?.status === 409) {
+        // Le serveur signale que le joueur (ou son équipe) a déjà buzzé sur cette question
+        setHasBuzzed(true);
+        buzzLockRef.current = true;
+      } else {
+        buzzLockRef.current = false;
         notifyApiError(err, 'Impossible de buzzer');
       }
     } finally {
@@ -178,7 +198,7 @@ export function useModeratedGame({
     }
   }, [sessionId, isResettingBuzzer]);
 
-  const actualHasBuzzed = myQueuePosition !== null || (hasBuzzed && game.buzzQueue.length > 0);
+  const actualHasBuzzed = hasBuzzed || myQueuePosition !== null;
   const amIFirstInQueue = game.buzzQueue.length > 0 && game.buzzQueue[0].playerId === myPlayerId;
   const teamBuzzed = isTeamMode && actualHasBuzzed && myQueuePosition === null && !answeredWrongThisQuestion;
   const firstBuzzer = game.buzzQueue[0];

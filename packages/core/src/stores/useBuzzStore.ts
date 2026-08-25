@@ -374,6 +374,7 @@ export const useBuzzStore = create<BuzzState & BuzzActions>((set, get) => ({
       if (next.packetQuestionId && next.packetQuestionId !== state.game.packetQuestionId) {
         patch.myChoice = null;
         patch.myAnswerCorrect = null;
+        patch.hasBuzzed = false;
         patch.answeredWrongThisQuestion = false;
         patch.answerReveal = null;
       }

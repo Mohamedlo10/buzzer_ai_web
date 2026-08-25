@@ -6,6 +6,8 @@ import { GameHeader } from '~/components/game/shared/GameHeader';
 import { PauseOverlay } from '~/components/game/shared/PauseOverlay';
 import { CategoryChangeOverlay } from '~/components/game/shared/CategoryChangeOverlay';
 import { GameFooter } from '~/components/game/shared/GameFooter';
+import { ConfirmModal } from '~/components/shared/ConfirmModal';
+import { BuzzAlertOverlay } from './BuzzAlertOverlay';
 import { BuzzQueueView } from './BuzzQueueView';
 import { QuestionAndAnswerDisplay } from './QuestionAndAnswerDisplay';
 import { PlayerActionView } from './PlayerActionView';
@@ -13,9 +15,6 @@ import { useModeratedGame } from '~/lib/hooks/useModeratedGame';
 import { teamColor } from '~/lib/game/teamColors';
 import { palette, font } from '~/lib/theme/tokens';
 import type { PlayerResponse, TeamResponse } from '~/types/api';
-
-// TODO: Replace with your actual modal/alert component for RN, simplified here to avoid external deps if not present
-import { Alert } from 'react-native';
 
 interface ModeratedGameProps {
   sessionId: string;
@@ -42,39 +41,6 @@ export function ModeratedGame({
 
   if (!session || !currentQuestion) return null;
 
-  // Polyfills for ConfirmModal from web
-  const confirmWrong = (pending: { applyPenalty: boolean }) => {
-    Alert.alert(
-      pending.applyPenalty ? 'Faux avec pénalité ?' : 'Faux sans pénalité ?',
-      pending.applyPenalty
-        ? `${firstBuzzer?.playerName ?? 'Le joueur'} sera pénalisé et retiré de la file d'attente.`
-        : `${firstBuzzer?.playerName ?? 'Le joueur'} sera retiré de la file sans perdre de points.`,
-      [
-        { text: 'Annuler', style: 'cancel', onPress: () => setPendingWrong(null) },
-        { text: pending.applyPenalty ? 'Faux' : 'Sans pénalité', style: 'destructive', onPress: () => { setPendingWrong(null); handleValidate(false, pending.applyPenalty); } }
-      ]
-    );
-  };
-  
-  if (pendingWrong) {
-    confirmWrong(pendingWrong);
-  }
-
-  const confirmSkip = () => {
-    Alert.alert(
-      'Passer la question ?',
-      'Cette action est irréversible.',
-      [
-        { text: 'Annuler', style: 'cancel', onPress: () => setShowSkipConfirm(false) },
-        { text: 'Passer', style: 'destructive', onPress: () => { setShowSkipConfirm(false); handleSkip(); } }
-      ]
-    );
-  };
-
-  if (showSkipConfirm) {
-    confirmSkip();
-  }
-
   return (
     <View style={{ flex: 1, backgroundColor: palette.bg }}>
       <GameHeader
@@ -90,6 +56,50 @@ export function ModeratedGame({
 
       <PauseOverlay isPaused={isPaused} isManager={isManager} isPauseToggling={isPauseToggling} onResume={handleResume} />
       <CategoryChangeOverlay currentQuestion={currentQuestion} />
+
+      {/* Alerte Buzz 1.5s pour avertir le manager de cesser la lecture */}
+      <BuzzAlertOverlay
+        isManager={isManager}
+        phase={game.phase}
+        firstBuzzer={firstBuzzer}
+      />
+
+      {/* Modal de confirmation : Faux (avec pénalité ou sans pénalité) */}
+      <ConfirmModal
+        visible={pendingWrong !== null}
+        title={pendingWrong?.applyPenalty ? 'Faux avec pénalité ?' : 'Faux sans pénalité ?'}
+        message={
+          pendingWrong?.applyPenalty
+            ? `${firstBuzzer?.playerName ?? 'Le joueur'} sera pénalisé et retiré de la file d'attente.`
+            : `${firstBuzzer?.playerName ?? 'Le joueur'} sera retiré de la file sans perdre de points.`
+        }
+        confirmText={pendingWrong?.applyPenalty ? 'Pénaliser (-)' : 'Sans pénalité'}
+        cancelText="Annuler"
+        variant={pendingWrong?.applyPenalty ? 'danger' : 'warning'}
+        onConfirm={() => {
+          if (pendingWrong) {
+            const { applyPenalty } = pendingWrong;
+            setPendingWrong(null);
+            handleValidate(false, applyPenalty);
+          }
+        }}
+        onCancel={() => setPendingWrong(null)}
+      />
+
+      {/* Modal de confirmation : Passer la question */}
+      <ConfirmModal
+        visible={showSkipConfirm}
+        title="Passer la question ?"
+        message="Cette action est irréversible et passera directement à la question suivante."
+        confirmText="Passer"
+        cancelText="Annuler"
+        variant="warning"
+        onConfirm={() => {
+          setShowSkipConfirm(false);
+          handleSkip();
+        }}
+        onCancel={() => setShowSkipConfirm(false)}
+      />
 
       <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 32 }}>
         {isManager && (

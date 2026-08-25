@@ -1,83 +1,161 @@
-import { View, Text } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, TouchableOpacity, Animated } from 'react-native';
 import { Hand } from 'lucide-react-native';
 import { palette, font } from '~/lib/theme/tokens';
-import { teamColor } from '~/lib/game/teamColors';
-import type { PlayerResponse, TeamResponse } from '~/types/api';
 import type { QueueEntry } from '~/lib/game/packet';
 
 export interface BuzzAlertOverlayProps {
   isManager: boolean;
   phase: string;
   firstBuzzer?: QueueEntry;
-  buzzQueue: QueueEntry[];
-  players: PlayerResponse[];
-  myPlayerId?: string;
-  isTeamMode: boolean;
-  teams: TeamResponse[];
 }
 
-export function BuzzAlertOverlay({ isManager, phase, firstBuzzer, buzzQueue, players, myPlayerId, isTeamMode, teams }: BuzzAlertOverlayProps) {
-  if (!isManager || phase !== 'AWAITING_VALIDATION' || !firstBuzzer) return null;
+export function BuzzAlertOverlay({ isManager, phase, firstBuzzer }: BuzzAlertOverlayProps) {
+  const [visible, setVisible] = useState(false);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const lastBuzzerKey = useRef<string | null>(null);
+
+  useEffect(() => {
+    // Détecter un nouveau premier buzzer
+    if (isManager && phase === 'AWAITING_VALIDATION' && firstBuzzer) {
+      const currentKey = `${firstBuzzer.playerId}-${firstBuzzer.deltaMs}`;
+      if (currentKey !== lastBuzzerKey.current) {
+        lastBuzzerKey.current = currentKey;
+        setVisible(true);
+
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 150,
+          useNativeDriver: true,
+        }).start();
+
+        // Disparaît automatiquement après 1.5 seconde
+        const timer = setTimeout(() => {
+          dismiss();
+        }, 1500);
+
+        return () => clearTimeout(timer);
+      }
+    } else if (phase !== 'AWAITING_VALIDATION') {
+      lastBuzzerKey.current = null;
+      setVisible(false);
+    }
+  }, [isManager, phase, firstBuzzer]);
+
+  const dismiss = () => {
+    Animated.timing(fadeAnim, {
+      toValue: 0,
+      duration: 150,
+      useNativeDriver: true,
+    }).start(() => {
+      setVisible(false);
+    });
+  };
+
+  if (!visible || !firstBuzzer || !isManager) return null;
 
   return (
-    <View style={{ position: 'absolute', inset: 0, zIndex: 40, backgroundColor: palette.bad + 'E6', padding: 24 }}>
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+    <Animated.View
+      style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 100,
+        opacity: fadeAnim,
+      }}
+    >
+      <TouchableOpacity
+        activeOpacity={1}
+        onPress={dismiss}
+        style={{
+          flex: 1,
+          backgroundColor: 'rgba(209, 74, 46, 0.94)',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: 24,
+        }}
+      >
         <View style={{ alignItems: 'center' }}>
-          <View style={{ width: 80, height: 80, borderRadius: 40, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
-            <Hand size={40} color={palette.bad} />
+          <View
+            style={{
+              width: 88,
+              height: 88,
+              borderRadius: 44,
+              backgroundColor: '#FFFFFF',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginBottom: 20,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 8 },
+              shadowOpacity: 0.25,
+              shadowRadius: 16,
+              elevation: 8,
+            }}
+          >
+            <Hand size={46} color={palette.bad} />
           </View>
-          <Text style={{ fontFamily: font.nativeFamily.display, color: palette.txt, fontSize: 40, paddingTop: 4 }}>BUZZ !</Text>
-          <Text style={{ fontFamily: font.nativeFamily.display, color: 'rgba(26,20,16,0.9)', fontSize: 24, marginTop: 12, paddingTop: 2 }}>{firstBuzzer.playerName}</Text>
-          <Text style={{ fontFamily: font.nativeFamily.ui, color: 'rgba(26,20,16,0.8)', fontSize: 16, marginTop: 4, fontWeight: '500' }}>
-            A buzzé en {firstBuzzer.deltaMs < 1000 ? `${firstBuzzer.deltaMs}ms` : `${(firstBuzzer.deltaMs / 1000).toFixed(1)}s`}
-          </Text>
-          {buzzQueue.length > 1 && (
-            <Text style={{ fontFamily: font.nativeFamily.serif, fontStyle: 'italic', color: 'rgba(26,20,16,0.8)', fontSize: 14, marginTop: 8 }}>
-              +{buzzQueue.length - 1} autre{buzzQueue.length > 2 ? 's' : ''} en attente
-            </Text>
-          )}
-        </View>
-      </View>
 
-      <View style={{ backgroundColor: 'rgba(0,0,0,0.4)', borderRadius: 20, overflow: 'hidden' }}>
-        <View style={{ paddingHorizontal: 16, paddingVertical: 12, backgroundColor: 'rgba(0,0,0,0.3)' }}>
-          <Text style={{ fontFamily: font.nativeFamily.display, color: '#FFFFFF', textAlign: 'center', fontSize: 15, paddingTop: 2 }}>File d'attente</Text>
-        </View>
-        {buzzQueue.slice(0, 3).map((item, index) => {
-          const qPlayer = players.find(p => p.id === item.playerId);
-          return (
-            <View key={item.playerId} style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.1)', backgroundColor: index === 0 ? 'rgba(255,255,255,0.15)' : 'transparent' }}>
-              <View style={{ width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center', marginRight: 12, backgroundColor: index === 0 ? '#FFFFFF' : 'rgba(255,255,255,0.3)' }}>
-                <Text style={{ fontWeight: '700', fontSize: 12, color: index === 0 ? palette.bad : palette.txt }}>{index + 1}</Text>
-              </View>
-              <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: palette.surface2, alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
-                <Text style={{ color: palette.txt, fontWeight: '700', fontSize: 14 }}>{item.playerName.charAt(0).toUpperCase()}</Text>
-              </View>
-              <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                <Text style={{ fontWeight: '500', color: item.playerId === myPlayerId ? palette.warn : '#FFFFFF' }}>
-                  {item.playerName}{item.playerId === myPlayerId ? ' (Vous)' : ''}
-                </Text>
-                {isTeamMode && item.teamName && (() => {
-                  const tColor = teamColor(teams.find(t => t.id === item.teamId)?.color);
-                  return (
-                    <View style={{ paddingHorizontal: 8, paddingVertical: 2, borderRadius: 9999, backgroundColor: tColor + '38' }}>
-                      <Text style={{ fontSize: 11, fontWeight: '700', color: tColor }}>{item.teamName}</Text>
-                    </View>
-                  );
-                })()}
-              </View>
-              <Text style={{ color: 'rgba(255,255,255,0.6)', fontSize: 14 }}>
-                {item.deltaMs < 1000 ? `${item.deltaMs}ms` : `${(item.deltaMs / 1000).toFixed(1)}s`}
-              </Text>
-            </View>
-          );
-        })}
-        {buzzQueue.length > 3 && (
-          <View style={{ paddingHorizontal: 16, paddingVertical: 8, backgroundColor: 'rgba(0,0,0,0.2)' }}>
-            <Text style={{ color: 'rgba(255,255,255,0.5)', textAlign: 'center', fontSize: 12 }}>+{buzzQueue.length - 3} autres joueurs...</Text>
+          <Text
+            style={{
+              fontFamily: font.nativeFamily.display,
+              color: '#FFFFFF',
+              fontSize: 42,
+              letterSpacing: 1,
+            }}
+          >
+            BUZZ !
+          </Text>
+
+          <Text
+            style={{
+              fontFamily: font.nativeFamily.display,
+              color: 'rgba(255, 255, 255, 0.95)',
+              fontSize: 26,
+              marginTop: 12,
+              textAlign: 'center',
+            }}
+          >
+            {firstBuzzer.playerName}
+          </Text>
+
+          <Text
+            style={{
+              fontFamily: font.nativeFamily.ui,
+              color: 'rgba(255, 255, 255, 0.85)',
+              fontSize: 16,
+              marginTop: 6,
+              fontWeight: '600',
+            }}
+          >
+            A buzzé en{' '}
+            {firstBuzzer.deltaMs < 1000
+              ? `${firstBuzzer.deltaMs}ms`
+              : `${(firstBuzzer.deltaMs / 1000).toFixed(1)}s`}
+          </Text>
+
+          <View
+            style={{
+              marginTop: 28,
+              backgroundColor: 'rgba(0, 0, 0, 0.25)',
+              paddingHorizontal: 16,
+              paddingVertical: 8,
+              borderRadius: 20,
+            }}
+          >
+            <Text
+              style={{
+                fontFamily: font.nativeFamily.ui,
+                color: 'rgba(255, 255, 255, 0.75)',
+                fontSize: 12,
+              }}
+            >
+              Touchez pour fermer ou patientez 1,5s
+            </Text>
           </View>
-        )}
-      </View>
-    </View>
+        </View>
+      </TouchableOpacity>
+    </Animated.View>
   );
 }

@@ -107,17 +107,17 @@ export function BuzzerButton({
     return (
       <View style={{ alignItems: 'center', paddingVertical: 24 }}>
         <View style={{ width: size, height: size, borderRadius: size / 2, borderWidth: 1, borderColor: palette.line, opacity: 0.6, backgroundColor: palette.surface, alignItems: 'center', justifyContent: 'center' }}>
-          {teamBuzzed ? (
+          {teamBuzzed || hasBuzzed ? (
             <Text style={{ fontSize: 36, marginBottom: 4 }}>🔒</Text>
           ) : (
             <Zap size={44} color={palette.inkSoft} strokeWidth={2} />
           )}
           <Text style={{ fontFamily: font.nativeFamily.display, color: palette.inkSoft, fontSize: 18, marginTop: 8, letterSpacing: 1 }}>
-            {teamBuzzed ? 'VERROUILLÉ' : 'BUZZ'}
+            {teamBuzzed || hasBuzzed ? 'VERROUILLÉ' : 'BUZZ'}
           </Text>
         </View>
         <Text style={{ fontFamily: font.nativeFamily.ui, color: palette.inkSoft, marginTop: 12, fontSize: 12, fontWeight: '600' }}>
-          {teamBuzzed ? 'Votre équipe a déjà buzzé' : 'Buzzer désactivé'}
+          {teamBuzzed ? 'Votre équipe a déjà buzzé' : hasBuzzed ? 'Vous avez déjà buzzé' : 'Buzzer désactivé'}
         </Text>
       </View>
     );

@@ -71,6 +71,10 @@ export default function GamePage() {
       if (gameState.teams && gameState.teams.length > 0) {
         useBuzzStore.setState({ teams: gameState.teams });
       }
+      // Sync hasBuzzed state from backend
+      if (typeof gameState.hasBuzzed === 'boolean') {
+        useBuzzStore.setState({ hasBuzzed: gameState.hasBuzzed });
+      }
       // Sync currentQuestion from REST — critical for moderated mode after refresh.
       if (gameState.currentQuestion && !useBuzzStore.getState().currentQuestion) {
         const q = gameState.currentQuestion;
