@@ -223,11 +223,12 @@ export default function SoloGameScreen() {
         {/* Answer Choices Panel */}
         <AnswerChoicesPanel
           choices={currentQuestion.answerChoices}
-          answerTimeSeconds={15}
+          myChoice={reveal?.userAnswer ?? null}
+          correctAnswer={reveal?.correctAnswer}
+          isRevealing={!!reveal}
+          canAnswer={phase === 'QUESTION' && !reveal && !isSubmitting}
           onSubmit={handleSubmitAnswer}
           isSubmitting={isSubmitting}
-          result={reveal ? (reveal.correct ? 'correct' : 'wrong') : null}
-          correctAnswer={reveal?.correctAnswer}
         />
 
         {/* Reveal Overlay / Explanations */}

@@ -1,6 +1,7 @@
-import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
-import { tokenStorage } from '~/lib/utils/storage';
-import type { TokenResponse } from '~/types/api';
+import axios from 'axios';
+import type { AxiosError, InternalAxiosRequestConfig } from 'axios';
+import { tokenStorage } from '../utils/storage';
+import type { TokenResponse } from '../../types/api';
 
 // ──────────────────────────────────────────────
 // Config

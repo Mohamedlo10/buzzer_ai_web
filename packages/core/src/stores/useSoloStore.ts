@@ -41,6 +41,7 @@ export const useSoloStore = create<SoloState>((set, get) => ({
       phase: 'QUESTION',
       correctAnswersSoFar: 0,
       error: null,
+      isLoading: false,
     });
   },
 

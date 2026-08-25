@@ -1,13 +1,24 @@
+import { memo } from 'react';
 import { View, Text } from 'react-native';
 import { palette, font } from '~/lib/theme/tokens';
+import { useDeadlineSeconds } from '~/lib/game/useDeadline';
 
 interface GlobalTimerBarProps {
   totalSeconds: number;
-  remainingSeconds: number;
+  remainingSeconds?: number;
+  deadlineEpochMs?: number | null;
   paused?: boolean;
 }
 
-export function GlobalTimerBar({ totalSeconds, remainingSeconds, paused = false }: GlobalTimerBarProps) {
+export const GlobalTimerBar = memo(function GlobalTimerBar({
+  totalSeconds,
+  remainingSeconds: externalRemaining,
+  deadlineEpochMs,
+  paused = false,
+}: GlobalTimerBarProps) {
+  const internalRemaining = useDeadlineSeconds(deadlineEpochMs);
+  const remainingSeconds = deadlineEpochMs != null ? internalRemaining : (externalRemaining ?? 0);
+
   const pct = totalSeconds > 0 ? Math.min(100, Math.round((remainingSeconds / totalSeconds) * 100)) : 0;
   const barColor = pct > 60 ? palette.primary : pct > 30 ? palette.warn : palette.bad;
 
@@ -43,4 +54,4 @@ export function GlobalTimerBar({ totalSeconds, remainingSeconds, paused = false 
       )}
     </View>
   );
-}
+});

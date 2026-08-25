@@ -92,7 +92,7 @@ export function BuzzerButton({
   // ── Waiting in queue ──
   if (queuePosition !== null) {
     return (
-      <View style={{ alignItems: 'center', paddingVertical: 24 }}>
+      <View style={{ alignItems: 'center', justifyContent: 'center', height: 280 }}>
         <View style={{ width: size, height: size, borderRadius: size / 2, borderWidth: 3, borderColor: palette.line, opacity: 0.6, backgroundColor: palette.surface, alignItems: 'center', justifyContent: 'center' }}>
           <Zap size={36} color={palette.inkSoft} strokeWidth={2} />
           <Text style={{ fontFamily: font.nativeFamily.display, color: palette.inkSoft, fontSize: 24, marginTop: 4, letterSpacing: 1 }}>#{queuePosition}</Text>
@@ -105,7 +105,7 @@ export function BuzzerButton({
   // ── Disabled state ──
   if (disabled) {
     return (
-      <View style={{ alignItems: 'center', paddingVertical: 24 }}>
+      <View style={{ alignItems: 'center', justifyContent: 'center', height: 280 }}>
         <View style={{ width: size, height: size, borderRadius: size / 2, borderWidth: 1, borderColor: palette.line, opacity: 0.6, backgroundColor: palette.surface, alignItems: 'center', justifyContent: 'center' }}>
           {teamBuzzed || hasBuzzed ? (
             <Text style={{ fontSize: 36, marginBottom: 4 }}>🔒</Text>
@@ -125,7 +125,7 @@ export function BuzzerButton({
 
   // ── Active Buzzer ──
   return (
-    <View style={{ alignItems: 'center', paddingVertical: 16 }}>
+    <View style={{ alignItems: 'center', justifyContent: 'center', height: 280 }}>
       <View style={{ width: size + 40, height: size + 40, alignItems: 'center', justifyContent: 'center' }}>
         {/* Halos */}
         <Animated.View pointerEvents="none" style={{ position: 'absolute', width: size + 40, height: size + 40, borderRadius: (size + 40) / 2, backgroundColor: color, opacity: haloOpacity1, transform: [{ scale: haloScale1 }] }} />
@@ -136,7 +136,8 @@ export function BuzzerButton({
         <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
           <TouchableOpacity
             onPress={onBuzz}
-            activeOpacity={0.8}
+            delayPressIn={0}
+            activeOpacity={0.7}
             style={{
               width: size,
               height: size,

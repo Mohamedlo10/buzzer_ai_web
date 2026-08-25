@@ -1,4 +1,4 @@
-import { apiClient } from '~/lib/api/client';
+import { apiClient } from '../api/client';
 
 /**
  * Synchronisation d'horloge avec le serveur.

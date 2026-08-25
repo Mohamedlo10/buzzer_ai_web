@@ -67,8 +67,8 @@ export default function RoomDetailScreen() {
     roomId: (roomId as string) ?? '',
     onNavigate: (path) => router.push(path as any),
     onReplaceRoute: (path) => {
-      if (path === '/rooms' || path === '/(tabs)/rooms') {
-        router.replace('/(tabs)/dashboard' as any);
+      if (path === '/rooms' || path === '/(tabs)/rooms' || path === '/(tabs)/dashboard') {
+        router.replace('/(tabs)/rooms' as any);
       } else {
         router.replace(path as any);
       }
@@ -171,7 +171,7 @@ export default function RoomDetailScreen() {
           Salon introuvable
         </Text>
         <TouchableOpacity
-          onPress={() => router.replace('/(tabs)/dashboard' as any)}
+          onPress={() => router.replace('/(tabs)/rooms' as any)}
           activeOpacity={0.8}
           style={{
             backgroundColor: palette.primary,
@@ -181,7 +181,7 @@ export default function RoomDetailScreen() {
           }}
         >
           <Text style={{ color: palette.primaryInk, fontWeight: '700', fontSize: 14 }}>
-            Retour au dashboard
+            Retour aux salons
           </Text>
         </TouchableOpacity>
       </SafeAreaView>
@@ -205,7 +205,7 @@ export default function RoomDetailScreen() {
         }}
       >
         <TouchableOpacity
-          onPress={() => router.replace('/(tabs)/dashboard' as any)}
+          onPress={() => router.replace('/(tabs)/rooms' as any)}
           activeOpacity={0.7}
           style={{
             width: 38,

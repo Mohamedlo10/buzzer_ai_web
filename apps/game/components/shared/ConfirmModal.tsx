@@ -55,6 +55,7 @@ export function ConfirmModal({
           <View style={styles.buttonRow}>
             <TouchableOpacity
               onPress={onCancel}
+              delayPressIn={0}
               activeOpacity={0.75}
               style={styles.cancelButton}
             >
@@ -63,6 +64,7 @@ export function ConfirmModal({
 
             <TouchableOpacity
               onPress={onConfirm}
+              delayPressIn={0}
               activeOpacity={0.8}
               style={[styles.confirmButton, { backgroundColor: accentColor }]}
             >

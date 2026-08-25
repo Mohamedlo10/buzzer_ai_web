@@ -35,6 +35,20 @@ const CHOICE_LABELS = ['A', 'B', 'C', 'D', 'E', 'F'];
  * CSS Grid 2-colonnes → flexWrap + width 50%.
  * `router.replace` Next.js → expo-router.
  */
+function SprintCountdownScreen({ deadlineEpochMs }: { deadlineEpochMs?: number | null }) {
+  const remainingSeconds = useDeadlineSeconds(deadlineEpochMs);
+  return (
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 16, backgroundColor: palette.primary }}>
+      <Text style={{ fontFamily: font.nativeFamily.display, fontSize: 96, color: '#FFFFFF', fontVariant: ['tabular-nums'] }}>
+        {remainingSeconds > 0 ? remainingSeconds : 'GO'}
+      </Text>
+      <Text style={{ fontFamily: font.nativeFamily.display, color: 'rgba(255,255,255,0.7)', fontSize: 15, letterSpacing: 2, textTransform: 'uppercase' }}>
+        Préparez-vous
+      </Text>
+    </View>
+  );
+}
+
 export function SprintGame({
   sessionId,
   myPlayer,
@@ -60,7 +74,6 @@ export function SprintGame({
   const currentQuestion = useBuzzStore((state) => state.currentQuestion);
 
   const phase = game.phase;
-  const remainingSeconds = useDeadlineSeconds(game.phaseEndsAtEpochMs);
   const questionSeconds = session?.globalQuestionSeconds ?? 10;
   const awaitingServer = game.stateVersion === 0;
 
@@ -105,16 +118,7 @@ export function SprintGame({
 
   // ── Countdown ─────────────────────────────────────────────────────────────
   if (phase === 'COUNTDOWN') {
-    return (
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 16, backgroundColor: palette.primary }}>
-        <Text style={{ fontFamily: font.nativeFamily.display, fontSize: 96, color: '#FFFFFF', fontVariant: ['tabular-nums'] }}>
-          {remainingSeconds > 0 ? remainingSeconds : 'GO'}
-        </Text>
-        <Text style={{ fontFamily: font.nativeFamily.display, color: 'rgba(255,255,255,0.7)', fontSize: 15, letterSpacing: 2, textTransform: 'uppercase' }}>
-          Préparez-vous
-        </Text>
-      </View>
-    );
+    return <SprintCountdownScreen deadlineEpochMs={game.phaseEndsAtEpochMs} />;
   }
 
   if (!session) return null;
@@ -147,7 +151,7 @@ export function SprintGame({
         {phase === 'QUESTION' && game.phaseEndsAtEpochMs != null && (
           <GlobalTimerBar
             totalSeconds={questionSeconds}
-            remainingSeconds={Math.max(0, remainingSeconds)}
+            deadlineEpochMs={game.phaseEndsAtEpochMs}
           />
         )}
 
@@ -173,58 +177,17 @@ export function SprintGame({
           </Text>
         </View>
 
-        {/* Interactive choices */}
-        {canAnswer && choices.length > 0 && (
+        {/* Choices Grid — Stable, persistent layout with zero jump */}
+        {choices.length > 0 && (
           <AnswerChoicesPanel
             choices={choices}
-            answerTimeSeconds={questionSeconds}
-            deadlineEpochMs={game.phaseEndsAtEpochMs}
+            myChoice={myChoice}
+            correctAnswer={correctAnswer}
+            isRevealing={isRevealing}
+            canAnswer={canAnswer}
             onSubmit={handleSubmit}
             isSubmitting={isSubmittingAnswer}
           />
-        )}
-
-        {/* Locked choices */}
-        {!canAnswer && choices.length > 0 && (
-          <View style={{ gap: 8 }}>
-            {choices.map((choice, index) => {
-              const isMine = myChoice === choice;
-              const isCorrect = isRevealing && correctAnswer === choice;
-              const isMineAndWrong = isRevealing && isMine && !isCorrect;
-              return (
-                <View
-                  key={choice}
-                  style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    gap: 12,
-                    borderRadius: 16,
-                    borderWidth: 1,
-                    paddingHorizontal: 16,
-                    paddingVertical: 12,
-                    borderColor: isCorrect ? palette.good : isMineAndWrong ? palette.bad : isMine ? palette.indigo : palette.line,
-                    backgroundColor: isCorrect ? palette.good + '1A' : isMineAndWrong ? palette.bad + '1A' : isMine ? palette.indigo + '26' : palette.surface,
-                    opacity: (!isMine && !isCorrect && (phase === 'QUESTION' || isRevealing)) ? 0.6 : 1,
-                  }}
-                >
-                  <View style={{ width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center', backgroundColor: isCorrect ? palette.good : isMineAndWrong ? palette.bad : isMine ? palette.indigo : palette.surface2 }}>
-                    <Text style={{ fontFamily: font.nativeFamily.display, color: isCorrect || isMineAndWrong || isMine ? '#FFFFFF' : palette.txt, fontSize: 13, paddingTop: 2 }}>
-                      {CHOICE_LABELS[index] ?? index + 1}
-                    </Text>
-                  </View>
-                  <Text style={{ fontFamily: font.nativeFamily.ui, color: palette.txt, fontSize: 14, flex: 1, fontWeight: '500' }}>{choice}</Text>
-                  {isCorrect && <CheckCircle2 size={18} color={palette.good} />}
-                  {isMineAndWrong && <XCircle size={18} color={palette.bad} />}
-                  {isMine && !isRevealing && (
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 9999, backgroundColor: palette.indigo + '33' }}>
-                      <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: palette.indigo }} />
-                      <Text style={{ fontFamily: font.nativeFamily.ui, color: palette.indigo, fontSize: 11, fontWeight: '700' }}>Choix enregistré</Text>
-                    </View>
-                  )}
-                </View>
-              );
-            })}
-          </View>
         )}
 
         {/* Reveal verdict */}

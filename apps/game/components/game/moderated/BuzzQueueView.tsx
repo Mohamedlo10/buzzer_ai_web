@@ -96,6 +96,7 @@ export function BuzzQueueView({
                   <TouchableOpacity
                     onPress={() => onValidate(true)}
                     disabled={isValidating}
+                    delayPressIn={0}
                     activeOpacity={0.8}
                     style={{
                       paddingVertical: 13,
@@ -139,6 +140,7 @@ export function BuzzQueueView({
                     <TouchableOpacity
                       onPress={() => onSetPendingWrong({ applyPenalty: false })}
                       disabled={isValidating}
+                      delayPressIn={0}
                       activeOpacity={0.8}
                       style={{
                         flex: 1.6,
@@ -169,6 +171,7 @@ export function BuzzQueueView({
                     <TouchableOpacity
                       onPress={() => onSetPendingWrong({ applyPenalty: true })}
                       disabled={isValidating}
+                      delayPressIn={0}
                       activeOpacity={0.8}
                       style={{
                         flex: 1,

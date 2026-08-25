@@ -122,7 +122,7 @@ export function applyPacket(
   current: Pick<GameStateSlice, 'stateVersion'>,
   packet: GameStatePacket | null | undefined,
 ): GameStateSlice | null {
-  if (!packet || typeof packet.version !== 'number') return null;
+  if (!packet || typeof packet.version !== 'number' || !Number.isFinite(packet.version)) return null;
   if (packet.version <= current.stateVersion) return null;
 
   // Ancre d'horloge : gratuite, elle arrive avec chaque paquet.
