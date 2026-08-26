@@ -10,71 +10,135 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Zap, Sparkles, Trophy, Target, Swords, ArrowRight } from 'lucide-react-native';
+import {
+  Zap,
+  Sparkles,
+  Trophy,
+  Target,
+  ArrowRight,
+  Timer,
+  Mic,
+  Flame,
+  Award,
+  Clock,
+  Users,
+  Radio,
+  Crown,
+  Smartphone,
+  TrendingUp,
+  Gem,
+  BookmarkCheck,
+  Brain,
+  Palette as PaletteIcon,
+  Lightbulb,
+} from 'lucide-react-native';
 import { appStorage } from '~/lib/utils/storage';
 import { palette, font } from '~/lib/theme/tokens';
 import { XalaatMark } from '~/components/shared/XalaatMark';
 
+interface FeatureItem {
+  text: string;
+  icon: React.ReactNode;
+}
+
 interface Slide {
   id: string;
+  badge: string;
+  badgeIcon: React.ReactNode;
   title: string;
   subtitle: string;
   description: string;
   icon: React.ReactNode;
   accentColor: string;
   accentBg: string;
+  features: FeatureItem[];
 }
 
 const slides: Slide[] = [
   {
     id: '1',
-    title: 'Questions IA Infinies',
-    subtitle: 'Génération à la Volée',
+    badge: 'MODE MULTIJOUEUR',
+    badgeIcon: <Flame size={13} color={palette.bad} />,
+    title: 'Mode Sprint',
+    subtitle: 'Sans Modérateur · 100% Autonome',
     description:
-      "Le quiz qui ne s'épuise jamais ! L'intelligence artificielle crée des questions uniques sur n'importe quel thème et niveau de difficulté.",
-    icon: <Sparkles size={56} color={palette.primary} strokeWidth={2} />,
-    accentColor: palette.primary,
-    accentBg: 'rgba(224, 86, 36, 0.125)',
+      'Chacun pour soi ! Tous les joueurs répondent en direct et en simultané à chaque question avant la fin du compte à rebours.',
+    icon: <Timer size={54} color={palette.bad} strokeWidth={2.2} />,
+    accentColor: palette.bad,
+    accentBg: 'rgba(231, 76, 60, 0.12)',
+    features: [
+      { text: 'Timer 10 secondes', icon: <Clock size={14} color={palette.gold} strokeWidth={2.5} /> },
+      { text: 'Réponses simultanées', icon: <Users size={14} color={palette.violet} strokeWidth={2.5} /> },
+      { text: 'Révélation instantanée', icon: <Sparkles size={14} color={palette.gold} strokeWidth={2.5} /> },
+    ],
   },
   {
     id: '2',
-    title: 'Buzzer Multijoueur',
-    subtitle: 'En Direct & Sans Matériel',
+    badge: 'MODE ANIMÉ',
+    badgeIcon: <Mic size={13} color={palette.primary} />,
+    title: 'Mode Modérateur',
+    subtitle: 'Buzzer en Direct & Maître du Jeu',
     description:
-      'Rejoignez en un éclair avec un code ou QR code. Buzzez en temps réel depuis votre téléphone avec un système de file ultrarapide.',
-    icon: <Zap size={56} color={palette.gold} strokeWidth={2} />,
-    accentColor: palette.gold,
-    accentBg: 'rgba(217, 119, 6, 0.125)',
+      'Un animateur pilote la partie et arbitre. Soyez le plus rapide à buzzer pour prendre la main et valider vos points.',
+    icon: <Zap size={54} color={palette.primary} strokeWidth={2.2} />,
+    accentColor: palette.primary,
+    accentBg: 'rgba(224, 86, 36, 0.12)',
+    features: [
+      { text: 'File de buzz en temps réel', icon: <Radio size={14} color={palette.gold} strokeWidth={2.5} /> },
+      { text: 'Contrôle de l’animateur', icon: <Crown size={14} color={palette.violet} strokeWidth={2.5} /> },
+      { text: 'Sans aucun boîtier physique', icon: <Smartphone size={14} color={palette.gold} strokeWidth={2.5} /> },
+    ],
   },
   {
     id: '3',
-    title: 'Sprint ou Modéré',
-    subtitle: 'Deux Expériences de Jeu',
+    badge: 'MODE SOLO',
+    badgeIcon: <Target size={13} color={palette.indigo} />,
+    title: 'Mode Carrière',
+    subtitle: '12 Niveaux Évolutifs',
     description:
-      'Sprint à 10s où tout le monde répond en simultané, ou partie animée avec modérateur pour rythmer et valider les réponses.',
-    icon: <Swords size={56} color={palette.bad} strokeWidth={2} />,
-    accentColor: palette.bad,
-    accentBg: 'rgba(231, 76, 60, 0.125)',
+      'Progressez en solitaire de Facile à Extrême. Relevez les défis, accumulez les bonus et évitez les pièges pour débloquer les paliers.',
+    icon: <Target size={54} color={palette.indigo} strokeWidth={2.2} />,
+    accentColor: palette.indigo,
+    accentBg: 'rgba(78, 140, 255, 0.12)',
+    features: [
+      { text: '12 paliers de difficulté', icon: <TrendingUp size={14} color={palette.violet} strokeWidth={2.5} /> },
+      { text: 'Système de bonus/malus', icon: <Gem size={14} color={palette.gold} strokeWidth={2.5} /> },
+      { text: 'Progression sauvegardée', icon: <BookmarkCheck size={14} color={palette.violet} strokeWidth={2.5} /> },
+    ],
   },
   {
     id: '4',
-    title: 'Mode Solo & Carrière',
-    subtitle: '12 Niveaux & Entraînement',
+    badge: 'MODE LIBRE',
+    badgeIcon: <Sparkles size={13} color={palette.gold} />,
+    title: 'Entraînement IA',
+    subtitle: 'Thèmes & Difficultés Sur-Mesure',
     description:
-      'Progressez de Facile à Extrême dans le mode Carrière avec bonus et pénalités, ou entraînez-vous librement sur vos thèmes favoris.',
-    icon: <Target size={56} color={palette.indigo} strokeWidth={2} />,
-    accentColor: palette.indigo,
-    accentBg: 'rgba(78, 140, 255, 0.125)',
+      'Créez une session sur n’importe quel sujet personnalisé : histoire, cinéma, tech, science. L’IA génère des questions à l’infini.',
+    icon: <Sparkles size={54} color={palette.gold} strokeWidth={2.2} />,
+    accentColor: palette.gold,
+    accentBg: 'rgba(217, 119, 6, 0.12)',
+    features: [
+      { text: 'IA générative infinie', icon: <Brain size={14} color={palette.gold} strokeWidth={2.5} /> },
+      { text: 'Thème 100% personnalisé', icon: <PaletteIcon size={14} color={palette.violet} strokeWidth={2.5} /> },
+      { text: 'Feedback & explications', icon: <Lightbulb size={14} color={palette.gold} strokeWidth={2.5} /> },
+    ],
   },
   {
     id: '5',
+    badge: 'COMPÉTITION GLOBALE',
+    badgeIcon: <Award size={13} color={palette.violet} />,
     title: 'Classement Glicko-2',
-    subtitle: 'Compétition & Progression',
+    subtitle: 'Rang Mondial & Statistiques',
     description:
-      'Grimpez dans le classement mondial inspiré du système des échecs, défiez vos amis et suivez vos statistiques détaillées.',
-    icon: <Trophy size={56} color={palette.violet} strokeWidth={2} />,
+      'Chaque victoire dans les modes officiels influe sur votre niveau mondial, calculé selon le système officiel des échecs.',
+    icon: <Trophy size={54} color={palette.violet} strokeWidth={2.2} />,
     accentColor: palette.violet,
-    accentBg: 'rgba(155, 89, 182, 0.125)',
+    accentBg: 'rgba(155, 89, 182, 0.12)',
+    features: [
+      { text: 'Algorithme Glicko-2', icon: <Award size={14} color={palette.violet} strokeWidth={2.5} /> },
+      { text: 'Profils, avatars & amis', icon: <Users size={14} color={palette.gold} strokeWidth={2.5} /> },
+      { text: 'Podium & historique', icon: <Trophy size={14} color={palette.violet} strokeWidth={2.5} /> },
+    ],
   },
 ];
 
@@ -121,63 +185,133 @@ export default function OnboardingScreen() {
         paddingHorizontal: 24,
       }}
     >
+      {/* Mode Badge Tag */}
       <View
         style={{
-          width: 120,
-          height: 120,
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 6,
+          paddingHorizontal: 12,
+          paddingVertical: 5,
+          borderRadius: 9999,
+          backgroundColor: item.accentBg,
+          borderWidth: 1,
+          borderColor: item.accentColor + '30',
+          marginBottom: 16,
+        }}
+      >
+        {item.badgeIcon}
+        <Text
+          style={{
+            fontSize: 11,
+            fontWeight: '700',
+            letterSpacing: 0.8,
+            color: item.accentColor,
+            textTransform: 'uppercase',
+          }}
+        >
+          {item.badge}
+        </Text>
+      </View>
+
+      {/* Main Mode Icon Hero */}
+      <View
+        style={{
+          width: 110,
+          height: 110,
           borderRadius: 28,
           alignItems: 'center',
           justifyContent: 'center',
-          marginBottom: 24,
+          marginBottom: 18,
           backgroundColor: item.accentBg,
           borderWidth: 1,
           borderColor: palette.line,
-          shadowColor: '#000',
-          shadowOpacity: 0.05,
-          shadowRadius: 8,
-          elevation: 2,
+          shadowColor: item.accentColor,
+          shadowOpacity: 0.15,
+          shadowRadius: 10,
+          elevation: 3,
         }}
       >
         {item.icon}
       </View>
 
+      {/* Subtitle / Mode type */}
       <Text
         style={{
           fontFamily: font.nativeFamily.serif,
           fontStyle: 'italic',
-          fontSize: 16,
-          color: palette.primary,
-          marginBottom: 6,
+          fontSize: 15,
+          color: item.accentColor,
+          marginBottom: 4,
+          textAlign: 'center',
         }}
       >
         {item.subtitle}
       </Text>
 
+      {/* Mode Title */}
       <Text
         style={{
           fontFamily: font.nativeFamily.display,
           fontSize: 28,
-          lineHeight: 40,
+          lineHeight: 45,
           color: palette.txt,
           textAlign: 'center',
-          paddingTop: 4,
-          marginBottom: 12,
+          marginBottom: 10,
         }}
       >
         {item.title}
       </Text>
 
+      {/* Description */}
       <Text
         style={{
-          fontSize: 14.5,
+          fontSize: 14,
           color: palette.inkSoft,
           textAlign: 'center',
-          lineHeight: 22,
-          maxWidth: 300,
+          lineHeight: 20,
+          maxWidth: 320,
+          marginBottom: 16,
         }}
       >
         {item.description}
       </Text>
+
+      {/* Feature key points without background, styled with display font & colored icons */}
+      <View
+        style={{
+          flexDirection: 'row',
+          flexWrap: 'wrap',
+          justifyContent: 'center',
+          alignItems: 'center',
+          gap: 12,
+          maxWidth: 340,
+        }}
+      >
+        {item.features.map((feat, idx) => (
+          <View
+            key={idx}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 6,
+            }}
+          >
+            {feat.icon}
+            <Text
+              style={{
+                fontFamily: font.nativeFamily.display,
+                fontSize: 11,
+                lineHeight: 18,
+                color: palette.txt,
+                textAlign: 'center',
+              }}
+            >
+              {feat.text}
+            </Text>
+          </View>
+        ))}
+      </View>
     </View>
   );
 
