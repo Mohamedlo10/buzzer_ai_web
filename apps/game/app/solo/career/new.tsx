@@ -70,7 +70,7 @@ export default function NewCareerScreen() {
             if (router.canGoBack()) {
               router.back();
             } else {
-              router.replace('/(tabs)/dashboard');
+              router.replace('/solo/career' as any);
             }
           }}
           activeOpacity={0.7}

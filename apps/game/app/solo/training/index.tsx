@@ -130,7 +130,7 @@ export default function TrainingHubScreen() {
         <TouchableOpacity
           onPress={() => {
             if (router.canGoBack()) router.back();
-            else router.replace('/(tabs)/dashboard');
+            else router.replace('/solo' as any);
           }}
           activeOpacity={0.7}
           style={{

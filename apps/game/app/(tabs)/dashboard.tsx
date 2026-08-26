@@ -18,16 +18,24 @@ import * as rankingsApi from '~/lib/api/rankings';
 import type { GlobalRanking } from '~/types/api';
 import { palette, font } from '~/lib/theme/tokens';
 import { Avatar } from '~/components/shared/Avatar';
-import { GlobalRankCard } from '~/components/shared/GlobalRankCard';
+import { SoloHubCard } from '~/components/shared/SoloHubCard';
 import { QuizOfTheDayCard } from '~/components/shared/QuizOfTheDayCard';
 import { PatternZigzag } from '~/components/shared/PatternZigzag';
 import { AppTopBar } from '~/components/shared/AppTopBar';
 
-const THEME_CHIPS = [
-  { label: 'Mbalax', theme: 'Mbalax', active: true },
+interface ThemeChip {
+  label: string;
+  route?: string;
+  theme?: string;
+  active?: boolean;
+}
+
+const THEME_CHIPS: ThemeChip[] = [
+  { label: 'Mode Solo 🎯', route: '/solo', active: true },
   { label: 'Carrière 🏆', route: '/solo/career' },
-  { label: 'Entraînement 🎯', route: '/solo/training' },
+  { label: 'Entraînement 🧠', route: '/solo/training' },
   { label: 'Multijoueur 👥', route: '/(tabs)/rooms' },
+  { label: 'Mbalax', theme: 'Mbalax' },
   { label: 'Cinéma 🎬', theme: 'Cinema' },
   { label: 'Histoire 🇸🇳', theme: 'Histoire du Senegal' },
   { label: 'Géographie 🌍', theme: 'Geographie' },
@@ -52,7 +60,7 @@ export default function DashboardScreen() {
           if (res?.content) setTopRankings(res.content);
         }),
       ]);
-    } catch {}
+    } catch { }
     setRefreshing(false);
   };
 
@@ -65,7 +73,7 @@ export default function DashboardScreen() {
           setTopRankings(res.content);
         }
       })
-      .catch(() => {});
+      .catch(() => { });
 
     return () => {
       isMounted = false;
@@ -114,7 +122,7 @@ export default function DashboardScreen() {
             style={{
               fontFamily: font.nativeFamily.display,
               fontSize: 30,
-              lineHeight: 40,
+              lineHeight: 42,
               letterSpacing: -0.5,
               color: palette.txt,
               paddingTop: 6,
@@ -209,8 +217,8 @@ export default function DashboardScreen() {
           ))}
         </ScrollView>
 
-        {/* Global Rank Card */}
-        <GlobalRankCard rank={rank} />
+        {/* Solo Hub Banner Card */}
+        <SoloHubCard />
 
         {/* Quiz of the Day */}
         <QuizOfTheDayCard />
