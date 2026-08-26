@@ -132,6 +132,9 @@ export const appStorage = {
   async setOnboardingDone(): Promise<void> {
     return this.setItem(ONBOARDING_KEY, 'true');
   },
+  async clearOnboardingDone(): Promise<void> {
+    return this.removeItem(ONBOARDING_KEY);
+  },
 
   // Active session (for reconnection)
   getActiveSession: () =>

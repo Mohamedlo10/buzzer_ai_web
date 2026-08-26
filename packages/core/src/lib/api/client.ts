@@ -102,7 +102,9 @@ function createResponseInterceptor(instance: typeof apiClient) {
     try {
       const refreshToken = await tokenStorage.getRefreshToken();
       if (!refreshToken) {
-        throw new Error('No refresh token');
+        // User is simply not authenticated — no token to refresh, bail silently.
+        processQueue(null, null);
+        return Promise.reject(error);
       }
 
       const { data } = await axios.post<TokenResponse>(
@@ -119,6 +121,7 @@ function createResponseInterceptor(instance: typeof apiClient) {
       }
       return instance(originalRequest);
     } catch (refreshError) {
+      // Real refresh failure (network error, expired refresh token, server rejection…)
       console.error('❌ [ApiClient] Token refresh failed:', refreshError);
       processQueue(refreshError, null);
       await tokenStorage.clearTokens();

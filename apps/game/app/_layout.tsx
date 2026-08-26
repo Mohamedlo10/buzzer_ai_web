@@ -34,6 +34,7 @@ import { ConfirmHost } from '~/components/shared/ConfirmHost';
 export default function RootLayout() {
   const router = useRouter();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const restoreSession = useAuthStore((state) => state.restoreSession);
 
   const [loaded, error] = useFonts({
     [font.nativeFamily.display]: Boldonse_400Regular,
@@ -43,6 +44,11 @@ export default function RootLayout() {
     ManropeSemiBold: Manrope_600SemiBold,
     ManropeBold: Manrope_700Bold,
   });
+
+  // Restore auth session once on app start
+  useEffect(() => {
+    restoreSession();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (loaded || error) {

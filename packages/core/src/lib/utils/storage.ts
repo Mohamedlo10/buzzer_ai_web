@@ -107,6 +107,10 @@ export const appStorage = {
     if (!isClient) return;
     localStorage.setItem(ONBOARDING_KEY, 'true');
   },
+  async clearOnboardingDone(): Promise<void> {
+    if (!isClient) return;
+    localStorage.removeItem(ONBOARDING_KEY);
+  },
 
   // Active session (for reconnection)
   getActiveSession: () =>
