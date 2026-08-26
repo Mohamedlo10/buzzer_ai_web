@@ -22,6 +22,7 @@ import {
 
 import * as soloApi from '~/lib/api/solo';
 import type { SoloSessionResultResponse, AnswerSummary } from '~/types/solo';
+import { useSoloStore } from '~/stores/useSoloStore';
 import { palette } from '~/lib/theme/tokens';
 import { PopView, FadeInUpView } from '~/components/anim';
 

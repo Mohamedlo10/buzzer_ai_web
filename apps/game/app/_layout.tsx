@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Stack } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from '~/lib/query/queryClient';
@@ -21,7 +21,13 @@ import {
   unregisterPushNotificationsAsync,
 } from '~/native/notifications/pushNotifications';
 import * as Notifications from 'expo-notifications';
-import { useRouter } from 'expo-router';
+import { configureReanimatedLogger, ReanimatedLogLevel } from 'react-native-reanimated';
+
+// Disable Reanimated strict mode warning for render-phase value access (React 18 concurrent / layout animations)
+configureReanimatedLogger({
+  level: ReanimatedLogLevel.warn,
+  strict: false,
+});
 
 SplashScreen.preventAutoHideAsync();
 

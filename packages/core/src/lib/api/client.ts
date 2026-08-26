@@ -19,6 +19,7 @@ export const apiClient = axios.create({
   timeout: 30000, // Augmenté à 30 secondes
   headers: {
     'Content-Type': 'application/json',
+    'Bypass-Tunnel-Reminder': 'true',
   },
 });
 
@@ -28,6 +29,7 @@ export const apiClientFast = axios.create({
   timeout: 3000, // 3 secondes max pour les actions de gameplay
   headers: {
     'Content-Type': 'application/json',
+    'Bypass-Tunnel-Reminder': 'true',
   },
 });
 
@@ -37,6 +39,7 @@ export const apiClientLongTimeout = axios.create({
   timeout: 120000, // 2 minutes pour la génération AI
   headers: {
     'Content-Type': 'application/json',
+    'Bypass-Tunnel-Reminder': 'true',
   },
 });
 
