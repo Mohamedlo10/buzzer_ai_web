@@ -4,16 +4,31 @@ import { palette, font } from '~/lib/theme/tokens';
 import { Trophy, Target, Sparkles, ChevronRight, Zap } from 'lucide-react-native';
 
 interface SoloHubCardProps {
-  activeCareersCount?: number;
-  sessionsCount?: number;
+  title?: string;
+  subtitle?: string;
+  badgeLabel?: string;
+  onPress?: () => void;
 }
 
-export function SoloHubCard({ activeCareersCount, sessionsCount }: SoloHubCardProps) {
+export function SoloHubCard({
+  title = 'Carrière & Entraînement',
+  subtitle = 'Défiez l\'IA en 12 niveaux ou maîtrisez de nouveaux sujets',
+  badgeLabel = 'Mode Solo',
+  onPress,
+}: SoloHubCardProps) {
   const router = useRouter();
+
+  const handlePress = () => {
+    if (onPress) {
+      onPress();
+    } else {
+      router.push('/solo/career' as any);
+    }
+  };
 
   return (
     <TouchableOpacity
-      onPress={() => router.push('/solo' as any)}
+      onPress={handlePress}
       activeOpacity={0.88}
       style={{
         backgroundColor: palette.txt,
@@ -93,7 +108,7 @@ export function SoloHubCard({ activeCareersCount, sessionsCount }: SoloHubCardPr
                   fontWeight: '800',
                 }}
               >
-                Mode Solo
+                {badgeLabel}
               </Text>
             </View>
             <Sparkles size={13} color={palette.primary} />
@@ -108,7 +123,7 @@ export function SoloHubCard({ activeCareersCount, sessionsCount }: SoloHubCardPr
               paddingTop: 2,
             }}
           >
-            Carrière & Entraînement
+            {title}
           </Text>
 
           <Text
@@ -121,7 +136,7 @@ export function SoloHubCard({ activeCareersCount, sessionsCount }: SoloHubCardPr
               lineHeight: 16,
             }}
           >
-            Défiez l'IA en 12 niveaux ou maîtrisez de nouveaux sujets
+            {subtitle}
           </Text>
         </View>
       </View>
@@ -155,7 +170,7 @@ export function SoloHubCard({ activeCareersCount, sessionsCount }: SoloHubCardPr
 
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
           <Text style={{ fontSize: 12, fontWeight: '800', color: palette.primary }}>
-            Jouer
+            Explorer
           </Text>
           <ChevronRight size={15} color={palette.primary} />
         </View>

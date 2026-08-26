@@ -33,6 +33,9 @@ import {
   Play,
   RotateCcw,
   Layers,
+  Target,
+  CheckCircle2,
+  Zap,
 } from 'lucide-react-native';
 
 import * as trainingApi from '~/lib/api/training';
@@ -130,7 +133,7 @@ export default function TrainingHubScreen() {
         <TouchableOpacity
           onPress={() => {
             if (router.canGoBack()) router.back();
-            else router.replace('/solo' as any);
+            else router.replace('/(tabs)/dashboard');
           }}
           activeOpacity={0.7}
           style={{
@@ -157,7 +160,7 @@ export default function TrainingHubScreen() {
             flex: 1,
           }}
         >
-          Apprendre
+          Entraînement
         </Text>
       </View>
 
@@ -168,6 +171,90 @@ export default function TrainingHubScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={palette.primary} />
         }
       >
+        {/* ── Training Mode Presentation / Pedagogical Banner ── */}
+        <View
+          style={{
+            backgroundColor: palette.surface,
+            borderRadius: 20,
+            borderWidth: 1.5,
+            borderColor: palette.primary + '40',
+            padding: 16,
+            gap: 12,
+          }}
+        >
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <View
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: 16,
+                  backgroundColor: palette.primary + '22',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Brain size={16} color={palette.primary} />
+              </View>
+              <Text style={{ fontSize: 15, fontWeight: '800', color: palette.txt }}>
+                Entraînement Interactif · Par IA
+              </Text>
+            </View>
+
+            <View
+              style={{
+                backgroundColor: palette.primary + '20',
+                paddingHorizontal: 8,
+                paddingVertical: 3,
+                borderRadius: 9999,
+              }}
+            >
+              <Text style={{ fontSize: 10, fontWeight: '800', color: palette.primary }}>
+                APPRENTISSAGE
+              </Text>
+            </View>
+          </View>
+
+          <Text style={{ fontSize: 12.5, color: palette.inkSoft, lineHeight: 17 }}>
+            Apprenez efficacement sur n'importe quel sujet grâce à la méthode active : fiches notions, micro-défis variés et remédiation ciblée.
+          </Text>
+
+          <View
+            style={{
+              flexDirection: 'row',
+              flexWrap: 'wrap',
+              gap: 8,
+              paddingTop: 4,
+              borderTopWidth: 1,
+              borderTopColor: palette.line,
+            }}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, width: '48%' }}>
+              <BookOpen size={13} color={palette.primary} />
+              <Text style={{ fontSize: 11, fontWeight: '600', color: palette.txt }}>
+                1. Fiches Notions
+              </Text>
+            </View>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, width: '48%' }}>
+              <Target size={13} color={palette.good} />
+              <Text style={{ fontSize: 11, fontWeight: '600', color: palette.txt }}>
+                2. Micro-défis immédiats
+              </Text>
+            </View>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, width: '48%' }}>
+              <Trophy size={13} color={palette.gold} />
+              <Text style={{ fontSize: 11, fontWeight: '600', color: palette.txt }}>
+                3. Boss & Remédiation
+              </Text>
+            </View>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, width: '48%' }}>
+              <Zap size={13} color={palette.primary} />
+              <Text style={{ fontSize: 11, fontWeight: '600', color: palette.txt }}>
+                XP, Séries & Badges
+              </Text>
+            </View>
+          </View>
+        </View>
         {/* ── Search / Quick Start ── */}
         <View
           style={{

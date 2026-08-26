@@ -18,7 +18,7 @@ import * as rankingsApi from '~/lib/api/rankings';
 import type { GlobalRanking } from '~/types/api';
 import { palette, font } from '~/lib/theme/tokens';
 import { Avatar } from '~/components/shared/Avatar';
-import { SoloHubCard } from '~/components/shared/SoloHubCard';
+import { GlobalRankCard } from '~/components/shared/GlobalRankCard';
 import { QuizOfTheDayCard } from '~/components/shared/QuizOfTheDayCard';
 import { PatternZigzag } from '~/components/shared/PatternZigzag';
 import { AppTopBar } from '~/components/shared/AppTopBar';
@@ -31,9 +31,8 @@ interface ThemeChip {
 }
 
 const THEME_CHIPS: ThemeChip[] = [
-  { label: 'Mode Solo 🎯', route: '/solo', active: true },
-  { label: 'Carrière 🏆', route: '/solo/career' },
-  { label: 'Entraînement 🧠', route: '/solo/training' },
+  { label: 'Carrière 🏆', route: '/solo/career', active: true },
+  { label: 'Entraînement 🎯', route: '/solo/training' },
   { label: 'Multijoueur 👥', route: '/(tabs)/rooms' },
   { label: 'Mbalax', theme: 'Mbalax' },
   { label: 'Cinéma 🎬', theme: 'Cinema' },
@@ -217,8 +216,8 @@ export default function DashboardScreen() {
           ))}
         </ScrollView>
 
-        {/* Solo Hub Banner Card */}
-        <SoloHubCard />
+        {/* Global Rank Card */}
+        <GlobalRankCard rank={rank} />
 
         {/* Quiz of the Day */}
         <QuizOfTheDayCard />

@@ -16,6 +16,11 @@ import {
   Trash2,
   AlertTriangle,
   ChevronRight,
+  Sparkles,
+  Zap,
+  Target,
+  CheckCircle2,
+  Award,
 } from 'lucide-react-native';
 
 import * as soloApi from '~/lib/api/solo';
@@ -91,7 +96,7 @@ export default function CareerListScreen() {
             if (router.canGoBack()) {
               router.back();
             } else {
-              router.replace('/solo' as any);
+              router.replace('/(tabs)/dashboard');
             }
           }}
           activeOpacity={0.7}
@@ -152,6 +157,90 @@ export default function CareerListScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={palette.primary} />
         }
       >
+        {/* ── Career Mode Presentation / Rules Banner ── */}
+        <View
+          style={{
+            backgroundColor: palette.surface,
+            borderRadius: 20,
+            borderWidth: 1.5,
+            borderColor: palette.gold + '40',
+            padding: 16,
+            gap: 12,
+          }}
+        >
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <View
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: 16,
+                  backgroundColor: palette.gold + '22',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Trophy size={16} color={palette.gold} />
+              </View>
+              <Text style={{ fontSize: 15, fontWeight: '800', color: palette.txt }}>
+                Mode Carrière · 12 Niveaux
+              </Text>
+            </View>
+
+            <View
+              style={{
+                backgroundColor: palette.gold + '20',
+                paddingHorizontal: 8,
+                paddingVertical: 3,
+                borderRadius: 9999,
+              }}
+            >
+              <Text style={{ fontSize: 10, fontWeight: '800', color: palette.gold }}>
+                PROGRESSION
+              </Text>
+            </View>
+          </View>
+
+          <Text style={{ fontSize: 12.5, color: palette.inkSoft, lineHeight: 17 }}>
+            Gravissez les échelons sur le thème de votre choix, de Facile à Extrême. Chaque niveau réussi débloque le palier suivant !
+          </Text>
+
+          <View
+            style={{
+              flexDirection: 'row',
+              flexWrap: 'wrap',
+              gap: 8,
+              paddingTop: 4,
+              borderTopWidth: 1,
+              borderTopColor: palette.line,
+            }}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, width: '48%' }}>
+              <Zap size={13} color={palette.gold} />
+              <Text style={{ fontSize: 11, fontWeight: '600', color: palette.txt }}>
+                4 Paliers de difficulté
+              </Text>
+            </View>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, width: '48%' }}>
+              <Target size={13} color={palette.primary} />
+              <Text style={{ fontSize: 11, fontWeight: '600', color: palette.txt }}>
+                Seuil de 60% requis
+              </Text>
+            </View>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, width: '48%' }}>
+              <CheckCircle2 size={13} color={palette.good} />
+              <Text style={{ fontSize: 11, fontWeight: '600', color: palette.txt }}>
+                Bonus sans faute
+              </Text>
+            </View>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, width: '48%' }}>
+              <Award size={13} color={palette.gold} />
+              <Text style={{ fontSize: 11, fontWeight: '600', color: palette.txt }}>
+                Trophée au niveau 12
+              </Text>
+            </View>
+          </View>
+        </View>
         {isMaxCareers && (
           <View
             style={{
