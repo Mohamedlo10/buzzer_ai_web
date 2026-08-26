@@ -1,8 +1,21 @@
-import { Tabs } from 'expo-router';
+import { useEffect } from 'react';
+import { Tabs, useRouter } from 'expo-router';
 import { TabBar } from '~/components/layout/TabBar';
 import { palette } from '~/lib/theme/tokens';
+import { useAuthStore } from '~/stores/useAuthStore';
 
 export default function TabsLayout() {
+  const router = useRouter();
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const isLoading = useAuthStore((s) => s.isLoading);
+
+  // Auth guard: if session resolution is done and user has no token, bounce to login
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      router.replace('/(auth)/login');
+    }
+  }, [isAuthenticated, isLoading]);
+
   return (
     <Tabs
       tabBar={(props) => <TabBar {...props} />}

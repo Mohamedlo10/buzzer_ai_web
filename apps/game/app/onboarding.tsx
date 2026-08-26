@@ -170,7 +170,8 @@ export default function OnboardingScreen() {
     if (currentIndex < slides.length - 1) {
       scrollToSlide(currentIndex + 1);
     } else {
-      goTo('/(tabs)/rooms');
+      // Onboarding complete → send to login, not rooms (user is not yet authenticated)
+      goTo('/(auth)/login');
     }
   };
 
@@ -355,7 +356,7 @@ export default function OnboardingScreen() {
           </View>
 
           <TouchableOpacity
-            onPress={() => goTo('/(tabs)/rooms')}
+            onPress={() => goTo('/(auth)/login')}
             activeOpacity={0.7}
             style={{
               paddingHorizontal: 14,
