@@ -28,6 +28,11 @@ import * as roomsApi from '~/lib/api/rooms';
 import { notify, notifyApiError } from '~/lib/ui/notify';
 import { palette, font } from '~/lib/theme/tokens';
 import { Avatar } from '~/components/shared/Avatar';
+import type {
+  NotificationFriendRequest,
+  NotificationGameInvitation,
+  NotificationRoomInvitation,
+} from '~/types/api';
 
 export default function NotificationsScreen() {
   const router = useRouter();
@@ -212,7 +217,7 @@ export default function NotificationsScreen() {
                   </Text>
                 </View>
 
-                {data.friendRequests.map((req) => (
+                {data.friendRequests.map((req: NotificationFriendRequest) => (
                   <View
                     key={req.id}
                     style={{
@@ -283,7 +288,7 @@ export default function NotificationsScreen() {
                   </Text>
                 </View>
 
-                {data.gameInvitations.map((inv) => (
+                {data.gameInvitations.map((inv: NotificationGameInvitation) => (
                   <View
                     key={inv.id}
                     style={{
@@ -354,7 +359,7 @@ export default function NotificationsScreen() {
                   </Text>
                 </View>
 
-                {data.roomInvitations.map((inv) => (
+                {data.roomInvitations.map((inv: NotificationRoomInvitation) => (
                   <View
                     key={inv.id}
                     style={{

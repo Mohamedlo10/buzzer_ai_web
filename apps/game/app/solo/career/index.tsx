@@ -96,7 +96,7 @@ export default function CareerListScreen() {
             if (router.canGoBack()) {
               router.back();
             } else {
-              router.replace('/(tabs)/dashboard');
+              router.replace('/(tabs)/solo');
             }
           }}
           activeOpacity={0.7}

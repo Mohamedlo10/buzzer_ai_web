@@ -156,7 +156,7 @@ export default function SoloResultsScreen() {
     } else if (effectivePlanId) {
       router.replace(`/solo/training/${effectivePlanId}` as any);
     } else {
-      router.replace('/(tabs)/dashboard' as any);
+      router.replace('/(tabs)/solo' as any);
     }
   };
 

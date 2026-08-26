@@ -222,6 +222,37 @@ export function useDeclineInvitation() {
   });
 }
 
+import * as soloApi from '~/lib/api/solo';
+import * as trainingApi from '~/lib/api/training';
+
+// ──────────────────────────────────────────────
+// Solo Careers & Training
+// ──────────────────────────────────────────────
+
+export function useSoloCareers() {
+  return useQuery({
+    queryKey: queryKeys.careers,
+    queryFn: soloApi.listCareers,
+    staleTime: 1000 * 30, // 30s
+  });
+}
+
+export function useTrainingSessions() {
+  return useQuery({
+    queryKey: queryKeys.trainingSessions,
+    queryFn: trainingApi.listSessions,
+    staleTime: 1000 * 30,
+  });
+}
+
+export function useTrainingHistory() {
+  return useQuery({
+    queryKey: queryKeys.trainingMastery(),
+    queryFn: trainingApi.getHistory,
+    staleTime: 1000 * 60,
+  });
+}
+
 // ──────────────────────────────────────────────
 // Notifications
 // ──────────────────────────────────────────────

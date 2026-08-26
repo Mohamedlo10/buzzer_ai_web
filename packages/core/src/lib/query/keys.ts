@@ -37,6 +37,14 @@ export const queryKeys = {
   userProfile: (id: string) => ['users', id] as const,
   userSearch: (query: string) => ['users', 'search', query] as const,
 
+  // Solo Careers
+  careers: ['solo', 'careers'] as const,
+  careerDetail: (id: string) => ['solo', 'careers', id] as const,
+
+  // Training
+  trainingSessions: ['training', 'sessions'] as const,
+  trainingMastery: (subject?: string) => ['training', 'mastery', subject ?? 'all'] as const,
+
   // Admin
   adminStats: ['admin', 'stats'] as const,
   adminUsers: (page?: number) => ['admin', 'users', page] as const,

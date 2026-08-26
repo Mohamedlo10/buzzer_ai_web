@@ -25,7 +25,7 @@ export default function TabsLayout() {
       }}
     >
       <Tabs.Screen name="rooms" options={{ title: 'Multijoueur' }} />
-      <Tabs.Screen name="dashboard" options={{ title: 'Solo' }} />
+      <Tabs.Screen name="solo" options={{ title: 'Solo' }} />
       <Tabs.Screen name="rankings" options={{ title: 'Classement' }} />
       <Tabs.Screen name="friends" options={{ title: 'Amis' }} />
       <Tabs.Screen name="profile" options={{ title: 'Profil' }} />

@@ -15,6 +15,7 @@ const TAB_CONFIG: Record<
   { label: string; icon: typeof Grid }
 > = {
   rooms: { label: 'Multijoueur', icon: Grid },
+  solo: { label: 'Solo', icon: Gamepad2 },
   dashboard: { label: 'Solo', icon: Gamepad2 },
   rankings: { label: 'Classement', icon: Trophy },
   friends: { label: 'Amis', icon: Users },

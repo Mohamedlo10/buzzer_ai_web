@@ -67,7 +67,7 @@ export default function RoomDetailScreen() {
     roomId: (roomId as string) ?? '',
     onNavigate: (path) => router.push(path as any),
     onReplaceRoute: (path) => {
-      if (path === '/rooms' || path === '/(tabs)/rooms' || path === '/(tabs)/dashboard') {
+      if (path === '/rooms' || path === '/(tabs)/rooms' || path === '/(tabs)/solo' || path === '/(tabs)/dashboard') {
         router.replace('/(tabs)/rooms' as any);
       } else {
         router.replace(path as any);
