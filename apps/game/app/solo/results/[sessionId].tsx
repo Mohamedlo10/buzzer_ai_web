@@ -133,9 +133,31 @@ function AnswerRow({ answer }: { answer: AnswerSummary }) {
 
 export default function SoloResultsScreen() {
   const router = useRouter();
-  const { sessionId } = useLocalSearchParams<{ sessionId: string }>();
+  const { sessionId, careerId: paramCareerId, planId: paramPlanId } = useLocalSearchParams<{
+    sessionId: string;
+    careerId?: string;
+    planId?: string;
+  }>();
+
+  const storeCareerId = useSoloStore((s) => s.careerId);
+  const storePlanId = useSoloStore((s) => s.planId);
+
   const [results, setResults] = useState<SoloSessionResultResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  const effectiveCareerId =
+    results?.careerLevelResult?.careerId || paramCareerId || storeCareerId;
+  const effectivePlanId = paramPlanId || storePlanId;
+
+  const navigateToProfile = () => {
+    if (effectiveCareerId) {
+      router.replace(`/solo/career/${effectiveCareerId}` as any);
+    } else if (effectivePlanId) {
+      router.replace(`/solo/training/${effectivePlanId}` as any);
+    } else {
+      router.replace('/(tabs)/dashboard' as any);
+    }
+  };
 
   useEffect(() => {
     const fetchResults = async () => {
@@ -166,10 +188,10 @@ export default function SoloResultsScreen() {
         <AlertCircle size={40} color={palette.bad} />
         <Text style={{ fontSize: 18, fontWeight: '700', color: palette.txt }}>Résultats introuvables</Text>
         <TouchableOpacity
-          onPress={() => router.replace('/solo' as any)}
+          onPress={navigateToProfile}
           style={{ paddingHorizontal: 20, paddingVertical: 10, borderRadius: 12, backgroundColor: palette.surface }}
         >
-          <Text style={{ color: palette.txt, fontWeight: '700' }}>Retour au Hub Solo</Text>
+          <Text style={{ color: palette.txt, fontWeight: '700' }}>Retour</Text>
         </TouchableOpacity>
       </SafeAreaView>
     );
@@ -194,13 +216,7 @@ export default function SoloResultsScreen() {
         }}
       >
         <TouchableOpacity
-          onPress={() => {
-            if (isCareer) {
-              router.replace(`/solo/career/${results.careerLevelResult?.careerId}` as any);
-            } else {
-              router.replace('/solo/training' as any);
-            }
-          }}
+          onPress={navigateToProfile}
           activeOpacity={0.7}
           style={{
             width: 40,
@@ -322,13 +338,7 @@ export default function SoloResultsScreen() {
 
         {/* Return Button */}
         <TouchableOpacity
-          onPress={() => {
-            if (isCareer) {
-              router.replace(`/solo/career/${results.careerLevelResult?.careerId}` as any);
-            } else {
-              router.replace('/solo/training' as any);
-            }
-          }}
+          onPress={navigateToProfile}
           activeOpacity={0.8}
           style={{
             backgroundColor: palette.primary,

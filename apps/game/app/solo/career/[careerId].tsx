@@ -89,9 +89,10 @@ export default function CareerDetailScreen() {
     setIsStartingLevel(true);
     try {
       const startData = await soloApi.startLevel(careerId!, levelNumber);
-      startNewSession(startData);
+      startNewSession({ ...startData, careerId });
       setSelectedLevel(null);
-      router.push(`/solo/game/${startData.sessionId}` as any);
+      // Use replace so this screen unmounts and the loading modal is destroyed
+      router.replace(`/solo/game/${startData.sessionId}?careerId=${careerId}` as any);
     } catch (err: any) {
       notifyApiError(err, 'Erreur lors de la génération du quiz IA');
       setIsStartingLevel(false);
@@ -184,7 +185,13 @@ export default function CareerDetailScreen() {
         }}
       >
         <TouchableOpacity
-          onPress={() => router.back()}
+          onPress={() => {
+            if (router.canGoBack()) {
+              router.back();
+            } else {
+              router.replace('/solo/career' as any);
+            }
+          }}
           activeOpacity={0.7}
           style={{
             width: 38,

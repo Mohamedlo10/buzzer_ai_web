@@ -87,7 +87,13 @@ export default function CareerListScreen() {
         }}
       >
         <TouchableOpacity
-          onPress={() => router.back()}
+          onPress={() => {
+            if (router.canGoBack()) {
+              router.back();
+            } else {
+              router.replace('/(tabs)/dashboard');
+            }
+          }}
           activeOpacity={0.7}
           style={{
             width: 38,

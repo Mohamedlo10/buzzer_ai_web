@@ -4,6 +4,8 @@ import * as soloApi from '~/lib/api/solo';
 
 interface SoloState {
   sessionId: string | null;
+  careerId: string | null;
+  planId: string | null;
   currentQuestion: SoloQuestionDTO | null;
   reveal: SoloAnswerRevealResponse | null;
   phase: 'QUESTION' | 'REVEAL' | 'DONE';
@@ -14,7 +16,13 @@ interface SoloState {
   error: string | null;
 
   // Actions
-  startNewSession: (startData: { sessionId: string; totalQuestions: number; firstQuestion: SoloQuestionDTO }) => void;
+  startNewSession: (startData: {
+    sessionId: string;
+    totalQuestions: number;
+    firstQuestion: SoloQuestionDTO;
+    careerId?: string | null;
+    planId?: string | null;
+  }) => void;
   loadSession: (sessionId: string) => Promise<void>;
   answerQuestion: (answer: string, timeSpentMs: number) => Promise<void>;
   advanceQuestion: () => Promise<{ completed: boolean }>;
@@ -23,6 +31,8 @@ interface SoloState {
 
 export const useSoloStore = create<SoloState>((set, get) => ({
   sessionId: null,
+  careerId: null,
+  planId: null,
   currentQuestion: null,
   reveal: null,
   phase: 'QUESTION',
@@ -35,6 +45,8 @@ export const useSoloStore = create<SoloState>((set, get) => ({
   startNewSession: (startData) => {
     set({
       sessionId: startData.sessionId,
+      careerId: startData.careerId || null,
+      planId: startData.planId || null,
       totalQuestions: startData.totalQuestions,
       currentQuestion: startData.firstQuestion,
       reveal: null,
@@ -116,6 +128,8 @@ export const useSoloStore = create<SoloState>((set, get) => ({
   resetStore: () => {
     set({
       sessionId: null,
+      careerId: null,
+      planId: null,
       currentQuestion: null,
       reveal: null,
       phase: 'QUESTION',

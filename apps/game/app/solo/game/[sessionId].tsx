@@ -25,7 +25,27 @@ import { PopView, FadeInUpView } from '~/components/anim';
 
 export default function SoloGameScreen() {
   const router = useRouter();
-  const { sessionId } = useLocalSearchParams<{ sessionId: string }>();
+  const { sessionId, careerId: paramCareerId, planId: paramPlanId } = useLocalSearchParams<{
+    sessionId: string;
+    careerId?: string;
+    planId?: string;
+  }>();
+
+  const storeCareerId = useSoloStore((s) => s.careerId);
+  const storePlanId = useSoloStore((s) => s.planId);
+
+  const effectiveCareerId = paramCareerId || storeCareerId;
+  const effectivePlanId = paramPlanId || storePlanId;
+
+  const navigateToProfile = () => {
+    if (effectiveCareerId) {
+      router.replace(`/solo/career/${effectiveCareerId}` as any);
+    } else if (effectivePlanId) {
+      router.replace(`/solo/training/${effectivePlanId}` as any);
+    } else {
+      router.replace('/(tabs)/dashboard' as any);
+    }
+  };
 
   const {
     currentQuestion,
@@ -84,7 +104,12 @@ export default function SoloGameScreen() {
     try {
       const { completed } = await advanceQuestion();
       if (completed) {
-        router.replace(`/solo/results/${sessionId}` as any);
+        const queryParams = effectiveCareerId
+          ? `?careerId=${effectiveCareerId}`
+          : effectivePlanId
+            ? `?planId=${effectivePlanId}`
+            : '';
+        router.replace(`/solo/results/${sessionId}${queryParams}` as any);
       }
     } catch (err) {
       console.error('Failed to advance question', err);
@@ -97,7 +122,7 @@ export default function SoloGameScreen() {
       message: 'Voulez-vous quitter ? Votre progression actuelle est sauvegardée.',
     });
     if (ok) {
-      router.replace('/solo' as any);
+      navigateToProfile();
     }
   };
 
@@ -116,7 +141,7 @@ export default function SoloGameScreen() {
         <Text style={{ fontSize: 18, fontWeight: '700', color: palette.bad }}>Erreur de chargement</Text>
         <Text style={{ fontSize: 13, color: palette.inkSoft, textAlign: 'center' }}>{error}</Text>
         <TouchableOpacity
-          onPress={() => router.replace('/solo' as any)}
+          onPress={navigateToProfile}
           style={{ paddingHorizontal: 20, paddingVertical: 10, borderRadius: 12, backgroundColor: palette.surface }}
         >
           <Text style={{ color: palette.txt, fontWeight: '700' }}>Quitter la session</Text>

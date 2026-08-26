@@ -89,8 +89,9 @@ export default function TrainingPlanDetailScreen() {
     setIsStartingSubLevel(subLevel);
     try {
       const startData = await soloApi.startTrainingLevel(planId!, subLevel);
-      startNewSession(startData);
-      router.push(`/solo/game/${startData.sessionId}` as any);
+      startNewSession({ ...startData, planId });
+      // Use replace so this screen unmounts and the loading modal is destroyed
+      router.replace(`/solo/game/${startData.sessionId}?planId=${planId}` as any);
     } catch (err: any) {
       notifyApiError(err, 'Erreur lors du lancement de la série');
       setIsStartingSubLevel(null);
@@ -162,7 +163,13 @@ export default function TrainingPlanDetailScreen() {
         }}
       >
         <TouchableOpacity
-          onPress={() => router.back()}
+          onPress={() => {
+            if (router.canGoBack()) {
+              router.back();
+            } else {
+              router.replace('/solo/training' as any);
+            }
+          }}
           activeOpacity={0.7}
           style={{
             width: 38,

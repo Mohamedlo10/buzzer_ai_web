@@ -73,7 +73,13 @@ export default function NewCustomTrainingScreen() {
         }}
       >
         <TouchableOpacity
-          onPress={() => router.back()}
+          onPress={() => {
+            if (router.canGoBack()) {
+              router.back();
+            } else {
+              router.replace('/solo/training' as any);
+            }
+          }}
           activeOpacity={0.7}
           style={{
             width: 40,
