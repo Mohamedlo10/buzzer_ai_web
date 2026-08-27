@@ -30,6 +30,7 @@ import type { SoloTrainingPlanResponse, TrainingLevelInfo } from '~/types/solo';
 import { palette, font } from '~/lib/theme/tokens';
 import { notify, notifyApiError } from '~/lib/ui/notify';
 import { QuizAiLoadingScreen } from '~/components/solo/QuizAiLoadingScreen';
+import { GamifiedProgressionPath, type PathStageGroup } from '~/components/solo/GamifiedProgressionPath';
 
 const DIFFICULTY_COLORS: Record<string, string> = {
   FACILE: palette.good,
@@ -281,148 +282,33 @@ export default function TrainingPlanDetailScreen() {
           </View>
         </View>
 
-        {/* ── 3 Series Progression List ── */}
-        <View style={{ gap: 12 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 4 }}>
-            <Text style={{ fontSize: 13, fontWeight: '800', color: palette.inkSoft, textTransform: 'uppercase', letterSpacing: 0.8 }}>
-              Séries d'entraînement (3 étapes)
-            </Text>
-          </View>
-
-          {plan.levels.map((level, index) => {
-            const isCompleted = level.userStatus === 'COMPLETED';
-            const { title, subtitle } = formatSeriesInfo(level.subLevel, level.label, level.subDifficulty);
-
-            return (
-              <View
-                key={level.subLevel}
-                style={{
-                  backgroundColor: palette.surface,
-                  borderRadius: 22,
-                  borderWidth: isCompleted ? 1.5 : 1,
-                  borderColor: isCompleted ? palette.good + '50' : palette.line,
-                  padding: 18,
-                  gap: 14,
-                  shadowColor: '#000000',
-                  shadowOffset: { width: 0, height: 1 },
-                  shadowOpacity: 0.03,
-                  shadowRadius: 6,
-                  elevation: 1,
-                }}
-              >
-                {/* Header info */}
-                <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 14 }}>
-                  {/* Step Badge */}
-                  <View
-                    style={{
-                      width: 42,
-                      height: 42,
-                      borderRadius: 14,
-                      backgroundColor: isCompleted ? palette.good : palette.primary + '18',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      marginTop: 2,
-                    }}
-                  >
-                    {isCompleted ? (
-                      <Check size={20} color="#FFFFFF" strokeWidth={2.8} />
-                    ) : (
-                      <Text
-                        style={{
-                          fontFamily: font.nativeFamily.display,
-                          fontSize: 16,
-                          color: palette.primary,
-                          paddingTop: 2,
-                        }}
-                      >
-                        0{level.subLevel}
-                      </Text>
-                    )}
-                  </View>
-
-                  <View style={{ flex: 1, gap: 3 }}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <Text
-                        style={{
-                          fontFamily: font.nativeFamily.display,
-                          fontSize: 16,
-                          color: palette.txt,
-                          paddingTop: 2,
-                        }}
-                      >
-                        {title}
-                      </Text>
-
-                      {isCompleted && (
-                        <View
-                          style={{
-                            backgroundColor: palette.good + '22',
-                            paddingHorizontal: 8,
-                            paddingVertical: 3,
-                            borderRadius: 9999,
-                          }}
-                        >
-                          <Text style={{ color: palette.good, fontSize: 10.5, fontWeight: '800' }}>
-                            COMPLÉTÉ ✓
-                          </Text>
-                        </View>
-                      )}
-                    </View>
-
-                    <Text style={{ fontSize: 12.5, color: palette.inkSoft, lineHeight: 17 }}>
-                      {subtitle}
-                    </Text>
-
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 4 }}>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                        <Zap size={13} color={palette.gold} />
-                        <Text style={{ fontSize: 11.5, fontWeight: '700', color: palette.txt }}>
-                          {level.questionCount} questions
-                        </Text>
-                      </View>
-                    </View>
-                  </View>
-                </View>
-
-                {/* Action CTA Button */}
-                <TouchableOpacity
-                  onPress={() => handleStartSubLevel(level.subLevel)}
-                  activeOpacity={0.85}
-                  style={{
-                    backgroundColor: isCompleted ? palette.surface2 : palette.primary,
-                    borderRadius: 16,
-                    paddingVertical: 13,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexDirection: 'row',
-                    gap: 8,
-                    shadowColor: isCompleted ? 'transparent' : palette.primary,
-                    shadowOffset: { width: 0, height: 3 },
-                    shadowOpacity: isCompleted ? 0 : 0.2,
-                    shadowRadius: 8,
-                    elevation: isCompleted ? 0 : 2,
-                  }}
-                >
-                  {isCompleted ? (
-                    <>
-                      <RotateCcw size={15} color={palette.txt} />
-                      <Text style={{ color: palette.txt, fontSize: 14, fontWeight: '700' }}>
-                        Rejouer cette série
-                      </Text>
-                    </>
-                  ) : (
-                    <>
-                      <Play size={15} color={palette.primaryInk} style={{ marginLeft: 2 }} />
-                      <Text style={{ color: palette.primaryInk, fontSize: 14.5, fontWeight: '800' }}>
-                        Démarrer la série
-                      </Text>
-                    </>
-                  )}
-                </TouchableOpacity>
-              </View>
-            );
-          })}
-        </View>
+        {/* ── Duolingo-Style Gamified Progression Path (Orange Theme) ── */}
+        <GamifiedProgressionPath
+          theme="orange"
+          stages={[
+            {
+              stageNumber: 1,
+              title: plan.theme,
+              subtitle: `${plan.levels.length} séries d'apprentissage`,
+              difficulty: plan.parentDifficulty,
+              color: palette.primary,
+              nodes: plan.levels.map((level) => {
+                const { title, subtitle } = formatSeriesInfo(level.subLevel, level.label, level.subDifficulty);
+                const isCompleted = level.userStatus === 'COMPLETED';
+                return {
+                  id: level.subLevel,
+                  number: level.subLevel,
+                  title,
+                  subtitle,
+                  status: isCompleted ? 'COMPLETED' : 'AVAILABLE',
+                  score: level.questionCount ? level.questionCount * 100 : undefined,
+                  difficulty: level.subDifficulty || plan.parentDifficulty,
+                };
+              }),
+            },
+          ]}
+          onNodePress={(node) => handleStartSubLevel(Number(node.id))}
+        />
 
         {/* ── Community Vote / Regeneration section ── */}
         {plan.planType === 'PREDEFINED' && (

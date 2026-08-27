@@ -33,6 +33,7 @@ import { palette, font } from '~/lib/theme/tokens';
 import { notify, notifyApiError } from '~/lib/ui/notify';
 import { confirmAsync } from '~/lib/ui/confirm';
 import { QuizAiLoadingScreen } from '~/components/solo/QuizAiLoadingScreen';
+import { GamifiedProgressionPath } from '~/components/solo/GamifiedProgressionPath';
 
 interface StageGroup {
   title: string;
@@ -325,128 +326,31 @@ export default function CareerDetailScreen() {
           </View>
         </View>
 
-        {/* ── Stages & Level Cards ── */}
-        {stages.map((stage, sIndex) => (
-          <View key={sIndex} style={{ gap: 10 }}>
-            {/* Stage Header */}
-            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 4 }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: stage.color }} />
-                <Text style={{ fontFamily: font.nativeFamily.display, fontSize: 15, color: palette.txt, paddingTop: 2 }}>
-                  {stage.title}
-                </Text>
-              </View>
-              <View
-                style={{
-                  backgroundColor: stage.color + '1A',
-                  paddingHorizontal: 8,
-                  paddingVertical: 3,
-                  borderRadius: 9999,
-                  borderWidth: 1,
-                  borderColor: stage.color + '33',
-                }}
-              >
-                <Text style={{ fontSize: 10, fontWeight: '800', color: stage.color }}>
-                  {stage.difficulty}
-                </Text>
-              </View>
-            </View>
-
-            {/* 3 Level Cards in Row */}
-            <View style={{ flexDirection: 'row', gap: 10 }}>
-              {stage.levels.map((level) => {
-                const isLocked = level.status === 'LOCKED';
-                const isCompleted = level.status === 'COMPLETED';
-                const isCurrent = level.status === 'UNLOCKED' || level.status === 'IN_PROGRESS';
-
-                return (
-                  <TouchableOpacity
-                    key={level.levelNumber}
-                    disabled={isLocked}
-                    onPress={() => setSelectedLevel(level)}
-                    activeOpacity={0.8}
-                    style={{
-                      flex: 1,
-                      aspectRatio: 0.95,
-                      borderRadius: 20,
-                      borderWidth: isCurrent ? 2 : 1.5,
-                      borderColor: isCompleted
-                        ? palette.good
-                        : isCurrent
-                        ? palette.primary
-                        : palette.line,
-                      backgroundColor: isCompleted
-                        ? palette.good + '18'
-                        : isCurrent
-                        ? palette.surface
-                        : palette.surface2,
-                      padding: 10,
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      opacity: isLocked ? 0.4 : 1,
-                      shadowColor: isCurrent ? palette.primary : '#000000',
-                      shadowOffset: { width: 0, height: isCurrent ? 3 : 1 },
-                      shadowOpacity: isCurrent ? 0.15 : 0.02,
-                      shadowRadius: isCurrent ? 8 : 4,
-                      elevation: isCurrent ? 3 : 1,
-                    }}
-                  >
-                    {/* Top Status Icon */}
-                    <View
-                      style={{
-                        width: 28,
-                        height: 28,
-                        borderRadius: 14,
-                        backgroundColor: isCompleted
-                          ? palette.good
-                          : isCurrent
-                          ? palette.primary
-                          : palette.surface,
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}
-                    >
-                      {isCompleted ? (
-                        <Check size={16} color="#FFFFFF" strokeWidth={2.8} />
-                      ) : isLocked ? (
-                        <Lock size={14} color={palette.inkSoft} />
-                      ) : (
-                        <Play size={14} color={palette.primaryInk} style={{ marginLeft: 2 }} />
-                      )}
-                    </View>
-
-                    {/* Level Number */}
-                    <View style={{ alignItems: 'center', gap: 1 }}>
-                      <Text
-                        style={{
-                          fontFamily: font.nativeFamily.display,
-                          fontSize: 15,
-                          color: isCompleted
-                            ? palette.good
-                            : isCurrent
-                            ? palette.txt
-                            : palette.inkSoft,
-                          paddingTop: 2,
-                        }}
-                      >
-                        Niveau {level.levelNumber}
-                      </Text>
-                      {level.bestScore > 0 ? (
-                        <Text style={{ fontSize: 10.5, fontWeight: '700', color: palette.gold }}>
-                          ★ {level.bestScore} pts
-                        </Text>
-                      ) : (
-                        <Text style={{ fontSize: 10, color: palette.inkSoft }}>
-                          {isLocked ? 'Verrouillé' : 'Prêt'}
-                        </Text>
-                      )}
-                    </View>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-          </View>
-        ))}
+        {/* ── Duolingo-Style Gamified Progression Path (Gold Theme) ── */}
+        <GamifiedProgressionPath
+          theme="gold"
+          stages={stages.map((stage, idx) => ({
+            stageNumber: idx + 1,
+            title: stage.title,
+            subtitle: stage.subtitle,
+            difficulty: stage.difficulty,
+            color: palette.gold,
+            nodes: stage.levels.map((l) => ({
+              id: l.levelNumber,
+              number: l.levelNumber,
+              title: `Niveau ${l.levelNumber}`,
+              status: l.status as any,
+              score: l.bestScore,
+              difficulty: l.difficulty,
+              attempts: l.attempts,
+              threshold: l.threshold,
+            })),
+          }))}
+          onNodePress={(node) => {
+            const lvl = career.levels.find((l) => l.levelNumber === node.number);
+            if (lvl) setSelectedLevel(lvl);
+          }}
+        />
       </ScrollView>
 
       {/* ── Level Details Modal ── */}

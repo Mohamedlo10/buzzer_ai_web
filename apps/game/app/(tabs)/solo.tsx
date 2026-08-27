@@ -13,11 +13,12 @@ import {
 import { palette } from '~/lib/theme/tokens';
 import { AppTopBar } from '~/components/shared/AppTopBar';
 import { QuizOfTheDayCard } from '~/components/shared/QuizOfTheDayCard';
+import { SoloHubCard } from '~/components/shared/SoloHubCard';
 
 // Specialized Solo Components
 import { SoloGreeting } from '~/components/solo/SoloGreeting';
 import { SoloModeCards } from '~/components/solo/SoloModeCards';
-import { SoloStatsCard } from '~/components/solo/SoloStatsCard';
+import { SoloProgressPills } from '~/components/solo/SoloProgressPills';
 import { MyRankCard } from '~/components/solo/MyRankCard';
 
 export default function SoloScreen() {
@@ -33,7 +34,6 @@ export default function SoloScreen() {
 
   const {
     data: careersData,
-    isLoading: isCareersLoading,
     refetch: refetchCareers,
   } = useSoloCareers();
 
@@ -63,7 +63,7 @@ export default function SoloScreen() {
         refetchTrainingHistory(),
         refetchRankings(),
       ]);
-    } catch {}
+    } catch { }
     setRefreshing(false);
   };
 
@@ -134,20 +134,19 @@ export default function SoloScreen() {
         {/* 1. Header Greeting */}
         <SoloGreeting username={username} />
 
-        {/* 2. Deux cartes horizontales : Carrière en cours & Entraînement en cours */}
+        {/* 2. Dernières sessions actives (Carrière en cours & Entraînement en cours) */}
         <SoloModeCards
           activeCareer={activeCareer}
           trainingSession={inProgressTrainingSession}
         />
 
-        {/* 3. Carte Noire Performances & 4 métriques clés */}
-        <SoloStatsCard
-          rank={rank}
-          totalScore={totalScore}
-          winRate={winRate}
-          totalGames={totalGames}
-          currentStreak={currentStreak}
+        {/* 3. Carte Noire divisée en deux : Profil Carrière & Profil Entraînement */}
+        <SoloHubCard
+          activeCareer={activeCareer}
+          trainingSession={inProgressTrainingSession}
         />
+
+
 
         {/* 4. Quiz du jour (Action immédiate) */}
         <QuizOfTheDayCard />
@@ -159,6 +158,14 @@ export default function SoloScreen() {
           myUsername={username}
           topRankings={topRankings}
         />
+        {/* 3. Métriques clés (Rang, Points, Succès, Parties/Série) */}
+        {/* <SoloProgressPills
+          rank={rank}
+          totalScore={totalScore}
+          winRate={winRate}
+          totalGames={totalGames}
+          currentStreak={currentStreak}
+        /> */}
       </ScrollView>
     </View>
   );

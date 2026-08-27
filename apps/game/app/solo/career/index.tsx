@@ -117,7 +117,7 @@ export default function CareerListScreen() {
         <Text
           style={{
             fontFamily: font.nativeFamily.display,
-            fontSize: 22,
+            fontSize: 16,
             lineHeight: 28,
             color: palette.txt,
             paddingTop: 4,
@@ -161,81 +161,99 @@ export default function CareerListScreen() {
         <View
           style={{
             backgroundColor: palette.surface,
-            borderRadius: 20,
-            borderWidth: 1.5,
-            borderColor: palette.gold + '40',
-            padding: 16,
-            gap: 12,
+            borderRadius: 24,
+            padding: 18,
+            gap: 14,
+            shadowColor: '#FFC72C',
+            shadowOpacity: 0.08,
+            shadowRadius: 10,
+            elevation: 2,
           }}
         >
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+              {/* Concentric Dual Gold Badge */}
               <View
                 style={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: 16,
-                  backgroundColor: palette.gold + '22',
+                  width: 44,
+                  height: 44,
+                  borderRadius: 22,
+                  backgroundColor: 'rgba(255, 199, 44, 0.22)',
                   alignItems: 'center',
                   justifyContent: 'center',
                 }}
               >
-                <Trophy size={16} color={palette.gold} />
+                <Trophy size={20} color="#C98A00" />
               </View>
-              <Text style={{ fontSize: 15, fontWeight: '800', color: palette.txt }}>
-                Mode Carrière · 12 Niveaux
+              <Text
+                style={{
+                  fontFamily: font.nativeFamily.display,
+                  fontSize: 14,
+                  lineHeight: 24,
+                  color: palette.txt,
+                  paddingTop: 4,
+                }}
+              >
+                12 Niveaux
               </Text>
             </View>
 
             <View
               style={{
-                backgroundColor: palette.gold + '20',
                 paddingHorizontal: 8,
                 paddingVertical: 3,
                 borderRadius: 9999,
               }}
             >
-              <Text style={{ fontSize: 10, fontWeight: '800', color: palette.gold }}>
+              <Text style={{ fontSize: 9, fontWeight: '900', color: '#C98A00', letterSpacing: 0.7 }}>
                 PROGRESSION
               </Text>
             </View>
           </View>
 
-          <Text style={{ fontSize: 12.5, color: palette.inkSoft, lineHeight: 17 }}>
+          <Text
+            style={{
+              fontFamily: font.nativeFamily.serif,
+              fontStyle: 'italic',
+              fontSize: 13,
+              color: palette.inkSoft,
+              lineHeight: 18,
+            }}
+          >
             Gravissez les échelons sur le thème de votre choix, de Facile à Extrême. Chaque niveau réussi débloque le palier suivant !
           </Text>
 
           <View
             style={{
+              backgroundColor: palette.surface2,
+              borderRadius: 16,
+              padding: 10,
               flexDirection: 'row',
               flexWrap: 'wrap',
               gap: 8,
-              paddingTop: 4,
-              borderTopWidth: 1,
-              borderTopColor: palette.line,
             }}
           >
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, width: '48%' }}>
-              <Zap size={13} color={palette.gold} />
-              <Text style={{ fontSize: 11, fontWeight: '600', color: palette.txt }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, width: '48%' }}>
+              <Zap size={14} color="#C98A00" />
+              <Text style={{ fontSize: 10, fontWeight: '700', color: palette.txt }}>
                 4 Paliers de difficulté
               </Text>
             </View>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, width: '48%' }}>
-              <Target size={13} color={palette.primary} />
-              <Text style={{ fontSize: 11, fontWeight: '600', color: palette.txt }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, width: '48%' }}>
+              <Target size={14} color={palette.primary} />
+              <Text style={{ fontSize: 10, fontWeight: '700', color: palette.txt }}>
                 Seuil de 60% requis
               </Text>
             </View>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, width: '48%' }}>
-              <CheckCircle2 size={13} color={palette.good} />
-              <Text style={{ fontSize: 11, fontWeight: '600', color: palette.txt }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, width: '48%' }}>
+              <CheckCircle2 size={14} color={palette.good} />
+              <Text style={{ fontSize: 10, fontWeight: '700', color: palette.txt }}>
                 Bonus sans faute
               </Text>
             </View>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, width: '48%' }}>
-              <Award size={13} color={palette.gold} />
-              <Text style={{ fontSize: 11, fontWeight: '600', color: palette.txt }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, width: '48%' }}>
+              <Award size={14} color="#C98A00" />
+              <Text style={{ fontSize: 10, fontWeight: '700', color: palette.txt }}>
                 Trophée au niveau 12
               </Text>
             </View>
@@ -331,14 +349,18 @@ export default function CareerListScreen() {
               <TouchableOpacity
                 key={career.careerId}
                 onPress={() => router.push(`/solo/career/${career.careerId}` as any)}
-                activeOpacity={0.8}
+                activeOpacity={0.85}
                 style={{
                   backgroundColor: palette.surface,
-                  borderRadius: 20,
-                  borderWidth: 1,
-                  borderColor: palette.line,
+                  borderRadius: 22,
+                  borderWidth: 1.5,
+                  borderColor: isCompleted ? palette.good + '50' : 'rgba(255, 199, 44, 0.35)',
                   padding: 16,
                   gap: 12,
+                  shadowColor: '#000',
+                  shadowOpacity: 0.03,
+                  shadowRadius: 6,
+                  elevation: 1,
                 }}
               >
                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -347,15 +369,18 @@ export default function CareerListScreen() {
                       paddingHorizontal: 8,
                       paddingVertical: 3,
                       borderRadius: 9999,
-                      backgroundColor: isCompleted ? palette.good + '26' : palette.surface2,
+                      backgroundColor: isCompleted ? palette.good + '22' : 'rgba(255, 199, 44, 0.22)',
+                      borderWidth: 1,
+                      borderColor: isCompleted ? palette.good + '40' : 'rgba(255, 199, 44, 0.4)',
                     }}
                   >
                     <Text
                       style={{
                         fontSize: 10,
-                        fontWeight: '800',
-                        color: isCompleted ? palette.good : palette.inkSoft,
+                        fontWeight: '900',
+                        color: isCompleted ? palette.good : '#C98A00',
                         textTransform: 'uppercase',
+                        letterSpacing: 0.5,
                       }}
                     >
                       {isCompleted ? 'Complétée 🎉' : `Niveau ${career.currentLevel} / 12`}
@@ -369,7 +394,7 @@ export default function CareerListScreen() {
                       width: 32,
                       height: 32,
                       borderRadius: 16,
-                      backgroundColor: palette.bad + '1A',
+                      backgroundColor: palette.bad + '18',
                       alignItems: 'center',
                       justifyContent: 'center',
                     }}
@@ -378,21 +403,37 @@ export default function CareerListScreen() {
                   </TouchableOpacity>
                 </View>
 
-                <View>
-                  <Text
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <View style={{ flex: 1, gap: 2 }}>
+                    <Text
+                      style={{
+                        fontFamily: font.nativeFamily.display,
+                        fontSize: 16,
+                        lineHeight: 24,
+                        color: palette.txt,
+                        paddingTop: 3,
+                      }}
+                      numberOfLines={1}
+                    >
+                      {career.category}
+                    </Text>
+                    <Text style={{ fontSize: 12, color: '#C98A00', fontWeight: '800' }}>
+                      ★ {career.totalScore.toLocaleString('fr-FR')} pts accumulés
+                    </Text>
+                  </View>
+
+                  <View
                     style={{
-                      fontFamily: font.nativeFamily.display,
-                      fontSize: 17,
-                      lineHeight: 22,
-                      color: palette.txt,
-                      paddingTop: 2,
+                      width: 32,
+                      height: 32,
+                      borderRadius: 16,
+                      backgroundColor: palette.surface2,
+                      alignItems: 'center',
+                      justifyContent: 'center',
                     }}
                   >
-                    {career.category}
-                  </Text>
-                  <Text style={{ fontSize: 12, color: palette.gold, fontWeight: '700', marginTop: 2 }}>
-                    {career.totalScore} pts accumulés
-                  </Text>
+                    <ChevronRight size={16} color="#C98A00" strokeWidth={2.5} />
+                  </View>
                 </View>
 
                 {/* Progress bar */}
@@ -401,7 +442,7 @@ export default function CareerListScreen() {
                     <View
                       style={{
                         height: 6,
-                        backgroundColor: isCompleted ? palette.good : palette.primary,
+                        backgroundColor: isCompleted ? palette.good : '#FFC72C',
                         borderRadius: 3,
                         width: `${Math.min(100, pct)}%`,
                       }}
