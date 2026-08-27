@@ -26,51 +26,96 @@ import {
   Calculator,
   Dna,
   Monitor,
-  Zap,
+  Trophy,
 } from 'lucide-react-native';
 
 import * as soloApi from '~/lib/api/solo';
+import * as categoriesApi from '~/lib/api/categories';
 import type { SoloTrainingPlanResponse } from '~/types/solo';
 import { palette, font } from '~/lib/theme/tokens';
 
-const POPULAR_THEMES = [
-  { label: 'Histoire du Sénégal', icon: Landmark, color: '#F59E0B' },
-  { label: 'Géographie Mondiale', icon: Globe, color: '#3B82F6' },
-  { label: 'Sciences & Univers', icon: Atom, color: '#10B981' },
-  { label: 'Cinéma & Séries', icon: Film, color: '#8B5CF6' },
-  { label: 'Musique & Rythmes', icon: Music, color: '#EC4899' },
-  { label: 'Arts & Culture', icon: PaletteIcon, color: '#F97316' },
+interface PopularThemeItem {
+  label: string;
+  icon: any;
+  color: string;
+}
+
+const FALLBACK_THEMES: PopularThemeItem[] = [
+  { label: 'Histoire', icon: Landmark, color: '#F59E0B' },
+  { label: 'Géographie', icon: Globe, color: '#3B82F6' },
+  { label: 'Sciences', icon: Atom, color: '#10B981' },
+  { label: 'Cinéma', icon: Film, color: '#8B5CF6' },
+  { label: 'Musique', icon: Music, color: '#EC4899' },
+  { label: 'Art', icon: PaletteIcon, color: '#F97316' },
+  { label: 'Sports', icon: Trophy, color: '#EF4444' },
   { label: 'Mathématiques', icon: Calculator, color: '#6366F1' },
-  { label: 'Biologie & Nature', icon: Dna, color: '#14B8A6' },
-  { label: 'Informatique & IA', icon: Monitor, color: '#64748B' },
-  { label: 'Littérature & Poésie', icon: BookOpen, color: '#A855F7' },
+  { label: 'Biologie', icon: Dna, color: '#14B8A6' },
+  { label: 'Informatique', icon: Monitor, color: '#64748B' },
+  { label: 'Littérature', icon: BookOpen, color: '#A855F7' },
 ];
+
+function getThemeIconAndColor(name: string): { icon: any; color: string } {
+  const lower = name.toLowerCase().trim();
+  for (const item of FALLBACK_THEMES) {
+    if (lower.includes(item.label.toLowerCase()) || item.label.toLowerCase().includes(lower)) {
+      return { icon: item.icon, color: item.color };
+    }
+  }
+  const colors = ['#F59E0B', '#3B82F6', '#10B981', '#8B5CF6', '#EC4899', '#F97316', '#6366F1', '#14B8A6'];
+  const hash = lower.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
+  return { icon: Sparkles, color: colors[hash % colors.length] };
+}
 
 export default function TrainingHubScreen() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [trainingPlans, setTrainingPlans] = useState<SoloTrainingPlanResponse[]>([]);
+  const [popularThemes, setPopularThemes] = useState<PopularThemeItem[]>(FALLBACK_THEMES);
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  const fetchPlans = useCallback(async () => {
+  const fetchData = useCallback(async () => {
     try {
-      const data = await soloApi.listCustomTrainings();
-      setTrainingPlans(data || []);
+      const [plansRes, popularRes] = await Promise.allSettled([
+        soloApi.listCustomTrainings(),
+        categoriesApi.getPopularCategories(10),
+      ]);
+
+      if (plansRes.status === 'fulfilled') {
+        setTrainingPlans(plansRes.value || []);
+      }
+
+      if (popularRes.status === 'fulfilled' && Array.isArray(popularRes.value) && popularRes.value.length > 0) {
+        const mapped: PopularThemeItem[] = popularRes.value.map((name) => {
+          const { icon, color } = getThemeIconAndColor(name);
+          return { label: name, icon, color };
+        });
+
+        // Complement with fallbacks if fewer than 6 categories returned
+        if (mapped.length < 6) {
+          const needed = 6 - mapped.length;
+          const additional = FALLBACK_THEMES.filter(
+            (fb) => !mapped.some((m) => m.label.toLowerCase() === fb.label.toLowerCase())
+          ).slice(0, needed);
+          setPopularThemes([...mapped, ...additional]);
+        } else {
+          setPopularThemes(mapped);
+        }
+      }
     } catch (error) {
-      console.error('Failed to fetch training plans', error);
+      console.error('Failed to fetch training hub data', error);
     } finally {
       setIsLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    fetchPlans();
-  }, [fetchPlans]);
+    fetchData();
+  }, [fetchData]);
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await fetchPlans();
+    await fetchData();
     setRefreshing(false);
   };
 
@@ -301,7 +346,7 @@ export default function TrainingHubScreen() {
           )}
         </View>
 
-        {/* ── Thèmes populaires ── */}
+        {/* ── Thèmes populaires (Dynamiques Backend) ── */}
         <View style={{ gap: 10 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 4 }}>
             <Sparkles size={14} color={palette.primary} />
@@ -319,7 +364,7 @@ export default function TrainingHubScreen() {
           </View>
 
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-            {POPULAR_THEMES.map((theme) => {
+            {popularThemes.map((theme) => {
               const Icon = theme.icon;
               return (
                 <TouchableOpacity
