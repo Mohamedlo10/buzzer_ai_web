@@ -245,6 +245,7 @@ export default function TrainingConfigScreen() {
                     borderWidth: 1,
                     borderColor: isSelected ? palette.primary : palette.line,
                     paddingVertical: 14,
+                    paddingHorizontal: 6,
                     alignItems: 'center',
                     gap: 4,
                   }}
@@ -265,7 +266,7 @@ export default function TrainingConfigScreen() {
                       color: isSelected ? palette.primaryInk + 'CC' : palette.inkSoft,
                       textAlign: 'center',
                     }}
-                    numberOfLines={1}
+                    numberOfLines={2}
                   >
                     {d.desc}
                   </Text>
