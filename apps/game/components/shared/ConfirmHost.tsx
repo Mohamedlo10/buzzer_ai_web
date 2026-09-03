@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, Modal, TouchableOpacity, TouchableWithoutFeedback } from 'react-native';
 import { AlertTriangle, AlertCircle, HelpCircle, LogOut } from 'lucide-react-native';
 import { useConfirmStore, type ConfirmTone } from '~/lib/ui/confirm';
@@ -10,15 +10,35 @@ const TONE_COLORS: Record<ConfirmTone, string> = {
   warning: palette.gold,
 };
 
+/**
+ * Hôte unique des confirmations.
+ *
+ * Le `Modal` reste monté en permanence et c'est `visible` qui l'ouvre ou le
+ * ferme. Démonter un `Modal` natif encore présenté — ce que faisait le
+ * `if (!pending) return null` — laisse sur iOS un view controller orphelin dont
+ * la fenêtre continue d'avaler tous les touchers : l'écran suivant s'affiche
+ * normalement mais devient totalement insensible aux clics. Le risque est
+ * maximal ici, puisque la plupart des appelants naviguent dans la foulée de la
+ * résolution de la promesse.
+ *
+ * Le contenu de la dernière demande est conservé le temps du fondu de sortie,
+ * sans quoi la boîte se viderait sous les yeux de l'utilisateur.
+ */
 export function ConfirmHost() {
   const pending = useConfirmStore((s) => s.pending);
   const settle = useConfirmStore((s) => s.settle);
 
-  if (!pending) return null;
+  const [lastShown, setLastShown] = useState(pending);
+  useEffect(() => {
+    if (pending) setLastShown(pending);
+  }, [pending]);
 
-  const tone = pending.tone || 'default';
+  const content = pending ?? lastShown;
+  if (!content) return null;
+
+  const tone = content.tone || 'default';
   const color = TONE_COLORS[tone] || palette.primary;
-  const isLogout = pending.title.toLowerCase().includes('déconnexion');
+  const isLogout = content.title.toLowerCase().includes('déconnexion');
 
   const IconComponent = isLogout
     ? LogOut
@@ -30,8 +50,7 @@ export function ConfirmHost() {
 
   return (
     <Modal
-      key={pending.id}
-      visible
+      visible={!!pending}
       transparent
       animationType="fade"
       statusBarTranslucent
@@ -93,7 +112,7 @@ export function ConfirmHost() {
                   marginBottom: 8,
                 }}
               >
-                {pending.title}
+                {content.title}
               </Text>
 
               {/* Message */}
@@ -106,7 +125,7 @@ export function ConfirmHost() {
                   marginBottom: 20,
                 }}
               >
-                {pending.message}
+                {content.message}
               </Text>
 
               {/* Action Buttons */}
@@ -126,7 +145,7 @@ export function ConfirmHost() {
                   }}
                 >
                   <Text style={{ color: palette.txt, fontWeight: '700', fontSize: 14 }}>
-                    {pending.cancelLabel || 'Annuler'}
+                    {content.cancelLabel || 'Annuler'}
                   </Text>
                 </TouchableOpacity>
 
@@ -147,7 +166,7 @@ export function ConfirmHost() {
                   }}
                 >
                   <Text style={{ color: palette.primaryInk, fontWeight: '700', fontSize: 14 }}>
-                    {pending.confirmLabel || 'Confirmer'}
+                    {content.confirmLabel || 'Confirmer'}
                   </Text>
                 </TouchableOpacity>
               </View>

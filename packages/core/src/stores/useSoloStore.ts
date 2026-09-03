@@ -58,7 +58,21 @@ export const useSoloStore = create<SoloState>((set, get) => ({
   },
 
   loadSession: async (sessionId) => {
-    set({ isLoading: true, error: null });
+    // Toute trace de la session précédente est effacée avant l'appel : sinon
+    // l'écran affiche l'ancienne question pendant le chargement, et surtout la
+    // garde `error && !currentQuestion` ne se déclenche jamais si la reprise
+    // échoue — on se retrouve avec une question fantôme qui n'accepte plus
+    // aucune réponse.
+    set({
+      isLoading: true,
+      error: null,
+      sessionId,
+      currentQuestion: null,
+      reveal: null,
+      phase: 'QUESTION',
+      totalQuestions: 0,
+      correctAnswersSoFar: 0,
+    });
     try {
       const startData = await soloApi.resumeSession(sessionId);
       set({
@@ -70,7 +84,10 @@ export const useSoloStore = create<SoloState>((set, get) => ({
         correctAnswersSoFar: 0, // In backend resume, we don't have cumulative state directly but we will see
       });
     } catch (err: any) {
-      set({ error: err?.response?.data?.message || 'Erreur de chargement de session' });
+      set({
+        error: err?.response?.data?.message || 'Erreur de chargement de session',
+        currentQuestion: null,
+      });
       throw err;
     } finally {
       set({ isLoading: false });

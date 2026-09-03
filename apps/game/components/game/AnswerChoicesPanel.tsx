@@ -11,6 +11,8 @@ interface AnswerChoicesPanelProps {
   canAnswer: boolean;
   onSubmit: (chosenAnswer: string) => void;
   isSubmitting?: boolean;
+  /** Texte affiché une fois le choix fait, avant la révélation. */
+  pendingLabel?: string;
 }
 
 const CHOICE_LABELS = ['A', 'B', 'C', 'D', 'E', 'F'];
@@ -23,6 +25,7 @@ export const AnswerChoicesPanel = memo(function AnswerChoicesPanel({
   canAnswer,
   onSubmit,
   isSubmitting = false,
+  pendingLabel = '✓ Choix enregistré — en attente des autres joueurs',
 }: AnswerChoicesPanelProps) {
   return (
     <View style={{ gap: 12, minHeight: 150 }}>
@@ -145,7 +148,7 @@ export const AnswerChoicesPanel = memo(function AnswerChoicesPanel({
         {myChoice !== null
           ? isRevealing
             ? 'Résultats de la question'
-            : '✓ Choix enregistré — en attente des autres joueurs'
+            : pendingLabel
           : 'Réponds vite pour maximiser tes points'}
       </Text>
     </View>

@@ -1,16 +1,16 @@
-# Graph Report - buzzer_front  (2026-09-03)
+# Graph Report - buzzer_front  (2026-08-13)
 
 ## Corpus Check
-- 434 files · ~292,084 words
+- 316 files · ~211,801 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 2310 nodes · 4368 edges · 150 communities (127 shown, 23 thin omitted)
-- Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 86 edges (avg confidence: 0.68)
+- 1736 nodes · 3104 edges · 141 communities (120 shown, 21 thin omitted)
+- Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 74 edges (avg confidence: 0.66)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `5b5df412`
+- Built from commit: `155923b4`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -81,7 +81,7 @@
 - [[_COMMUNITY_Game-Specific Checklists|Game-Specific Checklists]]
 - [[_COMMUNITY_User Flows (BuzzMaster-Specific)|User Flows (BuzzMaster-Specific)]]
 - [[_COMMUNITY_2. Règles du Jeu|2. Règles du Jeu]]
-- [[_COMMUNITY_friends.ts|friends.ts]]
+- [[_COMMUNITY_apiClient|apiClient]]
 - [[_COMMUNITY_Generate Session Questions Flow|Generate Session Questions Flow]]
 - [[_COMMUNITY_06-buzzer-admin-player-projection.jsx|06-buzzer-admin-player-projection.jsx]]
 - [[_COMMUNITY_page.tsx|page.tsx]]
@@ -103,7 +103,6 @@
 - [[_COMMUNITY_ThemeProvider.tsx|ThemeProvider.tsx]]
 - [[_COMMUNITY_MembersWithStats.tsx|MembersWithStats.tsx]]
 - [[_COMMUNITY_Analyse du Système de Jeu BuzzMaster AI|Analyse du Système de Jeu BuzzMaster AI]]
-- [[_COMMUNITY_auth.ts|auth.ts]]
 - [[_COMMUNITY_07-alt-quiz-admin-desktop.jsx|07-alt-quiz-admin-desktop.jsx]]
 - [[_COMMUNITY_useLoginForm.ts|useLoginForm.ts]]
 - [[_COMMUNITY_useRegisterForm.ts|useRegisterForm.ts]]
@@ -119,7 +118,6 @@
 - [[_COMMUNITY_10. Fonctionnalités Avancées (Phases 2-3)|10. Fonctionnalités Avancées (Phases 2-3)]]
 - [[_COMMUNITY_1. Architecture des Entités du Jeu|1. Architecture des Entités du Jeu]]
 - [[_COMMUNITY_3. Système de Scoring|3. Système de Scoring]]
-- [[_COMMUNITY_invitations.ts|invitations.ts]]
 - [[_COMMUNITY_Product Quality Standards|Product Quality Standards]]
 - [[_COMMUNITY_7. Intégration IA (OpenAI GPT-4o-mini)|7. Intégration IA (OpenAI GPT-4o-mini)]]
 - [[_COMMUNITY_package.json|package.json]]
@@ -133,61 +131,54 @@
 - [[_COMMUNITY_useGameStore.ts|useGameStore.ts]]
 - [[_COMMUNITY_useSessionStore.ts|useSessionStore.ts]]
 - [[_COMMUNITY_test-buzzer-latency.sh|test-buzzer-latency.sh]]
-- [[_COMMUNITY_dashboard.tsx|dashboard.tsx]]
-- [[_COMMUNITY_friends.tsx|friends.tsx]]
-- [[_COMMUNITY_rankings.tsx|rankings.tsx]]
 - [[_COMMUNITY_nativewind-env.d.ts|nativewind-env.d.ts]]
 - [[_COMMUNITY_next.config.ts|next.config.ts]]
 - [[_COMMUNITY_README|README.md]]
-- [[_COMMUNITY_SoloStatsCard.tsx|SoloStatsCard.tsx]]
-- [[_COMMUNITY_lucide-extra.d.ts|lucide-extra.d.ts]]
-- [[_COMMUNITY_tsconfig.json|tsconfig.json]]
-- [[_COMMUNITY_global.d.ts|global.d.ts]]
 
 ## God Nodes (most connected - your core abstractions)
-1. `useAuthStore` - 89 edges
-2. `PlayerResponse` - 60 edges
-3. `notifyApiError()` - 44 edges
-4. `confirmAsync()` - 42 edges
-5. `teamColor()` - 41 edges
-6. `TeamResponse` - 40 edges
-7. `useBuzzStore` - 35 edges
-8. `WebSocketManager` - 33 edges
-9. `SafeScreen()` - 31 edges
-10. `notify` - 31 edges
+1. `useAuthStore` - 67 edges
+2. `PlayerResponse` - 52 edges
+3. `teamColor()` - 37 edges
+4. `TeamResponse` - 36 edges
+5. `useBuzzStore` - 35 edges
+6. `WebSocketManager` - 33 edges
+7. `SafeScreen()` - 31 edges
+8. `Spinner()` - 23 edges
+9. `BaseWSMessage` - 23 edges
+10. `confirmAsync()` - 20 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `TokensDevPage()` --calls--> `withAlpha()`  [INFERRED]
   apps/web-legacy/app/dev/tokens/page.tsx → packages/core/src/lib/theme/palette.js
-- `DashboardPage()` --calls--> `logout()`  [INFERRED]
-  apps/admin/src/pages/DashboardPage.tsx → packages/core/src/lib/api/auth.ts
-- `ProfileScreen()` --calls--> `logout()`  [INFERRED]
-  apps/game/app/(tabs)/profile.tsx → packages/core/src/lib/api/auth.ts
-- `ConfirmEmailScreen()` --calls--> `useAuthStore`  [EXTRACTED]
-  apps/game/app/confirm-email.tsx → packages/core/src/stores/useAuthStore.ts
-- `QuestionsScreen()` --calls--> `notifyApiError()`  [EXTRACTED]
-  apps/game/app/session/[code]/questions.tsx → packages/core/src/lib/ui/notify.ts
+- `PodiumProps` --references--> `SessionRankingEntry`  [EXTRACTED]
+  apps/game/components/game/results/Podium.tsx → packages/core/src/types/api.ts
+- `LoginPage()` --calls--> `useAuthStore`  [EXTRACTED]
+  apps/web-legacy/app/(auth)/login/page.tsx → packages/core/src/stores/useAuthStore.ts
+- `ProfilePage()` --calls--> `useAuthStore`  [EXTRACTED]
+  apps/web-legacy/app/(tabs)/profile/page.tsx → packages/core/src/stores/useAuthStore.ts
+- `RankingsPage()` --calls--> `useAuthStore`  [EXTRACTED]
+  apps/web-legacy/app/(tabs)/rankings/page.tsx → packages/core/src/stores/useAuthStore.ts
 
 ## Import Cycles
 - None detected.
 
-## Communities (150 total, 23 thin omitted)
+## Communities (141 total, 21 thin omitted)
 
 ### Community 0 - "SessionConfigForm.tsx"
 Cohesion: 0.06
-Nodes (41): ChoiceStrip(), ModeCard(), SessionConfigForm(), SessionConfigFormProps, StepBar(), StepGameMode(), StepGameModeProps, StepperField() (+33 more)
+Nodes (43): ChoiceStrip(), ModeCard(), SessionConfigForm(), SessionConfigFormProps, StepBar(), StepGameMode(), StepGameModeProps, StepperField() (+35 more)
 
 ### Community 1 - "api.ts"
 Cohesion: 0.03
-Nodes (63): FriendRequestCard(), FriendRequestCardProps, ReceivedRequestCardProps, SentRequestCardProps, AdminRoomMember, AdminRoomResponse, AdminRoomSession, AdminRoomSummaryResponse (+55 more)
+Nodes (59): AdminRoomMember, AdminRoomResponse, AdminRoomSession, AdminRoomSummaryResponse, AdminStatsResponse, AdminTimelineResponse, AdminTopStatsResponse, AdminUserDetailResponse (+51 more)
 
 ### Community 2 - "WebSocketManager"
-Cohesion: 0.08
-Nodes (15): handleWSEvent(), useAppStateReconnect(), EventHandler, UseGameSocketOptions, usePresence(), useRoomSocket(), UseRoomSocketOptions, decodeStompFrame() (+7 more)
+Cohesion: 0.09
+Nodes (14): handleWSEvent(), EventHandler, useGameSocket(), UseGameSocketOptions, useRoomSocket(), UseRoomSocketOptions, decodeStompFrame(), encodeStompFrame() (+6 more)
 
 ### Community 3 - "PlayerResponse"
-Cohesion: 0.09
-Nodes (21): BuzzerButton(), BuzzerButtonProps, GlobalTimerBar, GlobalTimerBarProps, ModeratedGame(), ModeratedGameProps, PlayerActionView(), PlayerActionViewProps (+13 more)
+Cohesion: 0.08
+Nodes (37): rankLabel(), SessionResultsPage(), AnswerRevealOverlay(), AnswerRevealOverlayProps, BuzzerButton(), BuzzerButtonProps, GlobalTimerBar(), GlobalTimerBarProps (+29 more)
 
 ### Community 4 - "Session (Lobby & Lifecycle)"
 Cohesion: 0.04
@@ -195,19 +186,19 @@ Nodes (46): BuzzMaster AI - Game API Reference, CorrectionType, DELETE /api/room
 
 ### Community 5 - "dependencies"
 Cohesion: 0.05
-Nodes (40): dependencies, expo, expo-apple-authentication, expo-auth-session, expo-build-properties, expo-camera, expo-clipboard, expo-constants (+32 more)
+Nodes (42): dependencies, expo, expo-constants, expo-dev-client, expo-font, @expo-google-fonts/boldonse, @expo-google-fonts/instrument-serif, @expo-google-fonts/manrope (+34 more)
 
 ### Community 6 - "websocket.ts"
-Cohesion: 0.07
-Nodes (44): CategoryPicker(), CategoryPickerProps, DIFFICULTIES, getRankBadgeStyle(), PREDEFINED_CATEGORIES, StepCategories(), StepCategoriesProps, BuzzQueueItem (+36 more)
+Cohesion: 0.09
+Nodes (35): BuzzQueueItem, Difficulty, SessionStatus, AnswerSkippedEvent, AnswerValidatedEvent, BaseWSMessage, BuzzerResetEvent, CategorySelectedEvent (+27 more)
 
 ### Community 7 - "page.tsx"
-Cohesion: 0.08
-Nodes (26): LobbyHero(), LobbyHeroProps, CATEGORY_EMOJI, orbitron, rajdhani, ArcadeTeamsSection(), LobbyHero(), LobbyHeroProps (+18 more)
+Cohesion: 0.09
+Nodes (24): LobbyScreen(), DIFFICULTIES, PREDEFINED_CATEGORIES, CATEGORY_EMOJI, LobbyPage(), orbitron, rajdhani, ArcadeTeamsSection() (+16 more)
 
 ### Community 8 - "hooks.ts"
-Cohesion: 0.05
-Nodes (25): NotificationsScreen(), SoloScreen(), SoloHubCard(), SoloHubCardProps, MyRankCard(), MyRankCardProps, SoloGreeting(), SoloGreetingProps (+17 more)
+Cohesion: 0.08
+Nodes (4): NotificationsPage(), useNotifications(), queryKeys, queryClient
 
 ### Community 9 - "palette.test.js"
 Cohesion: 0.12
@@ -222,144 +213,140 @@ Cohesion: 0.07
 Nodes (26): backgroundColor, foregroundImage, adaptiveIcon, edgeToEdgeEnabled, package, expo, android, icon (+18 more)
 
 ### Community 12 - "SprintGame.tsx"
-Cohesion: 0.19
-Nodes (14): AnswerChoicesPanel(), AnswerChoicesPanelProps, CHOICE_LABELS, GlobalTimerBar(), GlobalTimerBarProps, CHOICE_LABELS, msUntil(), Sample (+6 more)
+Cohesion: 0.14
+Nodes (17): AnswerChoicesPanel(), AnswerChoicesPanelProps, CHOICE_LABELS, AnswerChoicesPanel(), AnswerChoicesPanelProps, CHOICE_LABELS, GlobalTimerBar(), GlobalTimerBarProps (+9 more)
 
 ### Community 13 - "QuestionAndAnswerDisplay.tsx"
-Cohesion: 0.08
-Nodes (25): ExpandableCard(), ExpandableCardProps, QuestionAndAnswerDisplay(), QuestionAndAnswerDisplayProps, BuzzerButton(), BuzzerButtonProps, IdentificationQuestionDisplay(), IdentificationQuestionDisplayProps (+17 more)
+Cohesion: 0.11
+Nodes (17): IdentificationQuestionDisplay(), IdentificationQuestionDisplayProps, ExpandableCard(), ExpandableCardProps, QuestionAndAnswerDisplay(), QuestionAndAnswerDisplayProps, ProgressiveQuestionDisplay(), ProgressiveQuestionDisplayProps (+9 more)
 
 ### Community 14 - "index.ts"
-Cohesion: 0.06
-Nodes (32): RoomsScreen(), AllRoomsModal(), AllRoomsModalProps, GlobalRankCard(), GlobalRankCardProps, PatternZigzag(), extractCode(), QRScannerModal() (+24 more)
+Cohesion: 0.12
+Nodes (16): CategoryPodiumCard(), CategoryPodiumCardProps, MEDALS, GlobalStatsCard(), GlobalStatsCardProps, LastRoomCard(), LastRoomCardProps, LastSessionCard() (+8 more)
 
 ### Community 15 - "routePolicy.ts"
-Cohesion: 0.06
-Nodes (35): RootLayout(), registerForPushNotificationsAsync(), unregisterPushNotificationsAsync(), LoginPage(), boldonse, instrumentSerif, manrope, metadata (+27 more)
+Cohesion: 0.16
+Nodes (17): LoginPage(), config, middleware(), readReturnTo(), AccessDecision, AccessInput, AUTH_ONLY, buildLoginRedirect() (+9 more)
 
 ### Community 16 - "compilerOptions"
-Cohesion: 0.08
-Nodes (24): compilerOptions, allowJs, baseUrl, esModuleInterop, ignoreDeprecations, incremental, isolatedModules, jsx (+16 more)
+Cohesion: 0.09
+Nodes (22): compilerOptions, allowJs, esModuleInterop, incremental, isolatedModules, jsx, lib, module (+14 more)
 
 ### Community 17 - "scripts"
-Cohesion: 0.06
-Nodes (32): dependencies, react, react-dom, react-native, devDependencies, patch-package, name, overrides (+24 more)
+Cohesion: 0.09
+Nodes (22): dependencies, react, react-dom, react-native, devDependencies, patch-package, name, overrides (+14 more)
 
 ### Community 18 - "admin.ts"
-Cohesion: 0.07
-Nodes (13): AdminSessionsPage(), formatShortDate(), isStopable(), STATUS_CONFIG, STATUS_OPTIONS, forceStopSession(), getAdminActiveSessions(), getAdminSessions() (+5 more)
+Cohesion: 0.09
+Nodes (4): SearchAuditParams, SearchQuestionsParams, SearchRoomsParams, SearchUsersParams
 
 ### Community 19 - "Mode Équipe — Contrat API Frontend"
 Cohesion: 0.09
 Nodes (21): 10. Codes d'erreur spécifiques au mode équipe, 11. Résumé des nouveaux endpoints, 12. Checklist UI à implémenter côté frontend, 1. Vue d'ensemble du flow, 2. Création de session (Manager), 3. Rejoindre une session — vérification préalable, 4. Rejoindre une session (Joueur), 5. Changer d'équipe dans le lobby (+13 more)
 
 ### Community 20 - "teamColor"
-Cohesion: 0.13
-Nodes (29): BuzzQueueView(), BuzzQueueViewProps, LobbyPlayerDetailModalProps, TeamPickerModal(), TeamPickerModalProps, TeamEditor(), BuzzAlertOverlay(), BuzzAlertOverlayProps (+21 more)
+Cohesion: 0.24
+Nodes (15): TeamEditor(), GameHeader(), LobbyPlayerDetailModal(), TeamPickerModal(), TeamEditor(), isToken(), LEGACY_ALIASES, TEAM_COLOR_LABELS (+7 more)
 
 ### Community 21 - "Guide des nouvelles fonctionnalités Backend — BuzzMaster"
 Cohesion: 0.10
 Nodes (20): 1. Invitations de salle (Room Invitations), 2. Centre de notifications, 3. Dashboard — 3 dernières sessions et salles via u carrouseel horizontale, 4. Amis — nouvelles routes, 5. État de jeu — hasBuzzed et answer_validated, 6. Équipes dans l'état de jeu, 7. Classements session — info équipe, Annuler une demande envoyée (+12 more)
 
 ### Community 22 - "sessions.ts"
-Cohesion: 0.09
-Nodes (9): LobbyScreen(), LobbyPage(), deleteSession(), ExcelUploadFile, getManualQuestions(), SearchSessionsParams, setManualQuestions(), startSession() (+1 more)
+Cohesion: 0.11
+Nodes (8): CategoriesScreen(), CategorySelectionPage(), deleteSession(), ExcelUploadFile, joinCheck(), joinSession(), SearchSessionsParams, startSession()
 
 ### Community 23 - "SafeScreen.tsx"
-Cohesion: 0.05
-Nodes (38): 1. Ce qu'est ce projet, 2.1 Ordre imposé, 2.2 Ne prends jamais plus de 3 tâches d'un coup, 2.3 Si tu es bloqué, 2. Comment travailler, 3.1 Ce qui existe déjà dans `packages/core` — À RÉUTILISER, JAMAIS À RÉÉCRIRE, 3.2 Hooks métier déjà extraits — RÉUTILISE-LES, 3.3 Composants déjà portés dans `apps/game/components/` (+30 more)
+Cohesion: 0.13
+Nodes (5): EMPTY_QUESTION, DIFFICULTIES, LOADING_STEPS, SafeScreen(), SafeScreenProps
 
 ### Community 24 - "page.tsx"
-Cohesion: 0.09
-Nodes (13): QuestionReportModalProps, REPORT_REASONS, QRCodeModal(), QRCodeModalProps, EMPTY_QUESTION, ActiveSessionCard(), HistoryModal(), InviteFriendsModal() (+5 more)
+Cohesion: 0.18
+Nodes (12): RoomDetailScreen(), RoomDetailPage(), TrainingPlanDetailPage(), HistoryModal(), InviteFriendsModal(), useRoomDetail(), UseRoomDetailOptions, apiErrorMessage() (+4 more)
 
 ### Community 25 - "solo.ts"
-Cohesion: 0.06
-Nodes (18): SoloResultsScreen(), FALLBACK_THEMES, getThemeIconAndColor(), PopularThemeItem, TrainingHubScreen(), CareerProgressCardProps, VoteRegenerationResponse, AnswerSummary (+10 more)
+Cohesion: 0.13
+Nodes (11): AnswerSummary, CareerLevelResult, SoloAnswerRevealResponse, SoloCareerProgressResponse, SoloDifficulty, SoloNextQuestionResponse, SoloQuestionDTO, SoloSessionResultResponse (+3 more)
 
 ### Community 26 - "Spinner.tsx"
-Cohesion: 0.12
-Nodes (17): TabType, FilterType, UICombinedRoom, DIFFICULTIES, LOADING_STEPS, AnswerRevealOverlay(), AnswerRevealOverlayProps, SafeScreen() (+9 more)
+Cohesion: 0.16
+Nodes (11): ProfilePage(), AllRoomsPage(), FilterType, UICombinedRoom, AnswerRevealOverlay(), AnswerRevealOverlayProps, FullScreenLoaderProps, Spinner() (+3 more)
 
 ### Community 27 - "useAuthStore"
-Cohesion: 0.40
-Nodes (5): AdminDashboardPage(), CHART_TABS, formatDuration(), PERIOD_TABS, logout()
+Cohesion: 0.22
+Nodes (11): HomeScreen(), ProfileScreen(), AdminDashboardPage(), CHART_TABS, formatDuration(), PERIOD_TABS, RegisterPage(), AuthGate() (+3 more)
 
 ### Community 28 - "page.tsx"
 Cohesion: 0.16
-Nodes (4): XalaatLogo(), XalaatMark(), XalaatMarkProps, loginWithGoogle()
+Nodes (11): AccentToken, col(), colA(), fill(), OnboardingPage(), onFill(), Slide, slides (+3 more)
 
 ### Community 29 - "useBuzzStore"
-Cohesion: 0.24
-Nodes (13): BuzzActions, BuzzState, initialState, useBuzzerEnabled(), useBuzzQueue(), useBuzzStore, useCurrentQuestion(), useHasBuzzed() (+5 more)
+Cohesion: 0.19
+Nodes (16): GamePage(), GamePage(), pauseSession(), BuzzActions, BuzzState, initialState, useBuzzerEnabled(), useBuzzQueue() (+8 more)
 
 ### Community 30 - "page.tsx"
-Cohesion: 0.16
-Nodes (13): AdminUserDetailPage(), ALL_ROLES, formatDate(), formatDateTime(), PageProps, roleMeta, KpiCard(), KpiCardProps (+5 more)
+Cohesion: 0.18
+Nodes (12): AdminUserDetailPage(), ALL_ROLES, formatDate(), formatDateTime(), PageProps, roleMeta, KpiCard(), KpiCardProps (+4 more)
 
 ### Community 31 - "page.tsx"
-Cohesion: 0.07
-Nodes (29): dependencies, axios, lucide-react, react, react-dom, react-router-dom, recharts, sonner (+21 more)
+Cohesion: 0.17
+Nodes (10): RankingsPage(), ActiveSessionCard(), STATUS_CONFIG, AllRoomsModalProps, Avatar(), UserProfileModal(), UserProfileModalProps, CategoryStat (+2 more)
 
 ### Community 32 - "ModeratedGame.tsx"
-Cohesion: 0.08
-Nodes (23): compilerOptions, baseUrl, isolatedModules, jsx, lib, module, moduleResolution, noEmit (+15 more)
+Cohesion: 0.15
+Nodes (11): BuzzerButton(), BuzzerButtonProps, BuzzQueueView(), BuzzQueueViewProps, ModeratedGame(), ModeratedGameProps, PlayerActionView(), PlayerActionViewProps (+3 more)
 
 ### Community 33 - "useModeratedGame"
 Cohesion: 0.15
-Nodes (15): BuzzAlertOverlay(), BuzzAlertOverlayProps, observeServerTime(), applyPacket(), canAnswer(), GamePhase, GameStatePacket, GameStateSlice (+7 more)
-
-### Community 34 - "solo.ts"
-Cohesion: 0.16
-Nodes (15): KpiCard(), KpiCardProps, Avatar(), AvatarProps, Card(), CardContent(), CardHeader(), CardTitle() (+7 more)
+Nodes (15): getManualQuestions(), getSession(), setManualQuestions(), observeServerTime(), applyPacket(), GamePhase, GameStatePacket, GameStateSlice (+7 more)
 
 ### Community 35 - "confirmAsync"
-Cohesion: 0.10
-Nodes (24): Spinner(), DIFFICULTY_CONFIG, DIFFICULTY_OPTIONS, formatDate(), QuestionsPage(), formatDate(), RoomDetailPage(), STATUS_CONFIG (+16 more)
+Cohesion: 0.16
+Nodes (12): AdminQuestionsPage(), DIFFICULTY_CONFIG, DIFFICULTY_OPTIONS, formatDate(), AdminRoomsPage(), COLORS, DialogBench(), RAMPS (+4 more)
 
 ### Community 36 - "SessionResponse"
-Cohesion: 0.10
-Nodes (23): CATEGORY_EMOJI, ArcadeTeamsSection(), ArcadeTeamsSectionProps, LobbyHeader(), LobbyHeaderProps, LobbyPlayerDetailModal(), LobbyWaitingCard(), LobbyWaitingCardProps (+15 more)
+Cohesion: 0.17
+Nodes (11): LobbyHeader(), LobbyHeaderProps, ManagerPanel(), ManagerPanelProps, ManualQuestionsAlert(), QuestionLimitModal(), QuestionLimitModalProps, Slider() (+3 more)
 
 ### Community 37 - "page.tsx"
-Cohesion: 0.11
-Nodes (21): AdminUser, AdminAuditLogsPage(), formatDate(), AdminSessionDetailPage(), DIFFICULTY_CONFIG, formatDate(), STATUS_CONFIG, Tab (+13 more)
+Cohesion: 0.19
+Nodes (12): AdminAuditLogsPage(), formatDate(), AdminUser, AdminUsersPage(), ALL_ROLES, formatDate(), roleMeta, Column (+4 more)
 
 ### Community 38 - "confirm.ts"
-Cohesion: 0.13
-Nodes (13): ConfirmHost(), TONE_COLORS, COLORS, DialogBench(), RAMPS, TokensDevPage(), ConfirmHost(), ConfirmModalProps (+5 more)
+Cohesion: 0.20
+Nodes (8): ConfirmHost(), ConfirmModal(), ConfirmModalProps, TONE, ConfirmOptions, ConfirmState, ConfirmTone, useConfirmStore
 
 ### Community 39 - "SessionController — Détail des Endpoints"
 Cohesion: 0.13
 Nodes (14): DELETE /api/sessions/{sessionId}, DELETE /api/sessions/{sessionId}/players/{playerId}, GET /api/sessions, GET /api/sessions/join/{code}, GET /api/sessions/{sessionId}, POST /api/sessions, POST /api/sessions/{sessionId}/cancel-generation, POST /api/sessions/{sessionId}/pause (+6 more)
 
 ### Community 40 - "page.tsx"
-Cohesion: 0.18
-Nodes (13): CATEGORY_COLORS, CategoryRankingsCard(), getCategoryIcon(), rankLabel(), SessionResultsPage(), TeamEntry, MEDALS, Podium() (+5 more)
+Cohesion: 0.21
+Nodes (12): TeamEntry, CATEGORY_COLORS, CategoryRankingsCard(), getCategoryIcon(), rankLabel(), SessionResultsPage(), TeamEntry, MEDALS (+4 more)
 
 ### Community 41 - "page.tsx"
-Cohesion: 0.16
-Nodes (9): EditProfileScreen(), ConfirmEmailContent(), PageState, EditProfilePage(), AvatarSelectionModal(), AvatarSelectionModalProps, AVATAR_SEEDS, AVATAR_STYLES (+1 more)
+Cohesion: 0.29
+Nodes (8): ConfirmEmailContent(), PageState, EditProfilePage(), AvatarSelectionModal(), AvatarSelectionModalProps, AVATAR_SEEDS, AVATAR_STYLES, getAvatarUrl()
 
 ### Community 42 - "page.tsx"
-Cohesion: 0.10
-Nodes (19): Authentification Google *(transverse — dépend du backend)*, Blocages, 🐛 BUG — En sprint, l'hôte ne choisit jamais ses thèmes *(indépendant, à faire en premier)*, Comment utiliser ce fichier, Dettes techniques connues, ✅ DÉJÀ FAIT — ne pas refaire, Fonctionnalité — Thèmes imposés par l'hôte *(dépend du backend F6)*, Phase 0 — Décontamination (+11 more)
+Cohesion: 0.22
+Nodes (6): PatternZigzag(), ActiveRoomSummary, QuizOfTheDayCard(), QuizOfTheDayCardProps, ComingSoonModal(), ComingSoonModalProps
 
 ### Community 43 - "GameFooter.tsx"
-Cohesion: 0.15
-Nodes (16): LiveLeaderboard(), LiveLeaderboardProps, MEDAL_COLORS, GameFooterProps, TeamLeaderboard(), TeamLeaderboardProps, LiveLeaderboard(), LiveLeaderboardProps (+8 more)
+Cohesion: 0.19
+Nodes (9): LiveLeaderboard(), LiveLeaderboardProps, MEDAL_COLORS, ScoreCorrectionSheet(), ScoreCorrectionSheetProps, GameFooter(), GameFooterProps, TeamLeaderboard() (+1 more)
 
 ### Community 44 - "page.tsx"
-Cohesion: 0.32
-Nodes (7): formatShortDate(), isStopable(), SessionsPage(), STATUS_CONFIG, STATUS_OPTIONS, AdminActiveSessionResponse, AdminSessionSummaryResponse
+Cohesion: 0.23
+Nodes (10): AdminSessionsPage(), formatShortDate(), isStopable(), STATUS_CONFIG, STATUS_OPTIONS, getAdminActiveSessions(), getAdminSessions(), SearchSessionsParams (+2 more)
 
 ### Community 45 - "page.tsx"
-Cohesion: 0.09
-Nodes (27): App(), queryClient, Column, DataTable(), DataTableProps, AuditLogsPage(), formatDate(), CHART_TABS (+19 more)
+Cohesion: 0.21
+Nodes (10): AdminSessionDetailPage(), DIFFICULTY_CONFIG, formatDate(), STATUS_CONFIG, Tab, forceStopSession(), getAdminSessionDetail(), AdminSessionDetailResponse (+2 more)
 
 ### Community 46 - "index.ts"
-Cohesion: 0.16
-Nodes (12): AppTopBar(), BottomTabBar(), GlobalRankCard(), GlobalRankCardProps, PatternDots(), PatternZigzag(), ActiveRoomSummary, QuizOfTheDayCard() (+4 more)
+Cohesion: 0.27
+Nodes (6): AppTopBar(), BottomTabBar(), GlobalRankCard(), GlobalRankCardProps, PatternDots(), XalaatMark()
 
 ### Community 47 - "Screen Requirements (BuzzMaster)"
 Cohesion: 0.17
@@ -378,28 +365,24 @@ Cohesion: 0.17
 Nodes (11): Notes générales à rappeler à l'agent si besoin, Prompts à donner à ton agent — intégration du nouveau design Xalaat, Étape 0 — Design tokens, Étape 1 — Composants partagés, Étape 2 — Écran Accueil, Étape 3 — Écrans Quiz (jeu / feedback / résultats), Étape 4 — Hub + modale "Rejoindre", Étape 5 — Salons (créer / liste / détail / génération IA) (+3 more)
 
 ### Community 52 - "categories.tsx"
-Cohesion: 0.19
-Nodes (8): FeatureItem, Slide, slides, SprintGame(), DIFFICULTIES, PREDEFINED_CATEGORIES, SprintGame(), appStorage
+Cohesion: 0.24
+Nodes (7): DIFFICULTIES, PREDEFINED_CATEGORIES, SprintGame(), HomePage(), appStorage, tokenStorage, CategoryRequest
 
 ### Community 53 - "PlayerProfileModal.tsx"
-Cohesion: 0.10
-Nodes (19): UserProfileScreen(), FilterType, FriendsScreen(), BlockedUsersModal(), BlockedUsersModalProps, Avatar(), AvatarProps, FriendProfilePage() (+11 more)
+Cohesion: 0.27
+Nodes (8): FriendProfilePage(), FRIENDSHIP_CONFIG, FRIENDSHIP_CONFIG, PlayerProfileModal(), PlayerProfileModalProps, removeFriend(), FriendState, useFriendStore
 
 ### Community 54 - "Rooms & Sessions Architecture (BuzzMaster)"
 Cohesion: 0.18
 Nodes (11): API Endpoints (Rooms), API Endpoints (Sessions), Business Rules, Database Relationship, Edge Cases & Error Handling, Performance Considerations, Room Types & Use Cases, Rooms & Sessions Architecture (BuzzMaster) (+3 more)
 
 ### Community 55 - "package.json"
-Cohesion: 0.17
-Nodes (11): dependencies, axios, @tanstack/react-query, zustand, main, name, peerDependencies, react (+3 more)
+Cohesion: 0.18
+Nodes (10): dependencies, axios, sonner, @tanstack/react-query, zustand, name, peerDependencies, react (+2 more)
 
 ### Community 57 - "index.ts"
-Cohesion: 0.16
-Nodes (12): ConfirmEmailScreen(), PageState, getWebSocketBaseUrl(), getWebSocketUrl(), authApi, dashboardApi, friendsApi, gameApi (+4 more)
-
-### Community 58 - "rooms.ts"
-Cohesion: 0.12
-Nodes (7): DashboardPage(), RoomsContent(), SoloPage(), AllRoomsModal(), AllRoomsModalProps, SearchRoomsParams, useDashboardV2()
+Cohesion: 0.18
+Nodes (10): adminApi, authApi, dashboardApi, friendsApi, gameApi, invitationsApi, rankingsApi, roomsApi (+2 more)
 
 ### Community 59 - "paths"
 Cohesion: 0.20
@@ -410,12 +393,12 @@ Cohesion: 0.20
 Nodes (9): KeyboardAvoidingViewProps, NativeSafeAreaViewProps, react-native, react-native-safe-area-context, ScrollViewProps, TextInputProps, TextProps, TouchableOpacityProps (+1 more)
 
 ### Community 61 - "page.tsx"
-Cohesion: 0.13
-Nodes (4): FadeInView(), RiseView(), AnswerRevealOverlay(), AnswerRevealOverlayProps
+Cohesion: 0.22
+Nodes (7): AdminRoomDetailPage(), formatDate(), STATUS_CONFIG, Tab, Card(), AdminRoomDetailResponse, AdminSessionStatus
 
 ### Community 62 - "layout.tsx"
-Cohesion: 0.10
-Nodes (21): SplashScreen(), TabsLayout(), getPaginationRange(), RankingsScreen(), TAB_CONFIG, TabBar(), TabBarProps, AppTopBar() (+13 more)
+Cohesion: 0.27
+Nodes (6): TabsLayout(), DashboardHeader(), DashboardHeaderProps, WelcomeSection(), TabBar(), usePresence()
 
 ### Community 63 - "Game-Specific Checklists"
 Cohesion: 0.20
@@ -429,10 +412,6 @@ Nodes (10): Flow 1: Create & Play a Session (Manager), Flow 2: Join a Session (P
 Cohesion: 0.20
 Nodes (10): 2.1 Création et Configuration, 2.2 Phase Lobby (Salle d'Attente), 2.3 Phase de Génération, 2.4 Phase de Jeu (Boucle Principale), 2.5 Fin de Partie, 2. Règles du Jeu, Actions du Manager, Affichage d'une Question (+2 more)
 
-### Community 67 - "friends.ts"
-Cohesion: 0.22
-Nodes (10): JoinRoomByCodeScreen(), CreateRoomScreen(), NewCareerScreen(), ProfileScreen(), FormInput(), FormInputProps, useDashboard(), useMyGlobalRank() (+2 more)
-
 ### Community 68 - "Generate Session Questions Flow"
 Cohesion: 0.20
 Nodes (9): Client → Server, Error Handling, File Locations, Generate Session Questions Flow, Overview, Progress Screen UI, Server → Client, Steps (+1 more)
@@ -442,44 +421,40 @@ Cohesion: 0.38
 Nodes (8): BUZZ_QUEUE, ORDINAL(), QueueRow(), STILL_READY, XalaatAdmin(), XalaatBuzzerPhone(), XalaatPlayer(), XalaatProjection()
 
 ### Community 70 - "page.tsx"
-Cohesion: 0.15
-Nodes (12): ChallengeResultDTO, EssentialPointFormat, LearningNotionDTO, ProgressDTO, ProgressionDTO, TrainingChallengeType, TrainingPhase, TrainingResultResponse (+4 more)
+Cohesion: 0.36
+Nodes (6): DashboardPage(), RoomsContent(), SoloPage(), AllRoomsModal(), AnimatedCounter(), useDashboardV2()
 
 ### Community 71 - "Badge.tsx"
-Cohesion: 0.09
-Nodes (21): ActiveSessionCard(), ActiveSessionCardProps, HistoryModal(), HistoryModalProps, InviteFriendsModal(), InviteFriendsModalProps, MembersWithStats(), MembersWithStatsProps (+13 more)
+Cohesion: 0.25
+Nodes (5): PlayerCardProps, Badge(), BadgeProps, BadgeVariant, variantStyles
 
 ### Community 72 - "client.ts"
-Cohesion: 0.20
-Nodes (6): refreshToken(), createResponseInterceptor(), failedQueue, processQueue(), tokenStorage, TokenResponse
-
-### Community 74 - "PerformanceMonitor"
-Cohesion: 0.18
-Nodes (4): TrainingResultScreen(), startRemediation(), BuzzLatencyMetrics, PerformanceMonitor
+Cohesion: 0.25
+Nodes (5): baseUrl, apiClientLongTimeout, failedQueue, getWebSocketBaseUrl(), getWebSocketUrl()
 
 ### Community 76 - "page.tsx"
-Cohesion: 0.35
-Nodes (8): GamePage(), LoadingScreen(), GamePage(), LoadingPage(), cancelGeneration(), pauseSession(), useGameSocket(), useIsManager()
+Cohesion: 0.46
+Nodes (5): LoadingScreen(), LoadingPage(), cancelGeneration(), useIsManager(), GenerationProgressEvent
 
 ### Community 77 - "QuestionResponse"
-Cohesion: 0.27
-Nodes (9): FadeInUpView(), FloatView(), PopView(), ChallengeView(), ChallengeViewProps, GamificationSummaryCard(), GamificationSummaryCardProps, ChallengeDTO (+1 more)
+Cohesion: 0.32
+Nodes (6): CategoryChangeOverlay(), CategoryChangeOverlayProps, CategoryChangeOverlay(), CategoryChangeOverlayProps, GameHeaderProps, QuestionResponse
 
 ### Community 78 - "layout.tsx"
-Cohesion: 0.36
+Cohesion: 0.39
 Nodes (5): AdminLayout(), AdminHeader(), getBreadcrumbs(), AdminSidebar(), NAV_ITEMS
 
 ### Community 79 - "layout.tsx"
-Cohesion: 0.26
-Nodes (7): BotClient, latencies, MODE, percentile(), PLAYER_COUNT, request(), run()
+Cohesion: 0.25
+Nodes (6): boldonse, instrumentSerif, manrope, metadata, viewport, AppProviders()
 
 ### Community 80 - "page.tsx"
-Cohesion: 0.12
-Nodes (20): CareerDetailScreen(), StageGroup, DIFFICULTIES, NewCustomTrainingScreen(), DIFFICULTY_COLORS, formatSeriesInfo(), TrainingPlanDetailScreen(), GamifiedProgressionPath() (+12 more)
+Cohesion: 0.39
+Nodes (5): SoloGamePage(), CareerDetailPage(), SoloState, useSoloStore, LevelInfo
 
 ### Community 81 - "page.tsx"
-Cohesion: 0.24
-Nodes (9): DURATIONS, LEVELS, TrainingConfigScreen(), TrainingSessionScreen(), advance(), initialState, TrainingState, useTrainingStore (+1 more)
+Cohesion: 0.36
+Nodes (6): FriendsPage(), TabType, formatTimeSince(), FriendCard(), FriendCardProps, FriendResponse
 
 ### Community 82 - "BuzzMaster AI - React Native Agent Rules"
 Cohesion: 0.25
@@ -489,57 +464,53 @@ Nodes (7): BuzzMaster AI - React Native Agent Rules, Final Notes, Folder Structu
 Cohesion: 0.25
 Nodes (8): 4. Flow Complet d'une Partie, Diagramme de Séquence, ÉTAPE 1: CRÉATION (Manager), ÉTAPE 2: LOBBY (Joueurs), ÉTAPE 3: GÉNÉRATION, ÉTAPE 4: BOUCLE DE JEU, ÉTAPE 5: FIN DE PARTIE (Automatique), Étapes Détaillées
 
-### Community 84 - "users.ts"
-Cohesion: 0.25
-Nodes (8): getColor(), MasteryBar(), MasteryBarProps, FORMAT_COLORS, FORMAT_ICONS, NotionCard(), NotionCardProps, EssentialPointDTO
-
 ### Community 85 - "FriendRequestCard.tsx"
-Cohesion: 0.18
-Nodes (10): Ce qu'il faut faire, Ce qu'il faut faire, Ce qu'il ne faut PAS faire, Ce que le backend fournit (tâche T6), Fonctionnalité — Thèmes imposés par l'hôte (FRONTEND) + correction du bug sprint, Le besoin, Le diagnostic, déjà fait, PARTIE A — Bug : en sprint, l'hôte ne choisit jamais ses thèmes (+2 more)
+Cohesion: 0.38
+Nodes (6): FriendRequestCard(), FriendRequestCardProps, ReceivedRequestCardProps, SentRequestCardProps, FriendRequestResponse, SentFriendRequestResponse
 
 ### Community 86 - "ThemeProvider.tsx"
-Cohesion: 0.20
-Nodes (9): main, name, private, scripts, android, ios, start, web (+1 more)
+Cohesion: 0.29
+Nodes (5): LIGHT_ONLY, Theme, ThemeContext, ThemeContextValue, ThemeProvider()
 
 ### Community 87 - "MembersWithStats.tsx"
-Cohesion: 0.36
-Nodes (8): AccentToken, col(), colA(), fill(), OnboardingPage(), onFill(), Slide, slides
+Cohesion: 0.38
+Nodes (5): MembersWithStats(), FriendshipButton(), FriendshipButtonProps, FriendshipStatus, RoomDetailResponse
 
 ### Community 88 - "Analyse du Système de Jeu BuzzMaster AI"
 Cohesion: 0.29
 Nodes (6): 5. Communication Temps Réel (WebSocket), Analyse du Système de Jeu BuzzMaster AI, Conclusion, Topics de Subscription, Vue d'ensemble, Événements Diffusés
 
 ### Community 91 - "useLoginForm.ts"
-Cohesion: 0.12
-Nodes (17): LoginScreen(), RegisterScreen(), AppleSignInButton(), AppleSignInButtonProps, GoogleSignInButton(), GoogleSignInButtonProps, isGoogleConfigured, useNativeGoogleAuth() (+9 more)
+Cohesion: 0.47
+Nodes (4): LoginScreen(), LoginFormErrors, useLoginForm(), UseLoginFormOptions
 
 ### Community 92 - "useRegisterForm.ts"
-Cohesion: 0.36
-Nodes (5): AdminHeader(), getBreadcrumbs(), AdminSidebar(), NAV_ITEMS, AdminLayout()
+Cohesion: 0.47
+Nodes (4): RegisterScreen(), RegisterFormErrors, useRegisterForm(), UseRegisterFormOptions
 
 ### Community 93 - "TabBar.tsx"
-Cohesion: 0.29
-Nodes (6): CategoriesScreen(), DIFFICULTIES, PREDEFINED_CATEGORIES, CategorySelectionPage(), joinCheck(), joinSession()
+Cohesion: 0.40
+Nodes (3): TAB_CONFIG, TabBar(), TabBarProps
 
 ### Community 94 - "useRoomsData"
-Cohesion: 0.29
-Nodes (7): devDependencies, ajv, @babel/core, @expo/ngrok, tailwindcss, @types/react, typescript
+Cohesion: 0.53
+Nodes (4): RoomsScreen(), ActiveSessionInfo, useRoomsData(), UseRoomsDataOptions
 
 ### Community 95 - "metro.config.js"
 Cohesion: 0.33
 Nodes (5): config, { getDefaultConfig }, path, { withNativeWind }, workspaceRoot
 
 ### Community 96 - "page.tsx"
-Cohesion: 0.11
-Nodes (14): RoomDetailScreen(), CreateSessionScreen(), CreateSessionPage(), JoinRoomPage(), RoomDetailPage(), JoinModal(), SessionConfigForm(), extractCode() (+6 more)
+Cohesion: 0.47
+Nodes (3): extractCode(), QRScannerModal(), QRScannerModalProps
 
 ### Community 97 - "@xalaat/core"
 Cohesion: 0.33
 Nodes (5): Ce qui n'est pas encore portable, Comment on l'importe, Contrainte sur `src/lib/hooks/`, React est une peerDependency, et ce n'est pas un détail, @xalaat/core
 
 ### Community 99 - "Podium.tsx"
-Cohesion: 0.15
-Nodes (17): CATEGORY_COLORS, getCategoryIcon(), rankLabel(), SessionResultsPage(), TeamEntry, CategoryQuestionsModal(), CategoryQuestionsModalProps, difficultyColor() (+9 more)
+Cohesion: 0.40
+Nodes (4): MEDALS, Podium(), PODIUM_HEIGHT, PodiumProps
 
 ### Community 100 - "Button.tsx"
 Cohesion: 0.40
@@ -585,33 +556,25 @@ Nodes (3): 8. Sécurité et Autorisations, Niveaux d'Accès, Vérifications
 Cohesion: 0.67
 Nodes (3): 9. Métriques et Optimisations, Monitoring, Performance
 
-### Community 119 - "useGameStore.ts"
-Cohesion: 0.40
-Nodes (4): SoloGameScreen(), AnswerChoicesPanel, AnswerChoicesPanelProps, CHOICE_LABELS
-
-### Community 120 - "useSessionStore.ts"
-Cohesion: 0.40
-Nodes (5): BADGE_CONFIGS, BadgeConfig, BadgePill(), BadgePillProps, TrainingBadge
-
 ## Knowledge Gaps
-- **839 isolated node(s):** `name`, `version`, `private`, `type`, `dev` (+834 more)
+- **632 isolated node(s):** `name`, `slug`, `version`, `orientation`, `icon` (+627 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **23 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **21 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `useAuthStore` connect `layout.tsx` to `hooks.ts`, `index.ts`, `routePolicy.ts`, `sessions.ts`, `page.tsx`, `Spinner.tsx`, `useAuthStore`, `page.tsx`, `page.tsx`, `page.tsx`, `categories.tsx`, `index.ts`, `rooms.ts`, `friends.ts`, `page.tsx`, `layout.tsx`, `useLoginForm.ts`, `useRegisterForm.ts`, `TabBar.tsx`, `page.tsx`, `Podium.tsx`?**
-  _High betweenness centrality (0.061) - this node is a cross-community bridge._
-- **Why does `notify` connect `page.tsx` to `friends.ts`, `SessionResponse`, `confirm.ts`, `Badge.tsx`, `hooks.ts`, `page.tsx`, `page.tsx`, `page.tsx`, `page.tsx`, `PlayerProfileModal.tsx`, `useLoginForm.ts`, `dashboard.tsx`?**
-  _High betweenness centrality (0.014) - this node is a cross-community bridge._
-- **Are the 7 inferred relationships involving `useAuthStore` (e.g. with `useAppleAuth()` and `useGoogleAuth()`) actually correct?**
-  _`useAuthStore` has 7 INFERRED edges - model-reasoned connections that need verification._
-- **Are the 2 inferred relationships involving `notifyApiError()` (e.g. with `useLobbySession()` and `useModeratedGame()`) actually correct?**
-  _`notifyApiError()` has 2 INFERRED edges - model-reasoned connections that need verification._
-- **Are the 2 inferred relationships involving `confirmAsync()` (e.g. with `useLobbySession()` and `useRoomDetail()`) actually correct?**
-  _`confirmAsync()` has 2 INFERRED edges - model-reasoned connections that need verification._
+- **Why does `useAuthStore` connect `useAuthStore` to `PlayerResponse`, `page.tsx`, `SprintGame.tsx`, `routePolicy.ts`, `sessions.ts`, `page.tsx`, `Spinner.tsx`, `useBuzzStore`, `page.tsx`, `page.tsx`, `page.tsx`, `page.tsx`, `categories.tsx`, `layout.tsx`, `page.tsx`, `page.tsx`, `layout.tsx`, `layout.tsx`, `useLoginForm.ts`, `useRegisterForm.ts`, `TabBar.tsx`, `useRoomsData`?**
+  _High betweenness centrality (0.058) - this node is a cross-community bridge._
+- **Why does `TokensDevPage()` connect `confirmAsync` to `palette.test.js`?**
+  _High betweenness centrality (0.024) - this node is a cross-community bridge._
+- **Why does `withAlpha()` connect `palette.test.js` to `confirmAsync`?**
+  _High betweenness centrality (0.024) - this node is a cross-community bridge._
+- **Are the 5 inferred relationships involving `useAuthStore` (e.g. with `useLobbySession()` and `useLoginForm()`) actually correct?**
+  _`useAuthStore` has 5 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 2 inferred relationships involving `teamColor()` (e.g. with `CategorySelectionPage()` and `TeamLeaderboard()`) actually correct?**
   _`teamColor()` has 2 INFERRED edges - model-reasoned connections that need verification._
-- **What connects `name`, `version`, `private` to the rest of the system?**
-  _839 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Are the 3 inferred relationships involving `useBuzzStore` (e.g. with `useLobbySession()` and `useModeratedGame()`) actually correct?**
+  _`useBuzzStore` has 3 INFERRED edges - model-reasoned connections that need verification._
+- **What connects `name`, `slug`, `version` to the rest of the system?**
+  _632 weakly-connected nodes found - possible documentation gaps or missing edges._

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Modal } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { Brain, Sparkles, Zap } from 'lucide-react-native';
 import { palette, font } from '~/lib/theme/tokens';
 import { PulseView, FloatView, FadeInUpView } from '~/components/anim';
@@ -20,6 +20,24 @@ const GENERATION_STEPS = [
   'Finalisation de la partie… Préparez-vous !',
 ];
 
+/**
+ * Écran de préparation IA, affiché en superposition de l'écran appelant.
+ *
+ * ────────────────────────────────────────────────────────────────────────────
+ * POURQUOI UNE SIMPLE VUE ABSOLUE ET SURTOUT PAS UN `Modal`
+ * ────────────────────────────────────────────────────────────────────────────
+ * Tous les appelants suivent le même enchaînement : afficher ce voile pendant
+ * l'appel réseau, puis `router.replace(...)` vers l'écran de jeu. Avec un
+ * `Modal` natif, l'écran parent — et donc le modal encore présenté — est
+ * démonté EN MÊME TEMPS que la transition de navigation. iOS se retrouve alors
+ * avec un view controller présenté orphelin : son contenu React a disparu (le
+ * voile devient invisible) mais sa fenêtre reste au-dessus de la pile et avale
+ * tous les touchers. Résultat : l'écran de question s'affiche parfaitement et
+ * plus aucun clic ne passe — ni les réponses, ni la flèche retour.
+ *
+ * Une vue en `absoluteFill` appartient à l'arbre de l'écran appelant : elle
+ * disparaît avec lui, sans cycle de vie natif à désynchroniser.
+ */
 export function QuizAiLoadingScreen({
   visible,
   theme,
@@ -45,147 +63,149 @@ export function QuizAiLoadingScreen({
   if (!visible) return null;
 
   return (
-    <Modal visible={visible} transparent animationType="fade">
-      <View
-        style={{
-          flex: 1,
+    <View
+      style={[
+        StyleSheet.absoluteFill,
+        {
           backgroundColor: palette.bg,
           alignItems: 'center',
           justifyContent: 'center',
           paddingHorizontal: 28,
           gap: 24,
-        }}
-      >
-        {/* Animated Brain in Glowing Pulse Container */}
-        <PulseView duration={2000}>
-          <View
-            style={{
-              width: 120,
-              height: 120,
-              borderRadius: 60,
-              backgroundColor: palette.primary + '20',
-              borderWidth: 2,
-              borderColor: palette.primary + '50',
-              alignItems: 'center',
-              justifyContent: 'center',
-              shadowColor: palette.primary,
-              shadowOffset: { width: 0, height: 6 },
-              shadowOpacity: 0.25,
-              shadowRadius: 16,
-              elevation: 8,
-              position: 'relative',
-            }}
-          >
-            <FloatView duration={2200}>
-              <Brain size={58} color={palette.primary} strokeWidth={2.2} />
-            </FloatView>
-
-            {/* Sparkle badge */}
-            <View
-              style={{
-                position: 'absolute',
-                top: -4,
-                right: -4,
-                width: 32,
-                height: 32,
-                borderRadius: 16,
-                backgroundColor: palette.gold,
-                alignItems: 'center',
-                justifyContent: 'center',
-                borderWidth: 2,
-                borderColor: palette.bg,
-              }}
-            >
-              <Sparkles size={16} color="#FFFFFF" />
-            </View>
-          </View>
-        </PulseView>
-
-        {/* Text Details */}
-        <View style={{ alignItems: 'center', gap: 8, width: '100%' }}>
-          <Text
-            style={{
-              fontFamily: font.nativeFamily.display,
-              fontSize: 22,
-              color: palette.txt,
-              textAlign: 'center',
-              lineHeight: 28,
-              paddingTop: 4,
-            }}
-          >
-            {title}
-          </Text>
-
-          {levelLabel ? (
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: 6,
-                backgroundColor: palette.surface,
-                paddingHorizontal: 12,
-                paddingVertical: 6,
-                borderRadius: 9999,
-                borderWidth: 1,
-                borderColor: palette.line,
-              }}
-            >
-              <Zap size={14} color={palette.primary} />
-              <Text style={{ fontSize: 13, fontWeight: '700', color: palette.txt }}>
-                {levelLabel}
-              </Text>
-            </View>
-          ) : null}
-
-          <Text
-            style={{
-              fontSize: 14,
-              color: palette.inkSoft,
-              textAlign: 'center',
-              marginTop: 4,
-              paddingHorizontal: 16,
-              lineHeight: 20,
-            }}
-            numberOfLines={2}
-          >
-            Thème : <Text style={{ color: palette.txt, fontWeight: '700' }}>{theme}</Text>
-          </Text>
-        </View>
-
-        {/* Dynamic step ticker */}
+          zIndex: 100,
+          elevation: 100,
+        },
+      ]}
+    >
+      {/* Animated Brain in Glowing Pulse Container */}
+      <PulseView duration={2000}>
         <View
           style={{
-            backgroundColor: palette.surface,
-            borderRadius: 18,
-            borderWidth: 1,
-            borderColor: palette.line,
-            paddingVertical: 14,
-            paddingHorizontal: 20,
-            width: '100%',
+            width: 120,
+            height: 120,
+            borderRadius: 60,
+            backgroundColor: palette.primary + '20',
+            borderWidth: 2,
+            borderColor: palette.primary + '50',
             alignItems: 'center',
-            minHeight: 52,
             justifyContent: 'center',
+            shadowColor: palette.primary,
+            shadowOffset: { width: 0, height: 6 },
+            shadowOpacity: 0.25,
+            shadowRadius: 16,
+            elevation: 8,
+            position: 'relative',
           }}
         >
-          <FadeInUpView key={stepIndex} duration={250}>
-            <Text
-              style={{
-                fontSize: 13,
-                color: palette.primary,
-                fontWeight: '600',
-                textAlign: 'center',
-              }}
-            >
-              {GENERATION_STEPS[stepIndex]}
-            </Text>
-          </FadeInUpView>
-        </View>
+          <FloatView duration={2200}>
+            <Brain size={58} color={palette.primary} strokeWidth={2.2} />
+          </FloatView>
 
-        <Text style={{ fontSize: 11.5, color: palette.inkSoft, textAlign: 'center' }}>
-          L'intelligence artificielle compose vos questions sur mesure…
+          {/* Sparkle badge */}
+          <View
+            style={{
+              position: 'absolute',
+              top: -4,
+              right: -4,
+              width: 32,
+              height: 32,
+              borderRadius: 16,
+              backgroundColor: palette.gold,
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderWidth: 2,
+              borderColor: palette.bg,
+            }}
+          >
+            <Sparkles size={16} color="#FFFFFF" />
+          </View>
+        </View>
+      </PulseView>
+
+      {/* Text Details */}
+      <View style={{ alignItems: 'center', gap: 8, width: '100%' }}>
+        <Text
+          style={{
+            fontFamily: font.nativeFamily.display,
+            fontSize: 22,
+            color: palette.txt,
+            textAlign: 'center',
+            lineHeight: 28,
+            paddingTop: 4,
+          }}
+        >
+          {title}
+        </Text>
+
+        {levelLabel ? (
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 6,
+              backgroundColor: palette.surface,
+              paddingHorizontal: 12,
+              paddingVertical: 6,
+              borderRadius: 9999,
+              borderWidth: 1,
+              borderColor: palette.line,
+            }}
+          >
+            <Zap size={14} color={palette.primary} />
+            <Text style={{ fontSize: 13, fontWeight: '700', color: palette.txt }}>
+              {levelLabel}
+            </Text>
+          </View>
+        ) : null}
+
+        <Text
+          style={{
+            fontSize: 14,
+            color: palette.inkSoft,
+            textAlign: 'center',
+            marginTop: 4,
+            paddingHorizontal: 16,
+            lineHeight: 20,
+          }}
+          numberOfLines={2}
+        >
+          Thème : <Text style={{ color: palette.txt, fontWeight: '700' }}>{theme}</Text>
         </Text>
       </View>
-    </Modal>
+
+      {/* Dynamic step ticker */}
+      <View
+        style={{
+          backgroundColor: palette.surface,
+          borderRadius: 18,
+          borderWidth: 1,
+          borderColor: palette.line,
+          paddingVertical: 14,
+          paddingHorizontal: 20,
+          width: '100%',
+          alignItems: 'center',
+          minHeight: 52,
+          justifyContent: 'center',
+        }}
+      >
+        <FadeInUpView key={stepIndex} duration={250}>
+          <Text
+            style={{
+              fontSize: 13,
+              color: palette.primary,
+              fontWeight: '600',
+              textAlign: 'center',
+            }}
+          >
+            {GENERATION_STEPS[stepIndex]}
+          </Text>
+        </FadeInUpView>
+      </View>
+
+      <Text style={{ fontSize: 11.5, color: palette.inkSoft, textAlign: 'center' }}>
+        L'intelligence artificielle compose vos questions sur mesure…
+      </Text>
+    </View>
   );
 }
 

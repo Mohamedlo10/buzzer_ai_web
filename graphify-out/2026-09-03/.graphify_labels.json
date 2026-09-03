@@ -139,14 +139,5 @@
   "137": "postcss.config.js",
   "138": "doc-api-backend.md",
   "139": "hasbuzzed-state-handling.md",
-  "140": "testflight-checklist.md",
-  "141": "SoloStatsCard.tsx",
-  "142": "lucide-extra.d.ts",
-  "143": "tsconfig.json",
-  "144": "privacy.tsx",
-  "145": "_layout.tsx",
-  "146": "terms.tsx",
-  "147": "global.d.ts",
-  "148": "uiResponsiveness.test.mjs",
-  "149": "vite.config.ts"
+  "140": "testflight-checklist.md"
 }

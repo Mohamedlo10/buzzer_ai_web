@@ -23,7 +23,6 @@ import { NotionCard } from '~/components/training/NotionCard';
 import { ChallengeView } from '~/components/training/ChallengeView';
 import { MasteryBar } from '~/components/training/MasteryBar';
 import { palette, font } from '~/lib/theme/tokens';
-import { confirmAsync } from '~/lib/ui/confirm';
 import { FadeInUpView } from '~/components/anim';
 
 /**
@@ -86,14 +85,10 @@ export default function TrainingSessionScreen() {
     }
   };
 
-  const handleQuit = async () => {
-    const ok = await confirmAsync({
-      title: 'Quitter la session',
-      message: 'Votre progression est sauvegardée. Vous pourrez reprendre plus tard.',
-    });
-    if (ok) {
-      router.replace('/solo/training' as any);
-    }
+  // Aucune confirmation : la progression est enregistrée côté serveur à chaque
+  // étape et la session se reprend telle quelle.
+  const handleQuit = () => {
+    router.replace('/solo/training' as any);
   };
 
   // Loading state

@@ -91,7 +91,9 @@ export default function TrainingPlanDetailScreen() {
     try {
       const startData = await soloApi.startTrainingLevel(planId!, subLevel);
       startNewSession({ ...startData, planId });
-      // Use replace so this screen unmounts and the loading modal is destroyed
+      // Le voile de préparation est retiré AVANT la navigation : rien ne doit
+      // rester superposé pendant que cet écran est démonté par le `replace`.
+      setIsStartingSubLevel(null);
       router.replace(`/solo/game/${startData.sessionId}?planId=${planId}` as any);
     } catch (err: any) {
       notifyApiError(err, 'Erreur lors du lancement de la série');

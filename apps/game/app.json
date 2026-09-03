@@ -6,13 +6,10 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
-    "scheme": ["buzzmaster", "com.googleusercontent.apps.buzzmaster-ai"],
-    "splash": {
-      "image": "./assets/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#F1E5C9"
-    },
+    "scheme": [
+      "buzzmaster",
+      "com.googleusercontent.apps.900221029605-0rjg1510ruauf4r3pf8nufb3mif1ssbk"
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.buzzmaster.ai"
@@ -22,8 +19,11 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#F1E5C9"
       },
-      "edgeToEdgeEnabled": true,
-      "package": "com.buzzmaster.ai"
+      "package": "com.buzzmaster.ai",
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png",
@@ -44,7 +44,19 @@
             "usesCleartextTraffic": true
           }
         }
-      ]
-    ]
+      ],
+      "expo-font",
+      "expo-secure-store",
+      "expo-sharing",
+      "expo-splash-screen",
+      "expo-status-bar",
+      "expo-web-browser"
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "849f7c7c-04de-4b11-889f-0de50038707f"
+      }
+    }
   }
 }

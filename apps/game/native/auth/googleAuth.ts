@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
+import Constants, { ExecutionEnvironment } from 'expo-constants';
 import { notify } from '~/lib/ui/notify';
 
 WebBrowser.maybeCompleteAuthSession();
@@ -17,12 +18,25 @@ const isGoogleConfigured = Boolean(
   process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID
 );
 
+// Dans Expo Go, Google interdit les schémas exp:// et les client IDs natifs.
+// On force donc l'utilisation du Web Client ID avec le proxy officiel Expo (auth.expo.io).
+const isExpoGo =
+  Constants.appOwnership === 'expo' ||
+  Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
+
 export function useNativeGoogleAuth() {
-  const [request, response, promptAsync] = Google.useAuthRequest({
-    webClientId,
-    iosClientId,
-    androidClientId,
-  });
+  const [request, response, promptAsync] = Google.useAuthRequest(
+    isExpoGo
+      ? {
+          clientId: webClientId,
+          redirectUri: 'https://auth.expo.io/@mohamedesp/buzzmaster-ai',
+        }
+      : {
+          webClientId,
+          iosClientId,
+          androidClientId,
+        }
+  );
 
   const resolverRef = useRef<((token: string | null) => void) | null>(null);
 

@@ -14,14 +14,13 @@ import {
   CheckCircle,
   XCircle,
   ChevronRight,
-  HelpCircle,
+  AlertTriangle,
 } from 'lucide-react-native';
 
 import { AnswerChoicesPanel } from '~/components/game/AnswerChoicesPanel';
 import { useSoloStore } from '~/stores/useSoloStore';
 import { palette } from '~/lib/theme/tokens';
-import { confirmAsync } from '~/lib/ui/confirm';
-import { PopView, FadeInUpView } from '~/components/anim';
+import { FadeInUpView } from '~/components/anim';
 
 export default function SoloGameScreen() {
   const router = useRouter();
@@ -62,12 +61,21 @@ export default function SoloGameScreen() {
   } = useSoloStore();
 
   const [startTime, setStartTime] = useState<number>(Date.now());
+  // Sélection locale : le serveur met plusieurs centaines de millisecondes à
+  // renvoyer la révélation, et sans cet état la carte touchée ne changeait
+  // strictement rien à l'écran — l'utilisateur croyait la page figée.
+  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const hasLoadedRef = useRef(false);
 
   useEffect(() => {
     if (sessionId) {
       const state = useSoloStore.getState();
-      if (state.sessionId === sessionId && state.currentQuestion) {
+      // `phase === 'DONE'` veut dire que le store traîne la fin d'une partie
+      // précédente : on repart du serveur plutôt que d'afficher une question à
+      // laquelle plus aucun clic ne peut répondre.
+      const reusable =
+        state.sessionId === sessionId && !!state.currentQuestion && state.phase !== 'DONE';
+      if (reusable) {
         setStartTime(Date.now());
         hasLoadedRef.current = true;
       } else {
@@ -89,13 +97,21 @@ export default function SoloGameScreen() {
     }
   }, [phase]);
 
+  useEffect(() => {
+    setSelectedAnswer(null);
+  }, [currentQuestion?.id]);
+
   const handleSubmitAnswer = async (chosenAnswer: string) => {
     if (phase !== 'QUESTION') return;
     const timeSpentMs = Math.max(100, Date.now() - startTime);
     const finalAnswer = chosenAnswer === '__timeout__' ? '' : chosenAnswer;
+    setSelectedAnswer(chosenAnswer);
     try {
       await answerQuestion(finalAnswer, timeSpentMs);
     } catch (err: any) {
+      // L'erreur est déjà dans le store et s'affiche en bandeau : on relâche la
+      // sélection pour que la même réponse puisse être retentée.
+      setSelectedAnswer(null);
       console.error('Failed to submit answer', err?.response?.data || err);
     }
   };
@@ -116,14 +132,11 @@ export default function SoloGameScreen() {
     }
   };
 
-  const handleQuit = async () => {
-    const ok = await confirmAsync({
-      title: 'Quitter la partie',
-      message: 'Voulez-vous quitter ? Votre progression actuelle est sauvegardée.',
-    });
-    if (ok) {
-      navigateToProfile();
-    }
+  // Aucune confirmation : chaque réponse est persistée côté serveur et la
+  // session reste reprenable telle quelle. Demander « êtes-vous sûr ? » pour un
+  // retour sans perte n'apportait qu'un modal de plus à traverser.
+  const handleQuit = () => {
+    navigateToProfile();
   };
 
   if (isLoading && !currentQuestion) {
@@ -245,15 +258,39 @@ export default function SoloGameScreen() {
           </Text>
         </View>
 
+        {/* Échec de soumission : sans ce bandeau, un appel refusé par le serveur
+            ne se traduisait par rien à l'écran — la page paraissait figée. */}
+        {error && !reveal && (
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 10,
+              backgroundColor: palette.bad + '1A',
+              borderColor: palette.bad + '60',
+              borderWidth: 1,
+              borderRadius: 16,
+              paddingHorizontal: 14,
+              paddingVertical: 12,
+            }}
+          >
+            <AlertTriangle size={18} color={palette.bad} />
+            <Text style={{ flex: 1, color: palette.txt, fontSize: 13, lineHeight: 18 }}>
+              {error} — touchez à nouveau une réponse pour réessayer.
+            </Text>
+          </View>
+        )}
+
         {/* Answer Choices Panel */}
         <AnswerChoicesPanel
           choices={currentQuestion.answerChoices}
-          myChoice={reveal?.userAnswer ?? null}
+          myChoice={reveal?.userAnswer ?? selectedAnswer}
           correctAnswer={reveal?.correctAnswer}
           isRevealing={!!reveal}
           canAnswer={phase === 'QUESTION' && !reveal && !isSubmitting}
           onSubmit={handleSubmitAnswer}
           isSubmitting={isSubmitting}
+          pendingLabel="✓ Réponse envoyée…"
         />
 
         {/* Reveal Overlay / Explanations */}
