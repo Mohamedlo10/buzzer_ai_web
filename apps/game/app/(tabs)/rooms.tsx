@@ -13,6 +13,7 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { X, Plus, ArrowRight } from 'lucide-react-native';
 import { useRoomsData } from '~/lib/hooks/useRoomsData';
+import { LoadingState, ErrorState } from '~/components/ui/StateViews';
 import { palette, font } from '~/lib/theme/tokens';
 import { QRScannerModal } from '~/components/shared/QRScannerModal';
 import { PatternZigzag } from '~/components/shared/PatternZigzag';
@@ -51,34 +52,20 @@ export default function RoomsScreen() {
 
   if (isLoading && !data) {
     return (
-      <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: palette.bg, alignItems: 'center', justifyContent: 'center' }}>
-        <ActivityIndicator size="large" color={palette.primary} />
-        <Text style={{ color: palette.inkSoft, fontSize: 14, marginTop: 12, fontWeight: '600' }}>
-          Chargement des salons...
-        </Text>
+      <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: palette.bg }}>
+        <LoadingState label="Chargement des salons…" fullScreen />
       </SafeAreaView>
     );
   }
 
   if (isError || !data) {
     return (
-      <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: palette.bg, alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-        <View style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: palette.surface2, alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
-          <Text style={{ fontSize: 32 }}>😵</Text>
-        </View>
-        <Text style={{ color: palette.bad, fontSize: 18, fontWeight: '700', marginBottom: 8, textAlign: 'center' }}>
-          Erreur de chargement
-        </Text>
-        <Text style={{ color: palette.inkSoft, fontSize: 14, textAlign: 'center', marginBottom: 20 }}>
-          Impossible de charger les salons
-        </Text>
-        <TouchableOpacity
-          onPress={() => refetch()}
-          activeOpacity={0.8}
-          style={{ paddingHorizontal: 24, paddingVertical: 14, borderRadius: 14, backgroundColor: palette.primary }}
-        >
-          <Text style={{ color: palette.primaryInk, fontWeight: '700', fontSize: 15 }}>Réessayer</Text>
-        </TouchableOpacity>
+      <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: palette.bg }}>
+        <ErrorState
+          fallbackMessage="Impossible de charger les salons."
+          onRetry={refetch}
+          fullScreen
+        />
       </SafeAreaView>
     );
   }

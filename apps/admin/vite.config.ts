@@ -4,6 +4,9 @@ import path from 'path';
 
 export default defineConfig({
   plugins: [react()],
+  define: {
+    'process.env': {},
+  },
   resolve: {
     alias: {
       '~/lib': path.resolve(__dirname, '../../packages/core/src/lib'),

@@ -12,6 +12,9 @@ import {
   Crown,
   Menu,
   X,
+  Megaphone,
+  CalendarDays,
+  LifeBuoy,
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -21,6 +24,9 @@ const NAV_ITEMS = [
   { href: '/sessions', label: 'Sessions', icon: Gamepad2, short: 'Sessions' },
   { href: '/rooms', label: 'Salles', icon: DoorOpen, short: 'Salles' },
   { href: '/questions', label: 'Questions', icon: BookOpen, short: 'QCM' },
+  { href: '/daily-challenges', label: 'Défi du Jour', icon: CalendarDays, short: 'Défi' },
+  { href: '/support', label: 'Support', icon: LifeBuoy, short: 'Support' },
+  { href: '/ads', label: 'Publicités', icon: Megaphone, short: 'Pubs' },
   { href: '/audit-logs', label: 'Audit', icon: ShieldAlert, short: 'Audit' },
   { href: '/settings', label: 'Paramètres', icon: Settings, short: 'Settings' },
 ];

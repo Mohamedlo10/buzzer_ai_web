@@ -45,6 +45,21 @@ export const queryKeys = {
   trainingSessions: ['training', 'sessions'] as const,
   trainingMastery: (subject?: string) => ['training', 'mastery', subject ?? 'all'] as const,
 
+  // Daily Challenge
+  dailyToday: ['daily', 'today'] as const,
+  dailyAttemptState: (attemptId: string) => ['daily', 'attempt', attemptId] as const,
+  dailyHistory: ['daily', 'history'] as const,
+  dailyProfileSummary: ['daily', 'profile-summary'] as const,
+
+  // Classements par période (§11)
+  leaderboard: (period: string, page: number, username?: string) =>
+    ['leaderboard', period, page, username ?? ''] as const,
+  leaderboardMe: (period: string) => ['leaderboard', 'me', period] as const,
+
+  // Achievements
+  achievementsCatalog: ['achievements', 'catalog'] as const,
+  achievementsUnseen: ['achievements', 'unseen'] as const,
+
   // Admin
   adminStats: ['admin', 'stats'] as const,
   adminUsers: (page?: number) => ['admin', 'users', page] as const,

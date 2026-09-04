@@ -5,6 +5,7 @@ export * as gameApi from './game';
 export * as roomsApi from './rooms';
 export * as friendsApi from './friends';
 export * as rankingsApi from './rankings';
+export * as leaderboardsApi from './leaderboards';
 export * as dashboardApi from './dashboard';
 export * as invitationsApi from './invitations';
 export * as adminApi from './admin';
@@ -19,5 +20,8 @@ export * as categoriesApi from './categories';
 export * as notificationsApi from './notifications';
 export * as qrcodeApi from './qrcode';
 export * as adsApi from './ads';
+export * as dailyApi from './daily';
+export * as achievementsApi from './achievements';
+export * as supportApi from './support';
 
 export { apiClient, getWebSocketUrl, getWebSocketBaseUrl } from './client';

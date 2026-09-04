@@ -313,13 +313,15 @@ function kebab(key) {
   return key.replace(/([a-z])([A-Z0-9])/g, '$1-$2').toLowerCase();
 }
 
-module.exports = {
-  palette,
-  darkPalette,
-  alpha,
-  radius,
-  font,
-  toChannels,
-  withAlpha,
-  cssVars,
-};
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = {
+    palette,
+    darkPalette,
+    alpha,
+    radius,
+    font,
+    toChannels,
+    withAlpha,
+    cssVars,
+  };
+}

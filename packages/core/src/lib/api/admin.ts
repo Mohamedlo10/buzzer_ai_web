@@ -12,6 +12,15 @@ import type {
   AdminCategoryResponse,
   AdminQuestionResponse,
   AdminAuditLogResponse,
+  AdminAdResponse,
+  AdminAdRequest,
+  Page,
+  AdminDailyChallengeResponse,
+  AdminDailyChallengeDetailResponse,
+  DailyValidationReportResponse,
+  AdminDailyQuestionResponse,
+  CreateDailyChallengeRequest,
+  UpdateDailyQuestionRequest,
 } from '~/types/api';
 
 // ─── Dashboard ─────────────────────────────────────────────────────────────
@@ -180,4 +189,117 @@ export async function getAdminAuditLogs(params: SearchAuditParams = {}) {
     { params }
   );
   return res.data;
+}
+
+// ─── Publicités ────────────────────────────────────────────────────────────
+
+/** GET /api/admin/ads — liste toutes les publicités. */
+export async function getAdminAds(): Promise<AdminAdResponse[]> {
+  const res = await apiClient.get<AdminAdResponse[]>('/api/admin/ads');
+  return res.data;
+}
+
+/** POST /api/admin/ads — crée une publicité. */
+export async function createAdminAd(request: AdminAdRequest): Promise<AdminAdResponse> {
+  const res = await apiClient.post<AdminAdResponse>('/api/admin/ads', request);
+  return res.data;
+}
+
+/** PUT /api/admin/ads/{id} — met à jour une publicité. */
+export async function updateAdminAd(id: string, request: AdminAdRequest): Promise<AdminAdResponse> {
+  const res = await apiClient.put<AdminAdResponse>(`/api/admin/ads/${id}`, request);
+  return res.data;
+}
+
+/** DELETE /api/admin/ads/{id} — supprime une publicité. */
+export async function deleteAdminAd(id: string): Promise<void> {
+  await apiClient.delete(`/api/admin/ads/${id}`);
+}
+
+// ─── Défi du Jour ──────────────────────────────────────────────────────────
+//
+// Routes /api/admin/daily-challenges/**, réservées au SUPER_ADMIN par SecurityConfig.
+// Contrat source : controller/AdminDailyChallengeController.java
+
+export async function getAdminDailyChallenges(
+  page = 0,
+  size = 20,
+): Promise<Page<AdminDailyChallengeResponse>> {
+  const res = await apiClient.get<Page<AdminDailyChallengeResponse>>(
+    '/api/admin/daily-challenges',
+    { params: { page, size } },
+  );
+  return res.data;
+}
+
+export async function getAdminDailyChallenge(
+  id: string,
+): Promise<AdminDailyChallengeDetailResponse> {
+  const res = await apiClient.get<AdminDailyChallengeDetailResponse>(
+    `/api/admin/daily-challenges/${id}`,
+  );
+  return res.data;
+}
+
+export async function createAdminDailyChallenge(
+  request: CreateDailyChallengeRequest,
+): Promise<AdminDailyChallengeResponse> {
+  const res = await apiClient.post<AdminDailyChallengeResponse>(
+    '/api/admin/daily-challenges',
+    request,
+  );
+  return res.data;
+}
+
+/**
+ * Lance la génération IA. Répond 202 : le travail continue en arrière-plan, et
+ * l'écran interroge le détail tant que le statut vaut GENERATING.
+ */
+export async function generateAdminDailyChallenge(id: string): Promise<void> {
+  await apiClient.post(`/api/admin/daily-challenges/${id}/generate`);
+}
+
+export async function updateAdminDailyQuestion(
+  challengeId: string,
+  questionId: string,
+  request: UpdateDailyQuestionRequest,
+): Promise<AdminDailyQuestionResponse> {
+  const res = await apiClient.put<AdminDailyQuestionResponse>(
+    `/api/admin/daily-challenges/${challengeId}/questions/${questionId}`,
+    request,
+  );
+  return res.data;
+}
+
+/** Relit sans publier : renvoie la liste complète de ce qui cloche. */
+export async function validateAdminDailyChallenge(
+  id: string,
+): Promise<DailyValidationReportResponse> {
+  const res = await apiClient.post<DailyValidationReportResponse>(
+    `/api/admin/daily-challenges/${id}/validate`,
+  );
+  return res.data;
+}
+
+/**
+ * Publie l'édition.
+ *
+ * Le serveur répond 422 avec le rapport de validation s'il reste une violation
+ * bloquante : l'appelant doit traiter ce cas, ce n'est pas une erreur réseau.
+ */
+export async function publishAdminDailyChallenge(
+  id: string,
+): Promise<AdminDailyChallengeResponse> {
+  const res = await apiClient.post<AdminDailyChallengeResponse>(
+    `/api/admin/daily-challenges/${id}/publish`,
+  );
+  return res.data;
+}
+
+export async function cancelAdminDailyChallenge(id: string): Promise<void> {
+  await apiClient.post(`/api/admin/daily-challenges/${id}/cancel`);
+}
+
+export async function deleteAdminDailyChallenge(id: string): Promise<void> {
+  await apiClient.delete(`/api/admin/daily-challenges/${id}`);
 }

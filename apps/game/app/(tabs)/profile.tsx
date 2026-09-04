@@ -20,10 +20,13 @@ import {
   HelpCircle,
   FileText,
   ArrowRight,
+  History,
+  Award,
+  TrendingUp,
 } from 'lucide-react-native';
 
 import { useAuthStore } from '~/stores/useAuthStore';
-import { useMyGlobalRank, useDashboard } from '~/lib/query/hooks';
+import { useProfileSummary, useUnseenAchievements, useMarkAchievementsSeen } from '~/lib/query/hooks';
 import * as usersApi from '~/lib/api/users';
 import { palette, font } from '~/lib/theme/tokens';
 import { Avatar } from '~/components/shared/Avatar';
@@ -31,6 +34,8 @@ import { AppTopBar } from '~/components/shared/AppTopBar';
 import { FormInput } from '~/components/shared/FormInput';
 import { notify, notifyApiError } from '~/lib/ui/notify';
 import { confirmAsync } from '~/lib/ui/confirm';
+import { LoadingState, ErrorState } from '~/components/ui/StateViews';
+import { BadgeUnlockedModal } from '~/components/achievements/BadgeUnlockedModal';
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -45,12 +50,19 @@ export default function ProfileScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [resendingEmail, setResendingEmail] = useState(false);
 
-  const { data: myRank, isLoading: _isRankLoading, refetch: refetchRank } = useMyGlobalRank();
-  const { data: _dashboard, isLoading: _isDashboardLoading, refetch: refetchDashboard } = useDashboard();
+  const {
+    data: profile,
+    isLoading: isProfileLoading,
+    isError: isProfileError,
+    refetch: refetchProfile,
+  } = useProfileSummary();
+
+  const { data: unseenBadges } = useUnseenAchievements();
+  const { mutate: markSeen } = useMarkAchievementsSeen();
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await Promise.all([refetchRank(), refetchDashboard()]);
+    await refetchProfile();
     setRefreshing(false);
   };
 
@@ -59,7 +71,7 @@ export default function ProfileScreen() {
     try {
       await usersApi.resendVerificationEmail();
       notify.success('Email de confirmation renvoyé !');
-    } catch (err: any) {
+    } catch (err: unknown) {
       notifyApiError(err, "Impossible de renvoyer l'email");
     } finally {
       setResendingEmail(false);
@@ -104,29 +116,59 @@ export default function ProfileScreen() {
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
-    } catch (err: any) {
+    } catch (err: unknown) {
       notifyApiError(err, 'Erreur lors du changement de mot de passe');
     } finally {
       setIsChangingPassword(false);
     }
   };
 
-  const username = user?.username || 'Momo';
-  const totalGames = myRank?.totalGames || 0;
-  const rank = myRank?.rank || 154;
-  const totalWins = myRank?.totalWins || 0;
-  const winRatePct = myRank?.winRate != null ? Math.round(myRank.winRate) : 0;
-  const glickoRating = myRank?.glickoRating != null ? Math.round(myRank.glickoRating) : 1500;
+  const username = user?.username ?? '';
+
+  // ── Écrans d'état ─────────────────────────────────────────────────────────
+  if (isProfileLoading && !profile) {
+    return (
+      <View style={{ flex: 1, backgroundColor: palette.bg }}>
+        <AppTopBar title="Xalaat" tag="PROFIL JOUEUR" />
+        <LoadingState label="Chargement du profil…" fullScreen />
+      </View>
+    );
+  }
+
+  if (isProfileError && !profile) {
+    return (
+      <View style={{ flex: 1, backgroundColor: palette.bg }}>
+        <AppTopBar title="Xalaat" tag="PROFIL JOUEUR" />
+        <ErrorState
+          fallbackMessage="Impossible de charger le profil."
+          onRetry={refetchProfile}
+          fullScreen
+        />
+      </View>
+    );
+  }
 
   return (
     <View style={{ flex: 1, backgroundColor: palette.bg }}>
+
+      {/* Modale badges non vus — filet de rattrapage au montage (§23) */}
+      {unseenBadges && unseenBadges.length > 0 && (
+        <BadgeUnlockedModal
+          badges={unseenBadges}
+          onClose={(ids) => markSeen(ids)}
+        />
+      )}
+
       <AppTopBar title="Xalaat" tag="PROFIL JOUEUR" />
+
       <ScrollView
         contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 4, paddingBottom: 24, gap: 16 }}
         showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={palette.primary} />}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={palette.primary} />
+        }
       >
-        {/* Avatar & User info */}
+        {/* ── Avatar & User info ── */}
         <View style={{ alignItems: 'center', marginVertical: 6 }}>
           <View style={{ position: 'relative', width: 88, height: 88, marginBottom: 12 }}>
             <Avatar name={username} avatarUrl={user?.avatarUrl} size={88} hue={30} />
@@ -220,110 +262,81 @@ export default function ProfileScreen() {
           </View>
         </View>
 
-        {/* Stats 2x2 Grid */}
-        <View style={{ flexDirection: 'row', gap: 10 }}>
-          {/* Rang Global */}
-          <View
-            style={{
-              flex: 1,
-              backgroundColor: palette.surface,
-              borderRadius: 24,
-              borderWidth: 1,
-              borderColor: palette.line,
-              padding: 16,
-            }}
-          >
-            <Text style={{ fontSize: 18, marginBottom: 6 }}>🏆</Text>
-            <Text
+        {/* ── Stats § 19 — 7 statistiques serveur ── */}
+        {profile && (
+          <>
+            <View style={{ flexDirection: 'row', gap: 10 }}>
+              <StatTile emoji="🎮" value={String(profile.gamesPlayed)} label="Parties jouées" />
+              <StatTile emoji="🏆" value={String(profile.wins)} label="Victoires" />
+            </View>
+            <View style={{ flexDirection: 'row', gap: 10 }}>
+              <StatTile emoji="✅" value={String(profile.correctAnswers)} label="Bonnes réponses" />
+              <StatTile emoji="🎯" value={`${Math.round(Number(profile.successRate))}%`} label="Taux de réussite" />
+            </View>
+            <View style={{ flexDirection: 'row', gap: 10 }}>
+              <StatTile emoji="⭐" value={String(profile.bestScore)} label="Meilleur score" />
+              <StatTile emoji="📅" value={String(profile.daysPlayed)} label="Jours de participation" />
+            </View>
+            <View style={{ flexDirection: 'row', gap: 10 }}>
+              <StatTile emoji="💰" value={String(profile.seasonPoints)} label="Points de saison" />
+              <StatTile
+                emoji="🔥"
+                value={String(profile.currentStreak)}
+                label={profile.currentStreak === 1 ? 'Jour de série' : 'Jours de série'}
+              />
+            </View>
+
+            {/* Progression — rang null si pas encore joué ce mois-ci (§17 : ne rien inventer) */}
+            <View
               style={{
-                fontFamily: font.nativeFamily.display,
-                fontSize: 20,
-                color: palette.gold,
+                backgroundColor: palette.indigo,
+                borderRadius: 20,
+                padding: 18,
+                gap: 12,
               }}
             >
-              #{rank}
-            </Text>
-            <Text style={{ fontSize: 11.5, color: palette.inkSoft, marginTop: 2 }}>Rang global</Text>
-          </View>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <TrendingUp size={18} color="rgba(255,255,255,0.85)" />
+                <Text
+                  style={{
+                    fontFamily: font.nativeFamily.ui,
+                    fontWeight: '700',
+                    fontSize: 12,
+                    letterSpacing: 1,
+                    textTransform: 'uppercase',
+                    color: 'rgba(255,255,255,0.65)',
+                  }}
+                >
+                  Progression
+                </Text>
+              </View>
 
-          {/* Glicko Rating */}
-          <View
-            style={{
-              flex: 1,
-              backgroundColor: palette.surface,
-              borderRadius: 24,
-              borderWidth: 1,
-              borderColor: palette.line,
-              padding: 16,
-            }}
-          >
-            <Text style={{ fontSize: 18, marginBottom: 6 }}>⚡</Text>
-            <Text
-              style={{
-                fontFamily: font.nativeFamily.display,
-                fontSize: 20,
-                color: palette.primary,
-              }}
-            >
-              {glickoRating}
-            </Text>
-            <Text style={{ fontSize: 11.5, color: palette.inkSoft, marginTop: 2 }}>Cote Glicko-2</Text>
-          </View>
-        </View>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                <View style={{ gap: 4 }}>
+                  <Text style={{ fontFamily: font.nativeFamily.ui, fontSize: 11, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: 0.8 }}>Rang de saison</Text>
+                  <Text style={{ fontFamily: font.nativeFamily.display, fontSize: 22, color: '#FFFFFF', paddingTop: 2 }}>
+                    {/* null = pas de rang ce mois-ci — ne rien inventer (§17) */}
+                    {profile.seasonRank !== null ? `#${profile.seasonRank}` : '—'}
+                  </Text>
+                  {profile.seasonLabel && (
+                    <Text style={{ fontFamily: font.nativeFamily.ui, fontSize: 11, color: 'rgba(255,255,255,0.55)' }}>
+                      {profile.seasonLabel}
+                    </Text>
+                  )}
+                </View>
+                <View style={{ gap: 4, alignItems: 'flex-end' }}>
+                  <Text style={{ fontFamily: font.nativeFamily.ui, fontSize: 11, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: 0.8 }}>Badges</Text>
+                  {/* Totaux viennent du serveur — jamais 8 en dur (§5 interdit) */}
+                  <Text style={{ fontFamily: font.nativeFamily.display, fontSize: 22, color: '#FFFFFF', paddingTop: 2 }}>
+                    {profile.achievementsUnlocked} / {profile.achievementsTotal}
+                  </Text>
+                </View>
+              </View>
+            </View>
+          </>
+        )}
 
-        <View style={{ flexDirection: 'row', gap: 10 }}>
-          {/* Total Games */}
-          <View
-            style={{
-              flex: 1,
-              backgroundColor: palette.surface,
-              borderRadius: 24,
-              borderWidth: 1,
-              borderColor: palette.line,
-              padding: 16,
-            }}
-          >
-            <Text style={{ fontSize: 18, marginBottom: 6 }}>🎮</Text>
-            <Text
-              style={{
-                fontFamily: font.nativeFamily.display,
-                fontSize: 20,
-                color: palette.txt,
-              }}
-            >
-              {totalGames}
-            </Text>
-            <Text style={{ fontSize: 11.5, color: palette.inkSoft, marginTop: 2 }}>Parties jouées</Text>
-          </View>
-
-          {/* Win Rate */}
-          <View
-            style={{
-              flex: 1,
-              backgroundColor: palette.surface,
-              borderRadius: 24,
-              borderWidth: 1,
-              borderColor: palette.line,
-              padding: 16,
-            }}
-          >
-            <Text style={{ fontSize: 18, marginBottom: 6 }}>🎯</Text>
-            <Text
-              style={{
-                fontFamily: font.nativeFamily.display,
-                fontSize: 20,
-                color: palette.good,
-              }}
-            >
-              {winRatePct}%
-            </Text>
-            <Text style={{ fontSize: 11.5, color: palette.inkSoft, marginTop: 2 }}>
-              {totalWins} victoires
-            </Text>
-          </View>
-        </View>
-
-        {/* Action Menu */}
+        {/* ── Menu ── */}
         <View
           style={{
             backgroundColor: palette.surface,
@@ -333,110 +346,13 @@ export default function ProfileScreen() {
             overflow: 'hidden',
           }}
         >
-          <TouchableOpacity
-            onPress={() => router.push('/profile/edit' as any)}
-            activeOpacity={0.7}
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: 16,
-              borderBottomWidth: 1,
-              borderBottomColor: palette.line,
-            }}
-          >
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-              <User size={18} color={palette.txt} />
-              <Text style={{ fontSize: 14, fontWeight: '600', color: palette.txt }}>
-                Modifier le profil
-              </Text>
-            </View>
-            <ArrowRight size={16} color={palette.inkSoft} />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => setShowPasswordModal(true)}
-            activeOpacity={0.7}
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: 16,
-              borderBottomWidth: 1,
-              borderBottomColor: palette.line,
-            }}
-          >
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-              <Lock size={18} color={palette.txt} />
-              <Text style={{ fontSize: 14, fontWeight: '600', color: palette.txt }}>
-                Changer le mot de passe
-              </Text>
-            </View>
-            <ArrowRight size={16} color={palette.inkSoft} />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => router.push('/support' as any)}
-            activeOpacity={0.7}
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: 16,
-              borderBottomWidth: 1,
-              borderBottomColor: palette.line,
-            }}
-          >
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-              <HelpCircle size={18} color={palette.txt} />
-              <Text style={{ fontSize: 14, fontWeight: '600', color: palette.txt }}>
-                Aide &amp; Support
-              </Text>
-            </View>
-            <ArrowRight size={16} color={palette.inkSoft} />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => router.push('/privacy' as any)}
-            activeOpacity={0.7}
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: 16,
-              borderBottomWidth: 1,
-              borderBottomColor: palette.line,
-            }}
-          >
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-              <Shield size={18} color={palette.txt} />
-              <Text style={{ fontSize: 14, fontWeight: '600', color: palette.txt }}>
-                Confidentialité
-              </Text>
-            </View>
-            <ArrowRight size={16} color={palette.inkSoft} />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => router.push('/terms' as any)}
-            activeOpacity={0.7}
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: 16,
-              borderBottomWidth: 1,
-              borderBottomColor: palette.line,
-            }}
-          >
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-              <FileText size={18} color={palette.txt} />
-              <Text style={{ fontSize: 14, fontWeight: '600', color: palette.txt }}>
-                Conditions &amp; CLUF
-              </Text>
-            </View>
-            <ArrowRight size={16} color={palette.inkSoft} />
-          </TouchableOpacity>
+          <MenuRow icon={<User size={18} color={palette.txt} />} label="Modifier le profil" onPress={() => router.push('/profile/edit' as any)} />
+          <MenuRow icon={<History size={18} color={palette.txt} />} label="Mes parties" onPress={() => router.push('/profile/history' as any)} />
+          <MenuRow icon={<Award size={18} color={palette.txt} />} label="Mes badges" onPress={() => router.push('/profile/badges' as any)} />
+          <MenuRow icon={<Lock size={18} color={palette.txt} />} label="Changer le mot de passe" onPress={() => setShowPasswordModal(true)} />
+          <MenuRow icon={<HelpCircle size={18} color={palette.txt} />} label="Aide & Support" onPress={() => router.push('/support' as any)} />
+          <MenuRow icon={<Shield size={18} color={palette.txt} />} label="Confidentialité" onPress={() => router.push('/privacy' as any)} />
+          <MenuRow icon={<FileText size={18} color={palette.txt} />} label="Conditions & CLUF" onPress={() => router.push('/terms' as any)} />
 
           <TouchableOpacity
             onPress={handleLogout}
@@ -459,8 +375,13 @@ export default function ProfileScreen() {
         </View>
       </ScrollView>
 
-      {/* Change Password Modal */}
-      <Modal visible={showPasswordModal} transparent animationType="fade" onRequestClose={() => setShowPasswordModal(false)}>
+      {/* ── Modale changement de mot de passe ── */}
+      <Modal
+        visible={showPasswordModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowPasswordModal(false)}
+      >
         <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.55)', justifyContent: 'center', padding: 20 }}>
           <View
             style={{
@@ -546,5 +467,60 @@ export default function ProfileScreen() {
         </View>
       </Modal>
     </View>
+  );
+}
+
+// ─── Micro-composants ────────────────────────────────────────────────────────
+
+function StatTile({ emoji, value, label }: { emoji: string; value: string; label: string }) {
+  return (
+    <View
+      style={{
+        flex: 1,
+        backgroundColor: palette.surface,
+        borderRadius: 20,
+        borderWidth: 1,
+        borderColor: palette.line,
+        padding: 14,
+        gap: 4,
+      }}
+    >
+      <Text style={{ fontSize: 18 }}>{emoji}</Text>
+      <Text style={{ fontFamily: font.nativeFamily.display, fontSize: 20, color: palette.txt, paddingTop: 2 }}>
+        {value}
+      </Text>
+      <Text style={{ fontSize: 11.5, color: palette.inkSoft }}>{label}</Text>
+    </View>
+  );
+}
+
+function MenuRow({
+  icon,
+  label,
+  onPress,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  onPress: () => void;
+}) {
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      activeOpacity={0.7}
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: 16,
+        borderBottomWidth: 1,
+        borderBottomColor: palette.line,
+      }}
+    >
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+        {icon}
+        <Text style={{ fontSize: 14, fontWeight: '600', color: palette.txt }}>{label}</Text>
+      </View>
+      <ArrowRight size={16} color={palette.inkSoft} />
+    </TouchableOpacity>
   );
 }

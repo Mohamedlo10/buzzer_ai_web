@@ -16,9 +16,7 @@ import {
   Play,
   UserPlus,
   LogOut,
-  Sparkles,
   History,
-  Eye,
 } from 'lucide-react-native';
 import * as Clipboard from 'expo-clipboard';
 
@@ -26,6 +24,7 @@ import { useRoomDetail } from '~/lib/hooks/useRoomDetail';
 import * as qrcodeApi from '~/lib/api/qrcode';
 import { palette, font } from '~/lib/theme/tokens';
 import { notify } from '~/lib/ui/notify';
+import { LoadingState, ErrorState } from '~/components/ui/StateViews';
 
 // Dedicated Room Components
 import { RoomCodeCard } from '~/components/room/RoomCodeCard';
@@ -126,64 +125,20 @@ export default function RoomDetailScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView edges={['top', 'bottom']} style={{ flex: 1, backgroundColor: palette.bg, alignItems: 'center', justifyContent: 'center' }}>
-        <View
-          style={{
-            width: 64,
-            height: 64,
-            borderRadius: 32,
-            backgroundColor: `${palette.primary}18`,
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginBottom: 16,
-            borderWidth: 1,
-            borderColor: `${palette.primary}33`,
-          }}
-        >
-          <Sparkles size={32} color={palette.primary} />
-        </View>
-        <Text style={{ fontFamily: font.nativeFamily.display, fontSize: 16, color: palette.txt }}>
-          Chargement du salon...
-        </Text>
+      <SafeAreaView edges={['top', 'bottom']} style={{ flex: 1, backgroundColor: palette.bg }}>
+        <LoadingState label="Chargement du salon…" fullScreen />
       </SafeAreaView>
     );
   }
 
   if (!room) {
     return (
-      <SafeAreaView edges={['top', 'bottom']} style={{ flex: 1, backgroundColor: palette.bg, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24 }}>
-        <View
-          style={{
-            width: 64,
-            height: 64,
-            borderRadius: 32,
-            backgroundColor: palette.surface,
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginBottom: 16,
-            borderWidth: 1,
-            borderColor: palette.line,
-          }}
-        >
-          <Eye size={32} color={palette.inkSoft} />
-        </View>
-        <Text style={{ fontSize: 16, fontWeight: '700', color: palette.txt, marginBottom: 16 }}>
-          Salon introuvable
-        </Text>
-        <TouchableOpacity
-          onPress={() => router.replace('/(tabs)/rooms' as any)}
-          activeOpacity={0.8}
-          style={{
-            backgroundColor: palette.primary,
-            paddingHorizontal: 24,
-            paddingVertical: 12,
-            borderRadius: 14,
-          }}
-        >
-          <Text style={{ color: palette.primaryInk, fontWeight: '700', fontSize: 14 }}>
-            Retour aux salons
-          </Text>
-        </TouchableOpacity>
+      <SafeAreaView edges={['top', 'bottom']} style={{ flex: 1, backgroundColor: palette.bg }}>
+        <ErrorState
+          fallbackMessage="Salon introuvable."
+          onRetry={() => router.replace('/(tabs)/rooms' as any)}
+          fullScreen
+        />
       </SafeAreaView>
     );
   }

@@ -125,18 +125,22 @@ const slides: Slide[] = [
   },
   {
     id: '5',
-    badge: 'COMPÉTITION GLOBALE',
+    // Glicko-2 était mis en avant ici comme argument produit. Le §2.2 le reporte après la
+    // V1 : le vendre à l'accueil promettrait une fonctionnalité que l'application n'explique
+    // et n'affiche nulle part. On présente à la place ce que le joueur voit réellement —
+    // les classements du jour, de la semaine et de la saison.
+    badge: 'COMPÉTITION',
     badgeIcon: <Award size={13} color={palette.violet} />,
-    title: 'Classement Glicko-2',
-    subtitle: 'Rang Mondial & Statistiques',
+    title: 'Grimpe au classement',
+    subtitle: 'Chaque jour, chaque semaine, chaque saison',
     description:
-      'Chaque victoire dans les modes officiels influe sur votre niveau mondial, calculé selon le système officiel des échecs.',
+      'Tes points au Défi du Jour alimentent trois classements. La saison repart de zéro chaque mois : personne n’est jamais distancé pour de bon.',
     icon: <Trophy size={54} color={palette.violet} strokeWidth={2.2} />,
     accentColor: palette.violet,
     accentBg: 'rgba(155, 89, 182, 0.12)',
     features: [
-      { text: 'Algorithme Glicko-2', icon: <Award size={14} color={palette.violet} strokeWidth={2.5} /> },
-      { text: 'Profils, avatars & amis', icon: <Users size={14} color={palette.gold} strokeWidth={2.5} /> },
+      { text: 'Jour, semaine et saison', icon: <Award size={14} color={palette.violet} strokeWidth={2.5} /> },
+      { text: 'Badges & accomplissements', icon: <Users size={14} color={palette.gold} strokeWidth={2.5} /> },
       { text: 'Podium & historique', icon: <Trophy size={14} color={palette.violet} strokeWidth={2.5} /> },
     ],
   },

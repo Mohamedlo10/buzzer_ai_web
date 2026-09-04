@@ -12,6 +12,9 @@ import { QuestionsPage } from './pages/QuestionsPage';
 import { AuditLogsPage } from './pages/AuditLogsPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { LoginPage } from './pages/LoginPage';
+import { AdvertisementsPage } from './pages/AdvertisementsPage';
+import { DailyChallengesPage } from './pages/DailyChallengesPage';
+import { SupportPage } from './pages/SupportPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -37,6 +40,9 @@ export function App() {
             <Route path="rooms" element={<RoomsPage />} />
             <Route path="rooms/:roomId" element={<RoomDetailPage />} />
             <Route path="questions" element={<QuestionsPage />} />
+            <Route path="daily-challenges" element={<DailyChallengesPage />} />
+            <Route path="support" element={<SupportPage />} />
+            <Route path="ads" element={<AdvertisementsPage />} />
             <Route path="audit-logs" element={<AuditLogsPage />} />
             <Route path="settings" element={<SettingsPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />

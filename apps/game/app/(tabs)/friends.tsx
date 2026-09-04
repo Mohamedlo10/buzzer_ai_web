@@ -25,6 +25,7 @@ import { Avatar } from '~/components/shared/Avatar';
 import { AppTopBar } from '~/components/shared/AppTopBar';
 import { BlockedUsersModal } from '~/components/friend/BlockedUsersModal';
 import { notify, notifyApiError } from '~/lib/ui/notify';
+import { LoadingState } from '~/components/ui/StateViews';
 
 type FilterType = 'all' | 'online' | 'requests';
 
@@ -43,7 +44,7 @@ export default function FriendsScreen() {
     pendingRequests,
     sentRequests: storeSentRequests,
     blockedUsers,
-    isLoading: _isLoading,
+    isLoading: isFriendsLoading,
     fetchFriends,
     fetchPendingRequests,
     fetchSentRequests,
@@ -107,6 +108,16 @@ export default function FriendsScreen() {
   const onlineFriends = friends.filter((f) => f.isOnline);
   const totalRequests = pendingRequests.length + storeSentRequests.length;
   const displayedFriends = filter === 'online' ? onlineFriends : friends;
+
+  // Affiche un chargement centré lors du premier chargement (liste vide + spinner actif)
+  if (isFriendsLoading && friends.length === 0 && pendingRequests.length === 0) {
+    return (
+      <View style={{ flex: 1, backgroundColor: palette.bg }}>
+        <AppTopBar title="Xalaat" tag="AMIS & DUELS" />
+        <LoadingState label="Chargement de vos amis…" fullScreen />
+      </View>
+    );
+  }
 
   return (
     <View style={{ flex: 1, backgroundColor: palette.bg }}>

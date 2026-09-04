@@ -1116,3 +1116,255 @@ export interface SubmitAnswerResponse {
   answeredCount?: number | null;
   expectedAnswerCount?: number | null;
 }
+
+// ──────────────────────────────────────────────
+// Admin — Publicités
+// Source : AdResponse.AdData + AdRequest
+// ──────────────────────────────────────────────
+
+/** Réponse de GET /api/admin/ads et des mutations. Source : AdResponse.AdData */
+export interface AdminAdResponse {
+  id: string; // UUID
+  title: string;
+  imageUrl: string | null;
+  targetUrl: string;
+  placement: AdminAdPlacement;
+}
+
+/** Corps de POST /api/admin/ads et PUT /api/admin/ads/{id}. Source : AdRequest */
+export interface AdminAdRequest {
+  title: string;
+  imageUrl?: string | null;
+  targetUrl: string;
+  placement: AdminAdPlacement;
+  active?: boolean;
+  priority?: number;
+  /** ISO-8601, null = pas de contrainte */
+  startDate?: string | null;
+  endDate?: string | null;
+}
+
+/** Source : AdPlacement.java */
+export type AdminAdPlacement = 'HOME' | 'RESULT' | 'GENERATION' | 'PROFILE';
+
+// ──────────────────────────────────────────────
+// Admin — Défi du Jour
+//
+// Miroir des DTO de controller/AdminDailyChallengeController.java.
+// Distincts des types joueur de types/daily.ts : ceux-ci portent la bonne
+// réponse, ce que DailyQuestionView ne fait jamais.
+// ──────────────────────────────────────────────
+
+// DailyChallengeStatus n'est pas redéclaré ici : il vit dans types/daily.ts, qui est le
+// fichier canonique du Défi du Jour. Deux déclarations divergeraient tôt ou tard.
+import type { DailyChallengeStatus } from './daily';
+
+/** Source : model/dto/response/AdminDailyChallengeResponse.java */
+export interface AdminDailyChallengeResponse {
+  id: string;
+  date: string;
+  /** null = thème choisi par l'IA en évitant les jours récents. */
+  theme: string | null;
+  /** Thème réellement retenu, renseigné après génération. */
+  resolvedTheme: string | null;
+  difficulty: string;
+  questionCount: number;
+  status: DailyChallengeStatus;
+  maxPoints: number;
+  /** Plafonné à 3 : au-delà, l'état passe FAILED définitivement. */
+  generationAttempts: number;
+  generationError: string | null;
+  publishedAt: string | null;
+  opensAt: string | null;
+  closesAt: string | null;
+}
+
+/**
+ * Source : model/dto/response/AdminDailyQuestionResponse.java
+ *
+ * Contient `correctIndex` et `answer`, contrairement au DailyQuestionView servi
+ * au joueur. La route est réservée au SUPER_ADMIN.
+ */
+export interface AdminDailyQuestionResponse {
+  id: string;
+  orderIndex: number;
+  text: string;
+  choices: string[];
+  correctIndex: number;
+  answer: string;
+  explanation: string | null;
+  category: string | null;
+  difficulty: string;
+  timeLimitSec: number;
+}
+
+/** Source : model/dto/response/DailyValidationReportResponse.java */
+export interface DailyValidationViolation {
+  code: string;
+  /** null si la violation porte sur l'édition entière. */
+  questionIndex: number | null;
+  message: string;
+  /** Une violation bloquante interdit la publication. */
+  blocking: boolean;
+}
+
+export interface DailyValidationReportResponse {
+  publishable: boolean;
+  blockingCount: number;
+  warningCount: number;
+  violations: DailyValidationViolation[];
+}
+
+/** Source : model/dto/response/AdminDailyChallengeDetailResponse.java */
+export interface AdminDailyChallengeDetailResponse {
+  challenge: AdminDailyChallengeResponse;
+  questions: AdminDailyQuestionResponse[];
+  validation: DailyValidationReportResponse;
+}
+
+/** Source : model/dto/request/CreateDailyChallengeRequest.java */
+export interface CreateDailyChallengeRequest {
+  date: string;
+  theme?: string | null;
+  difficulty?: string;
+  questionCount: number;
+}
+
+/** Source : model/dto/request/UpdateDailyQuestionRequest.java — tous les champs optionnels. */
+export interface UpdateDailyQuestionRequest {
+  text?: string;
+  choices?: string[];
+  correctIndex?: number;
+  answer?: string;
+  explanation?: string;
+  difficulty?: string;
+}
+
+// ──────────────────────────────────────────────
+// Profil joueur & historique (§19, §24)
+// ──────────────────────────────────────────────
+
+/**
+ * Sept statistiques du profil, façonnées côté serveur pour l'écran (§19).
+ * La cote Glicko-2 est absente : §2.2 la reporte après V1.
+ * Un compte neuf reçoit des zéros francs — jamais de valeurs inventées (§17).
+ * Source : model/dto/response/ProfileSummaryResponse.java
+ */
+export interface ProfileSummaryResponse {
+  // Les sept statistiques du §19
+  gamesPlayed: number;
+  wins: number;
+  correctAnswers: number;
+  /** Pourcentage 0-100, calculé serveur. */
+  successRate: number;
+  bestScore: number;
+  daysPlayed: number;
+  seasonPoints: number;
+
+  // Contexte de progression
+  currentStreak: number;
+  longestStreak: number;
+  /** null si aucune participation ce mois-ci — n'inventer aucun rang. */
+  seasonRank: number | null;
+  seasonLabel: string | null;
+
+  /** Badges débloqués / total du catalogue. */
+  achievementsUnlocked: number;
+  achievementsTotal: number;
+}
+
+/**
+ * Une ligne de « MES PARTIES » (§24).
+ * rank est null pour l'édition du jour, encore en cours — le classement bouge.
+ * Source : model/dto/response/DailyHistoryEntryResponse.java
+ */
+export interface DailyHistoryEntryResponse {
+  attemptId: string;          // UUID
+  challengeDate: string;      // LocalDate → 'YYYY-MM-DD'
+  theme: string | null;
+  score: number;
+  maxPoints: number;
+  correctCount: number;
+  totalQuestions: number;
+  totalTimeMs: number;
+  /** null tant que l'édition n'est pas close. */
+  rank: number | null;
+  totalPlayers: number | null;
+}
+
+/**
+ * Un badge, débloqué ou non.
+ * icon est un nom logique ('trophy', 'flame'…) — le client mappe vers lucide-react-native.
+ * Source : model/dto/response/AchievementResponse.java
+ */
+export interface AchievementResponse {
+  id: string;                    // UUID
+  code: string;
+  name: string;
+  description: string;
+  icon: string;                  // nom logique — voir BadgeIcon.tsx
+  category: string;
+  tier: string;
+  unlocked: boolean;
+  unlockedAt: string | null;     // Instant → ISO-8601
+  /** UUID du UserAchievement — à renvoyer à markSeen. */
+  userAchievementId: string | null;
+  /** false tant que la modale n'a pas été vue. */
+  seen: boolean | null;
+}
+
+// ──────────────────────────────────────────────
+// Support Tickets
+// ──────────────────────────────────────────────
+
+export type SupportTicketStatus = 'OPEN' | 'IN_PROGRESS' | 'RESOLVED' | 'CLOSED';
+
+/**
+ * Corps de POST /api/support/tickets.
+ * Source : model/dto/request/CreateSupportTicketRequest.java
+ */
+export interface CreateSupportTicketRequest {
+  subject: string;
+  message: string;
+  contactEmail?: string;
+}
+
+/**
+ * Réponse à la création d'un ticket par un joueur.
+ * Source : model/dto/response/SupportTicketResponse.java
+ */
+export interface SupportTicketResponse {
+  id: string;
+  subject: string;
+  status: SupportTicketStatus;
+  createdAt: string;
+}
+
+/**
+ * Corps de PUT /api/admin/support/tickets/{id}/status.
+ * Source : model/dto/request/AdminUpdateTicketStatusRequest.java
+ */
+export interface AdminUpdateTicketStatusRequest {
+  status: SupportTicketStatus;
+  adminNote?: string;
+}
+
+/**
+ * Détail complet d'un ticket pour l'administration.
+ * Source : model/dto/response/AdminSupportTicketResponse.java
+ */
+export interface AdminSupportTicketResponse {
+  id: string;
+  userId: string | null;
+  username: string | null;
+  subject: string;
+  message: string;
+  contactEmail: string | null;
+  status: SupportTicketStatus;
+  adminNote: string | null;
+  resolvedById: string | null;
+  resolvedByUsername: string | null;
+  resolvedAt: string | null;
+  createdAt: string;
+}
+

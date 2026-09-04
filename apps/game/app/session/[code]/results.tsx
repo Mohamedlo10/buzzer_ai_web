@@ -22,6 +22,7 @@ import { Podium } from '~/components/game/results/Podium';
 import { TeamLeaderboard } from '~/components/game/TeamLeaderboard';
 import { CategoryQuestionsModal } from '~/components/game/results/CategoryQuestionsModal';
 import { Avatar } from '~/components/shared/Avatar';
+import { AdSlot } from '~/components/shared/AdSlot';
 import { useAuthStore } from '~/stores/useAuthStore';
 import { useBuzzStore } from '~/stores/useBuzzStore';
 import * as rankingsApi from '~/lib/api/rankings';
@@ -371,6 +372,9 @@ export default function SessionResultsPage() {
       >
         {/* ── Podium ── */}
         <Podium rankings={rankings} currentUserId={user?.id} />
+
+        {/* ── Publicité (RESULT) — retourne null si ads.enabled=false ── */}
+        <AdSlot placement="RESULT" />
 
         {/* ── Performance Sprint (si mode Sprint) ── */}
         {isSprint && currentUserRanking && (

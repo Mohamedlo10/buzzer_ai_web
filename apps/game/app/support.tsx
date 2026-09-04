@@ -4,28 +4,50 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ArrowLeft, HelpCircle, CheckCircle, Send } from 'lucide-react-native';
 import { palette, font, inkAlpha } from '~/lib/theme/tokens';
-import { notify } from '~/lib/ui/notify';
+import { notify, notifyApiError } from '~/lib/ui/notify';
+import { supportApi } from '~/lib/api';
+import { useAuthStore } from '~/stores/useAuthStore';
 
 export default function SupportScreen() {
   const router = useRouter();
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
+  const currentUser = useAuthStore((s) => s.user);
+
+  const [subject, setSubject] = useState('');
+  const [email, setEmail] = useState(currentUser?.email ?? '');
   const [message, setMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [sent, setSent] = useState(false);
 
   const handleSend = async () => {
-    if (!email.trim() || !message.trim()) {
-      notify.error('Veuillez remplir votre email et votre message.');
+    if (!subject.trim()) {
+      notify.error('Veuillez préciser le sujet de votre message.');
       return;
     }
+    if (!message.trim()) {
+      notify.error('Veuillez décrire votre problème ou suggestion.');
+      return;
+    }
+
     setIsSending(true);
-    // Simulate support ticket dispatch
-    setTimeout(() => {
-      setIsSending(false);
+    try {
+      await supportApi.createTicket({
+        subject: subject.trim(),
+        message: message.trim(),
+        contactEmail: email.trim() || undefined,
+      });
       setSent(true);
       notify.success('Message envoyé au support !');
-    }, 800);
+    } catch (err: any) {
+      const errorCode = err?.response?.data?.error;
+      const status = err?.response?.status;
+      if (status === 429 || errorCode === 'TOO_MANY_OPEN_TICKETS') {
+        notify.error('Tu as déjà plusieurs demandes en cours.');
+      } else {
+        notifyApiError(err, "Impossible d'envoyer votre message au support.");
+      }
+    } finally {
+      setIsSending(false);
+    }
   };
 
   return (
@@ -153,18 +175,19 @@ export default function SupportScreen() {
             {!sent ? (
               <View className="flex-col gap-4">
                 <View className="flex-col gap-1.5">
-                  <Text className="text-txt-60 text-xs font-semibold uppercase">Nom ou Pseudo</Text>
+                  <Text className="text-txt-60 text-xs font-semibold uppercase">Sujet *</Text>
                   <TextInput
-                    value={name}
-                    onChangeText={setName}
-                    placeholder="Votre nom"
+                    value={subject}
+                    onChangeText={setSubject}
+                    placeholder="Ex : Problème de buzzer, Question erronée…"
                     placeholderTextColor={inkAlpha.faint}
+                    maxLength={200}
                     className="w-full px-4 py-3.5 rounded-2xl bg-bg text-txt text-base border border-line"
                   />
                 </View>
 
                 <View className="flex-col gap-1.5">
-                  <Text className="text-txt-60 text-xs font-semibold uppercase">Email *</Text>
+                  <Text className="text-txt-60 text-xs font-semibold uppercase">Email de contact (optionnel)</Text>
                   <TextInput
                     value={email}
                     onChangeText={setEmail}
@@ -172,6 +195,7 @@ export default function SupportScreen() {
                     placeholderTextColor={inkAlpha.faint}
                     keyboardType="email-address"
                     autoCapitalize="none"
+                    maxLength={255}
                     className="w-full px-4 py-3.5 rounded-2xl bg-bg text-txt text-base border border-line"
                   />
                 </View>
@@ -186,6 +210,7 @@ export default function SupportScreen() {
                     multiline
                     numberOfLines={4}
                     textAlignVertical="top"
+                    maxLength={5000}
                     className="w-full px-4 py-3.5 rounded-2xl bg-bg text-txt text-base border border-line min-h-[100px]"
                   />
                 </View>

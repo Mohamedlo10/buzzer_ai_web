@@ -101,7 +101,7 @@ Enregistrement d'un buzz par un joueur sur une question.
 2. La session passe en état `GENERATING`
 3. Le système:
    - Collecte TOUTES les catégories de TOUS les joueurs
-   - Construit un prompt pour OpenAI GPT-4o-mini
+   - Construit un prompt pour OpenRouter / google/gemini-2.5-flash
    - Génère `questionsPerCategory` questions par catégorie
    - Vérifie l'historique pour éviter les doublons
    - Sauvegarde les questions avec un `orderIndex` séquentiel
@@ -437,13 +437,18 @@ Dernière question validée
 ```
 /topic/session/{sessionId}/status      → Changements d'état
 /topic/session/{sessionId}/players     → Joueurs rejoints/quittés
+/topic/session/{sessionId}/teams       → Composition et scores d'équipe
 /topic/session/{sessionId}/question    → Nouvelle question
-/topic/session/{sessionId}/buzz        → File d'attente des buzzes
 /topic/session/{sessionId}/score       → Mises à jour de score
-/topic/session/{sessionId}/buzzer-reset → Réinitialisation buzzer
 /topic/session/{sessionId}/game-over   → Fin de partie + résultats
 /topic/session/{sessionId}/generating  → Progression génération
 /topic/session/{sessionId}/countdown   → Compte à rebours
+/topic/session/{sessionId}/state       → État complet (mode sans modérateur)
+```
+
+**Par Salle:**
+```
+/topic/room/{roomId}/presence          → Présence des membres
 ```
 
 **Par Utilisateur (notifications personnelles):**

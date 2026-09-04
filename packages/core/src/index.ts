@@ -6,8 +6,11 @@ export * from './stores/useSoloStore';
 export * from './stores/useBuzzStore';
 export * from './types/api';
 export * from './types/solo';
+export * from './types/leaderboards';
+export * from './types/daily';
 export * from './types/websocket';
 export * from './lib/hooks/useGoogleAuth';
 export * from './lib/hooks/useAppleAuth';
+
 
 

@@ -7,8 +7,15 @@ import type { TokenResponse } from '../../types/api';
 // Config
 // ──────────────────────────────────────────────
 
-const BASE_URL =
-  process.env.EXPO_PUBLIC_API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080';
+function getBaseUrl(): string {
+  if (typeof process !== 'undefined' && process.env) {
+    if (process.env.EXPO_PUBLIC_API_URL) return process.env.EXPO_PUBLIC_API_URL;
+    if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
+  }
+  return 'http://localhost:8080';
+}
+
+const BASE_URL = getBaseUrl();
 
 // ──────────────────────────────────────────────
 // Axios Instance

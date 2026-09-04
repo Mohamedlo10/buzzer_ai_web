@@ -4,7 +4,6 @@ import {
   Text,
   TouchableOpacity,
   ScrollView,
-  ActivityIndicator,
   RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -28,6 +27,7 @@ import * as roomsApi from '~/lib/api/rooms';
 import { notify, notifyApiError } from '~/lib/ui/notify';
 import { palette, font } from '~/lib/theme/tokens';
 import { Avatar } from '~/components/shared/Avatar';
+import { LoadingState, EmptyState } from '~/components/ui/StateViews';
 import type {
   NotificationFriendRequest,
   NotificationGameInvitation,
@@ -169,42 +169,13 @@ export default function NotificationsScreen() {
         }
       >
         {isLoading && !data ? (
-          <View style={{ alignItems: 'center', paddingVertical: 48, gap: 12 }}>
-            <ActivityIndicator size="large" color={palette.primary} />
-            <Text style={{ color: palette.inkSoft, fontSize: 14 }}>Chargement des notifications…</Text>
-          </View>
+          <LoadingState label="Chargement des notifications…" />
         ) : !data || data.total === 0 ? (
-          <View
-            style={{
-              backgroundColor: palette.surface,
-              borderRadius: 24,
-              borderWidth: 1,
-              borderColor: palette.line,
-              padding: 32,
-              alignItems: 'center',
-              gap: 12,
-              marginTop: 16,
-            }}
-          >
-            <View
-              style={{
-                width: 64,
-                height: 64,
-                borderRadius: 32,
-                backgroundColor: palette.surface2,
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Bell size={32} color={palette.inkSoft} />
-            </View>
-            <Text style={{ fontSize: 16, fontWeight: '700', color: palette.txt }}>
-              Aucune notification
-            </Text>
-            <Text style={{ fontSize: 13, color: palette.inkSoft, textAlign: 'center', maxWidth: 280 }}>
-              Vos demandes d'amis, invitations de jeu et de salle apparaîtront ici.
-            </Text>
-          </View>
+          <EmptyState
+            icon={<Bell size={32} color={palette.inkSoft} />}
+            title="Aucune notification"
+            description="Vos demandes d'amis, invitations de jeu et de salle apparaîtront ici."
+          />
         ) : (
           <>
             {/* Friend Requests */}

@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
   TextInput,
   TouchableOpacity,
-  ActivityIndicator,
   Modal,
   ScrollView,
 } from 'react-native';
@@ -18,14 +17,27 @@ import {
   ChevronRight,
 } from 'lucide-react-native';
 
-import { useAuthStore } from '~/stores/useAuthStore';
-import * as rankingsApi from '~/lib/api/rankings';
-import type { GlobalRanking } from '~/types/api';
+import { useLeaderboard } from '~/lib/query/hooks';
+import type { LeaderboardPeriodType } from '~/types/leaderboards';
+import { LoadingState, EmptyState, ErrorState } from '~/components/ui';
 import { palette, font } from '~/lib/theme/tokens';
 import { Avatar } from '~/components/shared/Avatar';
 import { AppTopBar } from '~/components/shared/AppTopBar';
 
 const PAGE_SIZE = 20;
+
+/**
+ * Les trois périodes du §11.
+ *
+ * Le classement global cumulé n'y figure pas : il repose sur Glicko-2, que le §2.2 reporte
+ * après la V1 et que rien n'explique au joueur. Il reste calculé côté serveur, mais la V1
+ * met en avant les périodes, qui sont lisibles sans explication.
+ */
+const PERIODS: { key: LeaderboardPeriodType; label: string }[] = [
+  { key: 'DAY', label: 'Jour' },
+  { key: 'WEEK', label: 'Semaine' },
+  { key: 'SEASON', label: 'Saison' },
+];
 
 function getPaginationRange(current: number, total: number): (number | 'dots')[] {
   if (total <= 7) {
@@ -41,77 +53,62 @@ function getPaginationRange(current: number, total: number): (number | 'dots')[]
 }
 
 export default function RankingsScreen() {
-  const user = useAuthStore((s) => s.user);
 
-  const [rankings, setRankings] = useState<GlobalRanking[]>([]);
-  const [totalElements, setTotalElements] = useState(0);
-  const [currentUserRank, setCurrentUserRank] = useState<number | null>(null);
+  const [period, setPeriod] = useState<LeaderboardPeriodType>('SEASON');
   const [currentPage, setCurrentPage] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
+  const [searchInput, setSearchInput] = useState('');
   const [searchUsername, setSearchUsername] = useState('');
   const [showInfoModal, setShowInfoModal] = useState(false);
 
   const scrollRef = useRef<ScrollView>(null);
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const fetchRankings = useCallback(async (page: number, username?: string) => {
-    try {
-      const params: rankingsApi.SearchRankingsParams = { page, size: PAGE_SIZE };
-      if (username && username.trim()) params.username = username.trim();
-      const data = await rankingsApi.getGlobalRankings(params);
-      setRankings(data.content || []);
-      setTotalElements(data.totalElements ?? 0);
-      setCurrentUserRank(data.currentUserRank ?? null);
-      setCurrentPage(page);
-    } catch (err) {
-      console.error('Failed to load rankings:', err);
-    }
-  }, []);
+  // react-query remplace le couple useState/useEffect précédent, dont le catch avalait
+  // l'erreur dans un console.error : en cas d'échec, la liste restait vide et muette.
+  const { data, isLoading, isError, error, refetch } = useLeaderboard(
+    period,
+    currentPage,
+    searchUsername || undefined,
+  );
 
-  useEffect(() => {
-    (async () => {
-      setIsLoading(true);
-      await fetchRankings(0);
-      setIsLoading(false);
-    })();
-  }, [fetchRankings]);
+  const entries = data?.entries ?? [];
+  const totalPages = Math.max(1, data?.totalPages ?? 1);
+  const myEntry = data?.me ?? null;
 
   const handleSearchChange = (text: string) => {
-    setSearchUsername(text);
+    setSearchInput(text);
     if (searchTimer.current) clearTimeout(searchTimer.current);
-    searchTimer.current = setTimeout(async () => {
-      setIsLoading(true);
-      await fetchRankings(0, text);
-      setIsLoading(false);
+    searchTimer.current = setTimeout(() => {
+      setSearchUsername(text.trim());
+      setCurrentPage(0);
     }, 400);
   };
 
-  const totalPages = Math.max(1, Math.ceil(totalElements / PAGE_SIZE));
+  const changePeriod = (next: LeaderboardPeriodType) => {
+    if (next === period) return;
+    setPeriod(next);
+    setCurrentPage(0);
+    scrollRef.current?.scrollTo({ y: 0, animated: true });
+  };
 
-  const goToPage = async (page: number) => {
+  const goToPage = (page: number) => {
     if (page < 0 || page >= totalPages || page === currentPage) return;
-    setIsLoading(true);
-    await fetchRankings(page, searchUsername);
-    setIsLoading(false);
+    setCurrentPage(page);
     scrollRef.current?.scrollTo({ y: 0, animated: true });
   };
 
-  const handleGoToMyRank = async () => {
-    if (!currentUserRank) return;
-    const targetPage = Math.floor((currentUserRank - 1) / PAGE_SIZE);
-    if (searchUsername) {
-      setSearchUsername('');
-    }
-    setIsLoading(true);
-    await fetchRankings(targetPage, '');
-    setIsLoading(false);
+  /** Saute à la page qui contient ma ligne — §14, mettre l'utilisateur en évidence. */
+  const handleGoToMyRank = () => {
+    if (!myEntry) return;
+    setSearchInput('');
+    setSearchUsername('');
+    setCurrentPage(Math.floor((myEntry.rank - 1) / PAGE_SIZE));
     scrollRef.current?.scrollTo({ y: 0, animated: true });
   };
 
-  // Podium is displayed on page 0 when not searching and when at least 3 players exist
-  const showPodium = currentPage === 0 && !searchUsername && rankings.length >= 3;
-  const podiumList = showPodium ? [rankings[1], rankings[0], rankings[2]] : [];
-  const listItems = showPodium ? rankings.slice(3) : rankings;
+  const showPodium = currentPage === 0 && !searchUsername && entries.length >= 3;
+  const podiumList = showPodium ? [entries[1], entries[0], entries[2]] : [];
+  const listItems = showPodium ? entries.slice(3) : entries;
 
   const paginationItems = getPaginationRange(currentPage + 1, totalPages);
 
@@ -132,8 +129,64 @@ export default function RankingsScreen() {
           alignSelf: 'center',
         }}
       >
+        {/* Sélecteur de période (§11). Un seul écran pour les trois classements : le
+            contrat de sortie est identique, seule la période change. */}
+        <View
+          style={{
+            flexDirection: 'row',
+            backgroundColor: palette.surface2,
+            borderRadius: 999,
+            padding: 4,
+            marginBottom: 14,
+          }}
+        >
+          {PERIODS.map((p) => {
+            const active = p.key === period;
+            return (
+              <TouchableOpacity
+                key={p.key}
+                onPress={() => changePeriod(p.key)}
+                activeOpacity={0.8}
+                style={{
+                  flex: 1,
+                  paddingVertical: 8,
+                  borderRadius: 999,
+                  alignItems: 'center',
+                  backgroundColor: active ? palette.primary : 'transparent',
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: 13,
+                    fontWeight: '700',
+                    color: active ? palette.primaryInk : palette.inkSoft,
+                  }}
+                >
+                  {p.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+
+        {/* Libellé calculé serveur : « Aujourd'hui », « Cette semaine »,
+            « Saison septembre 2026 ». */}
+        {data?.periodLabel ? (
+          <Text
+            style={{
+              fontFamily: font.nativeFamily.serif,
+              fontStyle: 'italic',
+              fontSize: 14,
+              color: palette.inkSoft,
+              marginBottom: 12,
+            }}
+          >
+            {data.periodLabel} · {data.totalPlayers} joueur{data.totalPlayers > 1 ? 's' : ''}
+          </Text>
+        ) : null}
+
         {/* "Ton classement" Card (Click to jump to your page) */}
-        {currentUserRank ? (
+        {myEntry ? (
           <TouchableOpacity
             onPress={handleGoToMyRank}
             activeOpacity={0.8}
@@ -177,7 +230,7 @@ export default function RankingsScreen() {
                     paddingBottom: 1,
                   }}
                 >
-                  Rang #{currentUserRank}
+                  Rang #{myEntry.rank}
                 </Text>
               </View>
             </View>
@@ -209,13 +262,13 @@ export default function RankingsScreen() {
           >
             <Search size={16} color={palette.inkSoft} />
             <TextInput
-              value={searchUsername}
+              value={searchInput}
               onChangeText={handleSearchChange}
               placeholder="Rechercher un joueur…"
               placeholderTextColor={palette.inkSoft}
               style={{ flex: 1, color: palette.txt, fontSize: 13.5 }}
             />
-            {searchUsername ? (
+            {searchInput ? (
               <TouchableOpacity onPress={() => handleSearchChange('')} activeOpacity={0.7}>
                 <X size={16} color={palette.inkSoft} />
               </TouchableOpacity>
@@ -248,7 +301,7 @@ export default function RankingsScreen() {
               const isFirst = rankNum === 1;
               const isSecond = rankNum === 2;
               const name = p?.username || 'Joueur';
-              const score = Math.round(p?.glickoRating ?? p?.totalScore ?? 0);
+              const score = p?.points ?? 0;
 
               return (
                 <View key={p?.userId || rankNum} style={{ flex: isFirst ? 1.15 : 1, alignItems: 'center' }}>
@@ -301,28 +354,33 @@ export default function RankingsScreen() {
           </View>
         )}
 
-        {/* Loading Indicator or Player List */}
-        {isLoading ? (
-          <View style={{ paddingVertical: 40, alignItems: 'center', justifyContent: 'center' }}>
-            <ActivityIndicator size="large" color={palette.primary} />
-            <Text style={{ fontSize: 12.5, color: palette.inkSoft, marginTop: 10 }}>
-              Chargement du classement…
-            </Text>
-          </View>
+        {/* États du §29 : l'erreur était auparavant avalée dans un console.error, et la
+            liste restait vide sans la moindre explication. */}
+        {isError && !data ? (
+          <ErrorState
+            error={error}
+            fallbackMessage="Impossible de charger le classement."
+            onRetry={() => void refetch()}
+          />
+        ) : isLoading && !data ? (
+          <LoadingState label="Chargement du classement…" />
         ) : listItems.length === 0 ? (
-          <View style={{ paddingVertical: 40, alignItems: 'center', justifyContent: 'center' }}>
-            <Text style={{ fontSize: 14, color: palette.inkSoft }}>
-              Aucun joueur trouvé
-            </Text>
-          </View>
+          <EmptyState
+            title={searchUsername ? 'Aucun joueur trouvé' : 'Personne au classement'}
+            description={
+              searchUsername
+                ? 'Essaie un autre pseudonyme.'
+                : 'Sois le premier à jouer le Défi du Jour sur cette période.'
+            }
+          />
         ) : (
           <View style={{ gap: 8, marginBottom: 16 }}>
             {listItems.map((item, index) => {
               const rankNumber = showPodium
                 ? index + 4
                 : currentPage * PAGE_SIZE + (index + 1);
-              const isMe = item.userId === user?.id;
-              const score = Math.round(item.glickoRating ?? item.totalScore ?? 0);
+              const isMe = item.isMe;
+              const score = item.points;
 
               return (
                 <View
@@ -367,7 +425,7 @@ export default function RankingsScreen() {
                         {item.username} {isMe ? '(toi)' : ''}
                       </Text>
                       <Text style={{ fontSize: 11, color: palette.inkSoft, marginTop: 1 }}>
-                        {item.totalGames || 0} parties · {item.totalWins || 0} victoires
+                        {item.challengesPlayed} défis · {item.correctAnswers} bonnes réponses
                       </Text>
                     </View>
                   </View>
@@ -537,12 +595,23 @@ export default function RankingsScreen() {
               </TouchableOpacity>
             </View>
 
+            {/* La cote Glicko-2 n'est plus exposée : le §2.2 la reporte après la V1, et
+                rien dans l'application ne l'expliquait au joueur. Elle continue d'ordonner
+                le classement global côté serveur. */}
             <Text style={{ color: palette.inkSoft, fontSize: 13.5, lineHeight: 20, marginBottom: 12 }}>
-              Le classement utilise l&apos;algorithme <Text style={{ color: palette.txt, fontWeight: '700' }}>Glicko-2</Text>. Il évalue votre niveau de jeu relatif par rapport aux autres compétiteurs en temps réel.
+              Chaque Défi du Jour rapporte des points. Ils alimentent trois classements :
+              le <Text style={{ color: palette.txt, fontWeight: '700' }}>jour</Text>,
+              la <Text style={{ color: palette.txt, fontWeight: '700' }}>semaine</Text>,
+              et la <Text style={{ color: palette.txt, fontWeight: '700' }}>saison</Text>, qui dure un mois.
+            </Text>
+
+            <Text style={{ color: palette.inkSoft, fontSize: 13.5, lineHeight: 20, marginBottom: 12 }}>
+              <Text style={{ color: palette.primary, fontWeight: '700' }}>À égalité de points :</Text> le
+              nombre de bonnes réponses départage, puis le temps de réflexion cumulé.
             </Text>
 
             <Text style={{ color: palette.inkSoft, fontSize: 13.5, lineHeight: 20 }}>
-              <Text style={{ color: palette.primary, fontWeight: '700' }}>Bonus de série :</Text> Plus vous enchaînez de victoires consécutives, plus votre cote grimpe rapidement.
+              La saison repart de zéro chaque mois : personne n&apos;est jamais distancé pour de bon.
             </Text>
           </View>
         </View>
