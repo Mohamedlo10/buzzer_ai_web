@@ -2,10 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
-  ArrowLeft,
-  ShieldAlert,
   Filter,
-  X,
 } from 'lucide-react';
 
 import { DataTable, type Column } from '../components/admin/DataTable';
@@ -25,7 +22,7 @@ function formatDate(iso: string) {
 }
 
 export function AuditLogsPage() {
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
   const [page, setPage] = useState(0);
   const [action, setAction] = useState('');
   const [adminId, setAdminId] = useState('');

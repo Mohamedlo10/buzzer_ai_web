@@ -13,8 +13,6 @@ import {
   Trophy,
   ArrowLeft,
   Send,
-  Sparkles,
-  Award,
 } from 'lucide-react-native';
 
 import * as soloApi from '~/lib/api/solo';

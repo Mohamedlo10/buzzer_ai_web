@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity } from 'react-native';
 import { Trophy, ChevronRight } from 'lucide-react-native';
 import { Avatar } from '~/components/shared/Avatar';
 import { teamColor } from '~/lib/game/teamColors';
-import { palette, font } from '~/lib/theme/tokens';
+import { palette } from '~/lib/theme/tokens';
 import type { TeamResponse } from '~/types/api';
 
 export interface ArcadeTeamsSectionProps {
@@ -20,7 +20,7 @@ export function ArcadeTeamsSection({
   teams,
   currentPlayerId,
   isManager,
-  userId,
+  userId: _userId,
   avatarMap,
   onChangeTeam,
   onManagerReassign,

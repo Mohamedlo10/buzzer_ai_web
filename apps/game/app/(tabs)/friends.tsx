@@ -11,19 +11,15 @@ import { useRouter } from 'expo-router';
 import {
   Search,
   Users,
-  UserPlus,
   X,
-  Check,
   ArrowRight,
   Shield,
-  Zap,
-  Clock,
-  Send,
 } from 'lucide-react-native';
+
 
 import { useFriendStore } from '~/stores/useFriendStore';
 import * as usersApi from '~/lib/api/users';
-import type { UserResponse, FriendResponse } from '~/types/api';
+import type { UserResponse } from '~/types/api';
 import { palette, font } from '~/lib/theme/tokens';
 import { Avatar } from '~/components/shared/Avatar';
 import { AppTopBar } from '~/components/shared/AppTopBar';
@@ -47,7 +43,7 @@ export default function FriendsScreen() {
     pendingRequests,
     sentRequests: storeSentRequests,
     blockedUsers,
-    isLoading,
+    isLoading: _isLoading,
     fetchFriends,
     fetchPendingRequests,
     fetchSentRequests,

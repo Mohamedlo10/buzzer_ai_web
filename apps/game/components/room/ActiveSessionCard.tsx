@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
-import { Trash2, Clock, Sparkles, Crown, ArrowRight, Play } from 'lucide-react-native';
+import { Trash2, ArrowRight } from 'lucide-react-native';
 import { palette, font } from '~/lib/theme/tokens';
 import type { RoomSessionResponse } from '~/types/api';
 
@@ -15,11 +15,11 @@ export interface ActiveSessionCardProps {
 
 export function ActiveSessionCard({
   session,
-  members = [],
+  members: _members = [],
   onPress,
   onDelete,
   canDelete,
-  isOwner,
+  isOwner: _isOwner,
 }: ActiveSessionCardProps) {
   const isLobby = session.status === 'LOBBY';
   const isReady = isLobby && session.playerCount >= 2;
@@ -70,7 +70,7 @@ export function ActiveSessionCard({
 
         {canDelete && onDelete && (
           <TouchableOpacity
-            onPress={(e) => {
+            onPress={() => {
               onDelete();
             }}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}

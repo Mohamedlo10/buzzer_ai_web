@@ -5,11 +5,7 @@ import {
   Lock,
   Play,
   Trophy,
-  Zap,
-  Sparkles,
-  Award,
   BookOpen,
-  ChevronDown,
   Gift,
 } from 'lucide-react-native';
 import { palette, font } from '~/lib/theme/tokens';
@@ -48,8 +44,8 @@ export function GamifiedProgressionPath({
   theme = 'gold',
   stages,
   onNodePress,
-  headerTitle,
-  headerSubtitle,
+  headerTitle: _headerTitle,
+  headerSubtitle: _headerSubtitle,
 }: GamifiedProgressionPathProps) {
   // Theme Color Configurations
   const isGold = theme === 'gold';
@@ -113,7 +109,7 @@ export function GamifiedProgressionPath({
 
   return (
     <View style={{ gap: 24, paddingBottom: 40 }}>
-      {stages.map((stage, stageIndex) => {
+      {stages.map((stage, _stageIndex) => {
         const isStageCompleted = stage.nodes.every((n) => n.status === 'COMPLETED');
 
         return (

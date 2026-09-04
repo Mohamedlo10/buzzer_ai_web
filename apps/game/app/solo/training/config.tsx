@@ -49,7 +49,7 @@ export default function TrainingConfigScreen() {
   const [difficulty, setDifficulty] = useState<TrainingDifficulty>('MOYEN');
   const [duration, setDuration] = useState(10);
 
-  const { createSession, session, isCreating } = useTrainingStore();
+  const { createSession, session: _session, isCreating } = useTrainingStore();
 
   const handleStart = async () => {
     const trimmed = subject.trim();

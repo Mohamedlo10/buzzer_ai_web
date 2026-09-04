@@ -1,8 +1,8 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, Modal, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, Modal } from 'react-native';
 import { Eye, Crown, X, Trash2, Edit3 } from 'lucide-react-native';
 import { Avatar } from '~/components/shared/Avatar';
-import { teamColor, teamColorTint } from '~/lib/game/teamColors';
+import { teamColor } from '~/lib/game/teamColors';
 import { palette, font } from '~/lib/theme/tokens';
 import type { PlayerResponse, TeamResponse, CategorySelectionMode } from '~/types/api';
 
@@ -34,7 +34,7 @@ export function LobbyPlayerDetailModal({
   teams,
   avatarMap,
   onClose,
-  onViewStats,
+  onViewStats: _onViewStats,
   onEditCategories,
   onKickPlayer,
   categoryEmojiMap,

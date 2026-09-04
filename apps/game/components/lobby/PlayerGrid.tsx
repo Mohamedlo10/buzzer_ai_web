@@ -1,8 +1,8 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { Eye, Crown, Users, Trash2 } from 'lucide-react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
+import { Eye, Crown, Users } from 'lucide-react-native';
 import { Avatar } from '~/components/shared/Avatar';
-import { palette, font } from '~/lib/theme/tokens';
+import { palette } from '~/lib/theme/tokens';
 import type { PlayerResponse } from '~/types/api';
 
 export interface PlayerGridProps {
@@ -22,13 +22,13 @@ export function PlayerGrid({
   players,
   currentUserId,
   isManager,
-  questionMode,
-  sessionMode,
+  questionMode: _questionMode,
+  sessionMode: _sessionMode,
   avatarMap,
-  kickingPlayerId,
+  kickingPlayerId: _kickingPlayerId,
   onSelectPlayer,
-  onEditCategories,
-  onKickPlayer,
+  onEditCategories: _onEditCategories,
+  onKickPlayer: _onKickPlayer,
 }: PlayerGridProps) {
   return (
     <View

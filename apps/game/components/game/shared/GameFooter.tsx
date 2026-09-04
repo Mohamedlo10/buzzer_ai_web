@@ -19,7 +19,7 @@ interface GameFooterProps {
  * Pied de page de jeu : classement + modale de correction.
  */
 export function GameFooter({
-  sessionId,
+  sessionId: _sessionId,
   players,
   teams,
   isTeamMode,

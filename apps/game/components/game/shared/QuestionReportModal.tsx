@@ -20,8 +20,8 @@ const REPORT_REASONS = [
 
 export function QuestionReportModal({
   visible,
-  questionId,
-  questionText,
+  questionId: _questionId,
+  questionText: _questionText,
   onClose,
 }: QuestionReportModalProps) {
   const [selectedReason, setSelectedReason] = useState<string>(REPORT_REASONS[0]);

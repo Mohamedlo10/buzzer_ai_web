@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
-import { Crown, Medal, UserPlus } from 'lucide-react-native';
+import { Crown, Medal } from 'lucide-react-native';
 import { Avatar } from '~/components/shared/Avatar';
-import { palette, font } from '~/lib/theme/tokens';
+import { palette } from '~/lib/theme/tokens';
 import type { RoomDetailResponse } from '~/types/api';
 
 export interface MembersWithStatsProps {
@@ -17,7 +17,7 @@ export function MembersWithStats({
   members,
   rankings,
   currentUserId,
-  onAddFriend,
+  onAddFriend: _onAddFriend,
   onSelectUser,
 }: MembersWithStatsProps) {
   const merged = members

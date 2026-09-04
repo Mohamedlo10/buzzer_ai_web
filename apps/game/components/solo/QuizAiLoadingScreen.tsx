@@ -43,7 +43,7 @@ export function QuizAiLoadingScreen({
   theme,
   levelLabel,
   title = 'Préparation de la partie en cours',
-  mode = 'career',
+  mode: _mode = 'career',
 }: QuizAiLoadingScreenProps) {
   const [stepIndex, setStepIndex] = useState(0);
 

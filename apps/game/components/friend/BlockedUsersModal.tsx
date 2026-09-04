@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Modal, ScrollView, ActivityIndicator } from 'react-native';
-import { ShieldAlert, X, ShieldOff, UserX } from 'lucide-react-native';
+import { ShieldAlert, X, UserX } from 'lucide-react-native';
 import { Avatar } from '~/components/shared/Avatar';
 import { palette, font } from '~/lib/theme/tokens';
 import { useFriendStore } from '~/stores/useFriendStore';

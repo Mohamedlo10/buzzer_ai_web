@@ -1,6 +1,6 @@
 import React from 'react';
-import { View, Text, ActivityIndicator } from 'react-native';
-import { Sparkles, Clock } from 'lucide-react-native';
+import { View, Text } from 'react-native';
+import { Clock } from 'lucide-react-native';
 import { palette, font } from '~/lib/theme/tokens';
 import type { PlayerResponse } from '~/types/api';
 
@@ -15,9 +15,9 @@ export interface LobbyWaitingCardProps {
 export function LobbyWaitingCard({
   isManager,
   managerPlayer,
-  currentPlayer,
-  questionMode,
-  onEditCategories,
+  currentPlayer: _currentPlayer,
+  questionMode: _questionMode,
+  onEditCategories: _onEditCategories,
 }: LobbyWaitingCardProps) {
   if (isManager) {
     return null;

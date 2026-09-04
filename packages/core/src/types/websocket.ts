@@ -1,4 +1,6 @@
-import type { BuzzQueueItem, Difficulty, PlayerResponse, QuestionResponse, SessionStatus } from './api';
+// BuzzQueueItem, PlayerResponse et SessionStatus ne sont plus référencés depuis le retrait
+// de GameStateSyncEvent, seul type qui les utilisait.
+import type { Difficulty, QuestionResponse, UserResponse } from './api';
 
 // ──────────────────────────────────────────────
 // Base WebSocket Message
@@ -135,24 +137,39 @@ export interface DebtsCalculatedEvent extends BaseWSMessage {
 // Friend / Notification Events
 // ──────────────────────────────────────────────
 
+/**
+ * Contrat serveur — `FriendService`, sur `/queue/user/{id}/notifications` :
+ * `{ type: 'FRIEND_REQUEST', from: UserResponse }`.
+ *
+ * Les champs plats `fromUserId` / `fromUsername` / `requestId` déclarés auparavant ne
+ * correspondaient à rien de ce que le backend envoie : l'événement n'était donc jamais
+ * produit et les branches correspondantes de `handlers.ts` étaient du code mort.
+ */
 export interface FriendRequestReceivedEvent {
   type: 'friend_request_received';
-  fromUserId: string;
-  fromUsername: string;
-  requestId: string;
+  sessionId: string | null;
+  from: UserResponse;
 }
 
+/** Contrat serveur — `FriendService` : `{ type: 'FRIEND_ACCEPTED', from: UserResponse }`. */
 export interface FriendRequestAcceptedEvent {
   type: 'friend_request_accepted';
-  userId: string;
-  username: string;
+  sessionId: string | null;
+  from: UserResponse;
 }
 
+/**
+ * Contrat serveur — `InvitationService`, sur `/queue/user/{id}/invitations` :
+ * `{ id, sessionCode, sessionId, from, expiresAt }`.
+ */
 export interface SessionInviteReceivedEvent {
   type: 'session_invite_received';
+  sessionId: string | null;
   invitationId: string;
   sessionCode: string;
-  senderName: string;
+  /** Nom du joueur qui invite (`Player.getName()` côté serveur). */
+  from: string;
+  expiresAt: string;
 }
 
 export interface PlayerOnlineEvent {
@@ -211,37 +228,17 @@ export interface TeamUpdatedEvent extends BaseWSMessage {
   teams: import('./api').TeamResponse[];
 }
 
-export interface TeamScoresEvent extends BaseWSMessage {
-  type: 'team_scores';
-  teams: Array<{
-    id: string;
-    name: string;
-    color: string;
-    score: number;
-    memberIds: string[];
-  }>;
-}
+// TeamScoresEvent retiré : le backend a supprimé /topic/session/{id}/team-scores lors de
+// la refonte du canal d'état, et aucune méthode ne publiait plus dessus. Les scores
+// d'équipe devront revenir par le paquet d'état versionné, seule source de vérité du jeu.
 
-// ──────────────────────────────────────────────
-// State Sync Event (server-push snapshot)
-// ──────────────────────────────────────────────
-
-/**
- * Periodic full-state snapshot pushed by the server every ~10s.
- * Topic: /topic/session/{id}/sync
- * Replaces polling entirely — front syncs stores from this.
- */
-export interface GameStateSyncEvent extends BaseWSMessage {
-  type: 'game_state_sync';
-  session: {
-    status: string;
-    currentQuestionIndex: number;
-    totalQuestions: number;
-  };
-  currentQuestion: import('./api').QuestionResponse | null;
-  players: import('./api').PlayerResponse[];
-  buzzQueue: import('./api').BuzzQueueItem[];
-}
+// GameStateSyncEvent retiré avec le canal /topic/session/{id}/sync.
+//
+// Le serveur y republiait un instantané complet toutes les 10 à 30 secondes pour chaque
+// session active, mais le client ne s'y était jamais abonné : la charge en base était
+// payée pour un message que personne ne lisait. La resynchronisation passe par le
+// GameStatePacket versionné (`game_state_packet`), qui porte un numéro de version et
+// permet donc de rejeter un instantané périmé — ce qu'un second canal ne savait pas faire.
 
 // ──────────────────────────────────────────────
 // Sans Modérateur Events
@@ -276,10 +273,68 @@ export interface WordAdvanceEvent extends BaseWSMessage {
 }
 
 // ──────────────────────────────────────────────
+// Événements internes au transport
+// ──────────────────────────────────────────────
+//
+// Ils ne viennent pas du backend : c'est le WebSocketManager qui les fabrique pour signaler
+// l'état de la liaison. Ils étaient jusqu'ici émis en `as any`, donc invisibles du typage —
+// un `switch` exhaustif ne pouvait pas les couvrir et une faute de frappe passait inaperçue.
+// Le préfixe `_` marque leur nature locale.
+
+/** La liaison STOMP vient de s'ouvrir ou de se fermer. */
+export interface ConnectionChangeEvent {
+  type: '_connection_change';
+  connected: boolean;
+}
+
+/** Reconnexion après une coupure : l'écran doit resynchroniser son état auprès du serveur. */
+export interface ReconnectedEvent {
+  type: '_reconnected';
+}
+
+/**
+ * Le serveur a refusé la connexion pour une raison d'authentification.
+ *
+ * Émis quand la frame STOMP ERROR mentionne 401 / Unauthorized. Le manager cesse alors de
+ * se reconnecter : sans cet événement, l'interface resterait figée sans explication, ce qui
+ * est précisément ce qui arrivait avant le durcissement du CONNECT côté serveur.
+ */
+export interface AuthErrorEvent {
+  type: '_auth_error';
+  reason?: string;
+}
+
+/** Le backend a clos la session : inutile de se reconnecter, il faut sortir de l'écran. */
+export interface SessionClosedEvent {
+  type: '_session_closed';
+}
+
+/**
+ * Décompte avant le démarrage de la partie.
+ *
+ * Contrat serveur — `WebSocketNotificationService.sendCountdown` :
+ * `{ count: n }` à chaque seconde, puis `{ count: 0, event: 'START' }` au démarrage.
+ * `event` n'est donc présent que sur la dernière émission.
+ */
+export interface CountdownEvent {
+  type: 'countdown';
+  sessionId: string;
+  count: number;
+  event?: 'START';
+}
+
+// ──────────────────────────────────────────────
 // Union Type
 // ──────────────────────────────────────────────
 
 export type WSEvent =
+  // Transport (locaux, jamais émis par le backend)
+  | ConnectionChangeEvent
+  | ReconnectedEvent
+  | AuthErrorEvent
+  | SessionClosedEvent
+  // Décompte
+  | CountdownEvent
   // Lobby
   | PlayerJoinedEvent
   | PlayerLeftEvent
@@ -299,7 +354,6 @@ export type WSEvent =
   | GameResumedEvent
   // Teams
   | TeamUpdatedEvent
-  | TeamScoresEvent
   // End
   | GameOverEvent
   | DebtsCalculatedEvent
@@ -314,8 +368,6 @@ export type WSEvent =
   | RoomSessionStartedEvent
   | RoomStatsUpdatedEvent
   | RoomMemberPresenceEvent
-  // Sync
-  | GameStateSyncEvent
   // Sans Modérateur
   | QuestionDisplayResumeEvent
   | WordAdvanceEvent

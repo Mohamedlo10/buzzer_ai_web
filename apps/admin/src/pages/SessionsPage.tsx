@@ -1,21 +1,11 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import {
-  Activity,
   Eye,
   Square,
-  Users,
-  Zap,
-  Swords,
-  Clock,
-  Trophy,
-  XCircle,
   Search,
-  Filter,
-  Calendar,
-  ChevronRight,
 } from 'lucide-react';
 
 import { DataTable, type Column } from '../components/admin/DataTable';
@@ -25,7 +15,6 @@ import {
   confirmAsync,
   type AdminSessionSummaryResponse,
   type AdminSessionStatus,
-  type AdminActiveSessionResponse,
 } from '@xalaat/core';
 
 const STATUS_OPTIONS: { value: string; label: string }[] = [
@@ -66,8 +55,8 @@ export function SessionsPage() {
 
   const [page, setPage] = useState(0);
   const [statusFilter, setStatusFilter] = useState('');
-  const [fromDate, setFromDate] = useState('');
-  const [toDate, setToDate] = useState('');
+  const [fromDate, _setFromDate] = useState('');
+  const [toDate, _setToDate] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
 
   const params = {
@@ -83,7 +72,7 @@ export function SessionsPage() {
     queryFn: () => adminApi.getAdminSessions(params),
   });
 
-  const { data: activeSessions, isLoading: activeLoading } = useQuery({
+  const { data: activeSessions, isLoading: _activeLoading } = useQuery({
     queryKey: ['adminActiveSessions'],
     queryFn: adminApi.getAdminActiveSessions,
     refetchInterval: 10000,
@@ -91,7 +80,7 @@ export function SessionsPage() {
 
   const stopMutation = useMutation({
     mutationFn: adminApi.forceStopSession,
-    onSuccess: (_, sessionId) => {
+    onSuccess: (_, _sessionId) => {
       toast.success('Session arrêtée avec succès');
       queryClient.invalidateQueries({ queryKey: ['adminSessions'] });
       queryClient.invalidateQueries({ queryKey: ['adminActiveSessions'] });

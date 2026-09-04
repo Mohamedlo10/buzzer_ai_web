@@ -8,7 +8,7 @@ import {
   type TextInputProps,
 } from 'react-native';
 import { Eye, EyeOff, AlertCircle, type LucideIcon } from 'lucide-react-native';
-import { palette, font, inkAlpha } from '~/lib/theme/tokens';
+import { palette, inkAlpha } from '~/lib/theme/tokens';
 
 interface FormInputProps extends TextInputProps {
   label: string;
@@ -22,8 +22,8 @@ interface FormInputProps extends TextInputProps {
 export function FormInput({
   label,
   leftIcon: LeftIcon,
-  rightLabel,
-  onRightLabelPress,
+  rightLabel: _rightLabel,
+  onRightLabelPress: _onRightLabelPress,
   error,
   isPassword = false,
   value,

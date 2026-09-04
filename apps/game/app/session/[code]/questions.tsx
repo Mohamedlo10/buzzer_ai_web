@@ -24,7 +24,6 @@ import {
   FileSpreadsheet,
   Download,
   FileUp,
-  Image as ImageIcon,
 } from 'lucide-react-native';
 
 import * as DocumentPicker from 'expo-document-picker';

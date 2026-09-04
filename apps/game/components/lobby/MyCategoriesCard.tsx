@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, TextInput } from 'react-native';
-import { Check, Edit3, Plus, Send, Lock } from 'lucide-react-native';
-import { palette, font, inkAlpha } from '~/lib/theme/tokens';
+import { Check, Edit3, Plus, Send } from 'lucide-react-native';
+import { palette, inkAlpha } from '~/lib/theme/tokens';
 import type { PlayerResponse, SessionResponse } from '~/types/api';
 
 export interface MyCategoriesCardProps {

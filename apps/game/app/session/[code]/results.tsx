@@ -15,8 +15,6 @@ import {
   Zap,
   Crown,
   Medal,
-  Sparkles,
-  Award,
   ChevronRight,
 } from 'lucide-react-native';
 

@@ -1,7 +1,6 @@
 import { View, Text, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { palette, font } from '~/lib/theme/tokens';
-import { Trophy } from 'lucide-react-native';
 
 interface GlobalRankCardProps {
   rank: number;

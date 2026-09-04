@@ -51,7 +51,7 @@ export function DashboardPage() {
   const logout = useAuthStore((s) => s.logout);
   const navigate = useNavigate();
 
-  const { data: stats, isLoading: statsLoading, refetch: refetchStats } = useQuery({
+  const { data: stats, isLoading: _statsLoading, refetch: refetchStats } = useQuery({
     queryKey: ['adminStats'],
     queryFn: adminApi.getAdminStats,
   });

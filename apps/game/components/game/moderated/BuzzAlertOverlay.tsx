@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { View, Text, TouchableOpacity, Animated } from 'react-native';
 import { Hand } from 'lucide-react-native';
 import { palette, font } from '~/lib/theme/tokens';
@@ -14,6 +14,19 @@ export function BuzzAlertOverlay({ isManager, phase, firstBuzzer }: BuzzAlertOve
   const [visible, setVisible] = useState(false);
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const lastBuzzerKey = useRef<string | null>(null);
+
+  // Mémorisé pour que l'effet ci-dessous puisse le déclarer en dépendance sans se
+  // relancer : `fadeAnim` est une ref et `setVisible` un setter, tous deux d'identité
+  // stable, donc `dismiss` l'est aussi.
+  const dismiss = useCallback(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 0,
+      duration: 150,
+      useNativeDriver: true,
+    }).start(() => {
+      setVisible(false);
+    });
+  }, [fadeAnim]);
 
   useEffect(() => {
     // Détecter un nouveau premier buzzer
@@ -40,17 +53,7 @@ export function BuzzAlertOverlay({ isManager, phase, firstBuzzer }: BuzzAlertOve
       lastBuzzerKey.current = null;
       setVisible(false);
     }
-  }, [isManager, phase, firstBuzzer]);
-
-  const dismiss = () => {
-    Animated.timing(fadeAnim, {
-      toValue: 0,
-      duration: 150,
-      useNativeDriver: true,
-    }).start(() => {
-      setVisible(false);
-    });
-  };
+  }, [isManager, phase, firstBuzzer, dismiss, fadeAnim]);
 
   if (!visible || !firstBuzzer || !isManager) return null;
 

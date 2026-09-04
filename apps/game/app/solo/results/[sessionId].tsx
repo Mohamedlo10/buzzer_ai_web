@@ -17,14 +17,13 @@ import {
   ChevronUp,
   AlertCircle,
   RotateCcw,
-  Sparkles,
 } from 'lucide-react-native';
 
 import * as soloApi from '~/lib/api/solo';
 import type { SoloSessionResultResponse, AnswerSummary } from '~/types/solo';
 import { useSoloStore } from '~/stores/useSoloStore';
 import { palette } from '~/lib/theme/tokens';
-import { PopView, FadeInUpView } from '~/components/anim';
+import { PopView } from '~/components/anim';
 
 function AnswerRow({ answer }: { answer: AnswerSummary }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -198,7 +197,7 @@ export default function SoloResultsScreen() {
     );
   }
 
-  const isCareer = !!results.careerLevelResult;
+  const _isCareer = !!results.careerLevelResult;
   const isPassed = results.passed;
 
   return (

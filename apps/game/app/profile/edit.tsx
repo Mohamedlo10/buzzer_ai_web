@@ -2,7 +2,6 @@ import { useState } from 'react';
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   ScrollView,
   ActivityIndicator,
@@ -12,9 +11,7 @@ import { useRouter } from 'expo-router';
 import {
   ArrowLeft,
   Check,
-  Save,
   Pencil,
-  Sparkles,
   Shuffle,
   User,
   Mail,

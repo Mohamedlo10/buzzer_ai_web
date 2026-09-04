@@ -16,10 +16,10 @@ export interface LobbyHeaderProps {
 }
 
 export function LobbyHeader({
-  session,
+  session: _session,
   roomInfo,
   isConnected,
-  isManager,
+  isManager: _isManager,
   code,
   isRefreshing,
   onBack,

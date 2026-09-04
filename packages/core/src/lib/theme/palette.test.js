@@ -21,7 +21,7 @@
  */
 
 const assert = require('node:assert/strict');
-const { palette, darkPalette, alpha, radius, toChannels, withAlpha, cssVars } = require('./palette');
+const { palette, darkPalette, alpha: _alpha, radius, toChannels, withAlpha, cssVars } = require('./palette');
 
 let checks = 0;
 const ok = (fn) => {

@@ -12,7 +12,7 @@ export interface ExpandableCardProps {
   isBold?: boolean;
 }
 
-export function ExpandableCard({ icon, label, content, subContent, bgColor, borderColor, isBold = false }: ExpandableCardProps) {
+export function ExpandableCard({ icon, label, content, subContent, bgColor, borderColor, isBold: _isBold = false }: ExpandableCardProps) {
   const [expanded, setExpanded] = useState(false);
 
   return (

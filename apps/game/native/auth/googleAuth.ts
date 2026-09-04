@@ -57,22 +57,31 @@ export function useNativeGoogleAuth() {
       notify.error('La connexion Google n’est pas configurée dans cet environnement.');
       return null;
     }
-    return new Promise(async (resolve) => {
+    return new Promise((resolve) => {
       resolverRef.current = resolve;
-      try {
-        const res = await promptAsync();
-        if (res.type === 'success') {
-          const idToken = res.params?.id_token || res.authentication?.idToken || null;
-          resolve(idToken);
-          resolverRef.current = null;
-        } else if (res.type !== 'dismiss') {
-          resolve(null);
-          resolverRef.current = null;
-        }
-      } catch {
-        resolve(null);
+
+      const settle = (token: string | null) => {
+        resolve(token);
         resolverRef.current = null;
-      }
+      };
+
+      // L'executor lui-même ne doit pas être `async` : une exception levée avant le
+      // premier `await` serait alors avalée et la promesse ne se résoudrait jamais —
+      // sur un chemin de connexion, cela fige l'écran sans erreur visible.
+      void (async () => {
+        try {
+          const res = await promptAsync();
+          if (res.type === 'success') {
+            settle(res.params?.id_token || res.authentication?.idToken || null);
+          } else if (res.type !== 'dismiss') {
+            settle(null);
+          }
+          // Cas 'dismiss' : volontairement non résolu ici. L'utilisateur peut revenir
+          // de la WebView, et c'est le useEffect sur `response` qui tranchera.
+        } catch {
+          settle(null);
+        }
+      })();
     });
   };
 

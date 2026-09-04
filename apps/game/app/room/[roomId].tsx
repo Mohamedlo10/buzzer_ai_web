@@ -24,7 +24,7 @@ import * as Clipboard from 'expo-clipboard';
 
 import { useRoomDetail } from '~/lib/hooks/useRoomDetail';
 import * as qrcodeApi from '~/lib/api/qrcode';
-import { palette, font, inkAlpha } from '~/lib/theme/tokens';
+import { palette, font } from '~/lib/theme/tokens';
 import { notify } from '~/lib/ui/notify';
 
 // Dedicated Room Components

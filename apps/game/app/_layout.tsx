@@ -36,11 +36,16 @@ import { apiClient } from '@xalaat/core';
 
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ConfirmHost } from '~/components/shared/ConfirmHost';
+import { useWebSocketAuthRecovery } from '~/native/websocket/useWebSocketAuthRecovery';
 
 export default function RootLayout() {
   const router = useRouter();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const restoreSession = useAuthStore((state) => state.restoreSession);
+
+  // Doit vivre à la racine : un refus d'authentification du WebSocket peut survenir sur
+  // n'importe quel écran, y compris pendant une partie.
+  useWebSocketAuthRecovery();
 
   const [loaded, error] = useFonts({
     [font.nativeFamily.display]: Boldonse_400Regular,

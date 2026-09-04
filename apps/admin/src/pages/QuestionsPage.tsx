@@ -20,7 +20,6 @@ import { Spinner } from '../components/loading/Spinner';
 import {
   adminApi,
   confirmAsync,
-  type AdminCategoryResponse,
   type AdminQuestionResponse,
 } from '@xalaat/core';
 

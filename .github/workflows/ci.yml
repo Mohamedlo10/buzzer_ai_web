@@ -1,0 +1,43 @@
+name: CI
+
+# Premier workflow de ce dépôt : jusqu'ici l'app active (apps/game) n'était
+# ni typée-vérifiée ni lintée automatiquement.
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - 'migration/**'
+  workflow_dispatch:
+
+jobs:
+  verify:
+    name: Typecheck · Lint · Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      # `npm ci` déclenche le postinstall patch-package, nécessaire aux patches
+      # présents dans patches/.
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck (apps/game + apps/admin)
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Tests
+        run: npm test
+
+      # Vérifie que le back-office compile réellement (tsc && vite build).
+      - name: Build admin
+        run: npm --workspace apps/admin run build

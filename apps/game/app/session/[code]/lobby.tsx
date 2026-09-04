@@ -4,7 +4,6 @@ import {
   Text,
   ScrollView,
   Share,
-  Platform,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -69,8 +68,8 @@ export default function LobbyScreen() {
     setAdjustedQPerCat,
     isSavingConfig,
     avatarMap,
-    profileUserId,
-    setProfileUserId,
+    profileUserId: _profileUserId,
+    setProfileUserId: _setProfileUserId,
     selectedLobbyPlayer,
     setSelectedLobbyPlayer,
     reqOpen,
@@ -91,15 +90,15 @@ export default function LobbyScreen() {
     canStart,
     isWithoutModerator,
     totalQuestionsEstimate,
-    handleStartGame,
+    handleStartGame: _handleStartGame,
     handleManagerStartClick,
     handleStartWithAdjustedQ,
     handleLeave,
     handleDeleteSession,
     handleKickPlayer,
     handleAssignTeam,
-    handleChangeTeam,
-    handleManagerReassign,
+    handleChangeTeam: _handleChangeTeam,
+    handleManagerReassign: _handleManagerReassign,
     handleRefresh,
     handleSendCategoryRequest,
   } = useLobbySession({

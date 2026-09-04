@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Zap } from 'lucide-react-native';
 
@@ -152,6 +152,12 @@ export default function GamePage() {
       if (event.type === 'game_over') {
         router.replace(`/session/${code}/results` as any);
       }
+      // Le backend a clos la session pendant qu'on y jouait (arrêt forcé par un admin,
+      // par exemple). Le manager émettait déjà cet événement, mais aucun écran ne
+      // l'écoutait : la partie restait affichée alors que le serveur ne répondait plus.
+      if (event.type === '_session_closed') {
+        router.replace(`/session/${code}/results` as any);
+      }
     },
     onReconnect: async () => {
       await syncGameState();
@@ -164,11 +170,29 @@ export default function GamePage() {
     }
   }, [session?.status, game.phase, code, router]);
 
-  // Polling fallback de secours UNIQUEMENT en cas de déconnexion WebSocket
+  // Polling de secours UNIQUEMENT pendant une déconnexion WebSocket.
+  //
+  // L'intervalle s'allonge à chaque tentative (2 s → 4 → 8 → 15, plafonné) au lieu de
+  // rester fixe à 2 s : lors d'une panne réseau, tous les clients déconnectés interrogent
+  // le serveur en même temps, c'est-à-dire précisément au moment où il est le plus sollicité.
+  // La progression reprend celle du backoff de reconnexion STOMP, pour que les deux
+  // mécanismes ne se désynchronisent pas.
   useEffect(() => {
     if (isConnected) return;
-    const interval = setInterval(syncGameState, 2000);
-    return () => clearInterval(interval);
+
+    const DELAYS_MS = [2000, 4000, 8000, 15000];
+    let attempt = 0;
+    let timer: ReturnType<typeof setTimeout>;
+
+    const poll = () => {
+      syncGameState();
+      const delay = DELAYS_MS[Math.min(attempt, DELAYS_MS.length - 1)];
+      attempt += 1;
+      timer = setTimeout(poll, delay);
+    };
+
+    timer = setTimeout(poll, DELAYS_MS[0]);
+    return () => clearTimeout(timer);
   }, [isConnected, syncGameState]);
 
   const handlePause = useCallback(async () => {

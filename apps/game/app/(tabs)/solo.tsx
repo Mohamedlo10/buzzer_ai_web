@@ -18,7 +18,7 @@ import { SoloHubCard } from '~/components/shared/SoloHubCard';
 // Specialized Solo Components
 import { SoloGreeting } from '~/components/solo/SoloGreeting';
 import { SoloModeCards } from '~/components/solo/SoloModeCards';
-import { SoloProgressPills } from '~/components/solo/SoloProgressPills';
+
 import { MyRankCard } from '~/components/solo/MyRankCard';
 
 export default function SoloScreen() {
@@ -72,8 +72,8 @@ export default function SoloScreen() {
   const globalStats = dashboardData?.globalStats;
   const rank = globalStats?.rank;
   const totalScore = globalStats?.totalScore || 0;
-  const winRate = globalStats?.winRate || 0;
-  const totalGames = globalStats?.totalGames || 0;
+  const _winRate = globalStats?.winRate || 0;
+  const _totalGames = globalStats?.totalGames || 0;
 
   // Active career (first active career or null)
   const activeCareer = (careersData || []).find((c) => c.status === 'ACTIVE') || null;
@@ -83,7 +83,7 @@ export default function SoloScreen() {
     (trainingSessionsData || []).find((s) => s.status === 'IN_PROGRESS') || null;
 
   // Calculate highest current streak from training history if available
-  const currentStreak = Math.max(
+  const _currentStreak = Math.max(
     ...(trainingHistoryData || []).map((m) => m.currentStreak || 0),
     0
   );

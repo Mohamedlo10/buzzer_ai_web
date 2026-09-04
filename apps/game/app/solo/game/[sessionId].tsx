@@ -57,7 +57,7 @@ export default function SoloGameScreen() {
     loadSession,
     answerQuestion,
     advanceQuestion,
-    resetStore,
+    resetStore: _resetStore,
   } = useSoloStore();
 
   const [startTime, setStartTime] = useState<number>(Date.now());

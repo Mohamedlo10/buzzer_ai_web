@@ -15,7 +15,6 @@ import {
   ChevronRight,
   CheckCircle,
   XCircle,
-  Trophy,
 } from 'lucide-react-native';
 
 import { useTrainingStore } from '~/stores/useTrainingStore';
@@ -48,7 +47,7 @@ export default function TrainingSessionScreen() {
     loadSession,
     advance,
     submitAnswer,
-    reset,
+    reset: _reset,
   } = useTrainingStore();
 
   const [startTime, setStartTime] = useState(Date.now());

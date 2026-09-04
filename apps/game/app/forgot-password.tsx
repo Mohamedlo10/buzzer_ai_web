@@ -2,7 +2,6 @@ import { useState } from 'react';
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   ScrollView,
   KeyboardAvoidingView,
@@ -11,9 +10,9 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Mail, ArrowLeft, CheckCircle, Sparkles } from 'lucide-react-native';
+import { Mail, ArrowLeft, CheckCircle } from 'lucide-react-native';
 import { authApi } from '@xalaat/core';
-import { palette, font, inkAlpha } from '~/lib/theme/tokens';
+import { palette, font } from '~/lib/theme/tokens';
 import { XalaatMark } from '~/components/shared/XalaatMark';
 import { FormInput } from '~/components/shared/FormInput';
 

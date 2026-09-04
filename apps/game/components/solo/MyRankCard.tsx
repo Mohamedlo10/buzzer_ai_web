@@ -1,6 +1,6 @@
 import { View, Text, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Trophy, ChevronRight, TrendingUp } from 'lucide-react-native';
+import { Trophy } from 'lucide-react-native';
 import { palette, font } from '~/lib/theme/tokens';
 import { Avatar } from '~/components/shared/Avatar';
 import type { GlobalRanking } from '~/types/api';

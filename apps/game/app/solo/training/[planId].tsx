@@ -11,26 +11,17 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import {
   Dumbbell,
   ArrowLeft,
-  Play,
-  Check,
-  Clock,
   ThumbsUp,
-  RotateCcw,
   Sparkles,
-  Zap,
-  HelpCircle,
-  Award,
-  ChevronRight,
-  Flame,
 } from 'lucide-react-native';
 
 import * as soloApi from '~/lib/api/solo';
 import { useSoloStore } from '~/stores/useSoloStore';
-import type { SoloTrainingPlanResponse, TrainingLevelInfo } from '~/types/solo';
+import type { SoloTrainingPlanResponse } from '~/types/solo';
 import { palette, font } from '~/lib/theme/tokens';
 import { notify, notifyApiError } from '~/lib/ui/notify';
 import { QuizAiLoadingScreen } from '~/components/solo/QuizAiLoadingScreen';
-import { GamifiedProgressionPath, type PathStageGroup } from '~/components/solo/GamifiedProgressionPath';
+import { GamifiedProgressionPath } from '~/components/solo/GamifiedProgressionPath';
 
 const DIFFICULTY_COLORS: Record<string, string> = {
   FACILE: palette.good,

@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text } from 'react-native';
-import { Sparkles, Target } from 'lucide-react-native';
+import { Target } from 'lucide-react-native';
 import { palette, font } from '~/lib/theme/tokens';
 import type { CategoryRequest } from '~/types/api';
 import { CategoryPicker } from './CategoryPicker';

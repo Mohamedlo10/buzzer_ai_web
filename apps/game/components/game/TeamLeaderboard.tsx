@@ -13,12 +13,23 @@ interface TeamLeaderboardProps {
 }
 
 export function TeamLeaderboard({ teams, players, currentUserId, compact = false, onCorrectClick }: TeamLeaderboardProps) {
+  // Le score d'équipe vient du serveur (`GameService.buildTeamInfos`), il n'est pas
+  // recalculé ici.
+  //
+  // La version client qui existait auparavant additionnait tous les membres, alors que le
+  // serveur **exclut les spectateurs** : un spectateur rattaché à une équipe gonflait donc
+  // le score affiché par rapport au score officiel du classement. C'est exactement le
+  // genre de seconde vérité que le §28 interdit — deux implémentations d'une même règle,
+  // dont une seule fait autorité.
+  //
+  // Le regroupement des membres reste local : c'est de la mise en forme, pas une règle
+  // métier, et le serveur ne renvoie pas d'ordre d'affichage.
   const teamStandings = teams
-    .map((t) => {
-      const members = players.filter((p) => p.teamId === t.id).sort((a, b) => b.score - a.score);
-      const totalScore = members.reduce((sum, m) => sum + m.score, 0);
-      return { ...t, members, totalScore };
-    })
+    .map((t) => ({
+      ...t,
+      members: players.filter((p) => p.teamId === t.id).sort((a, b) => b.score - a.score),
+      totalScore: t.score ?? 0,
+    }))
     .sort((a, b) => b.totalScore - a.totalScore);
 
   const maxTotal = teamStandings.length > 0 ? Math.max(1, teamStandings[0].totalScore) : 1;

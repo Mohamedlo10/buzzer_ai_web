@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, TextInput, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ArrowLeft, HelpCircle, Mail, MessageSquare, CheckCircle, Send } from 'lucide-react-native';
+import { ArrowLeft, HelpCircle, CheckCircle, Send } from 'lucide-react-native';
 import { palette, font, inkAlpha } from '~/lib/theme/tokens';
 import { notify } from '~/lib/ui/notify';
 

@@ -28,7 +28,7 @@ export default function LoginScreen() {
     setPassword,
     errors,
     isLoading,
-    isEmailInput,
+    isEmailInput: _isEmailInput,
     handleLogin,
   } = useLoginForm({
     onNavigate: (path) => {

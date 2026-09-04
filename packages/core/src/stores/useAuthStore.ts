@@ -19,7 +19,7 @@ interface AuthState {
   setUser: (user: UserResponse) => void;
 }
 
-export const useAuthStore = create<AuthState>((set, get) => ({
+export const useAuthStore = create<AuthState>((set, _get) => ({
   user: null,
   isAuthenticated: false,
   isLoading: true, // true until restoreSession() completes on app start

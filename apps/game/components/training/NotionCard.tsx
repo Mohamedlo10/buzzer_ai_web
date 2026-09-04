@@ -31,7 +31,7 @@ interface NotionCardProps {
  * Format visuel adapté au type (date, définition, relation, etc.)
  * Principe : « Moins de texte. Plus de valeur. »
  */
-export function NotionCard({ point, index }: NotionCardProps) {
+export function NotionCard({ point, index: _index }: NotionCardProps) {
   const format = point.format || 'FACT';
   const color = FORMAT_COLORS[format] || palette.primary;
   const IconComponent = FORMAT_ICONS[format] || Lightbulb;

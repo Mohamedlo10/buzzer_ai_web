@@ -22,7 +22,6 @@ import { DataTable, type Column } from '../components/admin/DataTable';
 import {
   adminApi,
   confirmAsync,
-  type AdminSessionDetailResponse,
   type AdminSessionStatus,
   type AdminSessionPlayer,
   type AdminSessionQuestion,

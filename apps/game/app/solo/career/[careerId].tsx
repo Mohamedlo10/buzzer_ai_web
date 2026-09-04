@@ -12,18 +12,11 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import {
   Trophy,
   ArrowLeft,
-  Lock,
-  Play,
-  Check,
   AlertCircle,
   X,
   Trash2,
   Zap,
-  Target,
   Sparkles,
-  ChevronRight,
-  Flame,
-  Award,
 } from 'lucide-react-native';
 
 import * as soloApi from '~/lib/api/solo';

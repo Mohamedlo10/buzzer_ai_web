@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Tabs } from 'expo-router';
 import { Grid, Gamepad2, Trophy, Users, User } from 'lucide-react-native';
 import { useAuthStore } from '~/stores/useAuthStore';
-import { palette, font } from '~/lib/theme/tokens';
+import { palette } from '~/lib/theme/tokens';
 
 export type TabBarProps = Parameters<
   NonNullable<React.ComponentProps<typeof Tabs>['tabBar']>

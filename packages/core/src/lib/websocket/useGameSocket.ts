@@ -46,7 +46,10 @@ export function useGameSocket(
   useEffect(() => {
     if (!sessionId) return;
 
-    const unsubscribe = wsManager.subscribe((event: WSEvent | any) => {
+    // Le `| any` qui figurait ici n'a plus lieu d'être : les événements internes de
+    // transport (`_connection_change`, `_reconnected`, `_auth_error`, `_session_closed`)
+    // font désormais partie de l'union WSEvent, donc le rétrécissement fonctionne.
+    const unsubscribe = wsManager.subscribe((event: WSEvent) => {
       // Handle internal connection events (not real WS events)
       if (event.type === '_connection_change') {
         setIsConnected(event.connected);

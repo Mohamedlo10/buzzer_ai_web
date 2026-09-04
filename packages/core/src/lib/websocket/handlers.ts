@@ -7,7 +7,10 @@ import { useFriendStore } from '~/stores/useFriendStore';
  * Central dispatcher that routes incoming WebSocket events
  * to the correct Zustand store actions.
  */
-export function handleWSEvent(event: WSEvent, currentUserId?: string): void {
+// `_currentUserId` fait partie de la signature publique mais n'est plus lu : aucun handler
+// n'a besoin de distinguer l'utilisateur courant depuis que les stores le font eux-mêmes.
+// Conservé pour ne pas casser les appelants.
+export function handleWSEvent(event: WSEvent, _currentUserId?: string): void {
   switch (event.type) {
     // ─── Canal d'état autoritaire (sans modérateur) ───
     case 'game_state_packet': {
@@ -44,17 +47,10 @@ export function handleWSEvent(event: WSEvent, currentUserId?: string): void {
       useBuzzStore.getState().setTeams((event as any).teams ?? []);
       break;
 
-    case 'team_scores': {
-      // Server-pushed team score update — merge scores into existing teams
-      const updatedTeams: Array<{ id: string; score: number }> = (event as any).teams ?? [];
-      useBuzzStore.setState((state) => ({
-        teams: state.teams.map((t) => {
-          const update = updatedTeams.find((u) => u.id === t.id);
-          return update ? { ...t, score: update.score } : t;
-        }),
-      }));
-      break;
-    }
+    // Le cas 'team_scores' a été retiré : le backend a supprimé
+    // /topic/session/{id}/team-scores lors de la refonte du canal d'état, et le client
+    // restait abonné à une destination que plus personne ne servait. Les scores d'équipe
+    // devront revenir par le paquet d'état versionné, pas par un second canal.
 
     case 'game_starting':
       useBuzzStore.getState().updateStatus('GENERATING');

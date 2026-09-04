@@ -13,8 +13,6 @@ import {
   Trophy,
   RotateCcw,
   Brain,
-  Eye,
-  Layers,
   TrendingUp,
   TrendingDown,
   AlertTriangle,
@@ -31,7 +29,7 @@ export default function TrainingResultScreen() {
   const router = useRouter();
   const { sessionId } = useLocalSearchParams<{ sessionId: string }>();
 
-  const { result, isLoading, error, loadResult, startRemediation, session, reset } = useTrainingStore();
+  const { result, isLoading, error: _error, loadResult, startRemediation, session: _session, reset } = useTrainingStore();
 
   useEffect(() => {
     if (sessionId && !result) {

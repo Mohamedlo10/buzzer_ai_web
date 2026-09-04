@@ -98,7 +98,7 @@ export function CategoryPicker({
   showProgress = true,
 }: CategoryPickerProps) {
   const [customCategory, setCustomCategory] = useState('');
-  const [customDifficulty, setCustomDifficulty] = useState<Difficulty>('INTERMEDIAIRE');
+  const [customDifficulty, _setCustomDifficulty] = useState<Difficulty>('INTERMEDIAIRE');
   const [searchResults, setSearchResults] = useState<string[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);

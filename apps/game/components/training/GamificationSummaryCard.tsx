@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text } from 'react-native';
-import { Sparkles, Flame, Trophy, Award, ArrowUpRight } from 'lucide-react-native';
+import { Sparkles, Flame, Trophy } from 'lucide-react-native';
 import type { GamificationDTO } from '~/types/training';
 import { palette, font } from '~/lib/theme/tokens';
 import { BadgePill } from './BadgePill';

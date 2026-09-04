@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, Modal, ActivityIndicator, ScrollView } from 'react-native';
-import { X, Check } from 'lucide-react-native';
-import { teamColor, teamColorTint } from '~/lib/game/teamColors';
+import { X } from 'lucide-react-native';
+import { teamColor } from '~/lib/game/teamColors';
 import { palette, font } from '~/lib/theme/tokens';
 import type { TeamResponse } from '~/types/api';
 

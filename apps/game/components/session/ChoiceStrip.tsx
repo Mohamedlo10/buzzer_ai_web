@@ -1,4 +1,4 @@
-import { TouchableOpacity, View, Text, ScrollView } from 'react-native';
+import { TouchableOpacity, View, Text } from 'react-native';
 import { palette } from '~/lib/theme/tokens';
 
 export function ChoiceStrip<T = number | null>({

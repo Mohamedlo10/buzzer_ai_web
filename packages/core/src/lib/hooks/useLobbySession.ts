@@ -15,7 +15,7 @@ export interface UseLobbySessionOptions {
   onReplaceRoute?: (path: string) => void;
 }
 
-export function useLobbySession({ code, onNavigate, onReplaceRoute }: UseLobbySessionOptions) {
+export function useLobbySession({ code, onNavigate: _onNavigate, onReplaceRoute }: UseLobbySessionOptions) {
   const [isCopied, setIsCopied] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isDeletingSession, setIsDeletingSession] = useState(false);

@@ -6,7 +6,6 @@ import {
   ArrowLeft,
   Crown,
   Users,
-  Gamepad2,
   Trash2,
   ArrowRightLeft,
   X,
@@ -17,7 +16,6 @@ import { Spinner } from '../components/loading/Spinner';
 import {
   adminApi,
   confirmAsync,
-  type AdminRoomDetailResponse,
   type AdminSessionStatus,
 } from '@xalaat/core';
 

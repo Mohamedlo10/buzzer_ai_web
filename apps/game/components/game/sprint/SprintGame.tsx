@@ -27,7 +27,7 @@ interface SprintGameProps {
   handleSkip?: () => Promise<void>;
 }
 
-const CHOICE_LABELS = ['A', 'B', 'C', 'D', 'E', 'F'];
+const _CHOICE_LABELS = ['A', 'B', 'C', 'D', 'E', 'F'];
 
 /**
  * Vue du mode Sprint : tous les joueurs répondent en même temps.

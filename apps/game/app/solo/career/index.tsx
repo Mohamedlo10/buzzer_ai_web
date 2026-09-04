@@ -16,7 +16,6 @@ import {
   Trash2,
   AlertTriangle,
   ChevronRight,
-  Sparkles,
   Zap,
   Target,
   CheckCircle2,

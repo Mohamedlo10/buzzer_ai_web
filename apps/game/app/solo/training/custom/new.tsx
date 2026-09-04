@@ -13,7 +13,6 @@ import {
   Brain,
   ArrowLeft,
   Sparkles,
-  Zap,
 } from 'lucide-react-native';
 
 import * as soloApi from '~/lib/api/solo';

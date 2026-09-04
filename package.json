@@ -13,6 +13,8 @@
   },
   "scripts": {
     "postinstall": "patch-package",
+    "verify": "npm run typecheck && npm run lint && npm test",
+    "typecheck": "npm --workspace apps/game run typecheck && npm --workspace apps/admin run typecheck",
     "test": "npm run test:tokens && npm run test:routes && npm run test:confirm && npm run test:session-routing && npm run test:packet-perf && npm run test:ui-perf",
     "test:tokens": "node packages/core/src/lib/theme/palette.test.js",
     "test:routes": "node --experimental-strip-types --no-warnings packages/core/src/lib/auth/routePolicy.test.mjs",
@@ -27,7 +29,8 @@
     "game:android": "npm --workspace apps/game run android",
     "dev": "npm --workspace apps/web-legacy run dev",
     "build": "npm --workspace apps/web-legacy run build",
-    "lint": "npm --workspace apps/web-legacy run lint"
+    "lint": "eslint .",
+    "lint:legacy": "npm --workspace apps/web-legacy run lint"
   },
   "dependencies": {
     "react": "19.2.3",
@@ -35,7 +38,12 @@
     "react-native": "0.86.3"
   },
   "devDependencies": {
-    "patch-package": "^8.0.1"
+    "@eslint/js": "^10.0.1",
+    "eslint": "^9.39.5",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.12.0",
+    "patch-package": "^8.0.1",
+    "typescript-eslint": "^8.69.0"
   },
   "version": "1.0.0"
 }

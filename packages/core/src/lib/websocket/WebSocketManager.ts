@@ -45,7 +45,7 @@ function decodeStompFrame(raw: string): StompFrame | null {
 
   // Split headers from body at the blank line
   const blankLineIdx = rest.indexOf('\n\n');
-  let headersStr = '';
+  let headersStr: string;
   let body = '';
   if (blankLineIdx >= 0) {
     headersStr = rest.substring(0, blankLineIdx);
@@ -123,29 +123,74 @@ function mapTopicMessageToWSEvent(
       } as any;
     }
 
-    // ─── Team scores ──────────────────────
-    case 'team-scores': {
+    // ─── Correction de score par le manager ───
+    // Contrat serveur — GameService, publié après commit :
+    // { playerId, newScore, event: 'CORRECTION' }.
+    // Ce canal existait côté backend mais n'était pas dans SESSION_TOPICS : une correction
+    // manuelle n'atteignait donc jamais l'écran des joueurs.
+    case 'score': {
+      if (!payload.playerId) return null;
       return {
-        type: 'team_scores',
+        type: 'score_updated',
         sessionId,
-        teams: payload.teams ?? [],
-      } as any;
+        scores: { [payload.playerId]: payload.newScore ?? 0 },
+      } as WSEvent;
     }
 
     // ─── User notifications queue ─────────
+    // Le backend publie ici trois formes distinctes. Le mapping précédent ne laissait
+    // passer que ROOM_INVITE et retournait null pour le reste, ce qui rendait mortes les
+    // branches friend_request_* de handlers.ts.
     case 'notifications': {
-      if (payload.type === 'ROOM_INVITE') {
-        return {
-          type: 'room_invite_received',
-          sessionId,
-          invitationId: payload.invitationId,
-          roomId: payload.roomId,
-          roomName: payload.roomName,
-          roomCode: payload.roomCode,
-          from: payload.from,
-        } as any;
+      switch (payload.type) {
+        case 'ROOM_INVITE':
+          return {
+            type: 'room_invite_received',
+            sessionId,
+            invitationId: payload.invitationId,
+            roomId: payload.roomId,
+            roomName: payload.roomName,
+            roomCode: payload.roomCode,
+            from: payload.from,
+          } as WSEvent;
+
+        // FriendService : { type, from: UserResponse }
+        case 'FRIEND_REQUEST':
+          return {
+            type: 'friend_request_received',
+            sessionId,
+            from: payload.from,
+          } as WSEvent;
+
+        case 'FRIEND_ACCEPTED':
+          return {
+            type: 'friend_request_accepted',
+            sessionId,
+            from: payload.from,
+          } as WSEvent;
+
+        default:
+          if (process.env.NODE_ENV === 'development') {
+            console.log('[STOMP] Notification non gérée :', payload.type, payload);
+          }
+          return null;
       }
-      return null;
+    }
+
+    // ─── File d'invitations de session ────
+    // Contrat serveur — InvitationService :
+    // { id, sessionCode, sessionId, from, expiresAt }.
+    // Cette destination était abonnée mais sans branche de mapping : tout y tombait
+    // dans le `default` avec un log « Unknown topic type ».
+    case 'invitations': {
+      return {
+        type: 'session_invite_received',
+        sessionId: payload.sessionId ?? sessionId,
+        invitationId: payload.id,
+        sessionCode: payload.sessionCode,
+        from: payload.from,
+        expiresAt: payload.expiresAt,
+      } as WSEvent;
     }
 
     // ─── Players ──────────────────────────
@@ -259,15 +304,23 @@ export class WebSocketManager {
   private disconnectTimer: ReturnType<typeof setTimeout> | null = null;
 
   // ─── STOMP session topics ───────────────
+  // Doit correspondre exactement aux destinations publiées par
+  // WebSocketNotificationService côté backend. Deux écarts corrigés :
+  //   — 'team-scores' retiré : aucune méthode backend ne publie dessus, l'abonnement
+  //     était mort et l'écran d'équipe agrégeait donc les scores côté client.
+  //   — 'score' ajouté : GameService y publie les corrections de score du manager,
+  //     qui n'arrivaient jamais jusqu'à l'interface.
+  // Le serveur refuse désormais tout abonnement hors de cette liste (StompDestinationAuthorizer) :
+  // y ajouter une entrée sans l'émetteur correspondant provoque une frame ERROR, pas un silence.
   private static readonly SESSION_TOPICS = [
     'status',
     'players',
     'teams',
-    'team-scores',
     'question',
     'game-over',
     'generating',
     'countdown',
+    'score',
     // Canal d'état unique du mode sans modérateur et avec modérateur.
     'state',
   ] as const;
@@ -411,6 +464,20 @@ export class WebSocketManager {
   }
 
   /** Force an immediate reconnect (e.g. when app returns from background) */
+  /**
+   * Relance la connexion après une reprise d'authentification réussie.
+   *
+   * `onStompError` pose `intentionallyClosed` avant d'émettre `_auth_error`, précisément
+   * pour ne pas boucler sur un jeton invalide. {@link reconnect} respecte ce drapeau et
+   * serait donc inerte ici : il faut le lever explicitement, une fois qu'un jeton frais a
+   * été obtenu. Ne pas appeler cette méthode sans avoir rafraîchi le jeton au préalable —
+   * ce serait rétablir la boucle de reconnexion que le drapeau sert à couper.
+   */
+  retryAfterAuthRecovery(): void {
+    this.intentionallyClosed = false;
+    this.reconnect();
+  }
+
   reconnect(): void {
     if (this.intentionallyClosed) return;
     this.reconnectAttempt = 0;
@@ -584,7 +651,7 @@ export class WebSocketManager {
 
       // Notify listeners of disconnection
       if (wasStompConnected) {
-        this.emit({ type: '_connection_change', connected: false } as any);
+        this.emit({ type: '_connection_change', connected: false });
       }
 
       if (!this.intentionallyClosed) {
@@ -695,7 +762,9 @@ export class WebSocketManager {
     // Client→Server interval = max(cx, sy). If either is 0, disabled.
     // Server→Client interval = max(sx, cy). If either is 0, disabled.
     const serverHeartbeat = frame.headers['heart-beat'] || '0,0';
-    const [sx, sy] = serverHeartbeat.split(',').map(Number);
+    // `sx` (serveur→client) est déstructuré pour documenter le format de l'en-tête, mais
+    // seul `sy` sert ici : on ne calcule que l'intervalle client→serveur.
+    const [_sx, sy] = serverHeartbeat.split(',').map(Number);
     const cx = 10000; // what we offered to send
     // Client→Server: only send if both cx > 0 AND sy > 0
     this.negotiatedHeartbeatMs = (cx > 0 && sy > 0) ? Math.max(cx, sy) : 0;
@@ -736,11 +805,11 @@ export class WebSocketManager {
     const isReconnect = this.wasConnectedBefore;
     this.wasConnectedBefore = true;
 
-    this.emit({ type: '_connection_change', connected: true } as any);
+    this.emit({ type: '_connection_change', connected: true });
 
     if (isReconnect) {
       console.log('[STOMP] Reconnected — triggering state sync');
-      this.emit({ type: '_reconnected' } as any);
+      this.emit({ type: '_reconnected' });
     }
   }
 
@@ -796,13 +865,32 @@ export class WebSocketManager {
     });
 
     // Auth errors — don't reconnect
+    //
+    // Le serveur rejette désormais toute frame CONNECT sans jeton valide (WebSocketConfig),
+    // et son message contient le mot « Unauthorized » précisément pour être reconnu ici :
+    // les deux côtés doivent rester d'accord sur ce libellé.
+    //
+    // On prévient les écouteurs au lieu de sortir en silence : sans cet événement, l'écran
+    // reste figé sans explication et l'utilisateur croit à un plantage. Le layout racine
+    // tente un rafraîchissement de jeton, puis renvoie vers la connexion.
     if (
       errorMsg.includes('401') ||
       errorMsg.includes('Unauthorized') ||
-      errorBody.includes('401')
+      errorBody.includes('401') ||
+      errorBody.includes('Unauthorized')
     ) {
       console.error('[STOMP] Auth error — stopping reconnection');
       this.intentionallyClosed = true;
+      this.emit({ type: '_auth_error', reason: errorMsg || errorBody });
+      return;
+    }
+
+    // Abonnement refusé : le jeton est valide mais la destination ne concerne pas ce joueur.
+    // Se reconnecter n'y changerait rien.
+    if (errorMsg.includes('Forbidden') || errorBody.includes('Forbidden')) {
+      console.error('[STOMP] Destination refusée par le serveur — arrêt des reconnexions');
+      this.intentionallyClosed = true;
+      this.emit({ type: '_auth_error', reason: errorMsg || errorBody });
       return;
     }
 
@@ -815,7 +903,7 @@ export class WebSocketManager {
       console.warn('[STOMP] Backend session closed — stopping reconnection');
       this.intentionallyClosed = true;
       // Notify listeners so the UI can react (e.g. redirect to results)
-      this.emit({ type: '_session_closed' } as any);
+      this.emit({ type: '_session_closed' });
       return;
     }
   }

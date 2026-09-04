@@ -3,7 +3,7 @@ import {
   View,
   Text,
   TouchableOpacity,
-  TextInput,
+
   ScrollView,
   ActivityIndicator,
 } from 'react-native';
@@ -11,9 +11,6 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   ArrowLeft,
-  Check,
-  Plus,
-  X,
   Sparkles,
   AlertCircle,
   ChevronRight,
@@ -43,13 +40,13 @@ const PREDEFINED_CATEGORIES = [
   { name: 'Cinéma', emoji: '🎬', hexColor: palette.bad },
 ];
 
-const DIFFICULTIES: { value: Difficulty; label: string; hexColor: string }[] = [
+const _DIFFICULTIES: { value: Difficulty; label: string; hexColor: string }[] = [
   { value: 'FACILE', label: 'Facile', hexColor: palette.primary },
   { value: 'INTERMEDIAIRE', label: 'Intermédiaire', hexColor: palette.gold },
   { value: 'EXPERT', label: 'Expert', hexColor: palette.bad },
 ];
 
-const getRankBadgeStyle = (index: number) => {
+const _getRankBadgeStyle = (index: number) => {
   switch (index) {
     case 0:
       return {
@@ -126,11 +123,11 @@ export default function CategoriesScreen() {
 
   const [selectedCategories, setSelectedCategories] = useState<CategoryRequest[]>([]);
   const [customCategory, setCustomCategory] = useState('');
-  const [customDifficulty, setCustomDifficulty] = useState<Difficulty | null>(null);
-  const [searchResults, setSearchResults] = useState<string[]>([]);
-  const [showDropdown, setShowDropdown] = useState(false);
-  const [isSearching, setIsSearching] = useState(false);
-  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [customDifficulty, _setCustomDifficulty] = useState<Difficulty | null>(null);
+  const [_searchResults, _setSearchResults] = useState<string[]>([]);
+  const [_showDropdown, _setShowDropdown] = useState(false);
+  const [_isSearching, _setIsSearching] = useState(false);
+  const _searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [actualSessionId, setActualSessionId] = useState<string | null>(paramSessionId || null);
@@ -143,8 +140,8 @@ export default function CategoriesScreen() {
   const [isTeamMode, setIsTeamMode] = useState(false);
   const [currentStep, setCurrentStep] = useState<'team' | 'categories'>('categories');
 
-  const [popularCategories, setPopularCategories] = useState<{ name: string; hexColor: string }[]>(PREDEFINED_CATEGORIES);
-  const [isLoadingPopular, setIsLoadingPopular] = useState(true);
+  const [_popularCategories, setPopularCategories] = useState<{ name: string; hexColor: string }[]>(PREDEFINED_CATEGORIES);
+  const [_isLoadingPopular, setIsLoadingPopular] = useState(true);
 
   const joinSession = useBuzzStore((state) => state.joinSession);
   const joinCheck = useBuzzStore((state) => state.joinCheck);
@@ -310,97 +307,13 @@ export default function CategoriesScreen() {
     loadPopularCategories();
   }, []);
 
-  const canAddMore = selectedCategories.length < maxCategories;
+  const _canAddMore = selectedCategories.length < maxCategories;
 
-  const toggleCategory = (name: string) => {
-    const exists = selectedCategories.find((c) => c.name === name);
-    if (exists) {
-      setSelectedCategories((prev) => prev.filter((c) => c.name !== name));
-      setError(null);
-    } else if (canAddMore) {
-      setSelectedCategories((prev) => [...prev, { name, difficulty: 'INTERMEDIAIRE' }]);
-      setError(null);
-    } else {
-      setError(`Maximum ${maxCategories} catégories permises`);
-    }
-  };
-
-  const updateDifficulty = (name: string, difficulty: Difficulty) => {
-    setSelectedCategories((prev) =>
-      prev.map((c) => (c.name === name ? { ...c, difficulty } : c))
-    );
-  };
-
-  const commitCustomCategory = (textToCommit?: string): boolean => {
-    const raw = textToCommit !== undefined ? textToCommit : customCategory;
-    const trimmed = raw.replace(/[,;\n]/g, '').trim();
-    if (!trimmed) return false;
-    if (trimmed.length < 2) {
-      setError('Minimum 2 caractères pour une catégorie');
-      return false;
-    }
-    const exists = selectedCategories.some(c => c.name.toLowerCase() === trimmed.toLowerCase());
-    if (exists) {
-      setError(`Catégorie "${trimmed}" déjà sélectionnée`);
-      setCustomCategory('');
-      return false;
-    }
-    if (selectedCategories.length >= maxCategories) {
-      setError(`Maximum ${maxCategories} catégories permises`);
-      return false;
-    }
-    setSelectedCategories((prev) => [
-      ...prev,
-      { name: trimmed, difficulty: customDifficulty || 'INTERMEDIAIRE' },
-    ]);
-    setCustomCategory('');
-    setCustomDifficulty(null);
-    setSearchResults([]);
-    setShowDropdown(false);
-    setError(null);
-    return true;
-  };
-
-  const handleCustomCategoryChange = (text: string) => {
-    setError(null);
-    if (text.includes(',') || text.includes(';') || text.includes('\n')) {
-      const parts = text.split(/[,;\n]/);
-      for (const part of parts) {
-        if (part.trim().length >= 2) commitCustomCategory(part.trim());
-      }
-      setCustomCategory('');
-      return;
-    }
-    setCustomCategory(text);
-    if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
-    const trimmed = text.trim();
-    if (trimmed.length >= 2) {
-      setIsSearching(true);
-      setShowDropdown(true);
-      searchTimeoutRef.current = setTimeout(async () => {
-        try {
-          const results = await categoriesApi.searchCategories(trimmed);
-          setSearchResults(results);
-        } catch {
-          setSearchResults([]);
-        } finally {
-          setIsSearching(false);
-        }
-      }, 300);
-    } else {
-      setSearchResults([]);
-      setShowDropdown(false);
-      setIsSearching(false);
-    }
-  };
-
-  const removeCategory = (name: string) => {
-    setSelectedCategories((prev) => prev.filter((c) => c.name !== name));
-    setError(null);
-  };
+  // toggleCategory, updateDifficulty, handleCustomCategoryChange, removeCategory
+  // sont délégués au composant CategoryPicker via onChange={setSelectedCategories}.
 
   const handleSubmit = async () => {
-    let targetList = [...selectedCategories];
+    const targetList = [...selectedCategories];
     if (customCategory.trim().length >= 2 && targetList.length < maxCategories) {
       const trimmed = customCategory.trim().replace(/[,;\n]/g, '');
       const exists = targetList.some(c => c.name.toLowerCase() === trimmed.toLowerCase());

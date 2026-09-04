@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useBuzzStore } from '~/stores/useBuzzStore';
 import type {
   CreateSessionRequest,
@@ -55,14 +55,20 @@ export function useSessionConfig(options: UseSessionConfigOptions = {}) {
   const createSession = useBuzzStore((state) => state.createSession);
   const isCreating = useBuzzStore((state) => state.isCreating);
 
-  const steps: ('mode' | 'settings' | 'categories' | 'teams' | 'summary')[] = ['mode', 'settings'];
-  if (questionMode === 'AI' && categorySelectionMode === 'MANAGER') {
-    steps.push('categories');
-  }
-  if (config.isTeamMode) {
-    steps.push('teams');
-  }
-  steps.push('summary');
+  // Mémorisé : reconstruit à chaque rendu, ce tableau changeait d'identité en permanence
+  // et faisait donc recréer `getStepName` à chaque fois — la mémoïsation ne servait à rien
+  // et se propageait à tout composant recevant ce callback en prop.
+  const steps = useMemo<('mode' | 'settings' | 'categories' | 'teams' | 'summary')[]>(() => {
+    const next: ('mode' | 'settings' | 'categories' | 'teams' | 'summary')[] = ['mode', 'settings'];
+    if (questionMode === 'AI' && categorySelectionMode === 'MANAGER') {
+      next.push('categories');
+    }
+    if (config.isTeamMode) {
+      next.push('teams');
+    }
+    next.push('summary');
+    return next;
+  }, [questionMode, categorySelectionMode, config.isTeamMode]);
 
   const totalSteps = steps.length;
   const currentStepId = steps[currentStep] || 'mode';

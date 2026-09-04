@@ -25,7 +25,7 @@ export function useModeratedGame({
   isSpectator,
   currentPlayer,
   players,
-  teams,
+  teams: _teams,
   isTeamMode,
 }: UseModeratedGameOptions) {
   const {

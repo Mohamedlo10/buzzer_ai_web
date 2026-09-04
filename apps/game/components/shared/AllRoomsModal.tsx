@@ -1,8 +1,8 @@
 import { useState, useMemo } from 'react';
 import { View, Text, Modal, TouchableOpacity, TextInput, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
-import { X, Search, Users, Plus, ArrowRight, Sparkles } from 'lucide-react-native';
-import { palette, font, inkAlpha } from '~/lib/theme/tokens';
+import { X, Search, ArrowRight } from 'lucide-react-native';
+import { palette, font } from '~/lib/theme/tokens';
 import { Avatar } from './Avatar';
 import type { LastRoom } from '~/types/api';
 

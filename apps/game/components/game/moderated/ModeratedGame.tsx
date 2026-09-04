@@ -1,5 +1,5 @@
 import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
-import { Eye, XCircle, PlayCircle, PauseCircle, SkipForward, Users } from 'lucide-react-native';
+import { Eye, PlayCircle, PauseCircle, Users } from 'lucide-react-native';
 import { BuzzerButton } from '~/components/game/BuzzerButton';
 import { AnswerRevealOverlay } from '~/components/game/AnswerRevealOverlay';
 import { GameHeader } from '~/components/game/shared/GameHeader';

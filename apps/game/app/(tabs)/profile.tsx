@@ -1,24 +1,20 @@
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
+
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   ScrollView,
   ActivityIndicator,
   Modal,
   RefreshControl,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+
 import { useRouter } from 'expo-router';
 import {
   User,
   LogOut,
-  Edit3,
   Lock,
-  Trophy,
-  Zap,
-  Check,
   X,
   Shield,
   HelpCircle,
@@ -49,8 +45,8 @@ export default function ProfileScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [resendingEmail, setResendingEmail] = useState(false);
 
-  const { data: myRank, isLoading: isRankLoading, refetch: refetchRank } = useMyGlobalRank();
-  const { data: dashboard, isLoading: isDashboardLoading, refetch: refetchDashboard } = useDashboard();
+  const { data: myRank, isLoading: _isRankLoading, refetch: refetchRank } = useMyGlobalRank();
+  const { data: _dashboard, isLoading: _isDashboardLoading, refetch: refetchDashboard } = useDashboard();
 
   const onRefresh = async () => {
     setRefreshing(true);

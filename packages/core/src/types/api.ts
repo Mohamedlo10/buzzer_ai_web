@@ -1088,7 +1088,7 @@ export interface AdminAuditLogResponse {
   createdAt: string;
 }
 
-export interface AdminRoomResponse extends AdminRoomSummaryResponse {}
+export type AdminRoomResponse = AdminRoomSummaryResponse;
 
 // ──────────────────────────────────────────────
 // Game Submit Answer

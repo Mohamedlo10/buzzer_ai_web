@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ArrowLeft, Users, FolderPlus, Sparkles, Plus, Minus, ArrowRight, AlertCircle } from 'lucide-react-native';
+import { ArrowLeft, Users, FolderPlus, ArrowRight, AlertCircle } from 'lucide-react-native';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import * as roomsApi from '~/lib/api/rooms';
 import { palette, font, inkAlpha } from '~/lib/theme/tokens';

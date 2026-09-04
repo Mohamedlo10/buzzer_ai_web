@@ -18,7 +18,7 @@ export interface ManagerPanelProps {
 
 export function ManagerPanel({
   session,
-  code,
+  code: _code,
   isStarting,
   canStart,
   isDeletingSession,

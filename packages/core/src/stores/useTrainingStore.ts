@@ -2,7 +2,6 @@ import { create } from 'zustand';
 import type {
   TrainingSessionResponse,
   TrainingResultResponse,
-  ChallengeResultDTO,
   TrainingDifficulty,
   TrainingSessionSummary,
 } from '~/types/training';

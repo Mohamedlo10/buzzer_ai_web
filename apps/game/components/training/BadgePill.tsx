@@ -1,8 +1,7 @@
 import React from 'react';
 import { View, Text } from 'react-native';
-import { Award, Sparkles, Shield, Trophy, Flame } from 'lucide-react-native';
 import type { TrainingBadge } from '~/types/training';
-import { palette, font } from '~/lib/theme/tokens';
+import { palette } from '~/lib/theme/tokens';
 
 interface BadgePillProps {
   badge: TrainingBadge;

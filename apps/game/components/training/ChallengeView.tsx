@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, TextInput } from 'react-native';
-import { Check, X, ArrowRight, Crown, Sparkles } from 'lucide-react-native';
-import { palette, font } from '~/lib/theme/tokens';
+import { Check, X, ArrowRight, Crown } from 'lucide-react-native';
 import type { ChallengeDTO } from '~/types/training';
+import { palette } from '~/lib/theme/tokens';
 import { PopView, FadeInUpView, FloatView } from '~/components/anim';
 
 interface ChallengeViewProps {

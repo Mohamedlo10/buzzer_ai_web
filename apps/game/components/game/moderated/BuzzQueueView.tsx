@@ -19,7 +19,7 @@ export interface BuzzQueueViewProps {
 }
 
 export function BuzzQueueView({
-  buzzQueue, phase, countdownSeconds, isManager, isValidating, players, myPlayerId, isTeamMode, teams, onValidate, onSetPendingWrong
+  buzzQueue, phase, countdownSeconds, isManager, isValidating, players: _players, myPlayerId, isTeamMode, teams, onValidate, onSetPendingWrong
 }: BuzzQueueViewProps) {
   return (
     <View style={{ paddingHorizontal: 16, paddingTop: 8 }}>

@@ -9,16 +9,10 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   ArrowLeft,
-  User,
-  Trophy,
-  Award,
-  Users,
   Clock,
   UserPlus,
   UserCheck,
   UserX,
-  Target,
-  Zap,
   ShieldAlert,
   ShieldOff,
 } from 'lucide-react-native';

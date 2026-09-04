@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import {
   View,
   Text,
@@ -8,7 +8,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
-import { X, QrCode, Camera, AlertCircle } from 'lucide-react-native';
+import { X, QrCode, Camera } from 'lucide-react-native';
 import { palette } from '~/lib/theme/tokens';
 
 interface QRScannerModalProps {

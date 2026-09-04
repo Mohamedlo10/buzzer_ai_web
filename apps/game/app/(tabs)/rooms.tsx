@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
   View,
   Text,
@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { X, Plus, ArrowRight, Zap, Users, QrCode } from 'lucide-react-native';
+import { X, Plus, ArrowRight } from 'lucide-react-native';
 import { useRoomsData } from '~/lib/hooks/useRoomsData';
 import { palette, font } from '~/lib/theme/tokens';
 import { QRScannerModal } from '~/components/shared/QRScannerModal';
