@@ -22,6 +22,12 @@ import type {
   CreateDailyChallengeRequest,
   UpdateDailyQuestionRequest,
   CreateDailyQuestionRequest,
+  AdminPartnerRequest,
+  AdminPartnerResponse,
+  AdminPartnerMediaRequest,
+  AdminPartnerMediaResponse,
+  MediaUploadResponse,
+  MediaKind,
 } from '~/types/api';
 
 // ─── Dashboard ─────────────────────────────────────────────────────────────
@@ -329,4 +335,84 @@ export async function cancelAdminDailyChallenge(id: string): Promise<void> {
 
 export async function deleteAdminDailyChallenge(id: string): Promise<void> {
   await apiClient.delete(`/api/admin/daily-challenges/${id}`);
+}
+
+// ──────────────────────────────────────────────
+// Partenaires et médias
+//
+// Routes /api/admin/partners/** et /api/admin/media, réservées au SUPER_ADMIN.
+// ──────────────────────────────────────────────
+
+export async function getAdminPartners(
+  page = 0,
+  size = 50,
+): Promise<Page<AdminPartnerResponse>> {
+  const res = await apiClient.get<Page<AdminPartnerResponse>>('/api/admin/partners', {
+    params: { page, size },
+  });
+  return res.data;
+}
+
+/** Fiche complète, médias compris. La liste ne les porte pas, pour éviter un N+1. */
+export async function getAdminPartner(id: string): Promise<AdminPartnerResponse> {
+  const res = await apiClient.get<AdminPartnerResponse>(`/api/admin/partners/${id}`);
+  return res.data;
+}
+
+export async function createAdminPartner(
+  request: AdminPartnerRequest,
+): Promise<AdminPartnerResponse> {
+  const res = await apiClient.post<AdminPartnerResponse>('/api/admin/partners', request);
+  return res.data;
+}
+
+export async function updateAdminPartner(
+  id: string,
+  request: AdminPartnerRequest,
+): Promise<AdminPartnerResponse> {
+  const res = await apiClient.put<AdminPartnerResponse>(`/api/admin/partners/${id}`, request);
+  return res.data;
+}
+
+/** Supprime le partenaire, ses médias — fichiers compris — et ses campagnes. */
+export async function deleteAdminPartner(id: string): Promise<void> {
+  await apiClient.delete(`/api/admin/partners/${id}`);
+}
+
+export async function addAdminPartnerMedia(
+  partnerId: string,
+  request: AdminPartnerMediaRequest,
+): Promise<AdminPartnerMediaResponse> {
+  const res = await apiClient.post<AdminPartnerMediaResponse>(
+    `/api/admin/partners/${partnerId}/media`,
+    request,
+  );
+  return res.data;
+}
+
+export async function deleteAdminPartnerMedia(
+  partnerId: string,
+  mediaId: string,
+): Promise<void> {
+  await apiClient.delete(`/api/admin/partners/${partnerId}/media/${mediaId}`);
+}
+
+/**
+ * Téléverse un fichier et retourne sa clé de stockage.
+ *
+ * Le serveur reconnaît le format aux premiers octets et refuse tout ce qui n'est pas
+ * JPEG, PNG, WebP ou MP4 — le SVG notamment, XML porteur de script. `kind` déclare ce que
+ * l'appelant croit envoyer ; un désaccord avec les octets donne un 415.
+ *
+ * Le Content-Type est laissé à axios : le fixer à la main casse la frontière multipart.
+ */
+export async function uploadAdminMedia(
+  file: File,
+  kind: MediaKind,
+): Promise<MediaUploadResponse> {
+  const form = new FormData();
+  form.append('file', file);
+  form.append('kind', kind);
+  const res = await apiClient.post<MediaUploadResponse>('/api/admin/media', form);
+  return res.data;
 }

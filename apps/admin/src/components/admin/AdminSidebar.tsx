@@ -13,6 +13,7 @@ import {
   Menu,
   X,
   Megaphone,
+  Handshake,
   CalendarDays,
   LifeBuoy,
 } from 'lucide-react';
@@ -26,6 +27,7 @@ const NAV_ITEMS = [
   { href: '/questions', label: 'Questions', icon: BookOpen, short: 'QCM' },
   { href: '/daily-challenges', label: 'Défi du Jour', icon: CalendarDays, short: 'Défi' },
   { href: '/support', label: 'Support', icon: LifeBuoy, short: 'Support' },
+  { href: '/partners', label: 'Partenaires', icon: Handshake, short: 'Partners' },
   { href: '/ads', label: 'Publicités', icon: Megaphone, short: 'Pubs' },
   { href: '/audit-logs', label: 'Audit', icon: ShieldAlert, short: 'Audit' },
   { href: '/settings', label: 'Paramètres', icon: Settings, short: 'Settings' },

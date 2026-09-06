@@ -1136,6 +1136,9 @@ export interface AdminAdResponse {
   imageUrl: string | null;
   targetUrl: string;
   placement: AdminAdPlacement;
+  /** Le formulaire fait un PUT complet : sans relecture, le rattachement serait perdu. */
+  partnerId: string;
+  partnerName: string;
   active: boolean;
   priority: number;
   /** ISO-8601, null = pas de contrainte */
@@ -1148,9 +1151,12 @@ export interface AdminAdResponse {
 /** Corps de POST /api/admin/ads et PUT /api/admin/ads/{id}. Source : AdRequest */
 export interface AdminAdRequest {
   title: string;
+  /** @deprecated Remplacée par les médias du partenaire. */
   imageUrl?: string | null;
   targetUrl: string;
   placement: AdminAdPlacement;
+  /** Obligatoire depuis V39 : une campagne appartient toujours à un partenaire. */
+  partnerId: string;
   active?: boolean;
   priority?: number;
   /** ISO-8601, null = pas de contrainte */
@@ -1158,8 +1164,142 @@ export interface AdminAdRequest {
   endDate?: string | null;
 }
 
-/** Source : AdPlacement.java */
-export type AdminAdPlacement = 'HOME' | 'RESULT' | 'GENERATION' | 'PROFILE';
+/**
+ * Source : AdPlacement.java
+ *
+ * ROOMS et FRIENDS ont été ajoutés sans migration : la colonne est un VARCHAR sans type
+ * enum PostgreSQL ni CHECK.
+ */
+export type AdminAdPlacement =
+  | 'HOME'
+  | 'RESULT'
+  | 'GENERATION'
+  | 'PROFILE'
+  | 'ROOMS'
+  | 'FRIENDS';
+
+// ──────────────────────────────────────────────
+// Partenaires — miroir de Partner.java et de ses DTO
+// ──────────────────────────────────────────────
+
+/** Source : MediaKind.java */
+export type MediaKind = 'IMAGE' | 'VIDEO';
+
+/**
+ * Source : model/dto/response/MediaUploadResponse.java
+ *
+ * `storageKey` est ce qu'il faut renvoyer au serveur pour rattacher le média ; `url` ne
+ * sert qu'à l'aperçu. C'est la clé qui est persistée, jamais l'URL — une URL absolue en
+ * base pourrit au premier changement de domaine.
+ */
+export interface MediaUploadResponse {
+  storageKey: string;
+  url: string;
+  kind: MediaKind;
+  sizeBytes: number;
+  contentType: string;
+}
+
+/** Source : model/dto/response/PartnerMediaResponse.java */
+export interface PartnerMediaResponse {
+  id: string;
+  kind: MediaKind;
+  /** URL résolue : le client ignore si le fichier est téléversé ou externe. */
+  url: string;
+  caption: string | null;
+}
+
+/** Source : model/dto/response/PartnerSummaryResponse.java — la carte et l'annuaire. */
+export interface PartnerSummaryResponse {
+  id: string;
+  name: string;
+  tagline: string | null;
+  logoUrl: string | null;
+  city: string | null;
+  /** Calculé serveur : le client n'a pas à croiser deux listes. */
+  favorite: boolean;
+  /** Jusqu'à 3 images puis la vidéo — la vidéo est toujours le dernier slide. */
+  media: PartnerMediaResponse[];
+}
+
+/** Source : model/dto/response/PartnerDetailResponse.java — la fiche. */
+export interface PartnerDetailResponse extends PartnerSummaryResponse {
+  description: string | null;
+  websiteUrl: string | null;
+  phone: string | null;
+  whatsapp: string | null;
+  facebookUrl: string | null;
+  instagramUrl: string | null;
+  tiktokUrl: string | null;
+}
+
+/** Source : model/dto/request/PartnerRequest.java */
+export interface AdminPartnerRequest {
+  name: string;
+  tagline?: string | null;
+  description?: string | null;
+  /** Exclusif de logoUrl : le serveur refuse les deux à la fois. */
+  logoKey?: string | null;
+  logoUrl?: string | null;
+  websiteUrl?: string | null;
+  phone?: string | null;
+  whatsapp?: string | null;
+  facebookUrl?: string | null;
+  instagramUrl?: string | null;
+  tiktokUrl?: string | null;
+  city?: string | null;
+  active: boolean;
+}
+
+/** Source : model/dto/response/AdminPartnerResponse.AdminPartnerMediaResponse */
+export interface AdminPartnerMediaResponse {
+  id: string;
+  kind: MediaKind;
+  /** Non nul si téléversé — l'administration voit d'où vient chaque média. */
+  storageKey: string | null;
+  externalUrl: string | null;
+  /** URL résolue, pour l'aperçu. */
+  url: string;
+  position: number;
+  caption: string | null;
+}
+
+/**
+ * Source : model/dto/response/AdminPartnerResponse.java
+ *
+ * Porte à la fois `logoKey` et `logoUrl` : le formulaire fait un PUT complet et doit
+ * pouvoir réémettre exactement ce qu'il a lu, tandis que l'aperçu a besoin d'une URL.
+ */
+export interface AdminPartnerResponse {
+  id: string;
+  name: string;
+  tagline: string | null;
+  description: string | null;
+  logoKey: string | null;
+  logoUrl: string | null;
+  websiteUrl: string | null;
+  phone: string | null;
+  whatsapp: string | null;
+  facebookUrl: string | null;
+  instagramUrl: string | null;
+  tiktokUrl: string | null;
+  city: string | null;
+  active: boolean;
+  media: AdminPartnerMediaResponse[];
+  createdAt: string | null;
+  updatedAt: string | null;
+}
+
+/** Source : model/dto/request/PartnerMediaRequest.java */
+export interface AdminPartnerMediaRequest {
+  kind: MediaKind;
+  /** Exactement une des deux sources : clé téléversée OU URL externe. */
+  storageKey?: string | null;
+  externalUrl?: string | null;
+  /** 0 à 2 pour une image ; ignoré pour une vidéo, unique par partenaire. */
+  position?: number;
+  caption?: string | null;
+}
 
 // ──────────────────────────────────────────────
 // Admin — Défi du Jour

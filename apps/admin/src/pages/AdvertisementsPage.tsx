@@ -21,6 +21,7 @@ import {
   type AdminAdResponse,
   type AdminAdRequest,
   type AdminAdPlacement,
+  type AdminPartnerResponse,
 } from '@xalaat/core';
 
 const PLACEMENT_LABELS: Record<AdminAdPlacement, string> = {
@@ -28,15 +29,24 @@ const PLACEMENT_LABELS: Record<AdminAdPlacement, string> = {
   RESULT: 'Résultats',
   GENERATION: 'Génération',
   PROFILE: 'Profil',
+  ROOMS: 'Salons',
+  FRIENDS: 'Amis',
 };
 
-const PLACEMENT_OPTIONS: AdminAdPlacement[] = ['HOME', 'RESULT', 'GENERATION', 'PROFILE'];
+const PLACEMENT_OPTIONS: AdminAdPlacement[] = [
+  'HOME',
+  'RESULT',
+  'GENERATION',
+  'PROFILE',
+  'ROOMS',
+  'FRIENDS',
+];
 
 const EMPTY_FORM: AdminAdRequest = {
   title: '',
-  imageUrl: '',
   targetUrl: '',
   placement: 'HOME',
+  partnerId: '',
   active: false,
   priority: 0,
   startDate: null,
@@ -74,6 +84,13 @@ export function AdvertisementsPage() {
     queryKey: ['adminAds'],
     queryFn: () => adminApi.getAdminAds(),
   });
+
+  // Une campagne appartient toujours à un partenaire : la liste alimente le sélecteur.
+  const { data: partnerPage } = useQuery({
+    queryKey: ['adminPartners'],
+    queryFn: () => adminApi.getAdminPartners(0, 100),
+  });
+  const partners = partnerPage?.content ?? [];
 
   const createMutation = useMutation({
     mutationFn: (req: AdminAdRequest) => adminApi.createAdminAd(req),
@@ -118,6 +135,7 @@ export function AdvertisementsPage() {
       imageUrl: ad.imageUrl ?? '',
       targetUrl: ad.targetUrl,
       placement: ad.placement,
+      partnerId: ad.partnerId,
       active: ad.active,
       priority: ad.priority,
       startDate: ad.startDate,
@@ -198,6 +216,7 @@ export function AdvertisementsPage() {
             onSave={handleSave}
             onCancel={cancelEdit}
             isSaving={isSaving}
+            partners={partners}
             title="Nouvelle publicité"
           />
         )}
@@ -222,6 +241,7 @@ export function AdvertisementsPage() {
                 onSave={handleSave}
                 onCancel={cancelEdit}
                 isSaving={isSaving}
+                partners={partners}
                 title="Modifier la publicité"
               />
             ) : (
@@ -273,6 +293,7 @@ function AdRow({ ad, onEdit, onDelete, isDeleting }: AdRowProps) {
             {PLACEMENT_LABELS[ad.placement]}
           </span>
           <span className="text-xs text-txt-40">priorité {ad.priority}</span>
+          <span className="text-xs text-txt-60">· {ad.partnerName}</span>
           <a
             href={ad.targetUrl}
             target="_blank"
@@ -312,16 +333,18 @@ interface AdFormProps {
   onSave: () => void;
   onCancel: () => void;
   isSaving: boolean;
+  partners: AdminPartnerResponse[];
   title: string;
 }
 
-function AdForm({ form, setForm, onSave, onCancel, isSaving, title }: AdFormProps) {
+function AdForm({ form, setForm, onSave, onCancel, isSaving, partners, title }: AdFormProps) {
   function field(key: keyof AdminAdRequest) {
     return (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
       setForm((f) => ({ ...f, [key]: e.target.value }));
   }
 
-  const isValid = form.title.trim() && form.targetUrl.trim() && form.placement;
+  const isValid =
+    form.title.trim() && form.targetUrl.trim() && form.placement && form.partnerId;
 
   return (
     <Card className="space-y-4">
@@ -338,14 +361,26 @@ function AdForm({ form, setForm, onSave, onCancel, isSaving, title }: AdFormProp
           />
         </div>
 
+        {/* Les visuels ne sont plus portés par la campagne mais par le partenaire : c'est lui
+            qui détient jusqu'à trois photos et une vidéo, gérées depuis la page Partenaires. */}
         <div>
-          <label className="block text-txt-60 text-xs mb-1">URL de l'image</label>
-          <input
-            value={form.imageUrl ?? ''}
-            onChange={field('imageUrl')}
-            placeholder="https://..."
-            className="w-full px-3 py-2 rounded-xl bg-surface border border-line text-txt text-sm focus:outline-none focus:border-host/50"
-          />
+          <label className="block text-txt-60 text-xs mb-1">Partenaire *</label>
+          <select
+            value={form.partnerId}
+            onChange={field('partnerId')}
+            className="w-full px-3 py-2 rounded-xl bg-surface border border-line text-txt text-sm focus:outline-none focus:border-host/50 cursor-pointer"
+          >
+            <option value="">— Choisir un partenaire —</option>
+            {partners.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name}
+                {p.active ? '' : ' (inactif)'}
+              </option>
+            ))}
+          </select>
+          <p className="text-txt-40 text-xs mt-1">
+            Les photos et la vidéo de la carte viennent de la fiche du partenaire.
+          </p>
         </div>
 
         <div>

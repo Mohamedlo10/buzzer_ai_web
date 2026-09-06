@@ -23,5 +23,6 @@ export * as adsApi from './ads';
 export * as dailyApi from './daily';
 export * as achievementsApi from './achievements';
 export * as supportApi from './support';
+export * as partnersApi from './partners';
 
 export { apiClient, getWebSocketUrl, getWebSocketBaseUrl } from './client';

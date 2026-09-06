@@ -1,5 +1,7 @@
+import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useAuthStore } from '@xalaat/core';
 import { AdminLayout } from './pages/Layout';
 import { DashboardPage } from './pages/DashboardPage';
 import { UsersPage } from './pages/UsersPage';
@@ -13,6 +15,7 @@ import { AuditLogsPage } from './pages/AuditLogsPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { LoginPage } from './pages/LoginPage';
 import { AdvertisementsPage } from './pages/AdvertisementsPage';
+import { PartnersPage } from './pages/PartnersPage';
 import { DailyChallengesPage } from './pages/DailyChallengesPage';
 import { SupportPage } from './pages/SupportPage';
 
@@ -26,6 +29,12 @@ const queryClient = new QueryClient({
 });
 
 export function App() {
+  const restoreSession = useAuthStore((s) => s.restoreSession);
+
+  useEffect(() => {
+    restoreSession();
+  }, [restoreSession]);
+
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
@@ -42,6 +51,7 @@ export function App() {
             <Route path="questions" element={<QuestionsPage />} />
             <Route path="daily-challenges" element={<DailyChallengesPage />} />
             <Route path="support" element={<SupportPage />} />
+            <Route path="partners" element={<PartnersPage />} />
             <Route path="ads" element={<AdvertisementsPage />} />
             <Route path="audit-logs" element={<AuditLogsPage />} />
             <Route path="settings" element={<SettingsPage />} />
