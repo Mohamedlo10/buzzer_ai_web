@@ -27,6 +27,7 @@ import { BlockedUsersModal } from '~/components/friend/BlockedUsersModal';
 import { notify, notifyApiError } from '~/lib/ui/notify';
 import { LoadingState } from '~/components/ui/StateViews';
 import { AdSlot } from '~/components/shared/AdSlot';
+import { AdAwareScrollView } from '~/components/partner/AdAwareScrollView';
 
 type FilterType = 'all' | 'online' | 'requests';
 
@@ -292,7 +293,7 @@ export default function FriendsScreen() {
           </ScrollView>
         ) : (
           /* ── Main Social Hub (No search active) ── */
-          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ gap: 14, paddingBottom: 40 }}>
+          <AdAwareScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ gap: 14, paddingBottom: 40 }}>
             {/* ── Filter Chips Bar with Tous, En ligne, Demandes ── */}
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
               {/* Tous */}
@@ -670,7 +671,7 @@ export default function FriendsScreen() {
                 ))
               )
             )}
-          </ScrollView>
+          </AdAwareScrollView>
         )}
       </View>
 

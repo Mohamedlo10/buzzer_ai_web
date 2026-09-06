@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
-  FlatList,
   Text,
   TextInput,
   TouchableOpacity,
@@ -12,6 +11,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Handshake, Heart, Search, X } from 'lucide-react-native';
 
+import { AdAwareFlatList } from '~/components/partner/AdAwareScrollView';
 import { PartnerCard } from '~/components/partner/PartnerCard';
 import { PartnerProfileModal } from '~/components/partner/PartnerProfileModal';
 import { EmptyState, ErrorState, LoadingState } from '~/components/ui/StateViews';
@@ -217,7 +217,7 @@ export default function PartnersScreen() {
           }
         />
       ) : (
-        <FlatList
+        <AdAwareFlatList
           data={partners}
           keyExtractor={(item) => item.id}
           contentContainerStyle={{ padding: 16, gap: 14, paddingBottom: 40 }}

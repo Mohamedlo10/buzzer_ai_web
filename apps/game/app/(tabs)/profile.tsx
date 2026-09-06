@@ -4,7 +4,6 @@ import {
   View,
   Text,
   TouchableOpacity,
-  ScrollView,
   ActivityIndicator,
   Modal,
   RefreshControl,
@@ -30,6 +29,7 @@ import { useAuthStore } from '~/stores/useAuthStore';
 import { useProfileSummary, useUnseenAchievements, useMarkAchievementsSeen } from '~/lib/query/hooks';
 import * as usersApi from '~/lib/api/users';
 import { AdSlot } from '~/components/shared/AdSlot';
+import { AdAwareScrollView } from '~/components/partner/AdAwareScrollView';
 import { palette, font } from '~/lib/theme/tokens';
 import { Avatar } from '~/components/shared/Avatar';
 import { AppTopBar } from '~/components/shared/AppTopBar';
@@ -164,7 +164,7 @@ export default function ProfileScreen() {
 
       <AppTopBar title="Xalaat" tag="PROFIL JOUEUR" />
 
-      <ScrollView
+      <AdAwareScrollView
         contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 4, paddingBottom: 24, gap: 16 }}
         showsVerticalScrollIndicator={false}
         refreshControl={
@@ -361,7 +361,7 @@ export default function ProfileScreen() {
             <ArrowRight size={16} color={palette.bad} />
           </TouchableOpacity>
         </View>
-      </ScrollView>
+      </AdAwareScrollView>
 
       {/* ── Modale changement de mot de passe ── */}
       <Modal

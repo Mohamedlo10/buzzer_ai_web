@@ -4,7 +4,6 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  ScrollView,
   Modal,
   ActivityIndicator,
   RefreshControl,
@@ -20,6 +19,7 @@ import { PatternZigzag } from '~/components/shared/PatternZigzag';
 import { GlobalRankCard } from '~/components/shared/GlobalRankCard';
 import { QuizOfTheDayCard } from '~/components/shared/QuizOfTheDayCard';
 import { AdSlot } from '~/components/shared/AdSlot';
+import { AdAwareScrollView } from '~/components/partner/AdAwareScrollView';
 import { AllRoomsModal } from '~/components/shared/AllRoomsModal';
 import { Avatar } from '~/components/shared/Avatar';
 import { AppTopBar } from '~/components/shared/AppTopBar';
@@ -76,7 +76,7 @@ export default function RoomsScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: palette.bg }}>
       <AppTopBar title="Xalaat" tag="SALONS & JEUX" />
-      <ScrollView
+      <AdAwareScrollView
         contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 4, paddingBottom: 24, gap: 16 }}
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refetch} tintColor={palette.primary} />}
@@ -381,7 +381,7 @@ export default function RoomsScreen() {
             </Text>
           </View>
         )}
-      </ScrollView>
+      </AdAwareScrollView>
 
       {/* All Rooms Modal */}
       <AllRoomsModal

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import {
   Image,
   Text,
@@ -10,6 +10,8 @@ import * as WebBrowser from 'expo-web-browser';
 import { ChevronRight, Heart } from 'lucide-react-native';
 
 import { MediaCarousel } from './MediaCarousel';
+import { PartnerVideoSlide } from './PartnerVideoSlide';
+import { useAdVisibility, useAdVisibilityScroll } from './AdVisibilityProvider';
 import { palette, font } from '~/lib/theme/tokens';
 import type { PartnerSummaryResponse } from '~/types/api';
 
@@ -39,13 +41,28 @@ export function PartnerCard({
 }: PartnerCardProps) {
   const { width } = useWindowDimensions();
   const [logoFailed, setLogoFailed] = useState(false);
+  const [visible, setVisible] = useState(false);
+
+  // Suivi de visibilité : sans provider sur l'écran, `tracked` est faux et la vidéo est
+  // considérée visible — dégradation gracieuse plutôt qu'une carte muette.
+  const cardId = useId();
+  const { tracked } = useAdVisibility(cardId, setVisible);
+  const { setCardLayout } = useCardLayout(cardId);
+  const cardVisible = tracked ? visible : true;
 
   const cardWidth = width - horizontalPadding;
   const mediaHeight = Math.round(cardWidth * 0.5);
   const media = partner.media ?? [];
 
+  // Première image du partenaire : sert d'affiche au volet vidéo.
+  const posterUri = media.find((m) => m.kind === 'IMAGE')?.url ?? null;
+
   return (
     <View
+      onLayout={(e) => {
+        const { y, height } = e.nativeEvent.layout;
+        setCardLayout(y, height);
+      }}
       style={{
         borderRadius: 20,
         overflow: 'hidden',
@@ -56,7 +73,21 @@ export function PartnerCard({
     >
       {media.length > 0 && (
         <TouchableOpacity activeOpacity={0.9} onPress={onOpenProfile}>
-          <MediaCarousel media={media} width={cardWidth} height={mediaHeight} />
+          <MediaCarousel
+            media={media}
+            width={cardWidth}
+            height={mediaHeight}
+            renderVideo={(item, isActive) => (
+              <PartnerVideoSlide
+                uri={item.url}
+                width={cardWidth}
+                height={mediaHeight}
+                isActiveSlide={isActive}
+                isCardVisible={cardVisible}
+                posterUri={posterUri}
+              />
+            )}
+          />
         </TouchableOpacity>
       )}
 
@@ -195,4 +226,17 @@ export function PartnerCard({
       </View>
     </View>
   );
+}
+
+/**
+ * Déclare la position de la carte au fournisseur de visibilité.
+ *
+ * Dans une `ScrollView`, `onLayout` donne déjà des coordonnées dans l'espace de contenu :
+ * c'est exactement ce qu'il faut, sans `measureInWindow` ni course asynchrone.
+ */
+function useCardLayout(cardId: string) {
+  const ctx = useAdVisibilityScroll();
+  return {
+    setCardLayout: (y: number, height: number) => ctx?.setCardLayout(cardId, y, height),
+  };
 }
