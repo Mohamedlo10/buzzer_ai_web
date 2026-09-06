@@ -18,6 +18,7 @@ import {
   X,
   Shield,
   HelpCircle,
+  Handshake,
   FileText,
   ArrowRight,
   History,
@@ -28,6 +29,7 @@ import {
 import { useAuthStore } from '~/stores/useAuthStore';
 import { useProfileSummary, useUnseenAchievements, useMarkAchievementsSeen } from '~/lib/query/hooks';
 import * as usersApi from '~/lib/api/users';
+import { AdSlot } from '~/components/shared/AdSlot';
 import { palette, font } from '~/lib/theme/tokens';
 import { Avatar } from '~/components/shared/Avatar';
 import { AppTopBar } from '~/components/shared/AppTopBar';
@@ -36,6 +38,7 @@ import { notify, notifyApiError } from '~/lib/ui/notify';
 import { confirmAsync } from '~/lib/ui/confirm';
 import { LoadingState, ErrorState } from '~/components/ui/StateViews';
 import { BadgeUnlockedModal } from '~/components/achievements/BadgeUnlockedModal';
+import { ProfilePrestigeCard } from '~/components/profile/ProfilePrestigeCard';
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -265,26 +268,7 @@ export default function ProfileScreen() {
         {/* ── Stats § 19 — 7 statistiques serveur ── */}
         {profile && (
           <>
-            <View style={{ flexDirection: 'row', gap: 10 }}>
-              <StatTile emoji="🎮" value={String(profile.gamesPlayed)} label="Parties jouées" />
-              <StatTile emoji="🏆" value={String(profile.wins)} label="Victoires" />
-            </View>
-            <View style={{ flexDirection: 'row', gap: 10 }}>
-              <StatTile emoji="✅" value={String(profile.correctAnswers)} label="Bonnes réponses" />
-              <StatTile emoji="🎯" value={`${Math.round(Number(profile.successRate))}%`} label="Taux de réussite" />
-            </View>
-            <View style={{ flexDirection: 'row', gap: 10 }}>
-              <StatTile emoji="⭐" value={String(profile.bestScore)} label="Meilleur score" />
-              <StatTile emoji="📅" value={String(profile.daysPlayed)} label="Jours de participation" />
-            </View>
-            <View style={{ flexDirection: 'row', gap: 10 }}>
-              <StatTile emoji="💰" value={String(profile.seasonPoints)} label="Points de saison" />
-              <StatTile
-                emoji="🔥"
-                value={String(profile.currentStreak)}
-                label={profile.currentStreak === 1 ? 'Jour de série' : 'Jours de série'}
-              />
-            </View>
+            <ProfilePrestigeCard profile={profile} />
 
             {/* Progression — rang null si pas encore joué ce mois-ci (§17 : ne rien inventer) */}
             <View
@@ -336,6 +320,9 @@ export default function ProfileScreen() {
           </>
         )}
 
+        {/* Carte partenaire — entre la progression et le menu, hors de tout parcours de jeu. */}
+        <AdSlot placement="PROFILE" />
+
         {/* ── Menu ── */}
         <View
           style={{
@@ -350,6 +337,7 @@ export default function ProfileScreen() {
           <MenuRow icon={<History size={18} color={palette.txt} />} label="Mes parties" onPress={() => router.push('/profile/history' as any)} />
           <MenuRow icon={<Award size={18} color={palette.txt} />} label="Mes badges" onPress={() => router.push('/profile/badges' as any)} />
           <MenuRow icon={<Lock size={18} color={palette.txt} />} label="Changer le mot de passe" onPress={() => setShowPasswordModal(true)} />
+          <MenuRow icon={<Handshake size={18} color={palette.txt} />} label="Partenaires de Xalaat" onPress={() => router.push('/partners' as any)} />
           <MenuRow icon={<HelpCircle size={18} color={palette.txt} />} label="Aide & Support" onPress={() => router.push('/support' as any)} />
           <MenuRow icon={<Shield size={18} color={palette.txt} />} label="Confidentialité" onPress={() => router.push('/privacy' as any)} />
           <MenuRow icon={<FileText size={18} color={palette.txt} />} label="Conditions & CLUF" onPress={() => router.push('/terms' as any)} />
@@ -472,27 +460,6 @@ export default function ProfileScreen() {
 
 // ─── Micro-composants ────────────────────────────────────────────────────────
 
-function StatTile({ emoji, value, label }: { emoji: string; value: string; label: string }) {
-  return (
-    <View
-      style={{
-        flex: 1,
-        backgroundColor: palette.surface,
-        borderRadius: 20,
-        borderWidth: 1,
-        borderColor: palette.line,
-        padding: 14,
-        gap: 4,
-      }}
-    >
-      <Text style={{ fontSize: 18 }}>{emoji}</Text>
-      <Text style={{ fontFamily: font.nativeFamily.display, fontSize: 20, color: palette.txt, paddingTop: 2 }}>
-        {value}
-      </Text>
-      <Text style={{ fontSize: 11.5, color: palette.inkSoft }}>{label}</Text>
-    </View>
-  );
-}
 
 function MenuRow({
   icon,

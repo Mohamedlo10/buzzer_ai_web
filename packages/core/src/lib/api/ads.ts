@@ -1,13 +1,23 @@
 import { apiClient } from './client';
+import type { PartnerSummaryResponse } from '../../types/api';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
 export interface AdData {
   id: string;
   title: string;
+  /** @deprecated Remplacée par `partner.media`. Servie pour les clients antérieurs. */
   imageUrl?: string | null;
   targetUrl: string;
   placement: string;
+  /**
+   * Identité du partenaire : nom, logo, médias du carrousel, état du favori.
+   *
+   * Optionnel dans le type, non parce que le serveur peut l'omettre — il ne le fait plus —
+   * mais parce qu'une réponse mise en cache par une version antérieure du client peut encore
+   * en être dépourvue.
+   */
+  partner?: PartnerSummaryResponse | null;
 }
 
 /**
@@ -24,7 +34,13 @@ export interface AdResponse {
 
 // ─── API ────────────────────────────────────────────────────────────────────
 
-export type AdPlacement = 'HOME' | 'RESULT' | 'GENERATION' | 'PROFILE';
+export type AdPlacement =
+  | 'HOME'
+  | 'RESULT'
+  | 'GENERATION'
+  | 'PROFILE'
+  | 'ROOMS'
+  | 'FRIENDS';
 
 /**
  * Récupère la publicité active pour un emplacement.

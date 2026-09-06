@@ -17,6 +17,7 @@ import { useGameSocket } from '~/lib/websocket/useGameSocket';
 import { appStorage } from '~/lib/utils/storage';
 import type { GenerationProgressEvent } from '~/types/websocket';
 import { palette } from '~/lib/theme/tokens';
+import { AdSlot } from '~/components/shared/AdSlot';
 
 /**
  * Écran de chargement pendant la génération IA des questions.
@@ -223,6 +224,14 @@ export default function LoadingScreen() {
               {isConnected ? '● Connecté' : '○ Connexion…'}
             </Text>
           </View>
+        </View>
+
+        {/* Carte partenaire — après 2 s seulement.
+            Une attente de génération est une attente subie, pas une transition de jeu :
+            l'emplacement est légitime. Mais si la génération dure deux secondes, une carte
+            qui apparaît et disparaît aussitôt est pire que pas de carte du tout. */}
+        <View style={{ width: '100%', maxWidth: 360, marginTop: 28 }}>
+          <AdSlot placement="GENERATION" delayMs={2000} />
         </View>
 
         {/* Status icon + hint */}

@@ -46,6 +46,12 @@ export const queryKeys = {
   trainingMastery: (subject?: string) => ['training', 'mastery', subject ?? 'all'] as const,
 
   // Daily Challenge
+  // Publicité et partenaires
+  ad: (placement: string) => ['ad', placement] as const,
+  partners: (query: string) => ['partners', query] as const,
+  partnerFavorites: ['partners', 'favorites'] as const,
+  partnerDetail: (id: string) => ['partners', 'detail', id] as const,
+
   dailyToday: ['daily', 'today'] as const,
   dailyAttemptState: (attemptId: string) => ['daily', 'attempt', attemptId] as const,
   dailyHistory: ['daily', 'history'] as const,

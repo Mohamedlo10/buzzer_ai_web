@@ -26,6 +26,7 @@ import { AppTopBar } from '~/components/shared/AppTopBar';
 import { BlockedUsersModal } from '~/components/friend/BlockedUsersModal';
 import { notify, notifyApiError } from '~/lib/ui/notify';
 import { LoadingState } from '~/components/ui/StateViews';
+import { AdSlot } from '~/components/shared/AdSlot';
 
 type FilterType = 'all' | 'online' | 'requests';
 
@@ -390,6 +391,13 @@ export default function FriendsScreen() {
                 </Text>
               </TouchableOpacity>
             </View>
+
+            {/* Carte partenaire — uniquement dans cette branche, jamais au milieu de
+                résultats de recherche : l'utilisateur qui tape un nom est en pleine
+                intention, et s'interposer là serait exactement le cas « entre deux actions
+                importantes » que la règle produit proscrit. La branche de recherche étant
+                une ScrollView distincte, la carte se démonte d'elle-même dès qu'on tape. */}
+            <AdSlot placement="FRIENDS" />
 
             {/* ── View when Filter === 'requests' ── */}
             {filter === 'requests' ? (

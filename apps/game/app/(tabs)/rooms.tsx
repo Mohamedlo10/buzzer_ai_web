@@ -19,6 +19,7 @@ import { QRScannerModal } from '~/components/shared/QRScannerModal';
 import { PatternZigzag } from '~/components/shared/PatternZigzag';
 import { GlobalRankCard } from '~/components/shared/GlobalRankCard';
 import { QuizOfTheDayCard } from '~/components/shared/QuizOfTheDayCard';
+import { AdSlot } from '~/components/shared/AdSlot';
 import { AllRoomsModal } from '~/components/shared/AllRoomsModal';
 import { Avatar } from '~/components/shared/Avatar';
 import { AppTopBar } from '~/components/shared/AppTopBar';
@@ -262,6 +263,9 @@ export default function RoomsScreen() {
 
         {/* Quiz Of The Day Card */}
         <QuizOfTheDayCard activeRoom={activeRoom} />
+
+        {/* Carte partenaire — après le Défi du Jour, avant la liste des salons. */}
+        <AdSlot placement="ROOMS" />
 
         {/* Rooms Section Header */}
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 }}>
