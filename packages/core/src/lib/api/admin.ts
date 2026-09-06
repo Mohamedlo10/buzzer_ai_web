@@ -21,6 +21,7 @@ import type {
   AdminDailyQuestionResponse,
   CreateDailyChallengeRequest,
   UpdateDailyQuestionRequest,
+  CreateDailyQuestionRequest,
 } from '~/types/api';
 
 // ─── Dashboard ─────────────────────────────────────────────────────────────
@@ -269,6 +270,32 @@ export async function updateAdminDailyQuestion(
     request,
   );
   return res.data;
+}
+
+/**
+ * Ajoute une question à la fin de l'édition.
+ *
+ * Le serveur incrémente `questionCount` et recalcule `maxPoints` : ne pas les réécrire ici.
+ */
+export async function addAdminDailyQuestion(
+  challengeId: string,
+  request: CreateDailyQuestionRequest,
+): Promise<AdminDailyQuestionResponse> {
+  const res = await apiClient.post<AdminDailyQuestionResponse>(
+    `/api/admin/daily-challenges/${challengeId}/questions`,
+    request,
+  );
+  return res.data;
+}
+
+/** Supprime une question. Le serveur recompacte les rangs des suivantes. */
+export async function deleteAdminDailyQuestion(
+  challengeId: string,
+  questionId: string,
+): Promise<void> {
+  await apiClient.delete(
+    `/api/admin/daily-challenges/${challengeId}/questions/${questionId}`,
+  );
 }
 
 /** Relit sans publier : renvoie la liste complète de ce qui cloche. */

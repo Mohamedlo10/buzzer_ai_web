@@ -242,7 +242,7 @@ export function SprintGame({
                   borderRadius: 14,
                   backgroundColor: palette.surface2,
                   borderWidth: 1,
-                  borderColor: palette.border,
+                  borderColor: palette.line,
                   flexDirection: 'row',
                   alignItems: 'center',
                   justifyContent: 'center',

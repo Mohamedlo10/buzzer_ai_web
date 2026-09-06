@@ -46,7 +46,7 @@ const CATEGORY_COLORS = [
   palette.bad,
   palette.good,
   palette.gold,
-  palette.accent,
+  palette.goldBright,
 ];
 
 function getCategoryIcon(name: string): string {

@@ -1122,13 +1122,27 @@ export interface SubmitAnswerResponse {
 // Source : AdResponse.AdData + AdRequest
 // ──────────────────────────────────────────────
 
-/** Réponse de GET /api/admin/ads et des mutations. Source : AdResponse.AdData */
+/**
+ * Réponse de GET /api/admin/ads et des mutations. Source : AdminAdResponse.java
+ *
+ * Distinct du DTO joueur (AdResponse.AdData) : le formulaire d'édition fait un PUT
+ * complet, il doit donc pouvoir relire tout ce qu'il réécrit. Tant que `active` et
+ * `priority` manquaient ici, `startEdit` les réinventait à false/0 et corriger un
+ * titre désactivait la campagne.
+ */
 export interface AdminAdResponse {
   id: string; // UUID
   title: string;
   imageUrl: string | null;
   targetUrl: string;
   placement: AdminAdPlacement;
+  active: boolean;
+  priority: number;
+  /** ISO-8601, null = pas de contrainte */
+  startDate: string | null;
+  endDate: string | null;
+  createdAt: string | null;
+  updatedAt: string | null;
 }
 
 /** Corps de POST /api/admin/ads et PUT /api/admin/ads/{id}. Source : AdRequest */
@@ -1235,6 +1249,24 @@ export interface UpdateDailyQuestionRequest {
   text?: string;
   choices?: string[];
   correctIndex?: number;
+  answer?: string;
+  explanation?: string;
+  difficulty?: string;
+}
+
+/**
+ * Source : model/dto/request/CreateDailyQuestionRequest.java
+ *
+ * Distinct de UpdateDailyQuestionRequest : on crée, donc l'énoncé, les quatre propositions
+ * et l'index de la bonne réponse sont exigés. `answer` se déduit de choices[correctIndex]
+ * côté serveur s'il est omis.
+ */
+export interface CreateDailyQuestionRequest {
+  text: string;
+  /** Exactement 4. */
+  choices: string[];
+  /** 0 à 3. */
+  correctIndex: number;
   answer?: string;
   explanation?: string;
   difficulty?: string;

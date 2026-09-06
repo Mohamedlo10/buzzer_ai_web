@@ -35,7 +35,7 @@ export function PauseOverlay({ isPaused, isManager, isPauseToggling, onResume, o
                 onPress={onSkip}
                 disabled={isPauseToggling}
                 activeOpacity={0.8}
-                style={{ width: '100%', paddingVertical: 12, backgroundColor: palette.surface2, borderWidth: 1, borderColor: palette.border, borderRadius: 16, alignItems: 'center', justifyContent: 'center' }}
+                style={{ width: '100%', paddingVertical: 12, backgroundColor: palette.surface2, borderWidth: 1, borderColor: palette.line, borderRadius: 16, alignItems: 'center', justifyContent: 'center' }}
               >
                 <Text style={{ fontFamily: font.nativeFamily.display, color: palette.warn, fontSize: 14, paddingTop: 2 }}>Passer la question</Text>
               </TouchableOpacity>

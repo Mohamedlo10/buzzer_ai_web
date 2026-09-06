@@ -39,7 +39,28 @@ const EMPTY_FORM: AdminAdRequest = {
   placement: 'HOME',
   active: false,
   priority: 0,
+  startDate: null,
+  endDate: null,
 };
+
+/**
+ * ISO-8601 → valeur d'un <input type="datetime-local"> ("YYYY-MM-DDTHH:mm", heure locale).
+ * L'input ne comprend ni le suffixe Z ni les secondes.
+ */
+function toLocalInput(iso: string | null | undefined): string {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+/** Valeur d'un <input type="datetime-local"> → ISO-8601 UTC. Vide = pas de contrainte. */
+function fromLocalInput(value: string): string | null {
+  if (!value) return null;
+  const d = new Date(value);
+  return Number.isNaN(d.getTime()) ? null : d.toISOString();
+}
 
 export function AdvertisementsPage() {
   const navigate = useNavigate();
@@ -89,13 +110,18 @@ export function AdvertisementsPage() {
   function startEdit(ad: AdminAdResponse) {
     setIsCreating(false);
     setEditingId(ad.id);
+    // Le PUT est complet : tout ce qui n'est pas relu ici est écrasé à l'enregistrement.
+    // `active` et `priority` étaient codés en dur à false/0 — corriger un titre suffisait
+    // à désactiver la campagne et à perdre sa priorité et ses dates.
     setForm({
       title: ad.title,
       imageUrl: ad.imageUrl ?? '',
       targetUrl: ad.targetUrl,
       placement: ad.placement,
-      active: false,
-      priority: 0,
+      active: ad.active,
+      priority: ad.priority,
+      startDate: ad.startDate,
+      endDate: ad.endDate,
     });
   }
 
@@ -146,7 +172,9 @@ export function AdvertisementsPage() {
             <div className="flex-1">
               <p className="text-txt font-bold text-xl font-display">Publicités</p>
               <p className="text-txt-60 text-xs">
-                {ads.length} publicité{ads.length !== 1 ? 's' : ''} — désactivées globalement (ADS_ENABLED=false)
+                {/* Ne plus affirmer « désactivées » : le flag ADS_ENABLED est serveur et
+                    peut être à true. Une page d'admin qui ment sur l'état est pire que muette. */}
+                {ads.length} publicité{ads.length !== 1 ? 's' : ''} — diffusion soumise au flag serveur ADS_ENABLED
               </p>
             </div>
           </div>
@@ -230,10 +258,21 @@ function AdRow({ ad, onEdit, onDelete, isDeleting }: AdRowProps) {
 
       <div className="flex-1 min-w-0">
         <p className="text-txt font-semibold truncate">{ad.title}</p>
-        <div className="flex items-center gap-2 mt-0.5">
+        <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+          {/* Sans cette pastille, rien ne distinguait une campagne diffusée d'un brouillon. */}
+          <span
+            className={
+              ad.active
+                ? 'text-xs px-2 py-0.5 rounded-full bg-good/15 text-good font-semibold'
+                : 'text-xs px-2 py-0.5 rounded-full bg-surface-2 text-txt-40 font-semibold'
+            }
+          >
+            {ad.active ? 'ACTIVE' : 'INACTIVE'}
+          </span>
           <span className="text-xs px-2 py-0.5 rounded-full bg-surface-2 text-txt-60 font-medium">
             {PLACEMENT_LABELS[ad.placement]}
           </span>
+          <span className="text-xs text-txt-40">priorité {ad.priority}</span>
           <a
             href={ad.targetUrl}
             target="_blank"
@@ -354,6 +393,30 @@ function AdForm({ form, setForm, onSave, onCancel, isSaving, title }: AdFormProp
               />
               <span className="text-txt text-sm">Active</span>
             </label>
+          </div>
+        </div>
+
+        {/* Fenêtre de diffusion — filtrée côté serveur par findActiveForPlacement.
+            Ces deux champs existaient en base et dans AdRequest depuis l'origine,
+            mais n'avaient jamais été exposés : une campagne datée était impossible. */}
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="block text-txt-60 text-xs mb-1">Début (vide = immédiat)</label>
+            <input
+              type="datetime-local"
+              value={toLocalInput(form.startDate)}
+              onChange={(e) => setForm((f) => ({ ...f, startDate: fromLocalInput(e.target.value) }))}
+              className="w-full px-3 py-2 rounded-xl bg-surface border border-line text-txt text-sm focus:outline-none focus:border-host/50"
+            />
+          </div>
+          <div>
+            <label className="block text-txt-60 text-xs mb-1">Fin (vide = sans limite)</label>
+            <input
+              type="datetime-local"
+              value={toLocalInput(form.endDate)}
+              onChange={(e) => setForm((f) => ({ ...f, endDate: fromLocalInput(e.target.value) }))}
+              className="w-full px-3 py-2 rounded-xl bg-surface border border-line text-txt text-sm focus:outline-none focus:border-host/50"
+            />
           </div>
         </div>
       </div>

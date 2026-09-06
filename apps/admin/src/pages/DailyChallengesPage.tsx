@@ -10,6 +10,8 @@ import {
   Plus,
   Send,
   Ban,
+  Pencil,
+  Trash2,
 } from 'lucide-react';
 
 import { Card } from '../components/ui/Card';
@@ -18,6 +20,9 @@ import {
   adminApi,
   confirmAsync,
   type AdminDailyChallengeResponse,
+  type AdminDailyQuestionResponse,
+  type CreateDailyQuestionRequest,
+  type UpdateDailyQuestionRequest,
   type DailyChallengeStatus,
 } from '@xalaat/core';
 
@@ -42,6 +47,165 @@ const STATUS_CONFIG: Record<DailyChallengeStatus, { label: string; color: string
 };
 
 const PAGE_SIZE = 20;
+
+/** États dans lesquels l'édition est servie aux joueurs — voir DailyChallengeStatus.isPublic(). */
+const PUBLIC_STATUSES: DailyChallengeStatus[] = ['PUBLISHED', 'LIVE', 'CLOSED'];
+
+/**
+ * Question en cours de saisie. `id` absent = création, présent = correction.
+ *
+ * Un seul état pour les deux cas : le formulaire est identique, et deux états séparés
+ * ouvriraient la porte à ce que les deux soient renseignés en même temps.
+ */
+interface QuestionDraft {
+  id?: string;
+  text: string;
+  choices: string[];
+  correctIndex: number;
+  explanation: string;
+}
+
+function emptyDraft(): QuestionDraft {
+  return { text: '', choices: ['', '', '', ''], correctIndex: 0, explanation: '' };
+}
+
+function draftFromQuestion(q: AdminDailyQuestionResponse): QuestionDraft {
+  return {
+    id: q.id,
+    text: q.text,
+    choices: [...q.choices],
+    correctIndex: q.correctIndex,
+    explanation: q.explanation ?? '',
+  };
+}
+
+const iconButtonStyle: React.CSSProperties = {
+  padding: 5,
+  borderRadius: 6,
+  border: '1px solid var(--line)',
+  background: 'transparent',
+  color: 'var(--txt)',
+  cursor: 'pointer',
+  display: 'flex',
+  alignItems: 'center',
+};
+
+const inputStyle: React.CSSProperties = {
+  padding: 8,
+  borderRadius: 6,
+  border: '1px solid var(--line)',
+  background: 'transparent',
+  color: 'var(--txt)',
+  width: '100%',
+};
+
+/**
+ * Formulaire de saisie d'une question.
+ *
+ * <p>La bonne réponse se désigne par un bouton radio sur la proposition elle-même plutôt que
+ * par un index saisi à part : un index et quatre propositions dans deux champs séparés
+ * finissent toujours par diverger.
+ */
+function QuestionForm({
+  draft,
+  setDraft,
+  onSave,
+  onCancel,
+  isSaving,
+}: {
+  draft: QuestionDraft;
+  setDraft: (d: QuestionDraft) => void;
+  onSave: () => void;
+  onCancel: () => void;
+  isSaving: boolean;
+}) {
+  const filled = draft.text.trim().length > 0 && draft.choices.every((c) => c.trim().length > 0);
+
+  return (
+    <div
+      style={{
+        padding: 14, marginTop: 12, borderRadius: 10,
+        border: '1px solid var(--line)', display: 'flex', flexDirection: 'column', gap: 10,
+      }}
+    >
+      <div style={{ fontWeight: 600 }}>
+        {draft.id ? 'Corriger la question' : 'Nouvelle question'}
+      </div>
+
+      <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+        <span style={{ fontSize: 12, opacity: 0.7 }}>
+          Énoncé — court : le joueur n'a que quelques secondes
+        </span>
+        <textarea
+          value={draft.text}
+          onChange={(e) => setDraft({ ...draft, text: e.target.value })}
+          rows={2}
+          style={{ ...inputStyle, resize: 'vertical', fontFamily: 'inherit' }}
+        />
+      </label>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <span style={{ fontSize: 12, opacity: 0.7 }}>
+          Quatre propositions — coche la bonne réponse
+        </span>
+        {draft.choices.map((choice, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <input
+              type="radio"
+              name={`correct-${draft.id ?? 'new'}`}
+              checked={draft.correctIndex === i}
+              onChange={() => setDraft({ ...draft, correctIndex: i })}
+              title="Bonne réponse"
+              style={{ cursor: 'pointer' }}
+            />
+            <input
+              value={choice}
+              onChange={(e) => {
+                const choices = [...draft.choices];
+                choices[i] = e.target.value;
+                setDraft({ ...draft, choices });
+              }}
+              placeholder={`Proposition ${i + 1}`}
+              style={inputStyle}
+            />
+          </div>
+        ))}
+      </div>
+
+      <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+        <span style={{ fontSize: 12, opacity: 0.7 }}>Explication (facultative)</span>
+        <input
+          value={draft.explanation}
+          onChange={(e) => setDraft({ ...draft, explanation: e.target.value })}
+          style={inputStyle}
+        />
+      </label>
+
+      <div style={{ display: 'flex', gap: 8 }}>
+        <button
+          onClick={onSave}
+          disabled={!filled || isSaving}
+          style={{
+            padding: '8px 14px', borderRadius: 8, border: 'none', cursor: 'pointer',
+            background: 'var(--primary)', color: '#fff',
+            opacity: !filled || isSaving ? 0.5 : 1,
+          }}
+        >
+          {isSaving ? 'Enregistrement…' : 'Enregistrer'}
+        </button>
+        <button
+          onClick={onCancel}
+          style={{
+            padding: '8px 14px', borderRadius: 8, cursor: 'pointer',
+            background: 'transparent', color: 'var(--txt-60)', border: '1px solid var(--line)',
+          }}
+        >
+          Annuler
+        </button>
+      </div>
+    </div>
+  );
+}
 
 /** Demain, au format ISO — la valeur par défaut la plus probable à la création. */
 function tomorrowIso() {
@@ -68,6 +232,9 @@ export function DailyChallengesPage() {
   const [newDate, setNewDate] = useState(tomorrowIso());
   const [newTheme, setNewTheme] = useState('');
   const [newCount, setNewCount] = useState(10);
+
+  /** Question en cours de saisie ou de correction. `null` = aucun formulaire ouvert. */
+  const [questionDraft, setQuestionDraft] = useState<QuestionDraft | null>(null);
 
   const { data: list, isLoading } = useQuery({
     queryKey: ['admin', 'daily-challenges', page],
@@ -139,6 +306,65 @@ export function DailyChallengesPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  // ── Édition des questions ────────────────────────────────────────────────
+  // Le serveur tient questionCount et maxPoints à jour : on se contente d'invalider.
+
+  const addQuestionMutation = useMutation({
+    mutationFn: (req: CreateDailyQuestionRequest) =>
+      adminApi.addAdminDailyQuestion(selectedId!, req),
+    onSuccess: () => {
+      toast.success('Question ajoutée.');
+      setQuestionDraft(null);
+      invalidate();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const updateQuestionMutation = useMutation({
+    mutationFn: ({ questionId, req }: { questionId: string; req: UpdateDailyQuestionRequest }) =>
+      adminApi.updateAdminDailyQuestion(selectedId!, questionId, req),
+    onSuccess: () => {
+      toast.success('Question corrigée.');
+      setQuestionDraft(null);
+      invalidate();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const deleteQuestionMutation = useMutation({
+    mutationFn: (questionId: string) =>
+      adminApi.deleteAdminDailyQuestion(selectedId!, questionId),
+    onSuccess: () => {
+      toast.success('Question supprimée.');
+      invalidate();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const onDeleteQuestion = async (q: AdminDailyQuestionResponse) => {
+    const ok = await confirmAsync({
+      title: 'Supprimer cette question ?',
+      message: `« ${q.text} » sera retirée et les suivantes renumérotées.`,
+      confirmLabel: 'Supprimer',
+      tone: 'danger',
+    });
+    if (ok) deleteQuestionMutation.mutate(q.id);
+  };
+
+  const onSaveQuestion = (draft: QuestionDraft) => {
+    const payload = {
+      text: draft.text.trim(),
+      choices: draft.choices.map((c) => c.trim()),
+      correctIndex: draft.correctIndex,
+      explanation: draft.explanation.trim() || undefined,
+    };
+    if (draft.id) {
+      updateQuestionMutation.mutate({ questionId: draft.id, req: payload });
+    } else {
+      addQuestionMutation.mutate(payload);
+    }
+  };
+
   const onCancel = async (challenge: AdminDailyChallengeResponse) => {
     const ok = await confirmAsync({
       title: 'Annuler cette édition ?',
@@ -152,6 +378,12 @@ export function DailyChallengesPage() {
 
   const challenges = list?.content ?? [];
   const validation = detail?.validation;
+
+  // Miroir de requireEditable côté serveur : une édition publique n'est plus modifiable,
+  // les joueurs la voient déjà. Le serveur reste l'autorité — ceci ne fait que cacher des
+  // boutons qui répondraient 409.
+  const questionsEditable =
+    !!detail && !PUBLIC_STATUSES.includes(detail.challenge.status);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -403,31 +635,89 @@ export function DailyChallengesPage() {
             </div>
           )}
 
-          {detail.questions.map((q) => (
-            <div key={q.id} style={{ padding: '10px 0', borderTop: '1px solid var(--line)' }}>
-              <div style={{ fontWeight: 600, marginBottom: 6 }}>
-                {q.orderIndex + 1}. {q.text}
+          {detail.questions.map((q) =>
+            questionDraft?.id === q.id ? (
+              <QuestionForm
+                key={q.id}
+                draft={questionDraft}
+                setDraft={setQuestionDraft}
+                onSave={() => onSaveQuestion(questionDraft)}
+                onCancel={() => setQuestionDraft(null)}
+                isSaving={updateQuestionMutation.isPending}
+              />
+            ) : (
+              <div key={q.id} style={{ padding: '10px 0', borderTop: '1px solid var(--line)' }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                  <div style={{ fontWeight: 600, marginBottom: 6, flex: 1 }}>
+                    {q.orderIndex + 1}. {q.text}
+                  </div>
+                  {questionsEditable && (
+                    <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
+                      <button
+                        onClick={() => setQuestionDraft(draftFromQuestion(q))}
+                        title="Corriger"
+                        style={iconButtonStyle}
+                      >
+                        <Pencil size={14} />
+                      </button>
+                      <button
+                        onClick={() => onDeleteQuestion(q)}
+                        disabled={deleteQuestionMutation.isPending}
+                        title="Supprimer"
+                        style={{ ...iconButtonStyle, color: 'var(--bad)' }}
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  )}
+                </div>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  {q.choices.map((choice, i) => (
+                    <span
+                      key={i}
+                      style={{
+                        padding: '3px 9px', borderRadius: 999, fontSize: 12,
+                        border: '1px solid var(--line)',
+                        background: i === q.correctIndex ? 'rgba(60,180,110,0.15)' : 'transparent',
+                        fontWeight: i === q.correctIndex ? 600 : 400,
+                      }}
+                    >
+                      {choice}
+                    </span>
+                  ))}
+                </div>
+                {q.explanation && (
+                  <div style={{ fontSize: 12, opacity: 0.65, marginTop: 6 }}>{q.explanation}</div>
+                )}
               </div>
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                {q.choices.map((choice, i) => (
-                  <span
-                    key={i}
-                    style={{
-                      padding: '3px 9px', borderRadius: 999, fontSize: 12,
-                      border: '1px solid var(--line)',
-                      background: i === q.correctIndex ? 'rgba(60,180,110,0.15)' : 'transparent',
-                      fontWeight: i === q.correctIndex ? 600 : 400,
-                    }}
-                  >
-                    {choice}
-                  </span>
-                ))}
-              </div>
-              {q.explanation && (
-                <div style={{ fontSize: 12, opacity: 0.65, marginTop: 6 }}>{q.explanation}</div>
-              )}
-            </div>
-          ))}
+            )
+          )}
+
+          {/* Saisie manuelle — le recours que l'interface promettait sans qu'aucun endpoint
+              ne l'assure. Fermé dès que l'édition est publique : les joueurs la voient déjà. */}
+          {questionsEditable && (
+            questionDraft && !questionDraft.id ? (
+              <QuestionForm
+                draft={questionDraft}
+                setDraft={setQuestionDraft}
+                onSave={() => onSaveQuestion(questionDraft)}
+                onCancel={() => setQuestionDraft(null)}
+                isSaving={addQuestionMutation.isPending}
+              />
+            ) : (
+              <button
+                onClick={() => setQuestionDraft(emptyDraft())}
+                style={{
+                  marginTop: 12, display: 'flex', alignItems: 'center', gap: 6,
+                  padding: '8px 14px', borderRadius: 8, cursor: 'pointer',
+                  background: 'transparent', color: 'var(--txt)',
+                  border: '1px dashed var(--line)',
+                }}
+              >
+                <Plus size={15} /> Ajouter une question
+              </button>
+            )
+          )}
         </Card>
       )}
     </div>

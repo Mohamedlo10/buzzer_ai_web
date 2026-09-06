@@ -64,7 +64,7 @@ export function AdSlot({ placement }: AdSlotProps) {
       <View style={{ paddingHorizontal: 12, paddingVertical: 8 }}>
         <Text
           style={{
-            fontFamily: font.nativeFamily,
+            fontFamily: font.nativeFamily.ui,
             fontSize: 10,
             color: palette.inkSoft,
             textTransform: 'uppercase',
@@ -76,7 +76,7 @@ export function AdSlot({ placement }: AdSlotProps) {
         </Text>
         <Text
           style={{
-            fontFamily: font.nativeFamily,
+            fontFamily: font.nativeFamily.ui,
             fontSize: 13,
             color: palette.txt,
             fontWeight: '500',
@@ -87,7 +87,7 @@ export function AdSlot({ placement }: AdSlotProps) {
         </Text>
         <Text
           style={{
-            fontFamily: font.nativeFamily,
+            fontFamily: font.nativeFamily.ui,
             fontSize: 11,
             color: palette.goldBright,
             marginTop: 4,
