@@ -10,7 +10,7 @@
  *
  * Aucune logique de jeu ici. Aucun calcul de score.
  */
-import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { ChevronLeft, Trophy, Calendar, Clock, Zap } from 'lucide-react-native';
@@ -20,6 +20,8 @@ import { LoadingState, EmptyState, ErrorState } from '~/components/ui/StateViews
 import { palette, font } from '~/lib/theme/tokens';
 import { PatternZigzag } from '~/components/shared/PatternZigzag';
 import type { DailyTodayResponse } from '~/types/daily';
+import { AdSlot } from '~/components/shared/AdSlot';
+import { AdAwareScrollView } from '~/components/partner/AdAwareScrollView';
 
 export default function DailyIndexScreen() {
   const { data, isLoading, isError, refetch } = useDailyToday();
@@ -84,7 +86,7 @@ function IntroView({ data }: { data: DailyTodayResponse }) {
     <SafeAreaView style={{ flex: 1, backgroundColor: palette.bg }}>
       <BackButton />
 
-      <ScrollView
+      <AdAwareScrollView
         contentContainerStyle={{ padding: 20, paddingBottom: 40, gap: 20 }}
         showsVerticalScrollIndicator={false}
       >
@@ -203,7 +205,10 @@ function IntroView({ data }: { data: DailyTodayResponse }) {
             </Text>
           ))}
         </View>
-      </ScrollView>
+      
+        {/* Carte partenaire — en fin de contenu, hors de tout parcours de jeu. */}
+        <AdSlot placement="DAILY_HOME" />
+      </AdAwareScrollView>
 
       {/* CTA */}
       <View
@@ -252,7 +257,7 @@ function AlreadyPlayedView({ data }: { data: DailyTodayResponse }) {
     <SafeAreaView style={{ flex: 1, backgroundColor: palette.bg }}>
       <BackButton />
 
-      <ScrollView
+      <AdAwareScrollView
         contentContainerStyle={{ padding: 20, paddingBottom: 40, gap: 20 }}
         showsVerticalScrollIndicator={false}
       >
@@ -283,9 +288,9 @@ function AlreadyPlayedView({ data }: { data: DailyTodayResponse }) {
             style={{
               fontFamily: font.nativeFamily.display,
               fontSize: 56,
-              lineHeight: 64,
+              lineHeight: 80,
               color: '#FFFFFF',
-              paddingTop: 4,
+              paddingTop: 10,
             }}
           >
             {attempt.score}
@@ -369,7 +374,10 @@ function AlreadyPlayedView({ data }: { data: DailyTodayResponse }) {
             Voir le classement
           </Text>
         </TouchableOpacity>
-      </ScrollView>
+      
+        {/* Carte partenaire — en fin de contenu, hors de tout parcours de jeu. */}
+        <AdSlot placement="DAILY_DONE" />
+      </AdAwareScrollView>
     </SafeAreaView>
   );
 }

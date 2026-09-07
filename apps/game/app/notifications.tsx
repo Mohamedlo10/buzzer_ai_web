@@ -3,7 +3,6 @@ import {
   View,
   Text,
   TouchableOpacity,
-  ScrollView,
   RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -28,6 +27,8 @@ import { notify, notifyApiError } from '~/lib/ui/notify';
 import { palette, font } from '~/lib/theme/tokens';
 import { Avatar } from '~/components/shared/Avatar';
 import { LoadingState, EmptyState } from '~/components/ui/StateViews';
+import { AdSlot } from '~/components/shared/AdSlot';
+import { AdAwareScrollView } from '~/components/partner/AdAwareScrollView';
 import type {
   NotificationFriendRequest,
   NotificationGameInvitation,
@@ -161,7 +162,7 @@ export default function NotificationsScreen() {
       </View>
 
       {/* Main Content */}
-      <ScrollView
+      <AdAwareScrollView
         contentContainerStyle={{ padding: 16, paddingBottom: 40, gap: 16 }}
         showsVerticalScrollIndicator={false}
         refreshControl={
@@ -375,7 +376,10 @@ export default function NotificationsScreen() {
             )}
           </>
         )}
-      </ScrollView>
+      
+        {/* Carte partenaire — en fin de contenu, hors de tout parcours de jeu. */}
+        <AdSlot placement="NOTIFICATIONS" />
+      </AdAwareScrollView>
     </SafeAreaView>
   );
 }

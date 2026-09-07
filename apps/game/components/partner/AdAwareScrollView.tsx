@@ -1,3 +1,4 @@
+import { forwardRef } from 'react';
 import { FlatList, FlatListProps, ScrollView, ScrollViewProps } from 'react-native';
 
 import { AdVisibilityProvider, useAdVisibilityScroll } from './AdVisibilityProvider';
@@ -15,19 +16,28 @@ import { AdVisibilityProvider, useAdVisibilityScroll } from './AdVisibilityProvi
  * peut donc l'utiliser sans conséquence, et un écran qui l'oublie garde une carte fonctionnelle
  * — seulement moins économe en données.
  */
-export function AdAwareScrollView(props: ScrollViewProps) {
-  return (
-    <AdVisibilityProvider>
-      <TrackedScrollView {...props} />
-    </AdVisibilityProvider>
-  );
-}
+/**
+ * La référence est transmise jusqu'à la `ScrollView` réelle : l'écran des classements pilote
+ * son défilement par `scrollRef`, et l'avaler ici casserait ce comportement en silence.
+ */
+export const AdAwareScrollView = forwardRef<ScrollView, ScrollViewProps>((props, ref) => (
+  <AdVisibilityProvider>
+    <TrackedScrollView {...props} forwardedRef={ref} />
+  </AdVisibilityProvider>
+));
+AdAwareScrollView.displayName = 'AdAwareScrollView';
 
-function TrackedScrollView({ onScroll, onLayout, ...rest }: ScrollViewProps) {
+function TrackedScrollView({
+  onScroll,
+  onLayout,
+  forwardedRef,
+  ...rest
+}: ScrollViewProps & { forwardedRef: React.ForwardedRef<ScrollView> }) {
   const ctx = useAdVisibilityScroll();
 
   return (
     <ScrollView
+      ref={forwardedRef}
       {...rest}
       // 100 ms : on arbitre la lecture d'une vidéo, pas une animation. Une cadence plus fine
       // ne changerait rien au ressenti et multiplierait les passages sur le pont natif.

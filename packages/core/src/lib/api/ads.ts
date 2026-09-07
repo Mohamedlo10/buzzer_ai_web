@@ -36,11 +36,20 @@ export interface AdResponse {
 
 export type AdPlacement =
   | 'HOME'
+  | 'ROOMS'
+  | 'FRIENDS'
+  | 'PROFILE'
+  | 'RANKINGS'
+  | 'DAILY_HOME'
+  | 'DAILY_DONE'
   | 'RESULT'
   | 'GENERATION'
-  | 'PROFILE'
-  | 'ROOMS'
-  | 'FRIENDS';
+  | 'LOBBY'
+  | 'ROOM_DETAIL'
+  | 'PLAYER_PROFILE'
+  | 'HISTORY'
+  | 'BADGES'
+  | 'NOTIFICATIONS';
 
 /**
  * Récupère la publicité active pour un emplacement.

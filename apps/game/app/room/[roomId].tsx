@@ -3,7 +3,6 @@ import {
   View,
   Text,
   TouchableOpacity,
-  ScrollView,
   Share,
   Modal,
 } from 'react-native';
@@ -33,6 +32,8 @@ import { MembersWithStats } from '~/components/room/MembersWithStats';
 import { HistoryModal } from '~/components/room/HistoryModal';
 import { InviteFriendsModal } from '~/components/room/InviteFriendsModal';
 import { SessionConfigForm } from '~/components/session/SessionConfigForm';
+import { AdSlot } from '~/components/shared/AdSlot';
+import { AdAwareScrollView } from '~/components/partner/AdAwareScrollView';
 
 export default function RoomDetailScreen() {
   const router = useRouter();
@@ -234,7 +235,7 @@ export default function RoomDetailScreen() {
       </View>
 
       {/* Main Content */}
-      <ScrollView
+      <AdAwareScrollView
         contentContainerStyle={{
           paddingHorizontal: 16,
           paddingTop: 16,
@@ -380,7 +381,10 @@ export default function RoomDetailScreen() {
             </TouchableOpacity>
           )}
         </View>
-      </ScrollView>
+      
+        {/* Carte partenaire — en fin de contenu, hors de tout parcours de jeu. */}
+        <AdSlot placement="ROOM_DETAIL" />
+      </AdAwareScrollView>
 
       {/* History Modal */}
       <HistoryModal

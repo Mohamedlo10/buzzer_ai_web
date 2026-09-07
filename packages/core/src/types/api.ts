@@ -1135,7 +1135,8 @@ export interface AdminAdResponse {
   title: string;
   imageUrl: string | null;
   targetUrl: string;
-  placement: AdminAdPlacement;
+  /** Tous les écrans visés : le formulaire fait un PUT complet et doit les réémettre. */
+  placements: AdminAdPlacement[];
   /** Le formulaire fait un PUT complet : sans relecture, le rattachement serait perdu. */
   partnerId: string;
   partnerName: string;
@@ -1154,7 +1155,8 @@ export interface AdminAdRequest {
   /** @deprecated Remplacée par les médias du partenaire. */
   imageUrl?: string | null;
   targetUrl: string;
-  placement: AdminAdPlacement;
+  /** Au moins un. Une campagne vise plusieurs écrans à la fois depuis V40. */
+  placements: AdminAdPlacement[];
   /** Obligatoire depuis V39 : une campagne appartient toujours à un partenaire. */
   partnerId: string;
   active?: boolean;
@@ -1171,12 +1173,26 @@ export interface AdminAdRequest {
  * enum PostgreSQL ni CHECK.
  */
 export type AdminAdPlacement =
+  // Onglets principaux
   | 'HOME'
+  | 'ROOMS'
+  | 'FRIENDS'
+  | 'PROFILE'
+  | 'RANKINGS'
+  // Défi du Jour
+  | 'DAILY_HOME'
+  | 'DAILY_DONE'
+  // Après une partie
   | 'RESULT'
   | 'GENERATION'
-  | 'PROFILE'
-  | 'ROOMS'
-  | 'FRIENDS';
+  // Autour d'une partie
+  | 'LOBBY'
+  | 'ROOM_DETAIL'
+  // Consultation
+  | 'PLAYER_PROFILE'
+  | 'HISTORY'
+  | 'BADGES'
+  | 'NOTIFICATIONS';
 
 // ──────────────────────────────────────────────
 // Partenaires — miroir de Partner.java et de ses DTO

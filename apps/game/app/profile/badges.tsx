@@ -5,7 +5,7 @@
  * Débloqués + verrouillés côte à côte via BadgeGrid — ce qui donne envie
  * de revenir.
  */
-import { View, Text, TouchableOpacity, ScrollView, RefreshControl } from 'react-native';
+import { View, Text, TouchableOpacity, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { ChevronLeft, Award } from 'lucide-react-native';
@@ -14,6 +14,8 @@ import { useAchievementsCatalog } from '~/lib/query/hooks';
 import { LoadingState, EmptyState, ErrorState } from '~/components/ui/StateViews';
 import { BadgeGrid } from '~/components/achievements/BadgeGrid';
 import { palette, font } from '~/lib/theme/tokens';
+import { AdSlot } from '~/components/shared/AdSlot';
+import { AdAwareScrollView } from '~/components/partner/AdAwareScrollView';
 
 export default function BadgesScreen() {
   const router = useRouter();
@@ -103,7 +105,7 @@ export default function BadgesScreen() {
       )}
 
       {!isLoading && !isError && data && data.length > 0 && (
-        <ScrollView
+        <AdAwareScrollView
           contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
           showsVerticalScrollIndicator={false}
           refreshControl={
@@ -111,7 +113,10 @@ export default function BadgesScreen() {
           }
         >
           <BadgeGrid badges={data} />
-        </ScrollView>
+        
+        {/* Carte partenaire — en fin de contenu, hors de tout parcours de jeu. */}
+        <AdSlot placement="BADGES" />
+      </AdAwareScrollView>
       )}
     </SafeAreaView>
   );

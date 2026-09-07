@@ -26,26 +26,56 @@ import {
 
 const PLACEMENT_LABELS: Record<AdminAdPlacement, string> = {
   HOME: 'Accueil',
-  RESULT: 'Résultats',
-  GENERATION: 'Génération',
-  PROFILE: 'Profil',
   ROOMS: 'Salons',
   FRIENDS: 'Amis',
+  PROFILE: 'Mon profil',
+  RANKINGS: 'Classements',
+  DAILY_HOME: 'Défi du Jour — accueil',
+  DAILY_DONE: 'Défi du Jour — déjà joué',
+  RESULT: 'Résultats de partie',
+  GENERATION: 'Attente de génération',
+  LOBBY: 'Salon d’attente',
+  ROOM_DETAIL: 'Fiche d’un salon',
+  PLAYER_PROFILE: 'Profil d’un joueur',
+  HISTORY: 'Mes parties',
+  BADGES: 'Mes badges',
+  NOTIFICATIONS: 'Notifications',
 };
 
-const PLACEMENT_OPTIONS: AdminAdPlacement[] = [
-  'HOME',
-  'RESULT',
-  'GENERATION',
-  'PROFILE',
-  'ROOMS',
-  'FRIENDS',
+/**
+ * Emplacements groupés par famille.
+ *
+ * Quinze cases à cocher en vrac seraient illisibles ; regroupées, l'administrateur voit
+ * d'un coup d'œil quelle partie du parcours il cible. Aucun écran de jeu n'y figure :
+ * une publicité pendant une question, un décompte ou un buzz est une interruption.
+ */
+const PLACEMENT_GROUPS: { title: string; hint?: string; items: AdminAdPlacement[] }[] = [
+  {
+    title: 'Onglets principaux',
+    hint: 'Les surfaces les plus vues.',
+    items: ['HOME', 'ROOMS', 'FRIENDS', 'PROFILE', 'RANKINGS'],
+  },
+  {
+    title: 'Défi du Jour',
+    hint: '« Déjà joué » est le moment le plus disponible de la journée d’un joueur.',
+    items: ['DAILY_HOME', 'DAILY_DONE'],
+  },
+  {
+    title: 'Autour d’une partie',
+    hint: 'Temps morts réels : attente de génération, salon avant lancement, résultats.',
+    items: ['GENERATION', 'LOBBY', 'RESULT'],
+  },
+  {
+    title: 'Consultation',
+    hint: 'Écrans parcourus sans action engagée.',
+    items: ['ROOM_DETAIL', 'PLAYER_PROFILE', 'HISTORY', 'BADGES', 'NOTIFICATIONS'],
+  },
 ];
 
 const EMPTY_FORM: AdminAdRequest = {
   title: '',
   targetUrl: '',
-  placement: 'HOME',
+  placements: ['HOME'],
   partnerId: '',
   active: false,
   priority: 0,
@@ -134,7 +164,7 @@ export function AdvertisementsPage() {
       title: ad.title,
       imageUrl: ad.imageUrl ?? '',
       targetUrl: ad.targetUrl,
-      placement: ad.placement,
+      placements: [...ad.placements],
       partnerId: ad.partnerId,
       active: ad.active,
       priority: ad.priority,
@@ -289,9 +319,14 @@ function AdRow({ ad, onEdit, onDelete, isDeleting }: AdRowProps) {
           >
             {ad.active ? 'ACTIVE' : 'INACTIVE'}
           </span>
-          <span className="text-xs px-2 py-0.5 rounded-full bg-surface-2 text-txt-60 font-medium">
-            {PLACEMENT_LABELS[ad.placement]}
-          </span>
+          {ad.placements.map((p) => (
+            <span
+              key={p}
+              className="text-xs px-2 py-0.5 rounded-full bg-surface-2 text-txt-60 font-medium"
+            >
+              {PLACEMENT_LABELS[p]}
+            </span>
+          ))}
           <span className="text-xs text-txt-40">priorité {ad.priority}</span>
           <span className="text-xs text-txt-60">· {ad.partnerName}</span>
           <a
@@ -344,7 +379,19 @@ function AdForm({ form, setForm, onSave, onCancel, isSaving, partners, title }: 
   }
 
   const isValid =
-    form.title.trim() && form.targetUrl.trim() && form.placement && form.partnerId;
+    form.title.trim() &&
+    form.targetUrl.trim() &&
+    form.placements.length > 0 &&
+    form.partnerId;
+
+  function togglePlacement(p: AdminAdPlacement) {
+    setForm((f) => ({
+      ...f,
+      placements: f.placements.includes(p)
+        ? f.placements.filter((x) => x !== p)
+        : [...f.placements, p],
+    }));
+  }
 
   return (
     <Card className="space-y-4">
@@ -394,18 +441,43 @@ function AdForm({ form, setForm, onSave, onCancel, isSaving, partners, title }: 
         </div>
 
         <div>
-          <label className="block text-txt-60 text-xs mb-1">Emplacement *</label>
-          <select
-            value={form.placement}
-            onChange={field('placement')}
-            className="w-full px-3 py-2 rounded-xl bg-surface border border-line text-txt text-sm focus:outline-none focus:border-host/50 cursor-pointer"
-          >
-            {PLACEMENT_OPTIONS.map((p) => (
-              <option key={p} value={p}>
-                {PLACEMENT_LABELS[p]}
-              </option>
+          <label className="block text-txt-60 text-xs mb-2">
+            Emplacements * — une même campagne peut viser plusieurs écrans
+          </label>
+          <div className="space-y-3">
+            {PLACEMENT_GROUPS.map((group) => (
+              <div key={group.title}>
+                <p className="text-txt-40 text-[11px] uppercase tracking-wide mb-1">
+                  {group.title}
+                </p>
+                {group.hint && (
+                  <p className="text-txt-40 text-[11px] mb-1.5">{group.hint}</p>
+                )}
+                <div className="flex flex-wrap gap-1.5">
+                  {group.items.map((p) => {
+                    const on = form.placements.includes(p);
+                    return (
+                      <button
+                        key={p}
+                        type="button"
+                        onClick={() => togglePlacement(p)}
+                        className={
+                          on
+                            ? 'px-3 py-1.5 rounded-full text-xs font-semibold bg-host text-white cursor-pointer'
+                            : 'px-3 py-1.5 rounded-full text-xs bg-surface-2 text-txt-60 hover:text-txt cursor-pointer'
+                        }
+                      >
+                        {PLACEMENT_LABELS[p]}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             ))}
-          </select>
+          </div>
+          {form.placements.length === 0 && (
+            <p className="text-warn text-xs mt-2">Sélectionnez au moins un emplacement.</p>
+          )}
         </div>
 
         <div className="grid grid-cols-2 gap-3">

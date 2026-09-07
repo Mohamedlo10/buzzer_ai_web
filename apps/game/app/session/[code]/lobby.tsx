@@ -2,7 +2,6 @@ import React from 'react';
 import {
   View,
   Text,
-  ScrollView,
   Share,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -27,6 +26,8 @@ import { QRCodeModal } from '~/components/shared/QRCodeModal';
 import { TeamPickerModal } from '~/components/lobby/TeamPickerModal';
 import { QuestionLimitModal } from '~/components/lobby/QuestionLimitModal';
 import { LobbyPlayerDetailModal } from '~/components/lobby/LobbyPlayerDetailModal';
+import { AdSlot } from '~/components/shared/AdSlot';
+import { AdAwareScrollView } from '~/components/partner/AdAwareScrollView';
 
 const CATEGORY_EMOJI: Record<string, string> = {
   Histoire: '📜',
@@ -201,7 +202,7 @@ export default function LobbyScreen() {
       />
 
       {/* Main Content */}
-      <ScrollView
+      <AdAwareScrollView
         contentContainerStyle={{
           paddingHorizontal: 16,
           paddingTop: 16,
@@ -305,7 +306,10 @@ export default function LobbyScreen() {
             }}
           />
         )}
-      </ScrollView>
+      
+        {/* Carte partenaire — en fin de contenu, hors de tout parcours de jeu. */}
+        <AdSlot placement="LOBBY" />
+      </AdAwareScrollView>
 
       {/* QR Code Modal */}
       <QRCodeModal

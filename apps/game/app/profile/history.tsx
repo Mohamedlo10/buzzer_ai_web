@@ -6,7 +6,7 @@
  */
 import { useCallback } from 'react';
 import { useRouter } from 'expo-router';
-import { View, Text, TouchableOpacity, FlatList, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, Calendar } from 'lucide-react-native';
 
@@ -14,6 +14,8 @@ import { useDailyHistory } from '~/lib/query/hooks';
 import { LoadingState, EmptyState, ErrorState } from '~/components/ui/StateViews';
 import { palette, font } from '~/lib/theme/tokens';
 import type { DailyHistoryEntryResponse } from '~/types/api';
+import { AdSlot } from '~/components/shared/AdSlot';
+import { AdAwareFlatList } from '~/components/partner/AdAwareScrollView';
 
 export default function HistoryScreen() {
   const {
@@ -68,7 +70,7 @@ export default function HistoryScreen() {
           description="Participe au Défi du Jour pour voir ton historique ici."
         />
       ) : (
-        <FlatList
+        <AdAwareFlatList
           data={entries}
           keyExtractor={(item) => item.attemptId}
           contentContainerStyle={{ padding: 16, gap: 10 }}
@@ -76,11 +78,15 @@ export default function HistoryScreen() {
           onEndReached={onEndReached}
           onEndReachedThreshold={0.4}
           ListFooterComponent={
-            isFetchingNextPage ? (
-              <View style={{ paddingVertical: 16, alignItems: 'center' }}>
-                <ActivityIndicator size="small" color={palette.primary} />
-              </View>
-            ) : null
+            <View style={{ gap: 16 }}>
+              {isFetchingNextPage ? (
+                <View style={{ paddingVertical: 16, alignItems: 'center' }}>
+                  <ActivityIndicator size="small" color={palette.primary} />
+                </View>
+              ) : null}
+              {/* Carte partenaire en pied de liste : le joueur a fini de consulter. */}
+              <AdSlot placement="HISTORY" />
+            </View>
           }
         />
       )}

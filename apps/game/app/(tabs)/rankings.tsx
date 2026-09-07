@@ -23,6 +23,8 @@ import { LoadingState, EmptyState, ErrorState } from '~/components/ui';
 import { palette, font } from '~/lib/theme/tokens';
 import { Avatar } from '~/components/shared/Avatar';
 import { AppTopBar } from '~/components/shared/AppTopBar';
+import { AdSlot } from '~/components/shared/AdSlot';
+import { AdAwareScrollView } from '~/components/partner/AdAwareScrollView';
 
 const PAGE_SIZE = 20;
 
@@ -117,7 +119,7 @@ export default function RankingsScreen() {
       <AppTopBar title="Xalaat" tag="CLASSEMENT" />
 
       {/* Whole page is scrollable */}
-      <ScrollView
+      <AdAwareScrollView
         ref={scrollRef}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
@@ -557,7 +559,10 @@ export default function RankingsScreen() {
             </TouchableOpacity>
           </View>
         )}
-      </ScrollView>
+      
+        {/* Carte partenaire — en fin de contenu, hors de tout parcours de jeu. */}
+        <AdSlot placement="RANKINGS" />
+      </AdAwareScrollView>
 
       {/* Info Modal */}
       <Modal visible={showInfoModal} transparent animationType="fade" onRequestClose={() => setShowInfoModal(false)}>

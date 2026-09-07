@@ -3,7 +3,6 @@ import {
   View,
   Text,
   TouchableOpacity,
-  ScrollView,
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -25,6 +24,8 @@ import { palette, font } from '~/lib/theme/tokens';
 import { Avatar } from '~/components/shared/Avatar';
 import { notify, notifyApiError } from '~/lib/ui/notify';
 import { confirmAsync } from '~/lib/ui/confirm';
+import { AdSlot } from '~/components/shared/AdSlot';
+import { AdAwareScrollView } from '~/components/partner/AdAwareScrollView';
 
 export default function UserProfileScreen() {
   const router = useRouter();
@@ -219,7 +220,7 @@ export default function UserProfileScreen() {
         </Text>
       </View>
 
-      <ScrollView
+      <AdAwareScrollView
         contentContainerStyle={{ padding: 16, paddingBottom: 40, gap: 16 }}
         showsVerticalScrollIndicator={false}
       >
@@ -398,7 +399,10 @@ export default function UserProfileScreen() {
             </Text>
           </View>
         </View>
-      </ScrollView>
+      
+        {/* Carte partenaire — en fin de contenu, hors de tout parcours de jeu. */}
+        <AdSlot placement="PLAYER_PROFILE" />
+      </AdAwareScrollView>
     </SafeAreaView>
   );
 }
