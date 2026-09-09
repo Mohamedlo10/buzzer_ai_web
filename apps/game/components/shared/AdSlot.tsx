@@ -28,9 +28,12 @@ interface AdSlotProps {
  * <b>Règles absolues.</b>
  * - Retourne `null` quand il n'y a rien à montrer, jamais une `<View>` vide : sinon la
  *   disposition de l'écran se décale selon qu'une campagne est active ou non.
- * - **Ne doit jamais apparaître pendant une question, un décompte ou un buzz.** Les quatre
- *   écrans concernés sont `session/[code]/game.tsx`, `solo/game/[sessionId].tsx`,
- *   `daily/play.tsx` et `solo/training/session/[sessionId].tsx`.
+ * - **Ne doit jamais apparaître pendant une question, un décompte, un buzz ou une sélection
+ *   engagée.** Les six écrans concernés : `session/[code]/game.tsx`,
+ *   `session/[code]/questions.tsx`, `session/[code]/categories.tsx`, `daily/play.tsx`,
+ *   `solo/game/[sessionId].tsx` et `solo/training/session/[sessionId].tsx`.
+ * - Un seul emplacement visible par écran : `AdVisibilityProvider` avertit en développement
+ *   si un second s'enregistre.
  * - Aucune redirection automatique : le site du partenaire ne s'ouvre que sur appui explicite.
  * - Tant que `ads.enabled=false` côté serveur, ce composant est toujours `null`.
  *
