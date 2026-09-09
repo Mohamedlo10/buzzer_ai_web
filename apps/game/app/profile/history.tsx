@@ -6,7 +6,7 @@
  */
 import { useCallback } from 'react';
 import { useRouter } from 'expo-router';
-import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, ActivityIndicator, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, Calendar } from 'lucide-react-native';
 
@@ -23,6 +23,7 @@ export default function HistoryScreen() {
     isLoading,
     isError,
     refetch,
+    isRefetching,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
@@ -71,6 +72,14 @@ export default function HistoryScreen() {
         />
       ) : (
         <AdAwareFlatList
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefetching}
+              onRefresh={() => void refetch()}
+              tintColor={palette.primary}
+              colors={[palette.primary]}
+            />
+          }
           data={entries}
           keyExtractor={(item) => item.attemptId}
           contentContainerStyle={{ padding: 16, gap: 10 }}

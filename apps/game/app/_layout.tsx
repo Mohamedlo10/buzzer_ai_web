@@ -13,6 +13,7 @@ import {
 import { InstrumentSerif_400Regular_Italic } from '@expo-google-fonts/instrument-serif';
 
 import { font, palette } from '~/lib/theme/tokens';
+import { useQueryFocusManager } from '~/lib/query';
 import '../global.css';
 
 import { useAuthStore } from '@xalaat/core';
@@ -46,6 +47,12 @@ export default function RootLayout() {
   // Doit vivre à la racine : un refus d'authentification du WebSocket peut survenir sur
   // n'importe quel écran, y compris pendant une partie.
   useWebSocketAuthRecovery();
+
+  // Rend effectif le `refetchOnWindowFocus: true` de queryClient, qui ne faisait rien sur
+  // mobile faute d'écouteur de focus. Sans lui, un joueur devait fermer et rouvrir
+  // l'application pour voir un défi fraîchement publié. À la racine, une seule fois : le
+  // focusManager de react-query est un singleton.
+  useQueryFocusManager();
 
   const [loaded, error] = useFonts({
     [font.nativeFamily.display]: Boldonse_400Regular,

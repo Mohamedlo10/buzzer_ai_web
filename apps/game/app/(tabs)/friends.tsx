@@ -1,12 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  ScrollView,
-  ActivityIndicator,
-} from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, ActivityIndicator, RefreshControl } from 'react-native';
 import { useRouter } from 'expo-router';
 import {
   Search,
@@ -69,6 +62,19 @@ export default function FriendsScreen() {
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+  // Les données d'amis viennent d'un store zustand, non de react-query : l'état de
+  // rafraîchissement est donc tenu ici. Posé sur la seule branche hors recherche — s'interposer
+  // au milieu de résultats de recherche irait contre l'intention du joueur.
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const onPullToRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await loadData();
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   // Live search debounced
   useEffect(() => {
@@ -293,7 +299,18 @@ export default function FriendsScreen() {
           </ScrollView>
         ) : (
           /* ── Main Social Hub (No search active) ── */
-          <AdAwareScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ gap: 14, paddingBottom: 40 }}>
+          <AdAwareScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ gap: 14, paddingBottom: 40 }}
+            refreshControl={
+              <RefreshControl
+                refreshing={isRefreshing}
+                onRefresh={() => void onPullToRefresh()}
+                tintColor={palette.primary}
+                colors={[palette.primary]}
+              />
+            }
+          >
             {/* ── Filter Chips Bar with Tous, En ligne, Demandes ── */}
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
               {/* Tous */}

@@ -1,12 +1,5 @@
 import React, { useState, useRef } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  Modal,
-  ScrollView,
-} from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Modal, ScrollView, RefreshControl } from 'react-native';
 
 import {
   Trophy,
@@ -67,7 +60,7 @@ export default function RankingsScreen() {
 
   // react-query remplace le couple useState/useEffect précédent, dont le catch avalait
   // l'erreur dans un console.error : en cas d'échec, la liste restait vide et muette.
-  const { data, isLoading, isError, error, refetch } = useLeaderboard(
+  const { data, isLoading, isError, error, isRefetching, refetch } = useLeaderboard(
     period,
     currentPage,
     searchUsername || undefined,
@@ -120,6 +113,14 @@ export default function RankingsScreen() {
 
       {/* Whole page is scrollable */}
       <AdAwareScrollView
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefetching}
+            onRefresh={() => void refetch()}
+            tintColor={palette.primary}
+            colors={[palette.primary]}
+          />
+        }
         ref={scrollRef}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{

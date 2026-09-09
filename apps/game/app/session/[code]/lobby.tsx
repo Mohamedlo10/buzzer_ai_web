@@ -1,9 +1,5 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  Share,
-} from 'react-native';
+import { View, Text, Share, RefreshControl } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Gamepad2 } from 'lucide-react-native';
@@ -202,7 +198,17 @@ export default function LobbyScreen() {
       />
 
       {/* Main Content */}
+      {/* isRefreshing et handleRefresh viennent tous deux de useLobbySession : inutile d'en
+          tenir un second état ici. */}
       <AdAwareScrollView
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={() => void handleRefresh()}
+            tintColor={palette.primary}
+            colors={[palette.primary]}
+          />
+        }
         contentContainerStyle={{
           paddingHorizontal: 16,
           paddingTop: 16,

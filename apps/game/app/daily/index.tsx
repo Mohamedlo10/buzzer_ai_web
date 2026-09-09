@@ -10,7 +10,14 @@
  *
  * Aucune logique de jeu ici. Aucun calcul de score.
  */
-import { View, Text, TouchableOpacity } from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  RefreshControl,
+  RefreshControlProps,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { ChevronLeft, Trophy, Calendar, Clock, Zap } from 'lucide-react-native';
@@ -24,7 +31,26 @@ import { AdSlot } from '~/components/shared/AdSlot';
 import { AdAwareScrollView } from '~/components/partner/AdAwareScrollView';
 
 export default function DailyIndexScreen() {
-  const { data, isLoading, isError, refetch } = useDailyToday();
+  const { data, isLoading, isError, isRefetching, refetch } = useDailyToday();
+
+  /**
+   * Contrôle de rafraîchissement, construit une fois et passé à chaque état.
+   *
+   * <p>`isRefetching` plutôt qu'un `useState` local : l'indicateur suit exactement la requête,
+   * et ne peut donc pas rester bloqué si le rechargement échoue.
+   *
+   * <p>Il est indispensable jusque dans l'état vide — c'est précisément là que se trouve un
+   * joueur quand un défi vient d'être publié, et sans lui il n'avait aucun moyen de le voir
+   * apparaître autre que redémarrer l'application.
+   */
+  const refreshControl = (
+    <RefreshControl
+      refreshing={isRefetching}
+      onRefresh={() => void refetch()}
+      tintColor={palette.primary}
+      colors={[palette.primary]}
+    />
+  );
 
   // ── 1. Chargement ──────────────────────────────────────────────────────────
   if (isLoading) {
@@ -54,27 +80,40 @@ export default function DailyIndexScreen() {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: palette.bg }}>
         <BackButton />
-        <EmptyState
-          icon={<Calendar size={32} color={palette.inkSoft} />}
-          title="Pas de défi aujourd'hui"
-          description="Reviens demain — un nouveau défi t'attend chaque matin."
-        />
+        {/* L'état vide est rendu dans une ScrollView uniquement pour porter le geste de
+            rafraîchissement : `contentContainerStyle: flexGrow` le laisse centré comme avant. */}
+        <ScrollView
+          contentContainerStyle={{ flexGrow: 1 }}
+          refreshControl={refreshControl}
+        >
+          <EmptyState
+            icon={<Calendar size={32} color={palette.inkSoft} />}
+            title="Pas de défi aujourd'hui"
+            description="Tire vers le bas pour vérifier, ou reviens demain — un nouveau défi t'attend chaque matin."
+          />
+        </ScrollView>
       </SafeAreaView>
     );
   }
 
   // ── 4. Déjà joué ──────────────────────────────────────────────────────────
   if (data.myAttempt?.status === 'COMPLETED') {
-    return <AlreadyPlayedView data={data} />;
+    return <AlreadyPlayedView data={data} refreshControl={refreshControl} />;
   }
 
   // ── 5. Intro / Jouer ──────────────────────────────────────────────────────
-  return <IntroView data={data} />;
+  return <IntroView data={data} refreshControl={refreshControl} />;
 }
 
 // ─── Vue Intro ───────────────────────────────────────────────────────────────
 
-function IntroView({ data }: { data: DailyTodayResponse }) {
+function IntroView({
+  data,
+  refreshControl,
+}: {
+  data: DailyTodayResponse;
+  refreshControl: React.ReactElement<RefreshControlProps>;
+}) {
   const router = useRouter();
   const challenge = data.challenge!;
 
@@ -87,6 +126,7 @@ function IntroView({ data }: { data: DailyTodayResponse }) {
       <BackButton />
 
       <AdAwareScrollView
+        refreshControl={refreshControl}
         contentContainerStyle={{ padding: 20, paddingBottom: 40, gap: 20 }}
         showsVerticalScrollIndicator={false}
       >
@@ -248,7 +288,13 @@ function IntroView({ data }: { data: DailyTodayResponse }) {
 
 // ─── Vue Déjà joué ───────────────────────────────────────────────────────────
 
-function AlreadyPlayedView({ data }: { data: DailyTodayResponse }) {
+function AlreadyPlayedView({
+  data,
+  refreshControl,
+}: {
+  data: DailyTodayResponse;
+  refreshControl: React.ReactElement<RefreshControlProps>;
+}) {
   const router = useRouter();
   const attempt = data.myAttempt!;
   const challenge = data.challenge;
@@ -258,6 +304,7 @@ function AlreadyPlayedView({ data }: { data: DailyTodayResponse }) {
       <BackButton />
 
       <AdAwareScrollView
+        refreshControl={refreshControl}
         contentContainerStyle={{ padding: 20, paddingBottom: 40, gap: 20 }}
         showsVerticalScrollIndicator={false}
       >

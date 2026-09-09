@@ -1,11 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import {
-  ActivityIndicator,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { ActivityIndicator, Text, TextInput, TouchableOpacity, View, RefreshControl } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
@@ -218,6 +212,14 @@ export default function PartnersScreen() {
         />
       ) : (
         <AdAwareFlatList
+        refreshControl={
+          <RefreshControl
+            refreshing={listQuery.isRefetching}
+            onRefresh={() => void listQuery.refetch()}
+            tintColor={palette.primary}
+            colors={[palette.primary]}
+          />
+        }
           data={partners}
           keyExtractor={(item) => item.id}
           contentContainerStyle={{ padding: 16, gap: 14, paddingBottom: 40 }}
