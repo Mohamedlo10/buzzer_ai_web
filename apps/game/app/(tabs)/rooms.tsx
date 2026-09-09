@@ -16,8 +16,8 @@ import { LoadingState, ErrorState } from '~/components/ui/StateViews';
 import { palette, font } from '~/lib/theme/tokens';
 import { QRScannerModal } from '~/components/shared/QRScannerModal';
 import { PatternZigzag } from '~/components/shared/PatternZigzag';
-import { GlobalRankCard } from '~/components/shared/GlobalRankCard';
 import { QuizOfTheDayCard } from '~/components/shared/QuizOfTheDayCard';
+import { ActiveSessionCard } from '~/components/shared/ActiveSessionCard';
 import { AdSlot } from '~/components/shared/AdSlot';
 import { AdAwareScrollView } from '~/components/partner/AdAwareScrollView';
 import { AllRoomsModal } from '~/components/shared/AllRoomsModal';
@@ -35,7 +35,6 @@ export default function RoomsScreen() {
     isError,
     refetch,
     recentRooms,
-    rank,
     activeSessionInfo,
     showJoinModal,
     setShowJoinModal,
@@ -258,11 +257,13 @@ export default function RoomsScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Global Rank Card */}
-        <GlobalRankCard rank={rank || 154} />
+        {/* Le Défi du Jour d'abord : c'est le rendez-vous quotidien, et il portait auparavant
+            la troisième place derrière un classement mondial. */}
+        <QuizOfTheDayCard />
 
-        {/* Quiz Of The Day Card */}
-        <QuizOfTheDayCard activeRoom={activeRoom} />
+        {/* Puis la partie en cours, s'il y en a une. Elle occupait jusqu'ici la même carte que
+            le défi, qu'elle remplaçait : un joueur en pleine partie ne voyait plus le défi. */}
+        <ActiveSessionCard activeRoom={activeRoom} />
 
         {/* Carte partenaire — après le Défi du Jour, avant la liste des salons. */}
         <AdSlot placement="ROOMS" />

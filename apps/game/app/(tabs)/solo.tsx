@@ -4,7 +4,8 @@ import { View, ScrollView, RefreshControl } from 'react-native';
 import { GraduationCap, Trophy } from 'lucide-react-native';
 
 import { useAuthStore } from '~/stores/useAuthStore';
-import { useDashboardV2, useGlobalRankings } from '~/lib/query/hooks';
+import { useQueryClient } from '@tanstack/react-query';
+import { useDashboardV2 } from '~/lib/query/hooks';
 import { palette } from '~/lib/theme/tokens';
 import { AppTopBar } from '~/components/shared/AppTopBar';
 import { QuizOfTheDayCard } from '~/components/shared/QuizOfTheDayCard';
@@ -14,7 +15,7 @@ import { LoadingState, ErrorState } from '~/components/ui';
 // Specialized Solo Components
 import { SoloGreeting } from '~/components/solo/SoloGreeting';
 import { ComingSoonCard } from '~/components/solo/ComingSoonCard';
-import { MyRankCard } from '~/components/solo/MyRankCard';
+import { SeasonRankCard } from '~/components/solo/SeasonRankCard';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Carrière et Entraînement sont reportés après la V1 (§2.2). Leurs imports sont
@@ -41,6 +42,7 @@ import { MyRankCard } from '~/components/solo/MyRankCard';
  */
 export default function SoloScreen() {
   const user = useAuthStore((s) => s.user);
+  const queryClient = useQueryClient();
   const [refreshing, setRefreshing] = useState(false);
   const [refreshError, setRefreshError] = useState<unknown>(null);
 
@@ -52,7 +54,6 @@ export default function SoloScreen() {
     refetch: refetchDashboard,
   } = useDashboardV2();
 
-  const { data: rankingsData, refetch: refetchRankings } = useGlobalRankings(0);
 
   /**
    * Le `try/catch {}` précédent avalait toute erreur de rafraîchissement en silence :
@@ -62,7 +63,13 @@ export default function SoloScreen() {
     setRefreshing(true);
     setRefreshError(null);
     try {
-      await Promise.all([refetchDashboard(), refetchRankings()]);
+      // SeasonRankCard porte sa propre requête : on l'invalide plutôt que de remonter la
+      // donnée jusqu'ici, ce qui obligerait l'accueil à connaître la forme du classement.
+      // Le préfixe couvre la saison comme les autres périodes déjà en cache.
+      await Promise.all([
+        refetchDashboard(),
+        queryClient.invalidateQueries({ queryKey: ['leaderboard'] }),
+      ]);
     } catch (err) {
       setRefreshError(err);
     } finally {
@@ -71,8 +78,6 @@ export default function SoloScreen() {
   };
 
   const username = user?.username || 'Joueur';
-  const globalStats = dashboardData?.globalStats;
-  const topRankings = (rankingsData?.content || []).slice(0, 3);
 
   if (isDashboardLoading && !dashboardData) {
     return <LoadingState label="Chargement de ton espace…" fullScreen />;
@@ -123,13 +128,12 @@ export default function SoloScreen() {
           />
         ) : null}
 
-        {/* Où j'en suis par rapport aux autres (§15). */}
-        <MyRankCard
-          myRank={globalStats?.rank}
-          myScore={globalStats?.totalScore || 0}
-          myUsername={username}
-          topRankings={topRankings}
-        />
+        {/* Où j'en suis par rapport aux autres, sur la saison en cours (§15).
+            Remplace la position GLOBALE, qui reposait sur global_rankings — un cumul à vie
+            trié par cote Glicko. Mauvaise mesure à mettre en avant : la boucle de rétention
+            du produit est saisonnière, un nouveau joueur ne peut rien y gagner à court terme
+            et un joueur assidu n'y voit aucun progrès d'un jour sur l'autre. */}
+        <SeasonRankCard />
 
         {/* Publicité (HOME) — retourne null si ads.enabled=false */}
         <AdSlot placement="HOME" />
