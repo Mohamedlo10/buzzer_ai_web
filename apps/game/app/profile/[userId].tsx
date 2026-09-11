@@ -236,7 +236,7 @@ export default function UserProfileScreen() {
             gap: 12,
           }}
         >
-          <Avatar name={profile.username} avatarUrl={profile.avatarUrl} size={88} hue={30} />
+          <Avatar name={profile.username} avatarSpec={profile.avatarSpec} avatarUrl={profile.avatarUrl} size={88} hue={30} />
 
           <View style={{ alignItems: 'center', gap: 4 }}>
             <Text

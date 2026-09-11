@@ -11,8 +11,7 @@ import { useRouter } from 'expo-router';
 import {
   ArrowLeft,
   Check,
-  Pencil,
-  Shuffle,
+  Sparkles,
   User,
   Mail,
 } from 'lucide-react-native';
@@ -20,7 +19,6 @@ import { useMutation } from '@tanstack/react-query';
 
 import { useAuthStore } from '~/stores/useAuthStore';
 import * as usersApi from '~/lib/api/users';
-import { AVATAR_STYLES, AVATAR_SEEDS, getAvatarUrl } from '~/lib/utils/avatar';
 import { palette, font } from '~/lib/theme/tokens';
 import { Avatar } from '~/components/shared/Avatar';
 import { FormInput } from '~/components/shared/FormInput';
@@ -32,47 +30,16 @@ export default function EditProfileScreen() {
   const user = useAuthStore((s) => s.user);
   const setUser = useAuthStore((s) => s.setUser);
 
-  // Extract user's current avatar style & seed if available
-  const parsedFromUrl = (() => {
-    if (!user?.avatarUrl) return { style: null, seed: null };
-    try {
-      const match = user.avatarUrl.match(/dicebear\.com\/[^/]+\/([^/]+)\/svg\?seed=([^&]+)/);
-      if (match) {
-        return { style: match[1], seed: decodeURIComponent(match[2]) };
-      }
-    } catch {}
-    return { style: null, seed: null };
-  })();
-
-  const rawStyle = user?.avatarStyle || parsedFromUrl.style || 'adventurer';
-  const initialStyle = AVATAR_STYLES.some((s) => s.id === rawStyle) ? rawStyle : 'adventurer';
-  const initialSeed = user?.avatarSeed || parsedFromUrl.seed || user?.username || 'Felix';
-
-  const [selectedStyle, setSelectedStyle] = useState<string>(initialStyle);
-  const [selectedSeed, setSelectedSeed] = useState<string>(initialSeed);
   const [username, setUsername] = useState(user?.username || '');
   const [email, setEmail] = useState(user?.email || '');
-  const [showAvatarPicker, setShowAvatarPicker] = useState(false);
 
-  const previewUrl = getAvatarUrl(selectedStyle, selectedSeed);
   const hasChanges =
     username.trim() !== (user?.username || '') ||
-    email.trim() !== (user?.email || '') ||
-    selectedStyle !== initialStyle ||
-    selectedSeed !== initialSeed;
+    email.trim() !== (user?.email || '');
 
   const updateProfileMutation = useMutation({
-    mutationFn: async () => {
-      let updated = await usersApi.updateProfile({
-        username: username.trim(),
-        email: email.trim(),
-      });
-      if (user?.id) {
-        const withAvatar = await usersApi.updateAvatar(user.id, selectedStyle, selectedSeed);
-        updated = withAvatar;
-      }
-      return updated;
-    },
+    mutationFn: () =>
+      usersApi.updateProfile({ username: username.trim(), email: email.trim() }),
     onSuccess: (updatedUser) => {
       setUser(updatedUser);
       notify.success('Profil mis à jour avec succès !');
@@ -82,13 +49,6 @@ export default function EditProfileScreen() {
       notifyApiError(err, 'Erreur lors de la modification du profil');
     },
   });
-
-  const handleRandomizeAvatar = () => {
-    const randomStyle = AVATAR_STYLES[Math.floor(Math.random() * AVATAR_STYLES.length)].id;
-    const randomSeed = AVATAR_SEEDS[Math.floor(Math.random() * AVATAR_SEEDS.length)];
-    setSelectedStyle(randomStyle);
-    setSelectedSeed(randomSeed);
-  };
 
   if (!user) return null;
 
@@ -187,119 +147,36 @@ export default function EditProfileScreen() {
             gap: 14,
           }}
         >
-          <View style={{ position: 'relative' }}>
-            <Avatar name={username} avatarUrl={previewUrl} size={96} ring={palette.primary} />
-            <TouchableOpacity
-              onPress={handleRandomizeAvatar}
-              activeOpacity={0.8}
-              style={{
-                position: 'absolute',
-                bottom: 0,
-                right: 0,
-                width: 32,
-                height: 32,
-                borderRadius: 16,
-                backgroundColor: palette.violet,
-                alignItems: 'center',
-                justifyContent: 'center',
-                borderWidth: 2,
-                borderColor: palette.surface,
-              }}
-            >
-              <Shuffle size={14} color="#FFFFFF" />
-            </TouchableOpacity>
-          </View>
+          <Avatar
+            name={username}
+            avatarSpec={user.avatarSpec}
+            avatarUrl={user.avatarUrl}
+            size={96}
+            ring={palette.primary}
+          />
 
           <TouchableOpacity
-            onPress={() => setShowAvatarPicker((s) => !s)}
+            onPress={() => router.push('/profile/avatar')}
             activeOpacity={0.8}
             style={{
-              paddingHorizontal: 14,
-              paddingVertical: 8,
+              paddingHorizontal: 16,
+              paddingVertical: 10,
               borderRadius: 9999,
-              backgroundColor: palette.surface2,
+              backgroundColor: palette.primary,
               flexDirection: 'row',
               alignItems: 'center',
-              gap: 6,
+              gap: 8,
             }}
           >
-            <Pencil size={14} color={palette.primary} />
-            <Text style={{ color: palette.txt, fontSize: 12, fontWeight: '700' }}>
-              {showAvatarPicker ? "Masquer les styles d'avatar" : "Choisir un style d'avatar"}
+            <Sparkles size={15} color={palette.primaryInk} />
+            <Text style={{ color: palette.primaryInk, fontSize: 13, fontWeight: '700' }}>
+              Personnaliser mon avatar
             </Text>
           </TouchableOpacity>
 
-          {/* Avatar Styles Grid */}
-          {showAvatarPicker && (
-            <View style={{ width: '100%', gap: 14, paddingTop: 8 }}>
-              <Text style={{ color: palette.inkSoft, fontSize: 12, fontWeight: '700', textTransform: 'uppercase' }}>
-                Styles DiceBear
-              </Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
-                {AVATAR_STYLES.map((style) => {
-                  const isSelected = selectedStyle === style.id;
-                  return (
-                    <TouchableOpacity
-                      key={style.id}
-                      onPress={() => setSelectedStyle(style.id)}
-                      activeOpacity={0.8}
-                      style={{
-                        paddingHorizontal: 12,
-                        paddingVertical: 8,
-                        borderRadius: 12,
-                        backgroundColor: isSelected ? palette.primary : palette.surface2,
-                        alignItems: 'center',
-                        gap: 2,
-                      }}
-                    >
-                      <Text style={{ fontSize: 18 }}>{style.emoji}</Text>
-                      <Text
-                        style={{
-                          fontSize: 11,
-                          fontWeight: '700',
-                          color: isSelected ? palette.primaryInk : palette.txt,
-                        }}
-                      >
-                        {style.label}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </ScrollView>
-
-              <Text style={{ color: palette.inkSoft, fontSize: 12, fontWeight: '700', textTransform: 'uppercase', marginTop: 4 }}>
-                Variations
-              </Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
-                {AVATAR_SEEDS.map((seed) => {
-                  const isSelected = selectedSeed === seed;
-                  return (
-                    <TouchableOpacity
-                      key={seed}
-                      onPress={() => setSelectedSeed(seed)}
-                      activeOpacity={0.8}
-                      style={{
-                        paddingHorizontal: 14,
-                        paddingVertical: 6,
-                        borderRadius: 9999,
-                        backgroundColor: isSelected ? palette.primary : palette.surface2,
-                      }}
-                    >
-                      <Text
-                        style={{
-                          fontSize: 12,
-                          fontWeight: '600',
-                          color: isSelected ? palette.primaryInk : palette.txt,
-                        }}
-                      >
-                        {seed}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </ScrollView>
-            </View>
-          )}
+          <Text style={{ color: palette.inkSoft, fontSize: 11, textAlign: 'center' }}>
+            Personnages, voiles, animaux et paysages
+          </Text>
         </View>
 
         {/* Inputs Section */}

@@ -142,5 +142,17 @@ export const useAuthStore = create<AuthState>((set, _get) => ({
     }
   },
 
-  setUser: (user) => set({ user }),
+  /**
+   * Remplace l'utilisateur courant, en mémoire **et** dans le stockage local.
+   *
+   * La persistance n'était pas faite, alors que `restoreSession` réhydrate depuis ce même
+   * stockage avant d'appeler `getMe()` : après un changement de profil, l'ancienne valeur
+   * réapparaissait brièvement au redémarrage — un avatar qui clignote sur l'ancien juste après
+   * qu'on l'a changé. L'écriture est silencieuse : une erreur de stockage ne doit pas faire
+   * échouer une mise à jour de profil qui, elle, a réussi côté serveur.
+   */
+  setUser: (user) => {
+    set({ user });
+    void Promise.resolve(appStorage.setUserProfile(user)).catch(() => {});
+  },
 }));

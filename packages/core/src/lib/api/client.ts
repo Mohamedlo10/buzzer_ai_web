@@ -11,6 +11,12 @@ function getBaseUrl(): string {
   if (typeof process !== 'undefined' && process.env) {
     if (process.env.EXPO_PUBLIC_API_URL) return process.env.EXPO_PUBLIC_API_URL;
     if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
+    if (process.env.VITE_API_URL) return process.env.VITE_API_URL;
+  }
+  if (typeof window !== 'undefined') {
+    if (window.location.port === '3000') {
+      return 'http://localhost:8090';
+    }
   }
   return 'http://localhost:8080';
 }

@@ -65,6 +65,7 @@ export default function LobbyScreen() {
     setAdjustedQPerCat,
     isSavingConfig,
     avatarMap,
+    avatarSpecMap,
     profileUserId: _profileUserId,
     setProfileUserId: _setProfileUserId,
     selectedLobbyPlayer,
@@ -224,6 +225,7 @@ export default function LobbyScreen() {
           currentPlayer={currentPlayer}
           user={user}
           avatarMap={avatarMap}
+          avatarSpecMap={avatarSpecMap}
           isWithoutModerator={isWithoutModerator}
           questionMode={session.questionMode}
           totalQuestions={session.totalQuestions}
@@ -286,6 +288,7 @@ export default function LobbyScreen() {
           questionMode={session.questionMode}
           sessionMode={session.sessionMode}
           avatarMap={avatarMap}
+          avatarSpecMap={avatarSpecMap}
           kickingPlayerId={kickingPlayerId}
           onSelectPlayer={(p) => setSelectedLobbyPlayer(p)}
           onEditCategories={(p) => handleEditPlayerCategories(p)}
@@ -300,6 +303,7 @@ export default function LobbyScreen() {
             isManager={isManager}
             userId={user?.id}
             avatarMap={avatarMap}
+          avatarSpecMap={avatarSpecMap}
             onChangeTeam={() => {
               if (currentPlayer) {
                 setTeamPickerTargetPlayer({ id: currentPlayer.id, name: currentPlayer.name });
@@ -366,6 +370,7 @@ export default function LobbyScreen() {
         categorySelectionMode={session.categorySelectionMode}
         teams={teams || []}
         avatarMap={avatarMap}
+          avatarSpecMap={avatarSpecMap}
         onClose={() => setSelectedLobbyPlayer(null)}
         onViewStats={(userId) => {
           setSelectedLobbyPlayer(null);

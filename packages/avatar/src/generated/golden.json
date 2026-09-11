@@ -1,0 +1,17 @@
+{
+  "catalogVersion" : 2,
+  "renders" : {
+    "xa1:m:fa=rond,sk=5,ex=sourire,hr=courte,hc=noir,bd=aucune,bg=uni-terracotta,cl=tshirt,cc=indigo,ac=aucun" : "b324163dcaa01459ff909847144318175796292a9a360a8db0ac1dc9994c92df",
+    "xa1:m:fa=carre,sk=8,ex=malicieux,hr=cornrows,hc=noir,bd=pleine,bg=zigzag,cl=maillot,cc=vert,ac=lunettes-soleil" : "437c63ecbb318d536de249bbe39653df632520b548a929cdfd0f10463c352f2a",
+    "xa1:m:fa=angulaire,sk=2,ex=determine,hr=fade,hc=blond,bd=bouc,bg=degrade-nuit,cl=costume,cc=noir,ac=casque" : "eaf713c5eb6407212505aba0bd741f090f7c445b3bf7b88b733f8294a9ab4721",
+    "xa1:m:fa=long,sk=7,ex=rieur,hr=afro,hc=noir,bd=collier,bg=uni-or,cl=dashiki,cc=creme,ac=aucun" : "d9a2f89693e9fbcc3e990a74714c539013e2063acb9b381e39d474239b7394d2",
+    "xa1:f:fa=ovale,sk=5,ex=sourire,hr=voile-bandeau,hc=emeraude,bg=uni-indigo,cl=boubou,cc=or,ac=aucun" : "6138bfa3610c55f9bb9004779a7008882086e1e2bf0b9bd8f09bcf6ad7a1bfe8",
+    "xa1:f:fa=coeur,sk=7,ex=doux,hr=voile-khimar,hc=bordeaux,bg=rayons,cl=kaftan,cc=creme,ac=fleur" : "1b68c15d34f527ff7f09b2c7c45517de4f1d4302494f85638e56e32c7c8a7047",
+    "xa1:f:fa=doux,sk=3,ex=clin,hr=afro,hc=roux,bg=pois,cl=robe,cc=violet,ac=boucles" : "e2208345929fe54ab8c6cb61725ba505e91192957a0536ce69d7eac261537673",
+    "xa1:f:fa=carre,sk=6,ex=reveur,hr=voile-turban,hc=moutarde,bg=damier,cl=tunique,cc=turquoise,ac=echarpe" : "cef89fd4085b1f82fca1ca7d6434898210cc124f559ed121ed504b5daf8302e5",
+    "xa1:a:id=lion,bg=uni-or" : "2159ea11a17e6960effe9e0911f078804a3683c2ca43274d5cc7d31181f5f00f",
+    "xa1:a:id=panda,bg=degrade-couchant" : "791033a263787751b48a7dec2d728376dd368cb91593118ecb16afc5359a9239",
+    "xa1:p:id=savane" : "9e7a352fb9d6b0d66fae41d6978e0c72089172ed7f833318913939f9e31c1d0a",
+    "xa1:p:id=cascade" : "038c71b4975850e15a2136bfd80657281897f76961a422371e88002df5cdc6df"
+  }
+}

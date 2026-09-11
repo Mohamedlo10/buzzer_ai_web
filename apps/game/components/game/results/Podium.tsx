@@ -65,6 +65,7 @@ export function Podium({ rankings, currentUserId, onPlayerTap }: PodiumProps) {
             <View style={{ marginBottom: 6 }}>
               <Avatar
                 name={entry.player.name}
+                avatarSpec={entry.player.avatarSpec}
                 avatarUrl={entry.player.avatarUrl}
                 size={isFirst ? 56 : 46}
                 ring={medal}

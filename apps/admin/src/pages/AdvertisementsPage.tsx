@@ -11,6 +11,8 @@ import {
   X,
   Megaphone,
   ExternalLink,
+  Image as ImageIcon,
+  Video,
 } from 'lucide-react';
 
 import { Card } from '../components/ui/Card';
@@ -160,9 +162,10 @@ export function AdvertisementsPage() {
     // Le PUT est complet : tout ce qui n'est pas relu ici est écrasé à l'enregistrement.
     // `active` et `priority` étaient codés en dur à false/0 — corriger un titre suffisait
     // à désactiver la campagne et à perdre sa priorité et ses dates.
+    // `imageUrl` n'est pas relu : le champ n'est plus dans le formulaire — les visuels
+    // sont portés par le partenaire depuis V39.
     setForm({
       title: ad.title,
-      imageUrl: ad.imageUrl ?? '',
       targetUrl: ad.targetUrl,
       placements: [...ad.placements],
       partnerId: ad.partnerId,
@@ -373,6 +376,15 @@ interface AdFormProps {
 }
 
 function AdForm({ form, setForm, onSave, onCancel, isSaving, partners, title }: AdFormProps) {
+  // Aperçu des médias du partenaire sélectionné : l'administrateur voit ce que le joueur verra.
+  // Évite de remplir une campagne dont les visuels seraient vides côté partenaire.
+  const { data: partnerDetail } = useQuery({
+    queryKey: ['adminPartner', form.partnerId],
+    queryFn: () => adminApi.getAdminPartner(form.partnerId),
+    enabled: !!form.partnerId,
+  });
+  const partnerMedia = partnerDetail?.media ?? [];
+
   function field(key: keyof AdminAdRequest) {
     return (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
       setForm((f) => ({ ...f, [key]: e.target.value }));
@@ -428,6 +440,47 @@ function AdForm({ form, setForm, onSave, onCancel, isSaving, partners, title }: 
           <p className="text-txt-40 text-xs mt-1">
             Les photos et la vidéo de la carte viennent de la fiche du partenaire.
           </p>
+
+          {/* Aperçu en lecture seule des médias du partenaire sélectionné.
+              L'administrateur voit ce que le joueur verra dans la carte. */}
+          {form.partnerId && (
+            partnerMedia.length > 0 ? (
+              <div className="mt-2 flex gap-2 flex-wrap">
+                {partnerMedia.map((m) => (
+                  <div key={m.id} className="relative">
+                    {m.kind === 'IMAGE' ? (
+                      <img
+                        src={m.url}
+                        alt=""
+                        className="w-16 h-16 rounded-lg object-cover bg-surface-2 block"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                          const fb = e.currentTarget.nextElementSibling as HTMLElement | null;
+                          if (fb) fb.style.display = 'flex';
+                        }}
+                      />
+                    ) : null}
+                    {m.kind === 'IMAGE' ? (
+                      <div
+                        className="w-16 h-16 rounded-lg bg-surface-2 items-center justify-center text-txt-40 text-[11px] text-center p-1"
+                        style={{ display: 'none' }}
+                      >
+                        <ImageIcon size={16} />
+                      </div>
+                    ) : (
+                      <div className="w-16 h-16 rounded-lg bg-surface-2 flex items-center justify-center">
+                        <Video size={16} color="var(--txt-60)" />
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-warn text-xs mt-2">
+                Ce partenaire n’a pas encore de médias — la carte sera vide pour le joueur.
+              </p>
+            )
+          )}
         </div>
 
         <div>

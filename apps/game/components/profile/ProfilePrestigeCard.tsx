@@ -146,7 +146,7 @@ export function ProfilePrestigeCard({ profile }: ProfilePrestigeCardProps) {
             >
               PERFORMANCES
             </Text> */}
-            <View
+            {/* <View
               style={{
                 flexDirection: 'row',
                 alignItems: 'center',
@@ -157,7 +157,7 @@ export function ProfilePrestigeCard({ profile }: ProfilePrestigeCardProps) {
                 borderRadius: 999,
               }}
             >
-              {/* <Trophy size={11} color={palette.gold} /> */}
+              <Trophy size={11} color={palette.gold} />
               <Text
                 style={{
                   fontFamily: font.nativeFamily.ui,
@@ -168,7 +168,7 @@ export function ProfilePrestigeCard({ profile }: ProfilePrestigeCardProps) {
               >
                 {displayRank} mondial
               </Text>
-            </View>
+            </View> */}
           </View>
 
           {/* Barre 1 : Victoires */}
@@ -180,16 +180,7 @@ export function ProfilePrestigeCard({ profile }: ProfilePrestigeCardProps) {
                 alignItems: 'center',
               }}
             >
-              <Text
-                style={{
-                  fontFamily: font.nativeFamily.ui,
-                  fontSize: 11,
-                  color: palette.inkSoft,
-                  fontWeight: '500',
-                }}
-              >
-                Victoires
-              </Text>
+            
               <Text
                 style={{
                   fontFamily: font.nativeFamily.ui,
@@ -199,9 +190,9 @@ export function ProfilePrestigeCard({ profile }: ProfilePrestigeCardProps) {
                 }}
               >
                 {wins} / {gamesPlayed} {gamesPlayed > 1 ? 'parties' : 'partie'}{' '}
-                <Text style={{ color: palette.inkSoft, fontWeight: '500' }}>
+                {/* <Text style={{ color: palette.inkSoft, fontWeight: '500' }}>
                   ({winRate}%)
-                </Text>
+                </Text> */}
               </Text>
             </View>
             <View
@@ -232,16 +223,7 @@ export function ProfilePrestigeCard({ profile }: ProfilePrestigeCardProps) {
                 alignItems: 'center',
               }}
             >
-              <Text
-                style={{
-                  fontFamily: font.nativeFamily.ui,
-                  fontSize: 11,
-                  color: palette.inkSoft,
-                  fontWeight: '500',
-                }}
-              >
-                Bonnes réponses
-              </Text>
+           
               <Text
                 style={{
                   fontFamily: font.nativeFamily.ui,

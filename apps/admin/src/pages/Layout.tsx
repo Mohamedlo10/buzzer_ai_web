@@ -9,6 +9,11 @@ export function AdminLayout() {
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
   const isLoading = useAuthStore((s) => s.isLoading);
+  const restoreSession = useAuthStore((s) => s.restoreSession);
+
+  useEffect(() => {
+    restoreSession();
+  }, [restoreSession]);
 
   useEffect(() => {
     if (!isLoading && (!user || user.role !== 'SUPER_ADMIN')) {

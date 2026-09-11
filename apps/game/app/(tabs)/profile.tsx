@@ -174,9 +174,13 @@ export default function ProfileScreen() {
         {/* ── Avatar & User info ── */}
         <View style={{ alignItems: 'center', marginVertical: 6 }}>
           <View style={{ position: 'relative', width: 88, height: 88, marginBottom: 12 }}>
-            <Avatar name={username} avatarUrl={user?.avatarUrl} size={88} hue={30} />
+            <Avatar name={username} avatarSpec={user?.avatarSpec} avatarUrl={user?.avatarUrl} size={88} hue={30} />
+            {/* Le crayon posé sur l'avatar mène au créateur d'avatar, pas au formulaire de
+                profil : c'est l'avatar qu'on touche, c'est donc l'avatar qu'on s'attend à
+                modifier. Le pseudo et l'e-mail restent accessibles plus bas dans l'écran. */}
             <TouchableOpacity
-              onPress={() => router.push('/profile/edit' as any)}
+              onPress={() => router.push('/profile/avatar' as any)}
+              accessibilityLabel="Personnaliser mon avatar"
               activeOpacity={0.8}
               style={{
                 position: 'absolute',
@@ -213,6 +217,40 @@ export default function ProfileScreen() {
           >
             {username}
           </Text>
+
+          {/* Invitation, pas obstacle : le compte a déjà un avatar valide et distinct, celui-ci
+              propose seulement d'en composer un qui lui ressemble. Elle disparaît d'elle-même dès
+              que le joueur a choisi. */}
+          {user && user.avatarCustomized === false && (
+            <TouchableOpacity
+              onPress={() => router.push('/profile/avatar' as any)}
+              activeOpacity={0.85}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 10,
+                alignSelf: 'stretch',
+                marginBottom: 12,
+                paddingVertical: 12,
+                paddingHorizontal: 14,
+                borderRadius: 16,
+                backgroundColor: `${palette.violet}14`,
+                borderWidth: 1.5,
+                borderColor: palette.violet,
+              }}
+            >
+              <Text style={{ fontSize: 20 }}>🎨</Text>
+              <View style={{ flex: 1 }}>
+                <Text style={{ color: palette.txt, fontWeight: '700', fontSize: 13 }}>
+                  Cet avatar t'a été attribué
+                </Text>
+                <Text style={{ color: palette.inkSoft, fontSize: 11, marginTop: 2 }}>
+                  Compose le tien : personnages, voiles, animaux, paysages.
+                </Text>
+              </View>
+              <Text style={{ color: palette.violet, fontWeight: '700', fontSize: 18 }}>›</Text>
+            </TouchableOpacity>
+          )}
 
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
             <View

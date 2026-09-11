@@ -214,6 +214,18 @@ function mapTopicMessageToWSEvent(
           userId: payload.player?.id || payload.playerId || payload.player?.userId,
         } as WSEvent;
       }
+      // Un joueur a changé ses thèmes. Événement distinct de JOINED à dessein : rejouer
+      // JOINED ferait passer l'id du Player pour un userId et la déduplication du store
+      // laisserait une ligne joueur fantôme dans le salon.
+      if (payload.event === 'CATEGORIES_UPDATED' && payload.player) {
+        return {
+          type: 'category_selected',
+          sessionId,
+          playerId: payload.player.id,
+          selectedCategories: payload.player.selectedCategories ?? [],
+          selectedCategoryDetails: payload.player.selectedCategoryDetails ?? [],
+        } as WSEvent;
+      }
       return null;
     }
 

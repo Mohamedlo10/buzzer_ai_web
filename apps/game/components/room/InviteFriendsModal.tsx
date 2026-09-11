@@ -175,7 +175,7 @@ export function InviteFriendsModal({
                     }}
                   >
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}>
-                      <Avatar name={friend.username} avatarUrl={friend.avatarUrl} size={36} />
+                      <Avatar name={friend.username} avatarSpec={friend.avatarSpec} avatarUrl={friend.avatarUrl} size={36} />
                       <Text style={{ fontSize: 14, fontWeight: '700', color: palette.txt }}>
                         {friend.username}
                       </Text>

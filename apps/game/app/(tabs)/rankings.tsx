@@ -311,6 +311,7 @@ export default function RankingsScreen() {
                   <View style={{ position: 'relative', marginBottom: 8 }}>
                     <Avatar
                       name={name}
+                      avatarSpec={p?.avatarSpec}
                       avatarUrl={p?.avatarUrl}
                       size={isFirst ? 64 : 50}
                       hue={isFirst ? 45 : isSecond ? 320 : 200}
@@ -415,7 +416,7 @@ export default function RankingsScreen() {
                     >
                       #{rankNumber}
                     </Text>
-                    <Avatar name={item.username} avatarUrl={item.avatarUrl} size={34} />
+                    <Avatar name={item.username} avatarSpec={item.avatarSpec} avatarUrl={item.avatarUrl} size={34} />
                     <View style={{ flex: 1 }}>
                       <Text
                         style={{

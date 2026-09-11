@@ -12,6 +12,7 @@ import { View, Text, ScrollView } from 'react-native';
 import { CheckCircle, XCircle, Clock } from 'lucide-react-native';
 import { palette, font } from '~/lib/theme/tokens';
 import type { DailyAttemptResultResponse } from '~/types/daily';
+import { AdSlot } from '../shared/AdSlot';
 
 interface DailyResultSummaryProps {
   result: DailyAttemptResultResponse;
@@ -61,7 +62,7 @@ export function DailyResultSummary({ result }: DailyResultSummaryProps) {
           style={{
             fontFamily: font.nativeFamily.display,
             fontSize: 52,
-            lineHeight: 60,
+            lineHeight: 80,
             color: '#FFFFFF',
             paddingTop: 4,
           }}
@@ -109,6 +110,8 @@ export function DailyResultSummary({ result }: DailyResultSummaryProps) {
           />
         </View>
       </View>
+      <AdSlot placement="RESULT" />
+          
 
       {/* ── Révision des réponses ── */}
       {result.answers && result.answers.length > 0 && (

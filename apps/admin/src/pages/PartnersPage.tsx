@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import {
@@ -8,14 +8,12 @@ import {
   Trash2,
   Save,
   X,
-  Upload,
-  Link2,
-  Image as ImageIcon,
   Video,
 } from 'lucide-react';
 
 import { Card } from '../components/ui/Card';
 import { Spinner } from '../components/loading/Spinner';
+import { MediaUploadField } from '../components/ui/MediaUploadField';
 import {
   adminApi,
   confirmAsync,
@@ -30,15 +28,14 @@ import {
  *
  * Un partenaire porte l'identité — nom, logo, réseaux sociaux, jusqu'à trois photos et une
  * vidéo — et les campagnes de la page Publicités s'y rattachent. Les deux modes de saisie des
- * médias, téléversement et URL externe, coexistent dans le même formulaire : la contrainte de
- * base garantit qu'un média n'a jamais deux sources.
+ * médias, téléversement dans le bucket Supabase et lien collé, aboutissent au même champ : une
+ * URL, stockée telle quelle et réaffichée telle quelle.
  */
 
 const EMPTY_FORM: AdminPartnerRequest = {
   name: '',
   tagline: '',
   description: '',
-  logoKey: null,
   logoUrl: '',
   websiteUrl: '',
   phone: '',
@@ -118,13 +115,12 @@ export function PartnersPage() {
   function startEdit(p: AdminPartnerResponse) {
     setIsCreating(false);
     setEditingId(p.id);
-    // Relecture fidèle, logoKey comprise : un PUT partiel effacerait le logo téléversé.
+    // Relecture fidèle : un PUT partiel effacerait le logo.
     setForm({
       name: p.name,
       tagline: p.tagline ?? '',
       description: p.description ?? '',
-      logoKey: p.logoKey,
-      logoUrl: p.logoKey ? '' : (p.logoUrl ?? ''),
+      logoUrl: p.logoUrl ?? '',
       websiteUrl: p.websiteUrl ?? '',
       phone: p.phone ?? '',
       whatsapp: p.whatsapp ?? '',
@@ -324,14 +320,13 @@ function PartnerRow({
   );
 }
 
-// ─── Médias ──────────────────────────────────────────────────────────────────
+// ─── Médias ──────────────────────────────────────────────────────────────────────────────────────
 
 /**
- * Gestion des médias d'un partenaire, avec les deux modes de saisie côte à côte.
+ * Gestion des médias d'un partenaire.
  *
- * L'administration est sur DOM : un `<input type="file">` suffit, aucune dépendance native
- * n'est nécessaire. Le téléversement passe d'abord par POST /api/admin/media, qui rend une
- * clé de stockage ; c'est cette clé qu'on rattache ensuite au partenaire.
+ * La saisie (téléversement ou URL) est déléguée à MediaUploadField. Ce composant conserve
+ * la responsabilité du rattachement (addAdminPartnerMedia) et de la suppression.
  */
 function MediaManager({
   partnerId,
@@ -342,20 +337,19 @@ function MediaManager({
   media: AdminPartnerMediaResponse[];
   onChanged: () => void;
 }) {
-  const [externalUrl, setExternalUrl] = useState('');
+  // URL en cours de saisie : rattachée au partenaire sur validation explicite, pas à la frappe.
+  const [draftUrl, setDraftUrl] = useState('');
   const [kind, setKind] = useState<MediaKind>('IMAGE');
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [uploading, setUploading] = useState(false);
 
   const images = media.filter((m) => m.kind === 'IMAGE');
   const video = media.find((m) => m.kind === 'VIDEO');
 
   const attachMutation = useMutation({
-    mutationFn: (req: { kind: MediaKind; storageKey?: string; externalUrl?: string }) =>
+    mutationFn: (req: { kind: MediaKind; url: string }) =>
       adminApi.addAdminPartnerMedia(partnerId, req),
     onSuccess: () => {
       toast.success('Média ajouté');
-      setExternalUrl('');
+      setDraftUrl('');
       onChanged();
     },
     onError: (e: Error) => toast.error(e.message),
@@ -370,22 +364,18 @@ function MediaManager({
     onError: (e: Error) => toast.error(e.message),
   });
 
-  async function handleUpload(file: File) {
-    setUploading(true);
-    try {
-      // Deux appels et non un : le téléversement est indépendant du rattachement, ce qui
-      // permet de réutiliser le même endpoint pour le logo comme pour un média de carrousel.
-      const uploaded = await adminApi.uploadAdminMedia(file, kind);
-      await attachMutation.mutateAsync({ kind, storageKey: uploaded.storageKey });
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Téléversement impossible');
-    } finally {
-      setUploading(false);
-      if (fileInputRef.current) fileInputRef.current.value = '';
-    }
+  // Rattachement au partenaire, une fois l'URL connue — qu'elle vienne d'un téléversement
+  // ou d'un lien collé. Deux appels et non un : le dépôt du fichier est indépendant du
+  // rattachement, ce qui permet de servir le logo et le carrousel par le même endpoint.
+  function attach(url: string) {
+    attachMutation.mutate({ kind, url: url.trim() });
   }
 
   const slotsFull = kind === 'IMAGE' ? images.length >= 3 : !!video;
+  const slotFullReason =
+    kind === 'IMAGE'
+      ? 'Trois photos au maximum : retirez-en une avant d’en ajouter.'
+      : 'Une seule vidéo par partenaire : retirez-la avant d’en ajouter une autre.';
 
   return (
     <div className="border-t border-line pt-3 space-y-3">
@@ -412,9 +402,6 @@ function MediaManager({
                   <Video size={20} color="var(--txt-60)" />
                 </div>
               )}
-              <span className="absolute bottom-0 left-0 right-0 text-[10px] text-center bg-black/60 text-white rounded-b-lg py-0.5">
-                {m.storageKey ? 'fichier' : 'lien'}
-              </span>
               <button
                 onClick={() => removeMutation.mutate(m.id)}
                 className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-buzz text-white flex items-center justify-center cursor-pointer"
@@ -436,52 +423,21 @@ function MediaManager({
           <option value="IMAGE">Photo</option>
           <option value="VIDEO">Vidéo</option>
         </select>
-
-        {/* Mode 1 : téléverser un fichier sur le serveur. */}
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept={kind === 'IMAGE' ? 'image/jpeg,image/png,image/webp' : 'video/mp4'}
-          className="hidden"
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (file) handleUpload(file);
-          }}
-        />
-        <button
-          onClick={() => fileInputRef.current?.click()}
-          disabled={uploading || slotsFull}
-          className="flex items-center gap-2 px-3 py-2 rounded-xl bg-surface-2 text-txt text-sm cursor-pointer disabled:opacity-40"
-        >
-          <Upload size={14} />
-          {uploading ? 'Envoi…' : 'Téléverser'}
-        </button>
-
-        <span className="text-txt-40 text-xs">ou</span>
-
-        {/* Mode 2 : coller une URL externe. */}
-        <input
-          value={externalUrl}
-          onChange={(e) => setExternalUrl(e.target.value)}
-          placeholder="https://… (lien externe)"
-          className={`${inputClass} flex-1 min-w-[200px]`}
-        />
-        <button
-          onClick={() => attachMutation.mutate({ kind, externalUrl: externalUrl.trim() })}
-          disabled={!externalUrl.trim() || slotsFull || attachMutation.isPending}
-          className="flex items-center gap-2 px-3 py-2 rounded-xl bg-surface-2 text-txt text-sm cursor-pointer disabled:opacity-40"
-        >
-          <Link2 size={14} />
-          Rattacher
-        </button>
       </div>
 
+      <MediaUploadField
+        kind={kind}
+        url={draftUrl}
+        onUrlChange={setDraftUrl}
+        onCommit={attach}
+        onClear={() => setDraftUrl('')}
+        uploadDisabled={slotsFull}
+        uploadDisabledReason={slotsFull ? slotFullReason : undefined}
+        disabled={attachMutation.isPending}
+      />
+
       {slotsFull && (
-        <p className="text-warn text-xs">
-          {kind === 'IMAGE'
-            ? 'Trois photos au maximum : retirez-en une avant d’en ajouter.'
-            : 'Une seule vidéo par partenaire : retirez-la avant d’en ajouter une autre.'}
-        </p>
+        <p className="text-warn text-xs">{slotFullReason}</p>
       )}
     </div>
   );
@@ -504,26 +460,9 @@ function PartnerForm({
   isSaving: boolean;
   title: string;
 }) {
-  const logoInputRef = useRef<HTMLInputElement>(null);
-  const [uploadingLogo, setUploadingLogo] = useState(false);
-
   function field(key: keyof AdminPartnerRequest) {
     return (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
       setForm((f) => ({ ...f, [key]: e.target.value }));
-  }
-
-  async function uploadLogo(file: File) {
-    setUploadingLogo(true);
-    try {
-      const uploaded = await adminApi.uploadAdminMedia(file, 'IMAGE');
-      // Les deux sources s'excluent : poser la clé efface l'URL externe.
-      setForm((f) => ({ ...f, logoKey: uploaded.storageKey, logoUrl: '' }));
-      toast.success('Logo téléversé');
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Téléversement impossible');
-    } finally {
-      setUploadingLogo(false);
-    }
   }
 
   const valid = form.name.trim().length > 0;
@@ -558,50 +497,18 @@ function PartnerForm({
           />
         </div>
 
-        {/* Logo : téléversement OU lien, jamais les deux — le serveur refuse. */}
+        {/* Logo : téléversé dans le bucket ou lien collé — dans les deux cas, une URL.
+            Elle n'est enregistrée qu'avec le reste du formulaire, d'où l'absence de
+            `onCommit` : il n'y a pas ici de moment de validation propre au champ. */}
         <div>
           <label className="block text-txt-60 text-xs mb-1">Logo</label>
-          {form.logoKey ? (
-            <div className="flex items-center gap-2">
-              <span className="flex items-center gap-2 text-txt text-sm px-3 py-2 rounded-xl bg-surface-2">
-                <ImageIcon size={14} /> Fichier téléversé
-              </span>
-              <button
-                onClick={() => setForm((f) => ({ ...f, logoKey: null }))}
-                className="px-3 py-2 rounded-xl bg-surface-2 text-txt-60 text-sm cursor-pointer"
-              >
-                Retirer
-              </button>
-            </div>
-          ) : (
-            <div className="flex gap-2 items-center flex-wrap">
-              <input
-                ref={logoInputRef}
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                className="hidden"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) uploadLogo(file);
-                }}
-              />
-              <button
-                onClick={() => logoInputRef.current?.click()}
-                disabled={uploadingLogo}
-                className="flex items-center gap-2 px-3 py-2 rounded-xl bg-surface-2 text-txt text-sm cursor-pointer disabled:opacity-40"
-              >
-                <Upload size={14} />
-                {uploadingLogo ? 'Envoi…' : 'Téléverser'}
-              </button>
-              <span className="text-txt-40 text-xs">ou</span>
-              <input
-                value={form.logoUrl ?? ''}
-                onChange={field('logoUrl')}
-                placeholder="https://… (lien externe)"
-                className={`${inputClass} flex-1 min-w-[200px]`}
-              />
-            </div>
-          )}
+          <MediaUploadField
+            kind="IMAGE"
+            url={form.logoUrl}
+            onUrlChange={(url) => setForm((f) => ({ ...f, logoUrl: url }))}
+            onClear={() => setForm((f) => ({ ...f, logoUrl: '' }))}
+            disabled={isSaving}
+          />
         </div>
 
         <div className="grid grid-cols-2 gap-3">

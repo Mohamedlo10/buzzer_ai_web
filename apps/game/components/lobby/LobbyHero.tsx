@@ -9,6 +9,7 @@ export interface LobbyHeroProps {
   currentPlayer?: PlayerResponse;
   user: UserResponse | null;
   avatarMap: Record<string, string | null>;
+  avatarSpecMap: Record<string, string | null>;
   isWithoutModerator: boolean;
   questionMode?: string;
   totalQuestions?: number;
@@ -26,6 +27,7 @@ export function LobbyHero({
   currentPlayer,
   user,
   avatarMap,
+  avatarSpecMap,
   isWithoutModerator,
   questionMode,
   totalQuestions = 0,
@@ -42,12 +44,15 @@ export function LobbyHero({
   const avatarUrl = currentPlayer?.userId
     ? (avatarMap[currentPlayer.userId] ?? currentPlayer.avatarUrl)
     : user?.avatarUrl;
+  const avatarSpec = currentPlayer?.userId
+    ? (avatarSpecMap[currentPlayer.userId] ?? currentPlayer.avatarSpec)
+    : user?.avatarSpec;
 
   return (
     <View style={{ marginBottom: 16 }}>
       {/* Hero Header */}
       <View style={{ alignItems: 'center', marginTop: 8, marginBottom: 16 }}>
-        <Avatar name={username} avatarUrl={avatarUrl} size={76} />
+        <Avatar name={username} avatarSpec={avatarSpec} avatarUrl={avatarUrl} size={76} />
         <Text
           style={{
             fontFamily: font.nativeFamily.display,

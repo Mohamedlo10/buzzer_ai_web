@@ -52,8 +52,29 @@ export interface UserResponse {
   email: string | null;
   emailVerified: boolean;
   avatarUrl: string | null;
-  avatarStyle: string | null;
-  avatarSeed: string | null;
+  /**
+   * L'avatar sous sa forme structurée, tel que le comprend `@xalaat/avatar`.
+   *
+   * Permet au client de dessiner l'avatar localement — sans requête réseau — et de rouvrir
+   * l'Avatar Creator sur les choix existants du joueur. `avatarUrl` reste une URL d'image
+   * valide, servie par le backend, pour tout ce qui se contente d'une balise `<img>`.
+   *
+   * Optionnel : les réponses d'un backend antérieur à l'Avatar Creator ne le portent pas.
+   */
+  avatarSpec?: string | null;
+
+  /**
+   * Vrai si le joueur a composé son avatar lui-même.
+   *
+   * Faux tant qu'il porte l'avatar attribué automatiquement : c'est la seule façon de savoir à
+   * qui proposer de passer par l'Avatar Creator, `avatarSpec` n'étant jamais vide.
+   */
+  avatarCustomized?: boolean;
+
+  /** @deprecated Ancien couple DiceBear. Le backend ne l'envoie plus — voir `avatarSpec`. */
+  avatarStyle?: string | null;
+  /** @deprecated Ancien couple DiceBear. Le backend ne l'envoie plus — voir `avatarSpec`. */
+  avatarSeed?: string | null;
   role: UserRole;
   isOnline: boolean;
   lastSeenAt: string | null;
@@ -238,12 +259,29 @@ export interface PlayerResponse {
   userId: string;
   name: string;
   avatarUrl: string | null;
+  /**
+   * L'avatar sous sa forme structurée, tel que le comprend `@xalaat/avatar`.
+   *
+   * Permet au client de dessiner l'avatar localement — sans requête réseau — et de rouvrir
+   * l'Avatar Creator sur les choix existants du joueur. `avatarUrl` reste une URL d'image
+   * valide, servie par le backend, pour tout ce qui se contente d'une balise `<img>`.
+   *
+   * Optionnel : les réponses d'un backend antérieur à l'Avatar Creator ne le portent pas.
+   */
+  avatarSpec?: string | null;
   score: number;
   isManager: boolean;
   isSpectator: boolean;
   teamId: string | null;
   categoryScores: Record<string, number>;
+  /** Les noms seuls — suffisant pour l'affichage et pour savoir si le joueur a déjà choisi. */
   selectedCategories: string[];
+  /**
+   * Les mêmes thèmes avec leur difficulté. Optionnel : absent des `PlayerResponse` fabriqués
+   * localement et des serveurs antérieurs. À utiliser pour pré-remplir l'écran d'édition,
+   * qui sans lui réécrivait toute la sélection en INTERMEDIAIRE.
+   */
+  selectedCategoryDetails?: CategoryRequest[];
 }
 
 export interface QuestionResponse {
@@ -381,6 +419,8 @@ export interface GlobalRanking {
   userId: string;
   username: string;
   avatarUrl: string | null;
+  /** L'avatar structuré — permet un rendu local instantané, sans requête réseau. */
+  avatarSpec?: string | null;
   totalScore: number;
   totalGames: number;
   totalWins: number;
@@ -418,6 +458,8 @@ export interface SessionRankingPlayer {
   userId: string;
   name: string;
   avatarUrl: string;
+  /** L'avatar structuré — permet un rendu local instantané, sans requête réseau. */
+  avatarSpec?: string | null;
   friendshipStatus?: FriendshipStatus;
 }
 
@@ -562,6 +604,8 @@ export interface UserStatsResponse {
   userId: string;
   username: string;
   avatarUrl: string | null;
+  /** L'avatar structuré — permet un rendu local instantané, sans requête réseau. */
+  avatarSpec?: string | null;
   globalRank: number;
   totalScore: number;
   totalGames: number;
@@ -669,6 +713,8 @@ export interface RoomMemberResponse {
   userId: string;
   username: string;
   avatarUrl: string | null;
+  /** L'avatar structuré — permet un rendu local instantané, sans requête réseau. */
+  avatarSpec?: string | null;
   isOwner: boolean;
   isOnline: boolean;
   joinedAt: string;
@@ -692,6 +738,8 @@ export interface RoomRankingEntry {
   userId: string;
   username: string;
   avatarUrl: string | null;
+  /** L'avatar structuré — permet un rendu local instantané, sans requête réseau. */
+  avatarSpec?: string | null;
   totalScore: number;
   gamesPlayed: number;
   gamesWon: number;
@@ -707,6 +755,8 @@ export interface FriendResponse {
   id: string;
   username: string;
   avatarUrl: string | null;
+  /** L'avatar structuré — permet un rendu local instantané, sans requête réseau. */
+  avatarSpec?: string | null;
   isOnline: boolean;
   lastSeenAt: string | null;
   globalRank?: number;
@@ -777,6 +827,8 @@ export interface CategoryQuestionSolver {
   username: string;
   name: string;
   avatarUrl?: string | null;
+  /** L'avatar structuré — permet un rendu local instantané, sans requête réseau. */
+  avatarSpec?: string | null;
   responseTimeMs?: number | null;
 }
 
@@ -1204,12 +1256,11 @@ export type MediaKind = 'IMAGE' | 'VIDEO';
 /**
  * Source : model/dto/response/MediaUploadResponse.java
  *
- * `storageKey` est ce qu'il faut renvoyer au serveur pour rattacher le média ; `url` ne
- * sert qu'à l'aperçu. C'est la clé qui est persistée, jamais l'URL — une URL absolue en
- * base pourrit au premier changement de domaine.
+ * `url` est l'adresse publique du fichier dans le bucket Supabase : elle sert à l'aperçu et
+ * c'est elle qu'on renvoie au serveur pour rattacher le média. Un seul champ, rien à
+ * recomposer côté client.
  */
 export interface MediaUploadResponse {
-  storageKey: string;
   url: string;
   kind: MediaKind;
   sizeBytes: number;
@@ -1254,8 +1305,7 @@ export interface AdminPartnerRequest {
   name: string;
   tagline?: string | null;
   description?: string | null;
-  /** Exclusif de logoUrl : le serveur refuse les deux à la fois. */
-  logoKey?: string | null;
+  /** URL du logo : celle rendue par le téléversement, ou un lien collé. */
   logoUrl?: string | null;
   websiteUrl?: string | null;
   phone?: string | null;
@@ -1271,10 +1321,7 @@ export interface AdminPartnerRequest {
 export interface AdminPartnerMediaResponse {
   id: string;
   kind: MediaKind;
-  /** Non nul si téléversé — l'administration voit d'où vient chaque média. */
-  storageKey: string | null;
-  externalUrl: string | null;
-  /** URL résolue, pour l'aperçu. */
+  /** URL du média — bucket Supabase ou lien externe, indifféremment. */
   url: string;
   position: number;
   caption: string | null;
@@ -1283,15 +1330,14 @@ export interface AdminPartnerMediaResponse {
 /**
  * Source : model/dto/response/AdminPartnerResponse.java
  *
- * Porte à la fois `logoKey` et `logoUrl` : le formulaire fait un PUT complet et doit
- * pouvoir réémettre exactement ce qu'il a lu, tandis que l'aperçu a besoin d'une URL.
+ * Le formulaire fait un PUT complet : ce qu'il lit ici, il doit pouvoir le réémettre tel
+ * quel — d'où des URL rendues à l'identique de ce qui est en base.
  */
 export interface AdminPartnerResponse {
   id: string;
   name: string;
   tagline: string | null;
   description: string | null;
-  logoKey: string | null;
   logoUrl: string | null;
   websiteUrl: string | null;
   phone: string | null;
@@ -1309,9 +1355,8 @@ export interface AdminPartnerResponse {
 /** Source : model/dto/request/PartnerMediaRequest.java */
 export interface AdminPartnerMediaRequest {
   kind: MediaKind;
-  /** Exactement une des deux sources : clé téléversée OU URL externe. */
-  storageKey?: string | null;
-  externalUrl?: string | null;
+  /** URL du média : celle rendue par le téléversement, ou un lien collé. */
+  url: string;
   /** 0 à 2 pour une image ; ignoré pour une vidéo, unique par partenaire. */
   position?: number;
   caption?: string | null;
@@ -1341,9 +1386,16 @@ export interface AdminDailyChallengeResponse {
   questionCount: number;
   status: DailyChallengeStatus;
   maxPoints: number;
-  /** Plafonné à 3 : au-delà, l'état passe FAILED définitivement. */
+  /**
+   * Plafonné à 3 : au-delà, l'état passe FAILED définitivement.
+   *
+   * Un arrêt manuel rend la tentative — le plafond garde contre une boucle automatique,
+   * pas contre un administrateur qui reprend la main.
+   */
   generationAttempts: number;
   generationError: string | null;
+  /** Départ de la génération en cours ; null hors génération. Sert à afficher le temps écoulé. */
+  generationStartedAt: string | null;
   publishedAt: string | null;
   opensAt: string | null;
   closesAt: string | null;

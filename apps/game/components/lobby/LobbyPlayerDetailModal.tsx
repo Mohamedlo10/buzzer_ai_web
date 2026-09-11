@@ -16,6 +16,7 @@ export interface LobbyPlayerDetailModalProps {
   categorySelectionMode?: CategorySelectionMode;
   teams: TeamResponse[];
   avatarMap: Record<string, string | null>;
+  avatarSpecMap: Record<string, string | null>;
   onClose: () => void;
   onViewStats: (userId: string) => void;
   onEditCategories: (player: PlayerResponse) => void;
@@ -33,6 +34,7 @@ export function LobbyPlayerDetailModal({
   categorySelectionMode,
   teams,
   avatarMap,
+  avatarSpecMap,
   onClose,
   onViewStats: _onViewStats,
   onEditCategories,
@@ -43,6 +45,7 @@ export function LobbyPlayerDetailModal({
 
   const isMe = player.userId === currentUserId;
   const avatarUrl = player.userId ? (avatarMap[player.userId] ?? player.avatarUrl) : player.avatarUrl;
+  const avatarSpec = player.userId ? (avatarSpecMap[player.userId] ?? player.avatarSpec) : player.avatarSpec;
   const team = player.teamId ? teams.find((t) => t.id === player.teamId) : null;
 
   return (
@@ -86,7 +89,7 @@ export function LobbyPlayerDetailModal({
 
           {/* Hero Avatar & Name */}
           <View style={{ alignItems: 'center', marginBottom: 20 }}>
-            <Avatar name={player.name} avatarUrl={avatarUrl} size={72} />
+            <Avatar name={player.name} avatarSpec={avatarSpec} avatarUrl={avatarUrl} size={72} />
             <Text
               style={{
                 fontFamily: font.nativeFamily.display,

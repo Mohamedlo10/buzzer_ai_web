@@ -31,7 +31,7 @@ export function ComingSoonCard({ icon: Icon, title, description }: ComingSoonCar
         gap: 12,
         paddingHorizontal: 16,
         paddingVertical: 14,
-        borderRadius: radius.casino,
+        borderRadius: 20,
         backgroundColor: palette.surface,
         borderWidth: 1,
         borderColor: palette.line,
@@ -43,7 +43,7 @@ export function ComingSoonCard({ icon: Icon, title, description }: ComingSoonCar
         style={{
           width: 36,
           height: 36,
-          borderRadius: radius.card,
+          borderRadius: radius.xl3,
           alignItems: 'center',
           justifyContent: 'center',
           backgroundColor: withAlpha(palette.txt, alpha.lineSoft),

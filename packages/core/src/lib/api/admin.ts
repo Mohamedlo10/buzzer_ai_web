@@ -266,6 +266,16 @@ export async function generateAdminDailyChallenge(id: string): Promise<void> {
   await apiClient.post(`/api/admin/daily-challenges/${id}/generate`);
 }
 
+/**
+ * Arrête la génération en cours : l'édition redevient un brouillon regénérable.
+ *
+ * L'arrêt est coopératif — l'appel au modèle déjà parti n'est pas interrompu, c'est son
+ * résultat qui sera jeté. L'édition, elle, est rendue à l'administrateur immédiatement.
+ */
+export async function stopAdminDailyChallengeGeneration(id: string): Promise<void> {
+  await apiClient.post(`/api/admin/daily-challenges/${id}/generate/stop`);
+}
+
 export async function updateAdminDailyQuestion(
   challengeId: string,
   questionId: string,
@@ -404,7 +414,11 @@ export async function deleteAdminPartnerMedia(
  * JPEG, PNG, WebP ou MP4 — le SVG notamment, XML porteur de script. `kind` déclare ce que
  * l'appelant croit envoyer ; un désaccord avec les octets donne un 415.
  *
- * Le Content-Type est laissé à axios : le fixer à la main casse la frontière multipart.
+ * Le Content-Type NE doit PAS être fixé à la main : c'est le navigateur qui compose
+ * la frontière multipart. Mais le client axios a 'Content-Type: application/json' en
+ * default header d'instance, ce qui écrase le header automatique du FormData. On le
+ * supprime explicitement sur cette requête uniquement pour que le navigateur reprenne
+ * la main et pose 'multipart/form-data; boundary=…'.
  */
 export async function uploadAdminMedia(
   file: File,
@@ -413,6 +427,8 @@ export async function uploadAdminMedia(
   const form = new FormData();
   form.append('file', file);
   form.append('kind', kind);
-  const res = await apiClient.post<MediaUploadResponse>('/api/admin/media', form);
+  const res = await apiClient.post<MediaUploadResponse>('/api/admin/media', form, {
+    headers: { 'Content-Type': undefined },
+  });
   return res.data;
 }

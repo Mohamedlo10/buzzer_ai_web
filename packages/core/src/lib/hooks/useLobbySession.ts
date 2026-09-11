@@ -29,6 +29,7 @@ export function useLobbySession({ code, onNavigate: _onNavigate, onReplaceRoute 
   const [adjustedQPerCat, setAdjustedQPerCat] = useState(1);
   const [isSavingConfig, setIsSavingConfig] = useState(false);
   const [avatarMap, setAvatarMap] = useState<Record<string, string | null>>({});
+  const [avatarSpecMap, setAvatarSpecMap] = useState<Record<string, string | null>>({});
   const [showStartConfirm, setShowStartConfirm] = useState(false);
   const [profileUserId, setProfileUserId] = useState<string | null>(null);
   const [selectedLobbyPlayer, setSelectedLobbyPlayer] = useState<PlayerResponse | null>(null);
@@ -128,15 +129,24 @@ export function useLobbySession({ code, onNavigate: _onNavigate, onReplaceRoute 
   }, [session?.status, session?.roomId, code]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Derive avatars synchronously from player data — zero N+1 API calls
+  //
+  // `avatarSpecMap` double `avatarMap` : la spec permet au lobby de dessiner chaque avatar
+  // localement, donc sans la moindre requête image, ce qui compte sur un écran où tout le monde
+  // arrive en même temps. `avatarMap` reste le repli pour un joueur dont la réponse ne porterait
+  // pas encore de spec.
   useEffect(() => {
     if (!players.length) return;
     const map: Record<string, string | null> = {};
+    const specs: Record<string, string | null> = {};
     players.forEach((player) => {
       if (player.userId) {
-        map[player.userId] = player.avatarUrl ?? (player.userId === user?.id ? user.avatarUrl ?? null : null);
+        const isMe = player.userId === user?.id;
+        map[player.userId] = player.avatarUrl ?? (isMe ? user.avatarUrl ?? null : null);
+        specs[player.userId] = player.avatarSpec ?? (isMe ? user.avatarSpec ?? null : null);
       }
     });
     setAvatarMap(map);
+    setAvatarSpecMap(specs);
   }, [players, user]);
 
   const handleStartGame = useCallback(async () => {
@@ -271,7 +281,7 @@ export function useLobbySession({ code, onNavigate: _onNavigate, onReplaceRoute 
     isCopied, setIsCopied, isRefreshing, isDeletingSession, kickingPlayerId, roomInfo,
     showQRModal, setShowQRModal, showTeamPicker, setShowTeamPicker, teamPickerTargetPlayer, setTeamPickerTargetPlayer,
     isChangingTeam, showQLimit, setShowQLimit, adjustedQPerCat, setAdjustedQPerCat, isSavingConfig,
-    avatarMap, showStartConfirm, setShowStartConfirm, profileUserId, setProfileUserId,
+    avatarMap, avatarSpecMap, showStartConfirm, setShowStartConfirm, profileUserId, setProfileUserId,
     selectedLobbyPlayer, setSelectedLobbyPlayer, reqOpen, setReqOpen, reqText, setReqText, reqSent,
     user, session, players, teams, isManager, currentPlayer, isConnected, isStarting,
     managerPlayer, realPlayerCount, canStart, isWithoutModerator, totalQuestionsEstimate,

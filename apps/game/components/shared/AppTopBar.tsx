@@ -123,7 +123,7 @@ export function AppTopBar({
           onPress={() => router.push('/(tabs)/profile' as any)}
           activeOpacity={0.8}
         >
-          <Avatar name={user?.username || 'Momo'} avatarUrl={user?.avatarUrl} size={36} />
+          <Avatar name={user?.username || 'Momo'} avatarSpec={user?.avatarSpec} avatarUrl={user?.avatarUrl} size={36} />
         </TouchableOpacity>
       </View>
     </View>

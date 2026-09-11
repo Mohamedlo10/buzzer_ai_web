@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Crown, Lock, User, AlertCircle } from 'lucide-react';
 import { useAuthStore } from '@xalaat/core';
@@ -7,10 +7,24 @@ import { toast } from 'sonner';
 export function LoginPage() {
   const navigate = useNavigate();
   const login = useAuthStore((s) => s.login);
+  const user = useAuthStore((s) => s.user);
+  const isLoadingSession = useAuthStore((s) => s.isLoading);
+  const restoreSession = useAuthStore((s) => s.restoreSession);
+
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    restoreSession();
+  }, [restoreSession]);
+
+  useEffect(() => {
+    if (!isLoadingSession && user && user.role === 'SUPER_ADMIN') {
+      navigate('/', { replace: true });
+    }
+  }, [user, isLoadingSession, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -153,7 +153,7 @@ export function BlockedUsersModal({ visible, onClose }: BlockedUsersModalProps) 
                   }}
                 >
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1, marginRight: 8 }}>
-                    <Avatar name={user.username} avatarUrl={user.avatarUrl} size={42} />
+                    <Avatar name={user.username} avatarSpec={user.avatarSpec} avatarUrl={user.avatarUrl} size={42} />
                     <View style={{ flex: 1 }}>
                       <Text
                         style={{

@@ -253,7 +253,7 @@ export default function FriendsScreen() {
                     activeOpacity={0.7}
                     style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1, marginRight: 8 }}
                   >
-                    <Avatar name={u.username} avatarUrl={u.avatarUrl} size={42} />
+                    <Avatar name={u.username} avatarSpec={u.avatarSpec} avatarUrl={u.avatarUrl} size={42} />
                     <View style={{ flex: 1 }}>
                       <Text
                         style={{
@@ -452,7 +452,7 @@ export default function FriendsScreen() {
                           activeOpacity={0.7}
                           style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1, marginRight: 8 }}
                         >
-                          <Avatar name={req.requester.username} avatarUrl={req.requester.avatarUrl} size={38} />
+                          <Avatar name={req.requester.username} avatarSpec={req.requester.avatarSpec} avatarUrl={req.requester.avatarUrl} size={38} />
                           <Text style={{ fontFamily: font.nativeFamily.display, fontSize: 14, color: palette.txt, paddingTop: 2 }}>
                             {req.requester.username}
                           </Text>
@@ -519,7 +519,7 @@ export default function FriendsScreen() {
                           activeOpacity={0.7}
                           style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1, marginRight: 8 }}
                         >
-                          <Avatar name={req.receiver.username} avatarUrl={req.receiver.avatarUrl} size={38} />
+                          <Avatar name={req.receiver.username} avatarSpec={req.receiver.avatarSpec} avatarUrl={req.receiver.avatarUrl} size={38} />
                           <View>
                             <Text style={{ fontFamily: font.nativeFamily.display, fontSize: 14, color: palette.txt, paddingTop: 2 }}>
                               {req.receiver.username}
@@ -617,7 +617,7 @@ export default function FriendsScreen() {
                   >
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1, marginRight: 10 }}>
                       <View style={{ position: 'relative' }}>
-                        <Avatar name={friend.username} avatarUrl={friend.avatarUrl} size={46} />
+                        <Avatar name={friend.username} avatarSpec={friend.avatarSpec} avatarUrl={friend.avatarUrl} size={46} />
                         {friend.isOnline && (
                           <View
                             style={{

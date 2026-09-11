@@ -104,12 +104,13 @@ export default function DailyResultScreen() {
         </Text>
       </View>
 
-      {/* Publicité RESULT — retourne null si ads.enabled=false */}
-      <AdSlot placement="RESULT" />
+
 
       {/* Résumé */}
       <View style={{ flex: 1, paddingHorizontal: 20, paddingTop: 16 }}>
-        <DailyResultSummary result={data} />
+      {/* Publicité RESULT — retourne null si ads.enabled=false */}
+      <DailyResultSummary result={data} />
+
       </View>
 
       {/* Actions */}

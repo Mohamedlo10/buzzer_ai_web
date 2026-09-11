@@ -428,7 +428,7 @@ export function CategoryQuestionsModal({
                                     borderColor: palette.line,
                                   }}
                                 >
-                                  <Avatar name={solver.name || solver.username} avatarUrl={solver.avatarUrl} size={20} />
+                                  <Avatar name={solver.name || solver.username} avatarSpec={solver.avatarSpec} avatarUrl={solver.avatarUrl} size={20} />
                                   <Text style={{ fontSize: 12, fontWeight: '600', color: palette.txt }}>
                                     {solver.name || solver.username}
                                   </Text>

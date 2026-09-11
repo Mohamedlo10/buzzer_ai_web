@@ -12,6 +12,7 @@ export interface PlayerGridProps {
   questionMode?: string;
   sessionMode?: string;
   avatarMap: Record<string, string | null>;
+  avatarSpecMap: Record<string, string | null>;
   kickingPlayerId: string | null;
   onSelectPlayer: (player: PlayerResponse) => void;
   onEditCategories: (player: PlayerResponse) => void;
@@ -25,6 +26,7 @@ export function PlayerGrid({
   questionMode: _questionMode,
   sessionMode: _sessionMode,
   avatarMap,
+  avatarSpecMap,
   kickingPlayerId: _kickingPlayerId,
   onSelectPlayer,
   onEditCategories: _onEditCategories,
@@ -95,6 +97,9 @@ export function PlayerGrid({
             const avatarUrl = player.userId
               ? (avatarMap[player.userId] ?? player.avatarUrl)
               : player.avatarUrl;
+            const avatarSpec = player.userId
+              ? (avatarSpecMap[player.userId] ?? player.avatarSpec)
+              : player.avatarSpec;
 
             return (
               <TouchableOpacity
@@ -137,7 +142,7 @@ export function PlayerGrid({
                         padding: 1.5,
                       }}
                     >
-                      <Avatar name={player.name} avatarUrl={avatarUrl} size={54} />
+                      <Avatar name={player.name} avatarSpec={avatarSpec} avatarUrl={avatarUrl} size={54} />
                     </View>
                   )}
 

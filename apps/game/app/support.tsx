@@ -1,5 +1,14 @@
 import { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, TextInput, ActivityIndicator } from 'react-native';
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  TextInput,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ArrowLeft, HelpCircle, CheckCircle, Send } from 'lucide-react-native';
@@ -51,7 +60,7 @@ export default function SupportScreen() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: palette.bg }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: palette.bg }} edges={['top', 'left', 'right']}>
       {/* Top Bar */}
       <View
         style={{
@@ -95,7 +104,17 @@ export default function SupportScreen() {
         </Text>
       </View>
 
-      <ScrollView style={{ flex: 1, paddingHorizontal: 20, paddingVertical: 20 }} showsVerticalScrollIndicator={false}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 24}
+      >
+        <ScrollView
+          style={{ flex: 1, paddingHorizontal: 20, paddingVertical: 20 }}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={{ paddingBottom: 80 }}
+        >
         <View style={{ maxWidth: 600, alignSelf: 'center', width: '100%', paddingBottom: 48 }}>
           {/* Header Badge */}
           <View style={{ alignItems: 'center', marginBottom: 28 }}>
@@ -241,8 +260,9 @@ export default function SupportScreen() {
               </View>
             )}
           </View>
-        </View>
-      </ScrollView>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

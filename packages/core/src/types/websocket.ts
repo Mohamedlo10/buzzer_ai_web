@@ -1,6 +1,6 @@
 // BuzzQueueItem, PlayerResponse et SessionStatus ne sont plus référencés depuis le retrait
 // de GameStateSyncEvent, seul type qui les utilisait.
-import type { Difficulty, QuestionResponse, UserResponse } from './api';
+import type { CategoryRequest, Difficulty, QuestionResponse, UserResponse } from './api';
 
 // ──────────────────────────────────────────────
 // Base WebSocket Message
@@ -21,6 +21,8 @@ export interface PlayerJoinedEvent extends BaseWSMessage {
     userId: string;
     username: string;
     avatarUrl?: string | null;
+  /** L'avatar structuré — permet un rendu local instantané, sans requête réseau. */
+  avatarSpec?: string | null;
     categories: Array<{ name: string; difficulty: Difficulty; isCustom: boolean }>;
     isSpectator: boolean;
   };
@@ -31,10 +33,22 @@ export interface PlayerLeftEvent extends BaseWSMessage {
   userId: string;
 }
 
+/**
+ * Un joueur du salon vient de changer ses thèmes (canal `players`, event
+ * `CATEGORIES_UPDATED`).
+ *
+ * <p>Ce type existait déjà en placeholder jamais émis ni consommé, avec une forme qui ne
+ * correspondait à rien côté serveur (`userId`, et un `isCustom` que le backend ne stocke
+ * pas). Il est ici recalé sur ce que `PlayerResponse` transporte réellement.
+ *
+ * <p>`playerId` est bien l'identifiant du *Player*, pas du User : c'est la clé sur laquelle
+ * la liste des joueurs du store est indexée.
+ */
 export interface CategorySelectedEvent extends BaseWSMessage {
   type: 'category_selected';
-  userId: string;
-  categories: Array<{ name: string; difficulty: Difficulty; isCustom: boolean }>;
+  playerId: string;
+  selectedCategories: string[];
+  selectedCategoryDetails: CategoryRequest[];
 }
 
 export interface GameStartingEvent extends BaseWSMessage {

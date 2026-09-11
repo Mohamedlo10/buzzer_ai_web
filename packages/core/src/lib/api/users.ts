@@ -16,6 +16,22 @@ export async function updateProfile(data: UpdateProfileRequest): Promise<UserRes
   return res.data;
 }
 
+/**
+ * Enregistre l'avatar composé dans l'Avatar Creator.
+ *
+ * Le serveur valide la spec pièce par pièce contre son catalogue, la réécrit sous forme
+ * canonique, puis renvoie l'utilisateur complet — `avatarSpec` et `avatarUrl` à jour.
+ */
+export async function updateAvatarSpec(spec: string): Promise<UserResponse> {
+  const res = await apiClient.patch<UserResponse>('/api/users/me/avatar', { spec });
+  return res.data;
+}
+
+/**
+ * @deprecated Ancien contrat DiceBear, conservé pour `apps/web-legacy`, qui est en production et
+ * qu'on n'a pas le droit de modifier. Le serveur traduit ce couple en spec du nouveau catalogue.
+ * Tout code neuf doit appeler {@link updateAvatarSpec}.
+ */
 export async function updateAvatar(userId: string, avatarStyle: string, avatarSeed: string): Promise<UserResponse> {
   const res = await apiClient.patch<UserResponse>(`/api/users/${userId}/avatar`, { avatarStyle, avatarSeed });
   return res.data;

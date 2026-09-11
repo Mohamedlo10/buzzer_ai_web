@@ -15,6 +15,8 @@ export interface LeaderboardEntryResponse {
   userId: string;
   username: string;
   avatarUrl: string | null;
+  /** L'avatar structuré — permet un rendu local instantané, sans requête réseau. */
+  avatarSpec?: string | null;
   points: number;
   challengesPlayed: number;
   correctAnswers: number;

@@ -355,6 +355,7 @@ export default function SessionResultsPage() {
         ) : (
           <Avatar
             name={user?.username ?? 'U'}
+            avatarSpec={user?.avatarSpec}
             avatarUrl={user?.avatarUrl}
             size={36}
           />
@@ -681,6 +682,7 @@ export default function SessionResultsPage() {
                 <View style={{ marginRight: 12, position: 'relative' }}>
                   <Avatar
                     name={entry.player.name}
+                    avatarSpec={entry.player.avatarSpec}
                     avatarUrl={entry.player.avatarUrl}
                     size={38}
                   />

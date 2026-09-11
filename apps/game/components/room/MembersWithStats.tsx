@@ -114,7 +114,7 @@ export function MembersWithStats({
                 </View>
 
                 <View style={{ position: 'relative' }}>
-                  <Avatar name={member.username} avatarUrl={member.avatarUrl} size={36} />
+                  <Avatar name={member.username} avatarSpec={member.avatarSpec} avatarUrl={member.avatarUrl} size={36} />
                   <View
                     style={{
                       position: 'absolute',

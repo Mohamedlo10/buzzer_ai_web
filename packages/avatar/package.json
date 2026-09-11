@@ -1,0 +1,10 @@
+{
+  "name": "@xalaat/avatar",
+  "private": true,
+  "version": "1.0.0",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "sync": "node ../../scripts/sync-avatar-assets.mjs"
+  }
+}

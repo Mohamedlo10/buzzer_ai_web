@@ -41,6 +41,9 @@ export function handleWSEvent(event: WSEvent, _currentUserId?: string): void {
       break;
 
     case 'category_selected':
+      useBuzzStore
+        .getState()
+        .setPlayerCategories(event.playerId, event.selectedCategories, event.selectedCategoryDetails);
       break;
 
     case 'team_updated':

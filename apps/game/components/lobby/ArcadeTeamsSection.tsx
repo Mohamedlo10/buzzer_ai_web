@@ -12,6 +12,7 @@ export interface ArcadeTeamsSectionProps {
   isManager: boolean;
   userId?: string;
   avatarMap: Record<string, string | null>;
+  avatarSpecMap: Record<string, string | null>;
   onChangeTeam: () => void;
   onManagerReassign: (id: string, name: string) => void;
 }
@@ -22,6 +23,7 @@ export function ArcadeTeamsSection({
   isManager,
   userId: _userId,
   avatarMap,
+  avatarSpecMap,
   onChangeTeam,
   onManagerReassign,
 }: ArcadeTeamsSectionProps) {
@@ -126,6 +128,9 @@ export function ArcadeTeamsSection({
                   const avatarUrl = member.userId
                     ? (avatarMap[member.userId] ?? member.avatarUrl)
                     : member.avatarUrl;
+                  const avatarSpec = member.userId
+                    ? (avatarSpecMap[member.userId] ?? member.avatarSpec)
+                    : member.avatarSpec;
 
                   return (
                     <View
@@ -141,7 +146,7 @@ export function ArcadeTeamsSection({
                       }}
                     >
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 }}>
-                        <Avatar name={member.name} avatarUrl={avatarUrl} size={28} />
+                        <Avatar name={member.name} avatarSpec={avatarSpec} avatarUrl={avatarUrl} size={28} />
                         <Text
                           style={{
                             fontSize: 13,

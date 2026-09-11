@@ -30,7 +30,6 @@ interface BuzzState {
   teams: TeamResponse[];
   sessionCode: string | null;
   isManager: boolean;
-  mySelectedCategories: string[]; // local cache — backend doesn't return selected categories in PlayerResponse
 
   // Game
   currentQuestion: QuestionResponse | null;
@@ -94,6 +93,11 @@ interface BuzzActions {
   setGameOver: (isOver: boolean) => void;
   addPlayer: (player: PlayerResponse) => void;
   removePlayer: (playerId: string) => void;
+  setPlayerCategories: (
+    playerId: string,
+    selectedCategories: string[],
+    selectedCategoryDetails: CategoryRequest[],
+  ) => void;
   updateScores: (scores: Record<string, number>) => void;
   updateStatus: (status: SessionStatus) => void;
 
@@ -136,7 +140,6 @@ const initialState: BuzzState = {
   isCreating: false,
   isJoining: false,
   isStarting: false,
-  mySelectedCategories: [],
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -189,10 +192,6 @@ export const useBuzzStore = create<BuzzState & BuzzActions>((set, get) => ({
         isSpectator,
         ...(teamId ? { teamId } : {}),
       });
-      // Cache locally — backend doesn't return selected categories in PlayerResponse
-      if (!isManual) {
-        set({ mySelectedCategories: categories.map(c => c.name) });
-      }
       const detail = await sessionsApi.getSession(sessionId);
       if (!detail?.session) throw new Error('Invalid session');
 
@@ -411,6 +410,16 @@ export const useBuzzStore = create<BuzzState & BuzzActions>((set, get) => ({
       if (state.players.some((p) => p.userId === player.userId)) return state;
       return { players: [...state.players, player] };
     }),
+
+  // Indexé sur p.id (l'id du Player), qui est la clé que le serveur envoie dans
+  // CATEGORIES_UPDATED. Volontairement pas de repli sur userId : le mélange des deux dans le
+  // canal `players` est un bug distinct, qu'on ne propage pas ici.
+  setPlayerCategories: (playerId, selectedCategories, selectedCategoryDetails) =>
+    set((state) => ({
+      players: state.players.map((p) =>
+        p.id === playerId ? { ...p, selectedCategories, selectedCategoryDetails } : p,
+      ),
+    })),
 
   removePlayer: (playerId) =>
     set((state) => ({

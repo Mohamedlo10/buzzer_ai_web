@@ -164,18 +164,32 @@ export default function ConfirmEmailScreen() {
               </Text>
 
               <Text className="text-txt-60 text-sm mb-6 text-center leading-relaxed">
-                Votre adresse email a été validée avec succès. Vous pouvez maintenant profiter de toutes les fonctionnalités de Xalaat.
+                Votre adresse email a été validée. Il ne reste qu'à choisir la tête que vous
+                aurez dans le jeu.
               </Text>
 
+              {/* L'avatar est proposé ici plutôt qu'imposé : le compte a déjà reçu un avatar
+                  valide et distinct, donc rien ne bloque l'entrée dans le jeu. C'est le moment
+                  où l'envie de se représenter est la plus forte, pas un péage. */}
               <TouchableOpacity
-                onPress={() => router.replace('/(tabs)/rooms')}
+                onPress={() => router.replace('/profile/avatar')}
                 activeOpacity={0.8}
                 className="w-full py-4 rounded-2xl bg-host flex-row items-center justify-center shadow-md"
               >
                 <Text className="text-primary-ink font-bold text-lg mr-2">
-                  Accéder aux salons
+                  Créer mon avatar
                 </Text>
                 <ArrowRight size={20} color={palette.primaryInk} />
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => router.replace('/(tabs)/rooms')}
+                activeOpacity={0.7}
+                className="w-full py-3 mt-2 items-center justify-center"
+              >
+                <Text className="text-txt-60 text-sm font-semibold">
+                  Plus tard, aller aux salons
+                </Text>
               </TouchableOpacity>
             </View>
           )}

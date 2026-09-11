@@ -159,7 +159,12 @@ export default function CategoriesScreen() {
           const detail = await sessionsApi.getSession(actualSessionId);
           setMaxCategories(detail.session.maxCategoriesPerPlayer || 3);
           const player = detail.players.find(p => p.id === playerId || p.userId === playerId);
-          if (player?.selectedCategories?.length) {
+          // Les difficultés ne viennent que de selectedCategoryDetails. Le repli sur les
+          // noms seuls remet tout en INTERMEDIAIRE et écrase donc les FACILE/EXPERT du
+          // joueur : il ne sert que face à un serveur antérieur.
+          if (player?.selectedCategoryDetails?.length) {
+            setSelectedCategories(player.selectedCategoryDetails);
+          } else if (player?.selectedCategories?.length) {
             setSelectedCategories(
               player.selectedCategories.map(name => ({
                 name,

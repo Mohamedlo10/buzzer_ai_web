@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import {
@@ -12,6 +12,7 @@ import {
   Ban,
   Pencil,
   Trash2,
+  StopCircle,
 } from 'lucide-react';
 
 import { Card } from '../components/ui/Card';
@@ -48,8 +49,35 @@ const STATUS_CONFIG: Record<DailyChallengeStatus, { label: string; color: string
 
 const PAGE_SIZE = 20;
 
+/** Cadence du polling tant qu'une génération tourne. */
+const GENERATION_POLL_MS = 3000;
+
+/**
+ * Au-delà, une génération est signalée comme anormalement longue.
+ *
+ * Le pire cas nominal côté serveur tient en 3 min 30 (trois tentatives et leurs attentes) ;
+ * passé trois minutes, proposer l'arrêt vaut mieux que laisser deviner.
+ */
+const SLOW_GENERATION_SEC = 180;
+
 /** États dans lesquels l'édition est servie aux joueurs — voir DailyChallengeStatus.isPublic(). */
 const PUBLIC_STATUSES: DailyChallengeStatus[] = ['PUBLISHED', 'LIVE', 'CLOSED'];
+
+/**
+ * États depuis lesquels `cancel` est une transition légale — miroir de
+ * DailyChallengeStatus.canTransitionTo.
+ *
+ * Une liste explicite plutôt qu'une négation : la précédente (« ni publié, ni en cours, ni
+ * terminé ») affichait aussi le bouton sur une édition DÉJÀ annulée, où le serveur refuse la
+ * transition et renvoie une 500 opaque.
+ */
+const CANCELLABLE_STATUSES: DailyChallengeStatus[] = [
+  'DRAFT',
+  'GENERATING',
+  'GENERATED',
+  'REVIEW',
+  'FAILED',
+];
 
 /**
  * Question en cours de saisie. `id` absent = création, présent = correction.
@@ -207,6 +235,50 @@ function QuestionForm({
   );
 }
 
+/**
+ * Temps écoulé depuis le début d'une génération, en secondes.
+ *
+ * Un compteur qui avance vaut mieux qu'un libellé figé : « Génération… » immobile ne dit pas
+ * si le travail progresse ou si plus personne ne s'en occupe — c'est précisément la question
+ * que se posait l'administrateur devant une édition bloquée.
+ */
+function useElapsedSeconds(startedAt: string | null | undefined) {
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    if (!startedAt) return;
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, [startedAt]);
+
+  if (!startedAt) return null;
+  return Math.max(0, Math.round((now - new Date(startedAt).getTime()) / 1000));
+}
+
+function formatElapsed(seconds: number) {
+  if (seconds < 60) return `${seconds} s`;
+  return `${Math.floor(seconds / 60)} min ${String(seconds % 60).padStart(2, '0')} s`;
+}
+
+/**
+ * Durée de la génération en cours, sous le libellé d'état.
+ *
+ * Un composant à part et non un appel dans la boucle du tableau : `useElapsedSeconds` est un
+ * hook, il ne peut pas être appelé depuis un `map`.
+ */
+function GenerationElapsed({ startedAt }: { startedAt: string | null }) {
+  const elapsed = useElapsedSeconds(startedAt);
+  if (elapsed === null) return null;
+
+  const slow = elapsed >= SLOW_GENERATION_SEC;
+  return (
+    <div style={{ fontSize: 11, marginTop: 2, color: slow ? 'var(--bad)' : 'var(--txt-60)' }}>
+      {formatElapsed(elapsed)}
+      {slow && ' — anormalement long, tu peux arrêter'}
+    </div>
+  );
+}
+
 /** Demain, au format ISO — la valeur par défaut la plus probable à la création. */
 function tomorrowIso() {
   const d = new Date();
@@ -239,6 +311,13 @@ export function DailyChallengesPage() {
   const { data: list, isLoading } = useQuery({
     queryKey: ['admin', 'daily-challenges', page],
     queryFn: () => adminApi.getAdminDailyChallenges(page, PAGE_SIZE),
+    // La liste se rafraîchit d'elle-même tant qu'une génération tourne. Sans ça, seule la
+    // requête détail interrogeait le serveur : la ligne du tableau restait sur
+    // « Génération… » même une fois le travail terminé, jusqu'à un rechargement manuel.
+    refetchInterval: (query) =>
+      query.state.data?.content.some((c) => c.status === 'GENERATING')
+        ? GENERATION_POLL_MS
+        : false,
   });
 
   const { data: detail } = useQuery({
@@ -248,8 +327,20 @@ export function DailyChallengesPage() {
     // Tant que la génération tourne, on interroge le détail. Un canal WebSocket dédié ne se
     // justifie pas pour un back-office à un seul utilisateur.
     refetchInterval: (query) =>
-      query.state.data?.challenge.status === 'GENERATING' ? 3000 : false,
+      query.state.data?.challenge.status === 'GENERATING' ? GENERATION_POLL_MS : false,
   });
+
+  // Le détail sort de GENERATING : la liste doit l'apprendre tout de suite, sans attendre son
+  // propre tour de polling — c'est elle qui porte le libellé d'état que l'administrateur lit.
+  const previousDetailStatus = useRef<DailyChallengeStatus | null>(null);
+  const detailStatus = detail?.challenge.status ?? null;
+
+  useEffect(() => {
+    if (previousDetailStatus.current === 'GENERATING' && detailStatus !== 'GENERATING') {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'daily-challenges'] });
+    }
+    previousDetailStatus.current = detailStatus;
+  }, [detailStatus, queryClient]);
 
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ['admin', 'daily-challenges'] });
@@ -285,6 +376,15 @@ export function DailyChallengesPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const stopGenerationMutation = useMutation({
+    mutationFn: (id: string) => adminApi.stopAdminDailyChallengeGeneration(id),
+    onSuccess: () => {
+      toast.success('Génération arrêtée — le brouillon est de nouveau modifiable.');
+      invalidate();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const publishMutation = useMutation({
     mutationFn: (id: string) => adminApi.publishAdminDailyChallenge(id),
     onSuccess: (published) => {
@@ -301,6 +401,20 @@ export function DailyChallengesPage() {
     mutationFn: (id: string) => adminApi.cancelAdminDailyChallenge(id),
     onSuccess: () => {
       toast.success('Édition annulée.');
+      invalidate();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const deleteChallengeMutation = useMutation({
+    mutationFn: (id: string) => adminApi.deleteAdminDailyChallenge(id),
+    onSuccess: (_data, id) => {
+      toast.success('Édition supprimée.');
+      // Le panneau de détail montrait peut-être l'édition qui vient de disparaître : le
+      // laisser ouvert afficherait une 404 au prochain rafraîchissement.
+      if (selectedId === id) setSelectedId(null);
+      // Supprimer la dernière ligne d'une page laisserait l'écran sur une page vide.
+      if (list?.content.length === 1 && page > 0) setPage((p) => p - 1);
       invalidate();
     },
     onError: (e: Error) => toast.error(e.message),
@@ -363,6 +477,36 @@ export function DailyChallengesPage() {
     } else {
       addQuestionMutation.mutate(payload);
     }
+  };
+
+  const onStopGeneration = async (challenge: AdminDailyChallengeResponse) => {
+    const ok = await confirmAsync({
+      title: 'Arrêter la génération ?',
+      message:
+        `Le défi du ${formatDate(challenge.date)} redeviendra un brouillon, ` +
+        'que tu pourras régénérer ou remplir à la main. La tentative ne sera pas décomptée.',
+      confirmLabel: 'Arrêter',
+    });
+    if (ok) stopGenerationMutation.mutate(challenge.id);
+  };
+
+  /**
+   * Supprime définitivement une édition.
+   *
+   * À distinguer de l'annulation, qui garde la ligne et sa trace : la suppression efface
+   * l'édition et ses questions. Le serveur la refuse sur une édition publiée — les joueurs
+   * l'ont peut-être déjà jouée — et le bouton n'y est donc pas proposé.
+   */
+  const onDeleteChallenge = async (challenge: AdminDailyChallengeResponse) => {
+    const ok = await confirmAsync({
+      title: 'Supprimer cette édition ?',
+      message:
+        `Le défi du ${formatDate(challenge.date)} et ses ${challenge.questionCount} question(s) ` +
+        'seront effacés définitivement. Pour garder une trace, annule-la plutôt.',
+      confirmLabel: 'Supprimer',
+      tone: 'danger',
+    });
+    if (ok) deleteChallengeMutation.mutate(challenge.id);
   };
 
   const onCancel = async (challenge: AdminDailyChallengeResponse) => {
@@ -495,7 +639,10 @@ export function DailyChallengesPage() {
                       <span style={{ color: status.color, fontWeight: 600, fontSize: 13 }}>
                         {status.label}
                       </span>
-                      {c.generationError && (
+                      {c.status === 'GENERATING' && (
+                        <GenerationElapsed startedAt={c.generationStartedAt} />
+                      )}
+                      {c.generationError && c.status !== 'GENERATING' && (
                         <div style={{ fontSize: 11, color: 'var(--bad)', marginTop: 2 }}>
                           {c.generationError}
                         </div>
@@ -520,15 +667,47 @@ export function DailyChallengesPage() {
                           <Sparkles size={13} /> Générer
                         </button>
                       )}
-                      {!c.status.startsWith('PUBLI') && c.status !== 'LIVE' && c.status !== 'CLOSED' && (
+                      {c.status === 'GENERATING' && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); void onStopGeneration(c); }}
+                          disabled={stopGenerationMutation.isPending}
+                          title="Arrêter la génération — l’édition redevient un brouillon"
+                          style={{
+                            display: 'inline-flex', alignItems: 'center', gap: 5,
+                            padding: '5px 10px', borderRadius: 6, fontSize: 12,
+                            border: '1px solid var(--line)', background: 'transparent',
+                            color: 'var(--bad)', cursor: 'pointer',
+                          }}
+                        >
+                          <StopCircle size={13} /> Arrêter
+                        </button>
+                      )}
+                      {CANCELLABLE_STATUSES.includes(c.status) && (
                         <button
                           onClick={(e) => { e.stopPropagation(); void onCancel(c); }}
+                          title="Abandonner l’édition — la ligne et sa trace sont conservées"
                           style={{
                             marginLeft: 6, padding: '5px 8px', borderRadius: 6,
                             border: '1px solid var(--line)', background: 'transparent', cursor: 'pointer',
                           }}
                         >
                           <Ban size={13} />
+                        </button>
+                      )}
+                      {/* Miroir de requireEditable côté serveur : une édition publique a pu
+                          être jouée, l'effacer emporterait les tentatives des joueurs. */}
+                      {!PUBLIC_STATUSES.includes(c.status) && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); void onDeleteChallenge(c); }}
+                          disabled={deleteChallengeMutation.isPending}
+                          title="Supprimer définitivement l’édition et ses questions"
+                          style={{
+                            marginLeft: 6, padding: '5px 8px', borderRadius: 6,
+                            border: '1px solid var(--line)', background: 'transparent',
+                            color: 'var(--bad)', cursor: 'pointer',
+                          }}
+                        >
+                          <Trash2 size={13} />
                         </button>
                       )}
                     </td>
