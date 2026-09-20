@@ -332,6 +332,11 @@ export default function RoomDetailScreen() {
           rankings={rankings}
           currentUserId={user?.id ?? ''}
           onAddFriend={handleSendFriendRequest}
+          onSelectUser={(member) => {
+            if (member.userId) {
+              router.push(`/profile/${member.userId}` as any);
+            }
+          }}
         />
 
         {/* Danger Zone */}

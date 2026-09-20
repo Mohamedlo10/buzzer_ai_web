@@ -14,12 +14,19 @@ import {
   UserX,
   ShieldAlert,
   ShieldOff,
+  Trophy,
+  Swords,
+  Sparkles,
+  Flame,
+  Target,
+  Medal,
 } from 'lucide-react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 import * as friendsApi from '~/lib/api/friends';
 import { useFriendStore } from '~/stores/useFriendStore';
-import type { FriendshipStatus } from '~/types/api';
+import { useAuthStore } from '~/stores/useAuthStore';
+import type { FriendshipStatus, CategoryStat } from '~/types/api';
 import { palette, font } from '~/lib/theme/tokens';
 import { Avatar } from '~/components/shared/Avatar';
 import { notify, notifyApiError } from '~/lib/ui/notify';
@@ -31,7 +38,10 @@ export default function UserProfileScreen() {
   const router = useRouter();
   const { userId } = useLocalSearchParams<{ userId: string }>();
   const queryClient = useQueryClient();
+  const currentUser = useAuthStore((s) => s.user);
   const { sendRequest, removeFriend, blockUser, unblockUser } = useFriendStore();
+
+  const isSelf = currentUser?.id === userId;
 
   const { data: profile, isLoading, error } = useQuery({
     queryKey: ['friendProfile', userId],
@@ -162,11 +172,19 @@ export default function UserProfileScreen() {
   const isBlocked = friendshipStatus === 'BLOCKED';
   const totalWins = profile.totalWins || 0;
   const totalGames = profile.totalGames || 0;
+  const totalScore = profile.totalScore || 0;
+  const rank = profile.globalRank;
   const winRate = profile.winRate != null
     ? Math.round(profile.winRate)
     : totalGames > 0
       ? Math.round((totalWins / totalGames) * 100)
       : 0;
+
+  const topCategories: CategoryStat[] = (profile.topCategories && profile.topCategories.length > 0)
+    ? profile.topCategories
+    : (profile.categories && profile.categories.length > 0)
+    ? profile.categories.slice(0, 4)
+    : [];
 
   const isMutating =
     sendRequestMutation.isPending ||
@@ -221,7 +239,7 @@ export default function UserProfileScreen() {
       </View>
 
       <AdAwareScrollView
-        contentContainerStyle={{ padding: 16, paddingBottom: 40, gap: 16 }}
+        contentContainerStyle={{ padding: 16, paddingBottom: 40, gap: 16, maxWidth: 540, width: '100%', alignSelf: 'center' }}
         showsVerticalScrollIndicator={false}
       >
         {/* User Hero Card */}
@@ -236,7 +254,27 @@ export default function UserProfileScreen() {
             gap: 12,
           }}
         >
-          <Avatar name={profile.username} avatarSpec={profile.avatarSpec} avatarUrl={profile.avatarUrl} size={88} hue={30} />
+          <View style={{ position: 'relative' }}>
+            <Avatar name={profile.username} avatarSpec={profile.avatarSpec} avatarUrl={profile.avatarUrl} size={88} hue={30} />
+            {rank && rank <= 3 && (
+              <View
+                style={{
+                  position: 'absolute',
+                  top: -6,
+                  right: -6,
+                  backgroundColor: palette.surface,
+                  borderRadius: 12,
+                  padding: 2,
+                  borderWidth: 1,
+                  borderColor: palette.line,
+                }}
+              >
+                <Text style={{ fontSize: 18 }}>
+                  {rank === 1 ? '🥇' : rank === 2 ? '🥈' : '🥉'}
+                </Text>
+              </View>
+            )}
+          </View>
 
           <View style={{ alignItems: 'center', gap: 4 }}>
             <Text
@@ -251,6 +289,14 @@ export default function UserProfileScreen() {
               {profile.username}
             </Text>
 
+            <Text style={{ fontSize: 12.5, color: palette.inkSoft }}>
+              {isSelf
+                ? '(C’est vous)'
+                : rank && rank > 0
+                ? `Rang #${rank} mondial`
+                : 'Joueur Xalaat'}
+            </Text>
+
             {isBlocked && (
               <View
                 style={{
@@ -263,6 +309,7 @@ export default function UserProfileScreen() {
                   borderRadius: 9999,
                   borderWidth: 1,
                   borderColor: palette.bad + '40',
+                  marginTop: 4,
                 }}
               >
                 <ShieldAlert size={13} color={palette.bad} />
@@ -274,7 +321,7 @@ export default function UserProfileScreen() {
           </View>
 
           {/* Friendship Action Button */}
-          {friendshipStatus !== 'SELF' && (
+          {!isSelf && friendshipStatus !== 'SELF' && (
             <View style={{ alignItems: 'center', gap: 10, marginTop: 4, width: '100%' }}>
               <TouchableOpacity
                 onPress={handleFriendAction}
@@ -299,6 +346,7 @@ export default function UserProfileScreen() {
                   borderWidth: friendshipStatus === 'BLOCKED' ? 1 : 0,
                   borderColor: palette.line,
                   minWidth: 180,
+                  width: '100%',
                 }}
               >
                 {isBlocked ? (
@@ -356,7 +404,7 @@ export default function UserProfileScreen() {
           )}
         </View>
 
-        {/* Stats Grid */}
+        {/* Stats Grid 1: Main Numbers */}
         <View
           style={{
             backgroundColor: palette.surface,
@@ -369,18 +417,20 @@ export default function UserProfileScreen() {
           }}
         >
           <View style={{ alignItems: 'center' }}>
-            <Text style={{ fontSize: 20, fontWeight: '800', color: palette.good }}>
-              {totalWins}
+            <Trophy size={16} color={palette.gold} style={{ marginBottom: 4 }} />
+            <Text style={{ fontSize: 18, fontWeight: '800', color: palette.gold }}>
+              {totalScore}
             </Text>
             <Text style={{ fontSize: 11, color: palette.inkSoft, marginTop: 2 }}>
-              Victoires
+              Points
             </Text>
           </View>
 
-          <View style={{ width: 1, height: 32, backgroundColor: palette.line }} />
+          <View style={{ width: 1, height: 36, backgroundColor: palette.line }} />
 
           <View style={{ alignItems: 'center' }}>
-            <Text style={{ fontSize: 20, fontWeight: '800', color: palette.txt }}>
+            <Swords size={16} color={palette.primary} style={{ marginBottom: 4 }} />
+            <Text style={{ fontSize: 18, fontWeight: '800', color: palette.txt }}>
               {totalGames}
             </Text>
             <Text style={{ fontSize: 11, color: palette.inkSoft, marginTop: 2 }}>
@@ -388,18 +438,148 @@ export default function UserProfileScreen() {
             </Text>
           </View>
 
-          <View style={{ width: 1, height: 32, backgroundColor: palette.line }} />
+          <View style={{ width: 1, height: 36, backgroundColor: palette.line }} />
 
           <View style={{ alignItems: 'center' }}>
-            <Text style={{ fontSize: 20, fontWeight: '800', color: palette.primary }}>
+            <Sparkles size={16} color={palette.violet} style={{ marginBottom: 4 }} />
+            <Text style={{ fontSize: 18, fontWeight: '800', color: palette.good }}>
               {winRate}%
             </Text>
             <Text style={{ fontSize: 11, color: palette.inkSoft, marginTop: 2 }}>
-              Précision
+              Victoires
             </Text>
           </View>
         </View>
-      
+
+        {/* Stats Grid 2: Additional Metrics */}
+        {(profile.bestScore != null || profile.totalWins != null || profile.avgScore != null) && (
+          <View
+            style={{
+              backgroundColor: palette.surface,
+              borderRadius: 20,
+              borderWidth: 1,
+              borderColor: palette.line,
+              padding: 16,
+              flexDirection: 'row',
+              justifyContent: 'space-around',
+            }}
+          >
+            <View style={{ alignItems: 'center' }}>
+              <Text style={{ fontSize: 16, fontWeight: '800', color: palette.good }}>
+                {totalWins}
+              </Text>
+              <Text style={{ fontSize: 10.5, color: palette.inkSoft, marginTop: 2 }}>
+                Victoires nettes
+              </Text>
+            </View>
+
+            <View style={{ width: 1, height: 28, backgroundColor: palette.line }} />
+
+            <View style={{ alignItems: 'center' }}>
+              <Text style={{ fontSize: 16, fontWeight: '800', color: palette.primary }}>
+                {profile.bestScore ?? totalScore}
+              </Text>
+              <Text style={{ fontSize: 10.5, color: palette.inkSoft, marginTop: 2 }}>
+                Meilleur score
+              </Text>
+            </View>
+
+            {profile.avgScore != null && (
+              <>
+                <View style={{ width: 1, height: 28, backgroundColor: palette.line }} />
+                <View style={{ alignItems: 'center' }}>
+                  <Text style={{ fontSize: 16, fontWeight: '800', color: palette.txt }}>
+                    {Math.round(profile.avgScore)}
+                  </Text>
+                  <Text style={{ fontSize: 10.5, color: palette.inkSoft, marginTop: 2 }}>
+                    Moyenne
+                  </Text>
+                </View>
+              </>
+            )}
+          </View>
+        )}
+
+        {/* Top Categories Section */}
+        {topCategories.length > 0 && (
+          <View
+            style={{
+              backgroundColor: palette.surface,
+              borderRadius: 20,
+              borderWidth: 1,
+              borderColor: palette.line,
+              padding: 16,
+              gap: 12,
+            }}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Text
+                style={{
+                  fontSize: 11,
+                  fontWeight: '700',
+                  letterSpacing: 1.2,
+                  color: palette.inkSoft,
+                  textTransform: 'uppercase',
+                }}
+              >
+                Top Catégories
+              </Text>
+            </View>
+
+            <View style={{ gap: 8 }}>
+              {topCategories.map((cat, i) => (
+                <View
+                  key={cat.category || i}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    backgroundColor: palette.bg,
+                    borderRadius: 14,
+                    borderWidth: 1,
+                    borderColor: palette.line,
+                    padding: 12,
+                  }}
+                >
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}>
+                    <View
+                      style={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: 10,
+                        backgroundColor: `${palette.primary}18`,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <Flame size={16} color={palette.primary} />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text
+                        style={{
+                          fontSize: 13.5,
+                          fontWeight: '700',
+                          color: palette.txt,
+                        }}
+                        numberOfLines={1}
+                      >
+                        {cat.category}
+                      </Text>
+                      <Text style={{ fontSize: 11, color: palette.inkSoft, marginTop: 1 }}>
+                        {cat.gamesPlayed} partie{cat.gamesPlayed > 1 ? 's' : ''} · {Math.round(cat.winRate || 0)}% victoires
+                      </Text>
+                    </View>
+                  </View>
+
+                  <Text style={{ fontSize: 13, fontWeight: '800', color: palette.primary, marginLeft: 8 }}>
+                    {cat.totalScore} pts
+                  </Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
+
         {/* Carte partenaire — en fin de contenu, hors de tout parcours de jeu. */}
         <AdSlot placement="PLAYER_PROFILE" />
       </AdAwareScrollView>

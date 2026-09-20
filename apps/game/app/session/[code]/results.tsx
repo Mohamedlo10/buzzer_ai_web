@@ -372,7 +372,14 @@ export default function SessionResultsPage() {
         showsVerticalScrollIndicator={false}
       >
         {/* ── Podium ── */}
-        <Podium rankings={rankings} currentUserId={user?.id} />
+        <Podium
+          rankings={rankings}
+          currentUserId={user?.id}
+          onPlayerTap={(entry) => {
+            const uid = entry.player.userId;
+            if (uid) router.push(`/profile/${uid}` as any);
+          }}
+        />
 
         {/* ── Publicité (RESULT) — retourne null si ads.enabled=false ── */}
         <AdSlot placement="RESULT" />
@@ -664,10 +671,18 @@ export default function SessionResultsPage() {
             const isCurrentUser = (entry.player.userId ?? entry.player.id) === user?.id;
             const rankColors = [palette.gold, '#C0C0C0', '#CD7F32'];
             const scoreColor = index < 3 ? rankColors[index] : palette.txt;
+            const targetUserId = entry.player.userId;
 
             return (
-              <View
+              <TouchableOpacity
                 key={entry.player.id}
+                onPress={() => {
+                  if (targetUserId) {
+                    router.push(`/profile/${targetUserId}` as any);
+                  }
+                }}
+                disabled={!targetUserId}
+                activeOpacity={0.75}
                 style={{
                   flexDirection: 'row',
                   alignItems: 'center',
@@ -771,7 +786,7 @@ export default function SessionResultsPage() {
                     <Text style={{ color: palette.inkSoft, fontSize: 10 }}>pts</Text>
                   </View>
                 )}
-              </View>
+              </TouchableOpacity>
             );
           })}
         </View>

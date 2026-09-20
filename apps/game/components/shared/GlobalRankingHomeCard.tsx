@@ -140,8 +140,15 @@ export function GlobalRankingHomeCard() {
               const playerElo = player.glickoRating !== undefined ? Math.round(Number(player.glickoRating)) : 1500;
 
               return (
-                <View
+                <TouchableOpacity
                   key={player.userId || idx}
+                  onPress={(e) => {
+                    e.stopPropagation?.();
+                    if (player.userId) {
+                      router.push(`/profile/${player.userId}` as any);
+                    }
+                  }}
+                  activeOpacity={0.75}
                   style={{
                     flex: 1,
                     backgroundColor: palette.bg,
@@ -179,7 +186,7 @@ export function GlobalRankingHomeCard() {
                   <Text style={{ fontSize: 10, fontWeight: '700', color: palette.primary, marginTop: 1 }}>
                     {playerElo} ELO
                   </Text>
-                </View>
+                </TouchableOpacity>
               );
             })}
           </View>

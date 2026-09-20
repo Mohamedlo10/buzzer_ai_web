@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Modal, ScrollView, RefreshControl } from 'react-native';
+import { useRouter } from 'expo-router';
 import {
   Trophy,
   Search,
@@ -46,6 +47,7 @@ function getPaginationRange(current: number, total: number): (number | 'dots')[]
 }
 
 export default function RankingsScreen() {
+  const router = useRouter();
   const currentUser = useAuthStore((s) => s.user);
   const [selectedTab, setSelectedTab] = useState<RankingTabType>('GLOBAL');
   const [currentPage, setCurrentPage] = useState(0);
@@ -389,7 +391,16 @@ export default function RankingsScreen() {
               const name = p?.username || 'Joueur';
 
               return (
-                <View key={p?.userId || rankNum} style={{ flex: isFirst ? 1.15 : 1, alignItems: 'center' }}>
+                <TouchableOpacity
+                  key={p?.userId || rankNum}
+                  onPress={() => {
+                    if (p?.userId) {
+                      router.push(`/profile/${p.userId}` as any);
+                    }
+                  }}
+                  activeOpacity={0.75}
+                  style={{ flex: isFirst ? 1.15 : 1, alignItems: 'center' }}
+                >
                   <View style={{ position: 'relative', marginBottom: 8 }}>
                     <Avatar
                       name={name}
@@ -434,7 +445,7 @@ export default function RankingsScreen() {
                       {p?.scoreText}
                     </Text>
                   </View>
-                </View>
+                </TouchableOpacity>
               );
             })}
           </View>
@@ -469,8 +480,14 @@ export default function RankingsScreen() {
               const isMe = item.isMe;
 
               return (
-                <View
+                <TouchableOpacity
                   key={item.userId}
+                  onPress={() => {
+                    if (item.userId) {
+                      router.push(`/profile/${item.userId}` as any);
+                    }
+                  }}
+                  activeOpacity={0.75}
                   style={{
                     flexDirection: 'row',
                     alignItems: 'center',
@@ -516,16 +533,19 @@ export default function RankingsScreen() {
                     </View>
                   </View>
 
-                  <Text
-                    style={{
-                      fontSize: 13.5,
-                      fontWeight: '800',
-                      color: palette.txt,
-                    }}
-                  >
-                    {item.scoreText}
-                  </Text>
-                </View>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                    <Text
+                      style={{
+                        fontSize: 13.5,
+                        fontWeight: '800',
+                        color: palette.txt,
+                      }}
+                    >
+                      {item.scoreText}
+                    </Text>
+                    <ChevronRight size={14} color={palette.inkSoft} />
+                  </View>
+                </TouchableOpacity>
               );
             })}
           </View>
