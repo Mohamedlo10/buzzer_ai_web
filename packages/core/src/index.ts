@@ -1,6 +1,7 @@
 export * from './lib/api/index';
 export * from './lib/theme/tokens';
 export * from './lib/ui/confirm';
+export { apiErrorMessage } from './lib/ui/notify';
 export * from './stores/useAuthStore';
 export * from './stores/useSoloStore';
 export * from './stores/useBuzzStore';

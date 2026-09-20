@@ -19,6 +19,7 @@ import { Card } from '../components/ui/Card';
 import { Spinner } from '../components/loading/Spinner';
 import {
   adminApi,
+  apiErrorMessage,
   confirmAsync,
   type AdminDailyChallengeResponse,
   type AdminDailyQuestionResponse,
@@ -393,8 +394,19 @@ export function DailyChallengesPage() {
     },
     // Le serveur répond 422 avec le rapport si une violation bloque : ce n'est pas une
     // panne, c'est un refus motivé, et le rapport reste affiché sous les questions.
-    onError: () =>
-      toast.error("Publication refusée : corrige d'abord les points bloquants ci-dessous."),
+    // Tout autre échec est une vraie erreur, et doit se lire comme telle : ce message
+    // servait jusqu'ici à toutes, et envoyait chercher des points bloquants inexistants
+    // derrière une erreur 500. Rafraîchi dans les deux cas — le rapport affiché peut
+    // dater, et l'état de l'édition après une panne n'est pas connu d'avance.
+    onError: (e: unknown) => {
+      const status = (e as { response?: { status?: number } }).response?.status;
+      toast.error(
+        status === 422
+          ? "Publication refusée : corrige d'abord les points bloquants ci-dessous."
+          : `Publication impossible : ${apiErrorMessage(e, 'erreur inattendue du serveur')}`,
+      );
+      invalidate();
+    },
   });
 
   const cancelMutation = useMutation({

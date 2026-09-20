@@ -11,6 +11,7 @@ import {
 } from 'lucide-react-native';
 
 import { useLeaderboard } from '~/lib/query/hooks';
+import { usePullToRefresh } from '~/lib/query/usePullToRefresh';
 import type { LeaderboardPeriodType } from '~/types/leaderboards';
 import { LoadingState, EmptyState, ErrorState } from '~/components/ui';
 import { palette, font } from '~/lib/theme/tokens';
@@ -60,11 +61,12 @@ export default function RankingsScreen() {
 
   // react-query remplace le couple useState/useEffect précédent, dont le catch avalait
   // l'erreur dans un console.error : en cas d'échec, la liste restait vide et muette.
-  const { data, isLoading, isError, error, isRefetching, refetch } = useLeaderboard(
+  const { data, isLoading, isError, error, refetch } = useLeaderboard(
     period,
     currentPage,
     searchUsername || undefined,
   );
+  const { refreshing, onRefresh } = usePullToRefresh();
 
   const entries = data?.entries ?? [];
   const totalPages = Math.max(1, data?.totalPages ?? 1);
@@ -115,8 +117,8 @@ export default function RankingsScreen() {
       <AdAwareScrollView
         refreshControl={
           <RefreshControl
-            refreshing={isRefetching}
-            onRefresh={() => void refetch()}
+            refreshing={refreshing}
+            onRefresh={onRefresh}
             tintColor={palette.primary}
             colors={[palette.primary]}
           />

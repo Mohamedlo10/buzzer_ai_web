@@ -12,6 +12,7 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { X, Plus, ArrowRight } from 'lucide-react-native';
 import { useRoomsData } from '~/lib/hooks/useRoomsData';
+import { usePullToRefresh } from '~/lib/query/usePullToRefresh';
 import { LoadingState, ErrorState } from '~/components/ui/StateViews';
 import { palette, font } from '~/lib/theme/tokens';
 import { QRScannerModal } from '~/components/shared/QRScannerModal';
@@ -44,11 +45,16 @@ export default function RoomsScreen() {
     joinError,
     handleReconnectSession,
     handleJoinCode,
+    recheckActiveSession,
   } = useRoomsData({
     onNavigate: (path) => {
       router.push(path as any);
     },
   });
+
+  // Recharge aussi la carte du Défi du Jour, qui porte sa propre requête : `refetch` ne
+  // couvrait que le tableau de bord. Le bandeau de session active, lui, vit hors react-query.
+  const { refreshing, onRefresh } = usePullToRefresh(recheckActiveSession);
 
   if (isLoading && !data) {
     return (
@@ -78,7 +84,7 @@ export default function RoomsScreen() {
       <AdAwareScrollView
         contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 4, paddingBottom: 24, gap: 16 }}
         showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refetch} tintColor={palette.primary} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={palette.primary} />}
       >
         {/* Header Title */}
         <View style={{ marginVertical: 4 }}>

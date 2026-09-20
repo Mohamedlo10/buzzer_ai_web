@@ -1,11 +1,10 @@
-import { useState } from 'react';
 import { View, ScrollView, RefreshControl } from 'react-native';
 
 import { GraduationCap, Trophy } from 'lucide-react-native';
 
 import { useAuthStore } from '~/stores/useAuthStore';
-import { useQueryClient } from '@tanstack/react-query';
 import { useDashboardV2 } from '~/lib/query/hooks';
+import { usePullToRefresh } from '~/lib/query/usePullToRefresh';
 import { palette } from '~/lib/theme/tokens';
 import { AppTopBar } from '~/components/shared/AppTopBar';
 import { QuizOfTheDayCard } from '~/components/shared/QuizOfTheDayCard';
@@ -42,10 +41,6 @@ import { SeasonRankCard } from '~/components/solo/SeasonRankCard';
  */
 export default function SoloScreen() {
   const user = useAuthStore((s) => s.user);
-  const queryClient = useQueryClient();
-  const [refreshing, setRefreshing] = useState(false);
-  const [refreshError, setRefreshError] = useState<unknown>(null);
-
   const {
     data: dashboardData,
     isLoading: isDashboardLoading,
@@ -54,28 +49,10 @@ export default function SoloScreen() {
     refetch: refetchDashboard,
   } = useDashboardV2();
 
-
-  /**
-   * Le `try/catch {}` précédent avalait toute erreur de rafraîchissement en silence :
-   * l'utilisateur tirait pour rafraîchir, rien ne se passait, et rien ne l'expliquait.
-   */
-  const onRefresh = async () => {
-    setRefreshing(true);
-    setRefreshError(null);
-    try {
-      // SeasonRankCard porte sa propre requête : on l'invalide plutôt que de remonter la
-      // donnée jusqu'ici, ce qui obligerait l'accueil à connaître la forme du classement.
-      // Le préfixe couvre la saison comme les autres périodes déjà en cache.
-      await Promise.all([
-        refetchDashboard(),
-        queryClient.invalidateQueries({ queryKey: ['leaderboard'] }),
-      ]);
-    } catch (err) {
-      setRefreshError(err);
-    } finally {
-      setRefreshing(false);
-    }
-  };
+  // QuizOfTheDayCard et SeasonRankCard portent leur propre requête. La liste écrite ici
+  // auparavant oubliait la première : tirer ne faisait jamais apparaître un défi fraîchement
+  // publié. Le hook recharge tout ce qui est monté, et remonte l'échec au lieu de l'avaler.
+  const { refreshing, onRefresh, error: refreshError } = usePullToRefresh();
 
   const username = user?.username || 'Joueur';
 

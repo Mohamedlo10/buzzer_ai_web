@@ -13,7 +13,7 @@ import {
 import { InstrumentSerif_400Regular_Italic } from '@expo-google-fonts/instrument-serif';
 
 import { font, palette } from '~/lib/theme/tokens';
-import { useQueryFocusManager } from '~/lib/query';
+import { queryKeys, useQueryFocusManager } from '~/lib/query';
 import '../global.css';
 
 import { useAuthStore } from '@xalaat/core';
@@ -108,6 +108,22 @@ export default function RootLayout() {
     });
     return () => subscription.remove();
   }, [router]);
+
+  // Push reçue app ouverte : la bannière s'affichait, mais rien ne rechargeait l'écran — le
+  // joueur lisait « Le Défi du Jour est là » au-dessus d'un accueil qui l'ignorait. On invalide
+  // plutôt que de recharger : seules les cartes montées repartent aussitôt, les autres
+  // requêtes attendront leur prochain montage.
+  useEffect(() => {
+    const subscription = Notifications.addNotificationReceivedListener((notification) => {
+      const data = notification.request.content.data;
+      // Clé posée par DailyChallengeAnnouncer côté backend.
+      if (data?.url === '/daily') {
+        queryClient.invalidateQueries({ queryKey: queryKeys.dailyToday });
+      }
+      queryClient.invalidateQueries({ queryKey: queryKeys.notifications });
+    });
+    return () => subscription.remove();
+  }, []);
 
   if (!loaded && !error) {
     return null;

@@ -27,6 +27,7 @@ import {
 
 import { useAuthStore } from '~/stores/useAuthStore';
 import { useProfileSummary, useUnseenAchievements, useMarkAchievementsSeen } from '~/lib/query/hooks';
+import { usePullToRefresh } from '~/lib/query/usePullToRefresh';
 import * as usersApi from '~/lib/api/users';
 import { AdSlot } from '~/components/shared/AdSlot';
 import { AdAwareScrollView } from '~/components/partner/AdAwareScrollView';
@@ -50,7 +51,6 @@ export default function ProfileScreen() {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isChangingPassword, setIsChangingPassword] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
   const [resendingEmail, setResendingEmail] = useState(false);
 
   const {
@@ -63,11 +63,7 @@ export default function ProfileScreen() {
   const { data: unseenBadges } = useUnseenAchievements();
   const { mutate: markSeen } = useMarkAchievementsSeen();
 
-  const onRefresh = async () => {
-    setRefreshing(true);
-    await refetchProfile();
-    setRefreshing(false);
-  };
+  const { refreshing, onRefresh } = usePullToRefresh();
 
   const handleResendEmail = async () => {
     setResendingEmail(true);

@@ -23,6 +23,9 @@ export function useRoomsData(options?: UseRoomsDataOptions) {
   const [showAllRoomsModal, setShowAllRoomsModal] = useState(false);
   const [showAllRooms, setShowAllRooms] = useState(false);
   const [activeSessionInfo, setActiveSessionInfo] = useState<ActiveSessionInfo | null>(null);
+  // Relance à la demande la vérification ci-dessous : quand la liste des salons revient
+  // identique, react-query en garde la référence et l'effet ne se rejouerait pas.
+  const [recheckNonce, setRecheckNonce] = useState(0);
 
   const [code, setCode] = useState('');
   const [isJoining, setIsJoining] = useState(false);
@@ -94,7 +97,9 @@ export function useRoomsData(options?: UseRoomsDataOptions) {
     return () => {
       isMounted = false;
     };
-  }, [data?.recentRooms]);
+  }, [data?.recentRooms, recheckNonce]);
+
+  const recheckActiveSession = useCallback(() => setRecheckNonce((n) => n + 1), []);
 
   const resolveSessionRoute = useCallback((sessionCode: string, status?: string): string => {
     if (status === 'LOBBY') return `/session/${sessionCode}/categories`;
@@ -221,5 +226,6 @@ export function useRoomsData(options?: UseRoomsDataOptions) {
     joinError,
     handleReconnectSession,
     handleJoinCode,
+    recheckActiveSession,
   };
 }
