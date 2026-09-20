@@ -1206,7 +1206,7 @@ export interface AdminAdResponse {
   id: string; // UUID
   title: string;
   imageUrl: string | null;
-  targetUrl: string;
+  targetUrl?: string | null;
   /** Tous les écrans visés : le formulaire fait un PUT complet et doit les réémettre. */
   placements: AdminAdPlacement[];
   /** Le formulaire fait un PUT complet : sans relecture, le rattachement serait perdu. */
@@ -1226,7 +1226,7 @@ export interface AdminAdRequest {
   title: string;
   /** @deprecated Remplacée par les médias du partenaire. */
   imageUrl?: string | null;
-  targetUrl: string;
+  targetUrl?: string | null;
   /** Au moins un. Une campagne vise plusieurs écrans à la fois depuis V40. */
   placements: AdminAdPlacement[];
   /** Obligatoire depuis V39 : une campagne appartient toujours à un partenaire. */
@@ -1303,6 +1303,8 @@ export interface PartnerSummaryResponse {
   tagline: string | null;
   logoUrl: string | null;
   city: string | null;
+  phone?: string | null;
+  whatsapp?: string | null;
   /** Calculé serveur : le client n'a pas à croiser deux listes. */
   favorite: boolean;
   /** Jusqu'à 3 images puis la vidéo — la vidéo est toujours le dernier slide. */

@@ -1,13 +1,14 @@
 import { useId, useState } from 'react';
 import {
   Image,
+  Linking,
   Text,
   TouchableOpacity,
   useWindowDimensions,
   View,
 } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
-import { ChevronRight, Heart } from 'lucide-react-native';
+import { ChevronRight, Heart, MessageCircle } from 'lucide-react-native';
 
 import { MediaCarousel } from './MediaCarousel';
 import { PartnerVideoSlide } from './PartnerVideoSlide';
@@ -17,8 +18,8 @@ import type { PartnerSummaryResponse } from '~/types/api';
 
 interface PartnerCardProps {
   partner: PartnerSummaryResponse;
-  /** Lien de la campagne. Absent dans l'annuaire, où seule la fiche s'ouvre. */
-  targetUrl?: string;
+  /** Lien de la campagne. Si absent ou vide, le bouton bascule vers WhatsApp avec le téléphone du partenaire. */
+  targetUrl?: string | null;
   onOpenProfile: () => void;
   onToggleFavorite: () => void;
   /** Marge horizontale de l'écran, pour calculer la largeur des volets. */
@@ -197,31 +198,72 @@ export function PartnerCard({
             <ChevronRight size={14} color={palette.inkSoft} />
           </TouchableOpacity>
 
-          {targetUrl ? (
-            <TouchableOpacity
-              onPress={() => WebBrowser.openBrowserAsync(targetUrl)}
-              activeOpacity={0.8}
-              style={{
-                flex: 1,
-                alignItems: 'center',
-                justifyContent: 'center',
-                paddingVertical: 10,
-                borderRadius: 12,
-                backgroundColor: palette.primary,
-              }}
-            >
-              <Text
-                style={{
-                  fontFamily: font.nativeFamily.ui,
-                  fontWeight: '700',
-                  fontSize: 13,
-                  color: palette.primaryInk,
-                }}
-              >
-                Découvrir
-              </Text>
-            </TouchableOpacity>
-          ) : null}
+          {(() => {
+            const trimmedTargetUrl = targetUrl?.trim();
+            const rawPhone = partner.whatsapp || partner.phone;
+            const cleanPhone = rawPhone ? rawPhone.replace(/[^\d]/g, '') : '';
+
+            if (trimmedTargetUrl) {
+              return (
+                <TouchableOpacity
+                  onPress={() => WebBrowser.openBrowserAsync(trimmedTargetUrl)}
+                  activeOpacity={0.8}
+                  style={{
+                    flex: 1,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    paddingVertical: 10,
+                    borderRadius: 12,
+                    backgroundColor: palette.primary,
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontFamily: font.nativeFamily.ui,
+                      fontWeight: '700',
+                      fontSize: 13,
+                      color: palette.primaryInk,
+                    }}
+                  >
+                    Découvrir
+                  </Text>
+                </TouchableOpacity>
+              );
+            }
+
+            if (cleanPhone) {
+              return (
+                <TouchableOpacity
+                  onPress={() => Linking.openURL(`https://wa.me/${cleanPhone}`)}
+                  activeOpacity={0.8}
+                  style={{
+                    flex: 1,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 6,
+                    paddingVertical: 10,
+                    borderRadius: 12,
+                    backgroundColor: '#25D366',
+                  }}
+                >
+                  <MessageCircle size={15} color="#FFFFFF" />
+                  <Text
+                    style={{
+                      fontFamily: font.nativeFamily.ui,
+                      fontWeight: '700',
+                      fontSize: 13,
+                      color: '#FFFFFF',
+                    }}
+                  >
+                    WhatsApp
+                  </Text>
+                </TouchableOpacity>
+              );
+            }
+
+            return null;
+          })()}
         </View>
       </View>
     </View>

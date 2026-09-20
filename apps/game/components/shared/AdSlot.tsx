@@ -108,7 +108,11 @@ export function AdSlot({ placement, delayMs = 0 }: AdSlotProps) {
   // On rend l'ancienne bannière plutôt que rien, pour ne pas perdre une campagne payée.
   return (
     <TouchableOpacity
-      onPress={() => WebBrowser.openBrowserAsync(ad.targetUrl)}
+      onPress={() => {
+        if (ad.targetUrl) {
+          void WebBrowser.openBrowserAsync(ad.targetUrl);
+        }
+      }}
       activeOpacity={0.85}
       style={{
         borderRadius: 16,

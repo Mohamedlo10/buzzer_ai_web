@@ -166,7 +166,7 @@ export function AdvertisementsPage() {
     // sont portés par le partenaire depuis V39.
     setForm({
       title: ad.title,
-      targetUrl: ad.targetUrl,
+      targetUrl: ad.targetUrl ?? '',
       placements: [...ad.placements],
       partnerId: ad.partnerId,
       active: ad.active,
@@ -332,15 +332,17 @@ function AdRow({ ad, onEdit, onDelete, isDeleting }: AdRowProps) {
           ))}
           <span className="text-xs text-txt-40">priorité {ad.priority}</span>
           <span className="text-xs text-txt-60">· {ad.partnerName}</span>
-          <a
-            href={ad.targetUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="text-txt-40 hover:text-txt transition-colors"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <ExternalLink size={12} />
-          </a>
+          {ad.targetUrl ? (
+            <a
+              href={ad.targetUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="text-txt-40 hover:text-txt transition-colors"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <ExternalLink size={12} />
+            </a>
+          ) : null}
         </div>
       </div>
 
@@ -392,7 +394,6 @@ function AdForm({ form, setForm, onSave, onCancel, isSaving, partners, title }: 
 
   const isValid =
     form.title.trim() &&
-    form.targetUrl.trim() &&
     form.placements.length > 0 &&
     form.partnerId;
 
@@ -484,13 +485,18 @@ function AdForm({ form, setForm, onSave, onCancel, isSaving, partners, title }: 
         </div>
 
         <div>
-          <label className="block text-txt-60 text-xs mb-1">URL cible *</label>
+          <label className="block text-txt-60 text-xs mb-1">
+            URL cible (optionnelle)
+          </label>
           <input
-            value={form.targetUrl}
+            value={form.targetUrl ?? ''}
             onChange={field('targetUrl')}
-            placeholder="https://..."
+            placeholder="https://... (vide = redirection WhatsApp / appel direct)"
             className="w-full px-3 py-2 rounded-xl bg-surface border border-line text-txt text-sm focus:outline-none focus:border-host/50"
           />
+          <p className="text-txt-40 text-[11px] mt-1">
+            Si aucune URL n&apos;est renseignée, le joueur sera directement redirigé vers la discussion WhatsApp du partenaire lors du clic.
+          </p>
         </div>
 
         <div>

@@ -8,7 +8,7 @@ export interface AdData {
   title: string;
   /** @deprecated Remplacée par `partner.media`. Servie pour les clients antérieurs. */
   imageUrl?: string | null;
-  targetUrl: string;
+  targetUrl?: string | null;
   placement: string;
   /**
    * Identité du partenaire : nom, logo, médias du carrousel, état du favori.
