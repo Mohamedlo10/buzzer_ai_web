@@ -7,6 +7,7 @@ import {
   useWindowDimensions,
   NativeSyntheticEvent,
   NativeScrollEvent,
+  ViewToken,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -160,11 +161,23 @@ export default function OnboardingScreen() {
 
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const offsetX = event.nativeEvent.contentOffset.x;
-    const index = Math.round(offsetX / containerWidth);
-    if (index >= 0 && index < slides.length && index !== currentIndex) {
-      setCurrentIndex(index);
+    if (containerWidth > 0) {
+      const index = Math.round(offsetX / containerWidth);
+      if (index >= 0 && index < slides.length && index !== currentIndex) {
+        setCurrentIndex(index);
+      }
     }
   };
+
+  const onViewableItemsChanged = useRef(({ viewableItems }: { viewableItems: Array<ViewToken> }) => {
+    if (viewableItems && viewableItems.length > 0 && typeof viewableItems[0].index === 'number') {
+      setCurrentIndex(viewableItems[0].index);
+    }
+  }).current;
+
+  const viewabilityConfig = useRef({
+    itemVisiblePercentThreshold: 50,
+  }).current;
 
   const scrollToSlide = (index: number) => {
     flatListRef.current?.scrollToIndex({ index, animated: true });
@@ -397,7 +410,12 @@ export default function OnboardingScreen() {
           pagingEnabled
           showsHorizontalScrollIndicator={false}
           bounces={false}
+          onScroll={handleScroll}
           onMomentumScrollEnd={handleScroll}
+          onScrollEndDrag={handleScroll}
+          onViewableItemsChanged={onViewableItemsChanged}
+          viewabilityConfig={viewabilityConfig}
+          scrollEventThrottle={16}
           getItemLayout={(_, index) => ({
             length: containerWidth,
             offset: containerWidth * index,
