@@ -79,7 +79,13 @@ export const metadata: Metadata = {
     type: 'website',
     images: [
       {
-        url: '/icon.png',
+        url: `${APP_URL}/og-image.png`,
+        width: 1200,
+        height: 630,
+        alt: 'Xalaat — Quiz & Jeu de Buzzer Multijoueur',
+      },
+      {
+        url: `${APP_URL}/icon.png`,
         width: 500,
         height: 500,
         alt: 'Xalaat Logo',
@@ -91,7 +97,7 @@ export const metadata: Metadata = {
     title: 'Xalaat — Quiz & Jeu de Buzzer Multijoueur en Temps Réel',
     description:
       'Défiez vos amis, testez vos réflexes au buzzer et grimpez au classement avec le quiz intelligent Xalaat.',
-    images: ['/icon.png'],
+    images: [`${APP_URL}/og-image.png`],
     creator: '@mouhadev',
   },
   robots: {
@@ -160,6 +166,26 @@ export default function RootLayout({
       className={`${boldonse.variable} ${manrope.variable} ${instrumentSerif.variable}`}
     >
       <head>
+        <meta property="og:title" content="Xalaat — Quiz & Jeu de Buzzer Multijoueur" />
+        <meta
+          property="og:description"
+          content="Défiez vos amis, testez vos réflexes au buzzer et grimpez au classement avec le quiz intelligent Xalaat."
+        />
+        <meta property="og:image" content={`${APP_URL}/og-image.png`} />
+        <meta property="og:image:secure_url" content={`${APP_URL}/og-image.png`} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:type" content="image/png" />
+        <meta property="og:url" content={APP_URL} />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="Xalaat" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Xalaat — Quiz & Jeu de Buzzer Multijoueur" />
+        <meta
+          name="twitter:description"
+          content="Défiez vos amis, testez vos réflexes au buzzer et grimpez au classement avec le quiz intelligent Xalaat."
+        />
+        <meta name="twitter:image" content={`${APP_URL}/og-image.png`} />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
