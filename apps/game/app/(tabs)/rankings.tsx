@@ -1,6 +1,5 @@
 import React, { useState, useRef } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Modal, ScrollView, RefreshControl } from 'react-native';
-import { useRouter } from 'expo-router';
 import {
   Trophy,
   Search,
@@ -8,7 +7,6 @@ import {
   Info,
   ChevronLeft,
   ChevronRight,
-  Globe,
 } from 'lucide-react-native';
 
 import { useLeaderboard, useGlobalRankings, useMyGlobalRank } from '~/lib/query/hooks';
@@ -48,7 +46,6 @@ function getPaginationRange(current: number, total: number): (number | 'dots')[]
 }
 
 export default function RankingsScreen() {
-  const router = useRouter();
   const currentUser = useAuthStore((s) => s.user);
   const [selectedTab, setSelectedTab] = useState<RankingTabType>('GLOBAL');
   const [currentPage, setCurrentPage] = useState(0);

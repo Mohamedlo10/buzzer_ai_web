@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
-import { Trophy, Zap, Calendar, Award, Flame } from 'lucide-react-native';
+import { Trophy } from 'lucide-react-native';
 
 import type { ProfileSummaryResponse } from '~/types/api';
 import { useMyGlobalRank } from '~/lib/query/hooks';
@@ -31,9 +31,6 @@ export function ProfilePrestigeCard({ profile }: ProfilePrestigeCardProps) {
   const circumference = 2 * Math.PI * radius; // ~169.65
   const strokeDashoffset =
     circumference - (circumference * successRate) / 100;
-
-  const displayRank =
-    profile.seasonRank !== null ? `#${profile.seasonRank}` : '#1';
 
   return (
     <View

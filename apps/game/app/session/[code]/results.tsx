@@ -98,7 +98,6 @@ export default function SessionResultsPage() {
 
   const user = useAuthStore((state) => state.user);
   const storeSession = useBuzzStore((state) => state.session);
-  const sessionCode = useBuzzStore((state) => state.sessionCode);
   const leaveSession = useBuzzStore((state) => state.leaveSession);
 
   const resolvedSessionId = paramSessionId || storeSession?.id || storedSessionId;
@@ -133,7 +132,7 @@ export default function SessionResultsPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [resolvedSessionId, code, sessionCode, leaveSession]);
+  }, [resolvedSessionId, code, leaveSession]);
 
   useEffect(() => {
     loadRankings();

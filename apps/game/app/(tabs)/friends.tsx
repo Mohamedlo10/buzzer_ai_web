@@ -1,6 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView, ActivityIndicator, RefreshControl } from 'react-native';
-import { useRouter } from 'expo-router';
 import {
   Search,
   Users,
@@ -27,7 +26,6 @@ import { usePullToRefresh } from '~/lib/query/usePullToRefresh';
 type FilterType = 'all' | 'online' | 'requests';
 
 export default function FriendsScreen() {
-  const router = useRouter();
   const [filter, setFilter] = useState<FilterType>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<UserResponse[]>([]);

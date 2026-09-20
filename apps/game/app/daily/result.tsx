@@ -19,7 +19,6 @@ import * as dailyApi from '~/lib/api/daily';
 import { useUnseenAchievements, useMarkAchievementsSeen } from '~/lib/query/hooks';
 import { LoadingState, ErrorState } from '~/components/ui/StateViews';
 import { DailyResultSummary } from '~/components/daily/DailyResultSummary';
-import { AdSlot } from '~/components/shared/AdSlot';
 import { BadgeUnlockedModal } from '~/components/achievements/BadgeUnlockedModal';
 import { palette, font } from '~/lib/theme/tokens';
 

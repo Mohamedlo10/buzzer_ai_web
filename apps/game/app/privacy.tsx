@@ -21,7 +21,6 @@ import { palette, font } from '~/lib/theme/tokens';
 
 function Section({
   icon,
-  iconColor,
   title,
   children,
 }: {

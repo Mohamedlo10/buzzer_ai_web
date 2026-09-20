@@ -42,7 +42,7 @@ export default function NotificationsScreen() {
 
   useEffect(() => {
     refetch();
-  }, []);
+  }, [refetch]);
 
   const invalidate = () => {
     qc.invalidateQueries({ queryKey: queryKeys.notifications });

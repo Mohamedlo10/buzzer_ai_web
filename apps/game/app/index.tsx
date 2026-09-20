@@ -69,7 +69,7 @@ export default function SplashScreen() {
     pulseAnim(dotScale1, 0).start();
     pulseAnim(dotScale2, 150).start();
     pulseAnim(dotScale3, 300).start();
-  }, []);
+  }, [dotScale1, dotScale2, dotScale3, logoOpacity, logoScale]);
 
   const redirectTo = useCallback(
     (destination: string) => {

@@ -64,7 +64,7 @@ export default function TrainingSessionScreen() {
         loadSession(sessionId).then(() => setStartTime(Date.now()));
       }
     }
-  }, [sessionId]);
+  }, [sessionId, loadSession]);
 
   const handleAdvance = async () => {
     try {

@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Trophy, ChevronRight, Crown, Award } from 'lucide-react-native';
+import { Trophy, ChevronRight, Award } from 'lucide-react-native';
 import { useGlobalRankings, useMyGlobalRank } from '~/lib/query/hooks';
 import { palette, font } from '~/lib/theme/tokens';
 import { Avatar } from './Avatar';
@@ -10,7 +10,7 @@ import { PlayerProfileModal } from './PlayerProfileModal';
 export function GlobalRankingHomeCard() {
   const router = useRouter();
   const [selectedProfileUserId, setSelectedProfileUserId] = React.useState<string | null>(null);
-  const { data: globalData, isLoading: isGlobalLoading } = useGlobalRankings(0);
+  const { data: globalData } = useGlobalRankings(0);
   const { data: myRank, isLoading: isMyRankLoading } = useMyGlobalRank();
 
   const top3 = (globalData?.content ?? []).slice(0, 3);

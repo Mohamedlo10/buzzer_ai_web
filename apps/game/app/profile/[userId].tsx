@@ -18,8 +18,6 @@ import {
   Swords,
   Sparkles,
   Flame,
-  Target,
-  Medal,
 } from 'lucide-react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 

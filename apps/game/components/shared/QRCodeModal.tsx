@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -30,13 +30,8 @@ export function QRCodeModal({ visible, onClose, type, id, code, title }: QRCodeM
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
-  useEffect(() => {
-    if (visible && id) {
-      loadQRCode();
-    }
-  }, [visible, id, type]);
-
-  const loadQRCode = async () => {
+  const loadQRCode = useCallback(async () => {
+    if (!id) return;
     setIsLoading(true);
     setError(null);
     try {
@@ -58,7 +53,13 @@ export function QRCodeModal({ visible, onClose, type, id, code, title }: QRCodeM
       setError(err?.message || 'Impossible de charger le QR code');
       setIsLoading(false);
     }
-  };
+  }, [type, id]);
+
+  useEffect(() => {
+    if (visible && id) {
+      loadQRCode();
+    }
+  }, [visible, id, loadQRCode]);
 
   const handleCopyCode = async () => {
     if (!code) return;

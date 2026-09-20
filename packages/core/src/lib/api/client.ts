@@ -8,12 +8,10 @@ import type { TokenResponse } from '../../types/api';
 // ──────────────────────────────────────────────
 
 function getBaseUrl(): string {
-  // 1. Vite environment (import.meta.env)
   try {
-    // @ts-ignore
-    if (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL) {
-      // @ts-ignore
-      return import.meta.env.VITE_API_URL;
+    const meta = import.meta as unknown as { env?: { VITE_API_URL?: string } };
+    if (typeof import.meta !== 'undefined' && meta?.env?.VITE_API_URL) {
+      return meta.env.VITE_API_URL;
     }
   } catch {}
 

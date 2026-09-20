@@ -35,7 +35,7 @@ export default function TrainingResultScreen() {
     if (sessionId && !result) {
       loadResult();
     }
-  }, [sessionId]);
+  }, [sessionId, result, loadResult]);
 
   const handleRemediation = async () => {
     try {

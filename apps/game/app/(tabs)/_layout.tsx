@@ -14,7 +14,7 @@ export default function TabsLayout() {
     if (!isLoading && !isAuthenticated) {
       router.replace('/(auth)/login');
     }
-  }, [isAuthenticated, isLoading]);
+  }, [isAuthenticated, isLoading, router]);
 
   return (
     <Tabs
