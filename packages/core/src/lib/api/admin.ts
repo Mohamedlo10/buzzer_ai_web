@@ -428,7 +428,7 @@ export async function uploadAdminMedia(
   form.append('file', file);
   form.append('kind', kind);
   const res = await apiClient.post<MediaUploadResponse>('/api/admin/media', form, {
-    headers: { 'Content-Type': undefined },
+    headers: { 'Content-Type': 'multipart/form-data' },
   });
   return res.data;
 }

@@ -113,7 +113,7 @@ export function MediaUploadField({
           type="file"
           accept={accept}
           className="hidden"
-          disabled={isDisabled || uploadDisabled}
+          disabled={uploadDisabled}
           onChange={(e) => {
             const file = e.target.files?.[0];
             if (file) handleFile(file);
