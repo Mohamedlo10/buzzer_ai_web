@@ -109,7 +109,7 @@ export default function RankingsScreen() {
     avatarUrl?: string | null;
     avatarSpec?: string | null;
     rank: number;
-    score: number;
+    scoreText: string;
     subtitle: string;
     isMe: boolean;
   }> = [];
@@ -117,7 +117,7 @@ export default function RankingsScreen() {
   let totalPages = 1;
   let totalPlayers = 0;
   let myEntryRank: number | null = null;
-  let myEntryScore: number | null = null;
+  let myEntryScoreText: string | null = null;
 
   if (isGlobalMode) {
     const rawContent = globalQuery.data?.content ?? [];
@@ -126,7 +126,10 @@ export default function RankingsScreen() {
 
     if (myGlobalRankQuery.data?.rank) {
       myEntryRank = myGlobalRankQuery.data.rank;
-      myEntryScore = myGlobalRankQuery.data.totalScore;
+      const elo = myGlobalRankQuery.data.glickoRating !== undefined
+        ? Math.round(Number(myGlobalRankQuery.data.glickoRating))
+        : 1500;
+      myEntryScoreText = `${elo} ELO`;
     } else if (globalQuery.data?.currentUserRank) {
       myEntryRank = globalQuery.data.currentUserRank;
     }
@@ -137,6 +140,7 @@ export default function RankingsScreen() {
       const wins = item.totalWins ?? 0;
       const games = item.totalGames ?? 0;
       const winRate = item.winRate !== undefined ? Math.round(Number(item.winRate)) : (games > 0 ? Math.round((wins / games) * 100) : 0);
+      const elo = item.glickoRating !== undefined ? Math.round(Number(item.glickoRating)) : 1500;
 
       return {
         userId: item.userId,
@@ -144,7 +148,7 @@ export default function RankingsScreen() {
         avatarUrl: item.avatarUrl,
         avatarSpec: item.avatarSpec,
         rank: rankNum,
-        score: item.totalScore,
+        scoreText: `${elo} ELO`,
         subtitle: `${games} ${games > 1 ? 'parties' : 'partie'} · ${wins} ${wins > 1 ? 'victoires' : 'victoire'} (${winRate}%)`,
         isMe,
       };
@@ -156,7 +160,7 @@ export default function RankingsScreen() {
 
     if (periodData?.me) {
       myEntryRank = periodData.me.rank;
-      myEntryScore = periodData.me.points;
+      myEntryScoreText = `${periodData.me.points.toLocaleString('fr-FR')} pts`;
     }
 
     entries = (periodData?.entries ?? []).map((item, idx) => {
@@ -167,7 +171,7 @@ export default function RankingsScreen() {
         avatarUrl: item.avatarUrl,
         avatarSpec: item.avatarSpec,
         rank: rankNum,
-        score: item.points,
+        scoreText: `${item.points.toLocaleString('fr-FR')} pts`,
         subtitle: `${item.challengesPlayed} défis · ${item.correctAnswers} bonnes réponses`,
         isMe: item.isMe,
       };
@@ -262,7 +266,7 @@ export default function RankingsScreen() {
             }}
           >
             {isGlobalMode
-              ? `Classement général · ${totalPlayers} joueur${totalPlayers > 1 ? 's' : ''}`
+              ? `Classement général (Cote Elo) · ${totalPlayers} joueur${totalPlayers > 1 ? 's' : ''}`
               : `${periodQuery.data?.periodLabel || 'Défi du Jour'} · ${totalPlayers} joueur${totalPlayers > 1 ? 's' : ''}`}
           </Text>
         </View>
@@ -312,7 +316,7 @@ export default function RankingsScreen() {
                   }}
                 >
                   Rang #{myEntryRank}
-                  {myEntryScore !== null ? ` · ${myEntryScore.toLocaleString('fr-FR')} pts` : ''}
+                  {myEntryScoreText ? ` · ${myEntryScoreText}` : ''}
                 </Text>
               </View>
             </View>
@@ -383,7 +387,6 @@ export default function RankingsScreen() {
               const isFirst = rankNum === 1;
               const isSecond = rankNum === 2;
               const name = p?.username || 'Joueur';
-              const score = p?.score ?? 0;
 
               return (
                 <View key={p?.userId || rankNum} style={{ flex: isFirst ? 1.15 : 1, alignItems: 'center' }}>
@@ -428,7 +431,7 @@ export default function RankingsScreen() {
                       {name}
                     </Text>
                     <Text style={{ fontSize: 11, fontWeight: '700', color: palette.primary, marginTop: 2 }}>
-                      {score.toLocaleString('fr-FR')} pts
+                      {p?.scoreText}
                     </Text>
                   </View>
                 </View>
@@ -520,7 +523,7 @@ export default function RankingsScreen() {
                       color: palette.txt,
                     }}
                   >
-                    {item.score.toLocaleString('fr-FR')} pts
+                    {item.scoreText}
                   </Text>
                 </View>
               );
@@ -678,17 +681,18 @@ export default function RankingsScreen() {
             </View>
 
             <Text style={{ color: palette.inkSoft, fontSize: 13.5, lineHeight: 20, marginBottom: 12 }}>
-              <Text style={{ color: palette.txt, fontWeight: '700' }}>Classement Mondial :</Text> Cumule
-              les points et victoires de toutes les parties multijoueurs disputées sur Xalaat.
+              <Text style={{ color: palette.txt, fontWeight: '700' }}>Classement Mondial (Cote Elo) :</Text> Basé
+              sur le système de cote Elo (Glicko-2) en multijoueur. Votre rang s&apos;ajuste selon la difficulté
+              de vos adversaires et vos victoires.
             </Text>
 
             <Text style={{ color: palette.inkSoft, fontSize: 13.5, lineHeight: 20, marginBottom: 12 }}>
-              <Text style={{ color: palette.txt, fontWeight: '700' }}>Classement Défis (Jour / Semaine / Saison) :</Text> Se base sur vos performances au Défi du Jour quotidien. La saison repart de zéro chaque mois.
+              <Text style={{ color: palette.txt, fontWeight: '700' }}>Classement Défis (Jour / Semaine / Saison) :</Text> Se base sur vos points cumulés au Défi du Jour quotidien. La saison repart de zéro chaque mois.
             </Text>
 
             <Text style={{ color: palette.inkSoft, fontSize: 13.5, lineHeight: 20 }}>
-              <Text style={{ color: palette.primary, fontWeight: '700' }}>À égalité de points :</Text> Le
-              taux de victoire et le nombre de bonnes réponses départagent les joueurs.
+              <Text style={{ color: palette.primary, fontWeight: '700' }}>À égalité de points (Défis) :</Text> Le
+              nombre de bonnes réponses et le temps de réponse départagent les joueurs.
             </Text>
           </View>
         </View>

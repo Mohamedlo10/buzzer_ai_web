@@ -13,7 +13,7 @@ export function GlobalRankingHomeCard() {
 
   const top3 = (globalData?.content ?? []).slice(0, 3);
   const userRank = myRank?.rank;
-  const userScore = myRank?.totalScore ?? 0;
+  const userElo = myRank?.glickoRating !== undefined ? Math.round(Number(myRank.glickoRating)) : 1500;
   const userWins = myRank?.totalWins ?? 0;
   const userGames = myRank?.totalGames ?? 0;
   const userWinRate = myRank?.winRate !== undefined ? Math.round(Number(myRank.winRate)) : (userGames > 0 ? Math.round((userWins / userGames) * 100) : 0);
@@ -118,7 +118,7 @@ export function GlobalRankingHomeCard() {
 
         <View style={{ alignItems: 'flex-end' }}>
           <Text style={{ fontSize: 13, fontWeight: '800', color: palette.txt }}>
-            {userScore.toLocaleString('fr-FR')} pts
+            {userElo} ELO
           </Text>
           <Text style={{ fontSize: 11, color: palette.inkSoft }}>
             {userWins} victoires ({userWinRate}%)
@@ -137,6 +137,7 @@ export function GlobalRankingHomeCard() {
             {top3.map((player, idx) => {
               const medals = ['🥇', '🥈', '🥉'];
               const isGold = idx === 0;
+              const playerElo = player.glickoRating !== undefined ? Math.round(Number(player.glickoRating)) : 1500;
 
               return (
                 <View
@@ -176,7 +177,7 @@ export function GlobalRankingHomeCard() {
                     {player.username}
                   </Text>
                   <Text style={{ fontSize: 10, fontWeight: '700', color: palette.primary, marginTop: 1 }}>
-                    {player.totalScore.toLocaleString('fr-FR')} pts
+                    {playerElo} ELO
                   </Text>
                 </View>
               );

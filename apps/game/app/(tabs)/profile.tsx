@@ -350,11 +350,11 @@ export default function ProfileScreen() {
                   <Text style={{ fontFamily: font.nativeFamily.display, fontSize: 20, color: '#FFFFFF', paddingTop: 1 }}>
                     {myRank?.rank ? `#${myRank.rank}` : '—'}
                   </Text>
-                  {myRank?.totalScore !== undefined && (
+                  {myRank?.glickoRating !== undefined ? (
                     <Text style={{ fontFamily: font.nativeFamily.ui, fontSize: 10.5, color: 'rgba(255,255,255,0.6)' }}>
-                      {myRank.totalScore.toLocaleString('fr-FR')} pts
+                      {Math.round(Number(myRank.glickoRating))} ELO
                     </Text>
-                  )}
+                  ) : null}
                 </View>
 
                 <View style={{ gap: 3, flex: 1, alignItems: 'center' }}>
