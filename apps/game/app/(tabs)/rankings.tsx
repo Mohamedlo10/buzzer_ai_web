@@ -21,6 +21,7 @@ import { Avatar } from '~/components/shared/Avatar';
 import { AppTopBar } from '~/components/shared/AppTopBar';
 import { AdSlot } from '~/components/shared/AdSlot';
 import { AdAwareScrollView } from '~/components/partner/AdAwareScrollView';
+import { PlayerProfileModal } from '~/components/shared/PlayerProfileModal';
 
 const PAGE_SIZE = 20;
 
@@ -54,6 +55,7 @@ export default function RankingsScreen() {
   const [searchInput, setSearchInput] = useState('');
   const [searchUsername, setSearchUsername] = useState('');
   const [showInfoModal, setShowInfoModal] = useState(false);
+  const [selectedProfileUserId, setSelectedProfileUserId] = useState<string | null>(null);
 
   const scrollRef = useRef<ScrollView>(null);
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -395,7 +397,7 @@ export default function RankingsScreen() {
                   key={p?.userId || rankNum}
                   onPress={() => {
                     if (p?.userId) {
-                      router.push(`/profile/${p.userId}` as any);
+                      setSelectedProfileUserId(p.userId);
                     }
                   }}
                   activeOpacity={0.75}
@@ -484,7 +486,7 @@ export default function RankingsScreen() {
                   key={item.userId}
                   onPress={() => {
                     if (item.userId) {
-                      router.push(`/profile/${item.userId}` as any);
+                      setSelectedProfileUserId(item.userId);
                     }
                   }}
                   activeOpacity={0.75}
@@ -717,6 +719,12 @@ export default function RankingsScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* Player Profile Bottom Sheet Modal */}
+      <PlayerProfileModal
+        userId={selectedProfileUserId}
+        onClose={() => setSelectedProfileUserId(null)}
+      />
     </View>
   );
 }

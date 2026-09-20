@@ -21,6 +21,7 @@ import {
 import { Podium } from '~/components/game/results/Podium';
 import { TeamLeaderboard } from '~/components/game/TeamLeaderboard';
 import { CategoryQuestionsModal } from '~/components/game/results/CategoryQuestionsModal';
+import { PlayerProfileModal } from '~/components/shared/PlayerProfileModal';
 import { Avatar } from '~/components/shared/Avatar';
 import { AdSlot } from '~/components/shared/AdSlot';
 import { useAuthStore } from '~/stores/useAuthStore';
@@ -93,6 +94,7 @@ export default function SessionResultsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [storedSessionId, setStoredSessionId] = useState<string | null>(null);
   const [capturedRoomId, setCapturedRoomId] = useState<string | null>(null);
+  const [selectedProfileUserId, setSelectedProfileUserId] = useState<string | null>(null);
 
   const user = useAuthStore((state) => state.user);
   const storeSession = useBuzzStore((state) => state.session);
@@ -377,7 +379,7 @@ export default function SessionResultsPage() {
           currentUserId={user?.id}
           onPlayerTap={(entry) => {
             const uid = entry.player.userId;
-            if (uid) router.push(`/profile/${uid}` as any);
+            if (uid) setSelectedProfileUserId(uid);
           }}
         />
 
@@ -678,7 +680,7 @@ export default function SessionResultsPage() {
                 key={entry.player.id}
                 onPress={() => {
                   if (targetUserId) {
-                    router.push(`/profile/${targetUserId}` as any);
+                    setSelectedProfileUserId(targetUserId);
                   }
                 }}
                 disabled={!targetUserId}
@@ -1066,6 +1068,12 @@ export default function SessionResultsPage() {
         categoryIcon={selectedCategoryIcon}
         isSprint={isSprint}
         onClose={() => setSelectedCategory(null)}
+      />
+
+      {/* ── Player Profile Bottom Sheet Modal ── */}
+      <PlayerProfileModal
+        userId={selectedProfileUserId}
+        onClose={() => setSelectedProfileUserId(null)}
       />
     </View>
   );

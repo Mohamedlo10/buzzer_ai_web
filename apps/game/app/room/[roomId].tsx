@@ -34,10 +34,12 @@ import { InviteFriendsModal } from '~/components/room/InviteFriendsModal';
 import { SessionConfigForm } from '~/components/session/SessionConfigForm';
 import { AdSlot } from '~/components/shared/AdSlot';
 import { AdAwareScrollView } from '~/components/partner/AdAwareScrollView';
+import { PlayerProfileModal } from '~/components/shared/PlayerProfileModal';
 
 export default function RoomDetailScreen() {
   const router = useRouter();
   const { roomId } = useLocalSearchParams<{ roomId: string }>();
+  const [selectedProfileUserId, setSelectedProfileUserId] = useState<string | null>(null);
 
   const {
     roomData,
@@ -334,7 +336,7 @@ export default function RoomDetailScreen() {
           onAddFriend={handleSendFriendRequest}
           onSelectUser={(member) => {
             if (member.userId) {
-              router.push(`/profile/${member.userId}` as any);
+              setSelectedProfileUserId(member.userId);
             }
           }}
         />
@@ -419,6 +421,12 @@ export default function RoomDetailScreen() {
           />
         </Modal>
       )}
+
+      {/* Player Profile Bottom Sheet Modal */}
+      <PlayerProfileModal
+        userId={selectedProfileUserId}
+        onClose={() => setSelectedProfileUserId(null)}
+      />
     </SafeAreaView>
   );
 }

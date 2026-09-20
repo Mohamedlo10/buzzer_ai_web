@@ -17,6 +17,7 @@ import { palette, font } from '~/lib/theme/tokens';
 import { Avatar } from '~/components/shared/Avatar';
 import { AppTopBar } from '~/components/shared/AppTopBar';
 import { BlockedUsersModal } from '~/components/friend/BlockedUsersModal';
+import { PlayerProfileModal } from '~/components/shared/PlayerProfileModal';
 import { notify, notifyApiError } from '~/lib/ui/notify';
 import { LoadingState } from '~/components/ui/StateViews';
 import { AdSlot } from '~/components/shared/AdSlot';
@@ -33,6 +34,7 @@ export default function FriendsScreen() {
   const [isSearching, setIsSearching] = useState(false);
   const [sentRequests, setSentRequests] = useState<Set<string>>(new Set());
   const [isBlockedModalOpen, setIsBlockedModalOpen] = useState(false);
+  const [selectedProfileUserId, setSelectedProfileUserId] = useState<string | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const {
@@ -242,7 +244,7 @@ export default function FriendsScreen() {
                   }}
                 >
                   <TouchableOpacity
-                    onPress={() => router.push(`/profile/${u.id}` as any)}
+                    onPress={() => setSelectedProfileUserId(u.id)}
                     activeOpacity={0.7}
                     style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1, marginRight: 8 }}
                   >
@@ -441,7 +443,7 @@ export default function FriendsScreen() {
                         }}
                       >
                         <TouchableOpacity
-                          onPress={() => router.push(`/profile/${req.requester.id}` as any)}
+                          onPress={() => setSelectedProfileUserId(req.requester.id)}
                           activeOpacity={0.7}
                           style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1, marginRight: 8 }}
                         >
@@ -508,7 +510,7 @@ export default function FriendsScreen() {
                         }}
                       >
                         <TouchableOpacity
-                          onPress={() => router.push(`/profile/${req.receiver.id}` as any)}
+                          onPress={() => setSelectedProfileUserId(req.receiver.id)}
                           activeOpacity={0.7}
                           style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1, marginRight: 8 }}
                         >
@@ -590,7 +592,7 @@ export default function FriendsScreen() {
                 displayedFriends.map((friend) => (
                   <TouchableOpacity
                     key={friend.id}
-                    onPress={() => router.push(`/profile/${friend.id}` as any)}
+                    onPress={() => setSelectedProfileUserId(friend.id)}
                     activeOpacity={0.85}
                     style={{
                       flexDirection: 'row',
@@ -689,6 +691,12 @@ export default function FriendsScreen() {
       <BlockedUsersModal
         visible={isBlockedModalOpen}
         onClose={() => setIsBlockedModalOpen(false)}
+      />
+
+      {/* ── Player Profile Bottom Sheet Modal ── */}
+      <PlayerProfileModal
+        userId={selectedProfileUserId}
+        onClose={() => setSelectedProfileUserId(null)}
       />
     </View>
   );
