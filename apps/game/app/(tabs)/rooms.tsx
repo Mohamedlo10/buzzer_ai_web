@@ -18,6 +18,7 @@ import { palette, font } from '~/lib/theme/tokens';
 import { QRScannerModal } from '~/components/shared/QRScannerModal';
 import { PatternZigzag } from '~/components/shared/PatternZigzag';
 import { QuizOfTheDayCard } from '~/components/shared/QuizOfTheDayCard';
+import { GlobalRankingHomeCard } from '~/components/shared/GlobalRankingHomeCard';
 import { ActiveSessionCard } from '~/components/shared/ActiveSessionCard';
 import { AdSlot } from '~/components/shared/AdSlot';
 import { AdAwareScrollView } from '~/components/partner/AdAwareScrollView';
@@ -263,12 +264,13 @@ export default function RoomsScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Le Défi du Jour d'abord : c'est le rendez-vous quotidien, et il portait auparavant
-            la troisième place derrière un classement mondial. */}
+        {/* Le Défi du Jour d'abord : c'est le rendez-vous quotidien */}
         <QuizOfTheDayCard />
 
-        {/* Puis la partie en cours, s'il y en a une. Elle occupait jusqu'ici la même carte que
-            le défi, qu'elle remplaçait : un joueur en pleine partie ne voyait plus le défi. */}
+        {/* Classement mondial : aperçu de mon rang et du podium */}
+        <GlobalRankingHomeCard />
+
+        {/* Puis la partie en cours, s'il y en a une */}
         <ActiveSessionCard activeRoom={activeRoom} />
 
         {/* Carte partenaire — après le Défi du Jour, avant la liste des salons. */}

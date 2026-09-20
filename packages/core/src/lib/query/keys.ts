@@ -10,7 +10,8 @@ export const queryKeys = {
   session: (id: string) => ['session', id] as const,
 
   // Rankings
-  globalRankings: (page?: number) => ['rankings', 'global', page] as const,
+  globalRankings: (page?: number, username?: string) =>
+    ['rankings', 'global', page ?? 0, username ?? ''] as const,
   sessionRankings: (sessionId: string) => ['rankings', 'session', sessionId] as const,
   myGlobalRank: ['rankings', 'myRank'] as const,
 

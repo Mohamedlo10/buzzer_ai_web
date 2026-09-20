@@ -23,10 +23,11 @@ import {
   History,
   Award,
   TrendingUp,
+  Trophy,
 } from 'lucide-react-native';
 
 import { useAuthStore } from '~/stores/useAuthStore';
-import { useProfileSummary, useUnseenAchievements, useMarkAchievementsSeen } from '~/lib/query/hooks';
+import { useProfileSummary, useUnseenAchievements, useMarkAchievementsSeen, useMyGlobalRank } from '~/lib/query/hooks';
 import { usePullToRefresh } from '~/lib/query/usePullToRefresh';
 import * as usersApi from '~/lib/api/users';
 import { AdSlot } from '~/components/shared/AdSlot';
@@ -60,10 +61,13 @@ export default function ProfileScreen() {
     refetch: refetchProfile,
   } = useProfileSummary();
 
+  const { data: myRank, refetch: refetchRank } = useMyGlobalRank();
   const { data: unseenBadges } = useUnseenAchievements();
   const { mutate: markSeen } = useMarkAchievementsSeen();
 
-  const { refreshing, onRefresh } = usePullToRefresh();
+  const { refreshing, onRefresh } = usePullToRefresh(async () => {
+    await Promise.all([refetchProfile(), refetchRank()]);
+  });
 
   const handleResendEmail = async () => {
     setResendingEmail(true);
@@ -304,53 +308,78 @@ export default function ProfileScreen() {
           <>
             <ProfilePrestigeCard profile={profile} />
 
-            {/* Progression — rang null si pas encore joué ce mois-ci (§17 : ne rien inventer) */}
-            <View
+            {/* Progression : Rang mondial, Rang de saison, Badges */}
+            <TouchableOpacity
+              onPress={() => router.push('/(tabs)/rankings' as any)}
+              activeOpacity={0.9}
               style={{
                 backgroundColor: palette.indigo,
                 borderRadius: 20,
                 padding: 18,
-                gap: 12,
+                gap: 14,
               }}
             >
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                <TrendingUp size={18} color="rgba(255,255,255,0.85)" />
-                <Text
-                  style={{
-                    fontFamily: font.nativeFamily.ui,
-                    fontWeight: '700',
-                    fontSize: 12,
-                    letterSpacing: 1,
-                    textTransform: 'uppercase',
-                    color: 'rgba(255,255,255,0.65)',
-                  }}
-                >
-                  Progression
-                </Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                  <TrendingUp size={18} color="rgba(255,255,255,0.85)" />
+                  <Text
+                    style={{
+                      fontFamily: font.nativeFamily.ui,
+                      fontWeight: '700',
+                      fontSize: 12,
+                      letterSpacing: 1,
+                      textTransform: 'uppercase',
+                      color: 'rgba(255,255,255,0.7)',
+                    }}
+                  >
+                    Progression &amp; Classements
+                  </Text>
+                </View>
+
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                  <Text style={{ fontSize: 11, fontWeight: '700', color: 'rgba(255,255,255,0.8)' }}>
+                    Voir tout
+                  </Text>
+                  <ArrowRight size={13} color="rgba(255,255,255,0.8)" />
+                </View>
               </View>
 
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                <View style={{ gap: 4 }}>
-                  <Text style={{ fontFamily: font.nativeFamily.ui, fontSize: 11, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: 0.8 }}>Rang de saison</Text>
-                  <Text style={{ fontFamily: font.nativeFamily.display, fontSize: 22, color: '#FFFFFF', paddingTop: 2 }}>
-                    {/* null = pas de rang ce mois-ci — ne rien inventer (§17) */}
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <View style={{ gap: 3, flex: 1 }}>
+                  <Text style={{ fontFamily: font.nativeFamily.ui, fontSize: 10.5, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: 0.6 }}>Rang mondial</Text>
+                  <Text style={{ fontFamily: font.nativeFamily.display, fontSize: 20, color: '#FFFFFF', paddingTop: 1 }}>
+                    {myRank?.rank ? `#${myRank.rank}` : '—'}
+                  </Text>
+                  {myRank?.totalScore !== undefined && (
+                    <Text style={{ fontFamily: font.nativeFamily.ui, fontSize: 10.5, color: 'rgba(255,255,255,0.6)' }}>
+                      {myRank.totalScore.toLocaleString('fr-FR')} pts
+                    </Text>
+                  )}
+                </View>
+
+                <View style={{ gap: 3, flex: 1, alignItems: 'center' }}>
+                  <Text style={{ fontFamily: font.nativeFamily.ui, fontSize: 10.5, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: 0.6 }}>Rang saison</Text>
+                  <Text style={{ fontFamily: font.nativeFamily.display, fontSize: 20, color: '#FFFFFF', paddingTop: 1 }}>
                     {profile.seasonRank !== null ? `#${profile.seasonRank}` : '—'}
                   </Text>
                   {profile.seasonLabel && (
-                    <Text style={{ fontFamily: font.nativeFamily.ui, fontSize: 11, color: 'rgba(255,255,255,0.55)' }}>
+                    <Text style={{ fontFamily: font.nativeFamily.ui, fontSize: 10.5, color: 'rgba(255,255,255,0.6)' }}>
                       {profile.seasonLabel}
                     </Text>
                   )}
                 </View>
-                <View style={{ gap: 4, alignItems: 'flex-end' }}>
-                  <Text style={{ fontFamily: font.nativeFamily.ui, fontSize: 11, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: 0.8 }}>Badges</Text>
-                  {/* Totaux viennent du serveur — jamais 8 en dur (§5 interdit) */}
-                  <Text style={{ fontFamily: font.nativeFamily.display, fontSize: 22, color: '#FFFFFF', paddingTop: 2 }}>
+
+                <View style={{ gap: 3, flex: 1, alignItems: 'flex-end' }}>
+                  <Text style={{ fontFamily: font.nativeFamily.ui, fontSize: 10.5, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: 0.6 }}>Badges</Text>
+                  <Text style={{ fontFamily: font.nativeFamily.display, fontSize: 20, color: '#FFFFFF', paddingTop: 1 }}>
                     {profile.achievementsUnlocked} / {profile.achievementsTotal}
+                  </Text>
+                  <Text style={{ fontFamily: font.nativeFamily.ui, fontSize: 10.5, color: 'rgba(255,255,255,0.6)' }}>
+                    débloqués
                   </Text>
                 </View>
               </View>
-            </View>
+            </TouchableOpacity>
           </>
         )}
 
@@ -368,6 +397,7 @@ export default function ProfileScreen() {
           }}
         >
           <MenuRow icon={<User size={18} color={palette.txt} />} label="Modifier le profil" onPress={() => router.push('/profile/edit' as any)} />
+          <MenuRow icon={<Trophy size={18} color={palette.txt} />} label="Classement mondial" onPress={() => router.push('/(tabs)/rankings' as any)} />
           <MenuRow icon={<History size={18} color={palette.txt} />} label="Mes parties" onPress={() => router.push('/profile/history' as any)} />
           <MenuRow icon={<Award size={18} color={palette.txt} />} label="Mes badges" onPress={() => router.push('/profile/badges' as any)} />
           <MenuRow icon={<Lock size={18} color={palette.txt} />} label="Changer le mot de passe" onPress={() => setShowPasswordModal(true)} />

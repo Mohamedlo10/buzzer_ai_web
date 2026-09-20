@@ -55,10 +55,11 @@ export function useSession(sessionId: string | null) {
 // Rankings
 // ──────────────────────────────────────────────
 
-export function useGlobalRankings(page = 0) {
+export function useGlobalRankings(page = 0, username?: string) {
   return useQuery({
-    queryKey: queryKeys.globalRankings(page),
-    queryFn: () => rankingsApi.getGlobalRankings({ page }),
+    queryKey: queryKeys.globalRankings(page, username),
+    queryFn: () => rankingsApi.getGlobalRankings({ page, username }),
+    placeholderData: (previous) => previous,
   });
 }
 

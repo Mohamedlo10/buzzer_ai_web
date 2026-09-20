@@ -822,6 +822,26 @@ export interface GlobalRankingPaginatedResponse extends Page<GlobalRanking> {
   currentUserRank: number | null;
 }
 
+export interface MyGlobalRankResponse {
+  rank: number;
+  totalScore: number;
+  totalGames: number;
+  totalWins: number;
+  bestScore: number;
+  avgScore: number;
+  winRate: number;
+  totalCorrectAnswers: number;
+  totalWrongBuzzes?: number;
+  totalBuzzes?: number;
+  totalQuestionsPlayed?: number;
+  globalAccuracyRate?: number;
+  avgCorrectPerGame?: number;
+  performanceIndex?: number;
+  glickoRating?: number;
+  glickoDeviation?: number;
+  glickoVolatility?: number;
+}
+
 export interface CategoryQuestionSolver {
   userId: string;
   username: string;

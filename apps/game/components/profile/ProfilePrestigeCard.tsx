@@ -4,6 +4,7 @@ import Svg, { Circle } from 'react-native-svg';
 import { Trophy, Zap, Calendar, Award, Flame } from 'lucide-react-native';
 
 import type { ProfileSummaryResponse } from '~/types/api';
+import { useMyGlobalRank } from '~/lib/query/hooks';
 import { palette, font } from '~/lib/theme/tokens';
 
 interface ProfilePrestigeCardProps {
@@ -11,6 +12,8 @@ interface ProfilePrestigeCardProps {
 }
 
 export function ProfilePrestigeCard({ profile }: ProfilePrestigeCardProps) {
+  const { data: myRank } = useMyGlobalRank();
+  const globalRank = myRank?.rank;
   // ── Données et calculs ────────────────────────────────────────────────────
   const gamesPlayed = profile.gamesPlayed || 0;
   const wins = profile.wins || 0;
@@ -134,7 +137,7 @@ export function ProfilePrestigeCard({ profile }: ProfilePrestigeCardProps) {
               justifyContent: 'space-between',
             }}
           >
-            {/* <Text
+            <Text
               style={{
                 fontFamily: font.nativeFamily.ui,
                 fontSize: 11,
@@ -145,30 +148,32 @@ export function ProfilePrestigeCard({ profile }: ProfilePrestigeCardProps) {
               }}
             >
               PERFORMANCES
-            </Text> */}
-            {/* <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: 4,
-                backgroundColor: 'rgba(143, 100, 20, 0.12)',
-                paddingHorizontal: 8,
-                paddingVertical: 2.5,
-                borderRadius: 999,
-              }}
-            >
-              <Trophy size={11} color={palette.gold} />
-              <Text
+            </Text>
+            {globalRank ? (
+              <View
                 style={{
-                  fontFamily: font.nativeFamily.ui,
-                  fontSize: 10.5,
-                  fontWeight: '700',
-                  color: palette.gold,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 4,
+                  backgroundColor: 'rgba(143, 100, 20, 0.12)',
+                  paddingHorizontal: 8,
+                  paddingVertical: 2.5,
+                  borderRadius: 999,
                 }}
               >
-                {displayRank} mondial
-              </Text>
-            </View> */}
+                <Trophy size={11} color={palette.gold} />
+                <Text
+                  style={{
+                    fontFamily: font.nativeFamily.ui,
+                    fontSize: 10.5,
+                    fontWeight: '700',
+                    color: palette.gold,
+                  }}
+                >
+                  #{globalRank} mondial
+                </Text>
+              </View>
+            ) : null}
           </View>
 
           {/* Barre 1 : Victoires */}

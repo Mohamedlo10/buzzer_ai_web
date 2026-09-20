@@ -1,5 +1,12 @@
 import { apiClient } from './client';
-import type { GlobalRanking, Page, GlobalRankingPaginatedResponse, SessionRankingEntry, CategoryRankingResponse } from '~/types/api';
+import type {
+  GlobalRanking,
+  Page,
+  GlobalRankingPaginatedResponse,
+  MyGlobalRankResponse,
+  SessionRankingEntry,
+  CategoryRankingResponse,
+} from '~/types/api';
 
 export interface SearchRankingsParams {
   username?: string;
@@ -26,22 +33,8 @@ export async function getRoomRankings(
   return res.data;
 }
 
-export async function getMyGlobalRank(): Promise<{
-  rank: number;
-  totalScore: number;
-  totalGames: number;
-  totalWins?: number;
-  winRate?: number;
-  totalCorrectAnswers?: number;
-  totalQuestionsPlayed?: number;
-  globalAccuracyRate?: number;
-  avgCorrectPerGame?: number;
-  performanceIndex?: number;
-  glickoRating?: number;
-  glickoDeviation?: number;
-  glickoVolatility?: number;
-}> {
-  const res = await apiClient.get('/api/rankings/global/me');
+export async function getMyGlobalRank(): Promise<MyGlobalRankResponse> {
+  const res = await apiClient.get<MyGlobalRankResponse>('/api/rankings/global/me');
   return res.data;
 }
 

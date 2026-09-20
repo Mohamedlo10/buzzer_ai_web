@@ -1,6 +1,5 @@
 import React, { useState, useRef } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Modal, ScrollView, RefreshControl } from 'react-native';
-
 import {
   Trophy,
   Search,
@@ -8,10 +7,12 @@ import {
   Info,
   ChevronLeft,
   ChevronRight,
+  Globe,
 } from 'lucide-react-native';
 
-import { useLeaderboard } from '~/lib/query/hooks';
+import { useLeaderboard, useGlobalRankings, useMyGlobalRank } from '~/lib/query/hooks';
 import { usePullToRefresh } from '~/lib/query/usePullToRefresh';
+import { useAuthStore } from '~/stores/useAuthStore';
 import type { LeaderboardPeriodType } from '~/types/leaderboards';
 import { LoadingState, EmptyState, ErrorState } from '~/components/ui';
 import { palette, font } from '~/lib/theme/tokens';
@@ -22,17 +23,13 @@ import { AdAwareScrollView } from '~/components/partner/AdAwareScrollView';
 
 const PAGE_SIZE = 20;
 
-/**
- * Les trois périodes du §11.
- *
- * Le classement global cumulé n'y figure pas : il repose sur Glicko-2, que le §2.2 reporte
- * après la V1 et que rien n'explique au joueur. Il reste calculé côté serveur, mais la V1
- * met en avant les périodes, qui sont lisibles sans explication.
- */
-const PERIODS: { key: LeaderboardPeriodType; label: string }[] = [
-  { key: 'DAY', label: 'Jour' },
-  { key: 'WEEK', label: 'Semaine' },
+export type RankingTabType = 'GLOBAL' | LeaderboardPeriodType;
+
+const TABS: { key: RankingTabType; label: string }[] = [
+  { key: 'GLOBAL', label: 'Mondial' },
   { key: 'SEASON', label: 'Saison' },
+  { key: 'WEEK', label: 'Semaine' },
+  { key: 'DAY', label: 'Jour' },
 ];
 
 function getPaginationRange(current: number, total: number): (number | 'dots')[] {
@@ -49,8 +46,8 @@ function getPaginationRange(current: number, total: number): (number | 'dots')[]
 }
 
 export default function RankingsScreen() {
-
-  const [period, setPeriod] = useState<LeaderboardPeriodType>('SEASON');
+  const currentUser = useAuthStore((s) => s.user);
+  const [selectedTab, setSelectedTab] = useState<RankingTabType>('GLOBAL');
   const [currentPage, setCurrentPage] = useState(0);
   const [searchInput, setSearchInput] = useState('');
   const [searchUsername, setSearchUsername] = useState('');
@@ -59,18 +56,27 @@ export default function RankingsScreen() {
   const scrollRef = useRef<ScrollView>(null);
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // react-query remplace le couple useState/useEffect précédent, dont le catch avalait
-  // l'erreur dans un console.error : en cas d'échec, la liste restait vide et muette.
-  const { data, isLoading, isError, error, refetch } = useLeaderboard(
-    period,
+  const isGlobalMode = selectedTab === 'GLOBAL';
+
+  // ── 1. Classement Mondial ──
+  const globalQuery = useGlobalRankings(currentPage, searchUsername || undefined);
+  const myGlobalRankQuery = useMyGlobalRank();
+
+  // ── 2. Classement Périodes (Défi du Jour) ──
+  const periodQuery = useLeaderboard(
+    selectedTab === 'GLOBAL' ? 'SEASON' : selectedTab,
     currentPage,
     searchUsername || undefined,
   );
-  const { refreshing, onRefresh } = usePullToRefresh();
 
-  const entries = data?.entries ?? [];
-  const totalPages = Math.max(1, data?.totalPages ?? 1);
-  const myEntry = data?.me ?? null;
+  const activeQuery = isGlobalMode ? globalQuery : periodQuery;
+  const { refreshing, onRefresh } = usePullToRefresh(async () => {
+    if (isGlobalMode) {
+      await Promise.all([globalQuery.refetch(), myGlobalRankQuery.refetch()]);
+    } else {
+      await periodQuery.refetch();
+    }
+  });
 
   const handleSearchChange = (text: string) => {
     setSearchInput(text);
@@ -81,10 +87,12 @@ export default function RankingsScreen() {
     }, 400);
   };
 
-  const changePeriod = (next: LeaderboardPeriodType) => {
-    if (next === period) return;
-    setPeriod(next);
+  const changeTab = (next: RankingTabType) => {
+    if (next === selectedTab) return;
+    setSelectedTab(next);
     setCurrentPage(0);
+    setSearchInput('');
+    setSearchUsername('');
     scrollRef.current?.scrollTo({ y: 0, animated: true });
   };
 
@@ -94,26 +102,95 @@ export default function RankingsScreen() {
     scrollRef.current?.scrollTo({ y: 0, animated: true });
   };
 
-  /** Saute à la page qui contient ma ligne — §14, mettre l'utilisateur en évidence. */
+  // Normalisation des données selon l'onglet actif
+  let entries: Array<{
+    userId: string;
+    username: string;
+    avatarUrl?: string | null;
+    avatarSpec?: string | null;
+    rank: number;
+    score: number;
+    subtitle: string;
+    isMe: boolean;
+  }> = [];
+
+  let totalPages = 1;
+  let totalPlayers = 0;
+  let myEntryRank: number | null = null;
+  let myEntryScore: number | null = null;
+
+  if (isGlobalMode) {
+    const rawContent = globalQuery.data?.content ?? [];
+    totalPages = Math.max(1, globalQuery.data?.totalPages ?? 1);
+    totalPlayers = globalQuery.data?.totalElements ?? 0;
+
+    if (myGlobalRankQuery.data?.rank) {
+      myEntryRank = myGlobalRankQuery.data.rank;
+      myEntryScore = myGlobalRankQuery.data.totalScore;
+    } else if (globalQuery.data?.currentUserRank) {
+      myEntryRank = globalQuery.data.currentUserRank;
+    }
+
+    entries = rawContent.map((item, idx) => {
+      const isMe = item.userId === currentUser?.id || item.friendshipStatus === 'SELF';
+      const rankNum = item.rank || (currentPage * PAGE_SIZE + idx + 1);
+      const wins = item.totalWins ?? 0;
+      const games = item.totalGames ?? 0;
+      const winRate = item.winRate !== undefined ? Math.round(Number(item.winRate)) : (games > 0 ? Math.round((wins / games) * 100) : 0);
+
+      return {
+        userId: item.userId,
+        username: item.username,
+        avatarUrl: item.avatarUrl,
+        avatarSpec: item.avatarSpec,
+        rank: rankNum,
+        score: item.totalScore,
+        subtitle: `${games} ${games > 1 ? 'parties' : 'partie'} · ${wins} ${wins > 1 ? 'victoires' : 'victoire'} (${winRate}%)`,
+        isMe,
+      };
+    });
+  } else {
+    const periodData = periodQuery.data;
+    totalPages = Math.max(1, periodData?.totalPages ?? 1);
+    totalPlayers = periodData?.totalPlayers ?? 0;
+
+    if (periodData?.me) {
+      myEntryRank = periodData.me.rank;
+      myEntryScore = periodData.me.points;
+    }
+
+    entries = (periodData?.entries ?? []).map((item, idx) => {
+      const rankNum = item.rank || (currentPage * PAGE_SIZE + idx + 1);
+      return {
+        userId: item.userId,
+        username: item.username,
+        avatarUrl: item.avatarUrl,
+        avatarSpec: item.avatarSpec,
+        rank: rankNum,
+        score: item.points,
+        subtitle: `${item.challengesPlayed} défis · ${item.correctAnswers} bonnes réponses`,
+        isMe: item.isMe,
+      };
+    });
+  }
+
   const handleGoToMyRank = () => {
-    if (!myEntry) return;
+    if (!myEntryRank) return;
     setSearchInput('');
     setSearchUsername('');
-    setCurrentPage(Math.floor((myEntry.rank - 1) / PAGE_SIZE));
+    setCurrentPage(Math.floor((myEntryRank - 1) / PAGE_SIZE));
     scrollRef.current?.scrollTo({ y: 0, animated: true });
   };
 
   const showPodium = currentPage === 0 && !searchUsername && entries.length >= 3;
   const podiumList = showPodium ? [entries[1], entries[0], entries[2]] : [];
   const listItems = showPodium ? entries.slice(3) : entries;
-
   const paginationItems = getPaginationRange(currentPage + 1, totalPages);
 
   return (
     <View style={{ flex: 1, backgroundColor: palette.bg }}>
-      <AppTopBar title="Xalaat" tag="CLASSEMENT" />
+      <AppTopBar title="Xalaat" tag={isGlobalMode ? 'CLASSEMENT MONDIAL' : 'CLASSEMENT DÉFIS'} />
 
-      {/* Whole page is scrollable */}
       <AdAwareScrollView
         refreshControl={
           <RefreshControl
@@ -134,8 +211,7 @@ export default function RankingsScreen() {
           alignSelf: 'center',
         }}
       >
-        {/* Sélecteur de période (§11). Un seul écran pour les trois classements : le
-            contrat de sortie est identique, seule la période change. */}
+        {/* Sélecteur d'onglets (Mondial, Saison, Semaine, Jour) */}
         <View
           style={{
             flexDirection: 'row',
@@ -145,53 +221,54 @@ export default function RankingsScreen() {
             marginBottom: 14,
           }}
         >
-          {PERIODS.map((p) => {
-            const active = p.key === period;
+          {TABS.map((tab) => {
+            const active = tab.key === selectedTab;
             return (
               <TouchableOpacity
-                key={p.key}
-                onPress={() => changePeriod(p.key)}
+                key={tab.key}
+                onPress={() => changeTab(tab.key)}
                 activeOpacity={0.8}
                 style={{
                   flex: 1,
                   paddingVertical: 8,
                   borderRadius: 999,
                   alignItems: 'center',
+                  justifyContent: 'center',
                   backgroundColor: active ? palette.primary : 'transparent',
                 }}
               >
                 <Text
                   style={{
-                    fontSize: 13,
+                    fontSize: 12.5,
                     fontWeight: '700',
                     color: active ? palette.primaryInk : palette.inkSoft,
                   }}
                 >
-                  {p.label}
+                  {tab.label}
                 </Text>
               </TouchableOpacity>
             );
           })}
         </View>
 
-        {/* Libellé calculé serveur : « Aujourd'hui », « Cette semaine »,
-            « Saison septembre 2026 ». */}
-        {data?.periodLabel ? (
+        {/* Sous-titre dynamique */}
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
           <Text
             style={{
               fontFamily: font.nativeFamily.serif,
               fontStyle: 'italic',
               fontSize: 14,
               color: palette.inkSoft,
-              marginBottom: 12,
             }}
           >
-            {data.periodLabel} · {data.totalPlayers} joueur{data.totalPlayers > 1 ? 's' : ''}
+            {isGlobalMode
+              ? `Classement général · ${totalPlayers} joueur${totalPlayers > 1 ? 's' : ''}`
+              : `${periodQuery.data?.periodLabel || 'Défi du Jour'} · ${totalPlayers} joueur${totalPlayers > 1 ? 's' : ''}`}
           </Text>
-        ) : null}
+        </View>
 
-        {/* "Ton classement" Card (Click to jump to your page) */}
-        {myEntry ? (
+        {/* Carte "Ton classement" (cliquable pour sauter à sa page) */}
+        {myEntryRank ? (
           <TouchableOpacity
             onPress={handleGoToMyRank}
             activeOpacity={0.8}
@@ -205,7 +282,7 @@ export default function RankingsScreen() {
               flexDirection: 'row',
               alignItems: 'center',
               justifyContent: 'space-between',
-              marginBottom: 12,
+              marginBottom: 14,
             }}
           >
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
@@ -222,8 +299,8 @@ export default function RankingsScreen() {
                 <Trophy size={18} color={palette.primaryInk} />
               </View>
               <View>
-                <Text style={{ fontSize: 11, fontWeight: '700', letterSpacing: 1.2, color: palette.primary, textTransform: 'uppercase' }}>
-                  Ton classement
+                <Text style={{ fontSize: 10.5, fontWeight: '700', letterSpacing: 1, color: palette.primary, textTransform: 'uppercase' }}>
+                  {isGlobalMode ? 'Ton rang mondial' : 'Ton classement'}
                 </Text>
                 <Text
                   style={{
@@ -231,25 +308,25 @@ export default function RankingsScreen() {
                     fontSize: 16,
                     lineHeight: 22,
                     color: palette.txt,
-                    paddingTop: 3,
-                    paddingBottom: 1,
+                    paddingTop: 2,
                   }}
                 >
-                  Rang #{myEntry.rank}
+                  Rang #{myEntryRank}
+                  {myEntryScore !== null ? ` · ${myEntryScore.toLocaleString('fr-FR')} pts` : ''}
                 </Text>
               </View>
             </View>
 
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: palette.primary, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 10 }}>
               <Text style={{ fontSize: 12, fontWeight: '700', color: palette.primaryInk }}>
-                Voir ma position
+                Ma position
               </Text>
               <ChevronRight size={14} color={palette.primaryInk} strokeWidth={2.5} />
             </View>
           </TouchableOpacity>
         ) : null}
 
-        {/* Search Bar + Info button row */}
+        {/* Barre de recherche + Bouton d'infos */}
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 14 }}>
           <View
             style={{
@@ -298,7 +375,7 @@ export default function RankingsScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Podium Section (shown on page 0 without search) */}
+        {/* Podium Top 3 (affiché sur page 0 sans recherche) */}
         {showPodium && (
           <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 10, marginBottom: 16 }}>
             {podiumList.map((p, i) => {
@@ -306,7 +383,7 @@ export default function RankingsScreen() {
               const isFirst = rankNum === 1;
               const isSecond = rankNum === 2;
               const name = p?.username || 'Joueur';
-              const score = p?.points ?? 0;
+              const score = p?.score ?? 0;
 
               return (
                 <View key={p?.userId || rankNum} style={{ flex: isFirst ? 1.15 : 1, alignItems: 'center' }}>
@@ -360,15 +437,14 @@ export default function RankingsScreen() {
           </View>
         )}
 
-        {/* États du §29 : l'erreur était auparavant avalée dans un console.error, et la
-            liste restait vide sans la moindre explication. */}
-        {isError && !data ? (
+        {/* États de chargement et d'erreur */}
+        {activeQuery.isError && entries.length === 0 ? (
           <ErrorState
-            error={error}
+            error={activeQuery.error}
             fallbackMessage="Impossible de charger le classement."
-            onRetry={() => void refetch()}
+            onRetry={() => void activeQuery.refetch()}
           />
-        ) : isLoading && !data ? (
+        ) : activeQuery.isLoading && entries.length === 0 ? (
           <LoadingState label="Chargement du classement…" />
         ) : listItems.length === 0 ? (
           <EmptyState
@@ -376,6 +452,8 @@ export default function RankingsScreen() {
             description={
               searchUsername
                 ? 'Essaie un autre pseudonyme.'
+                : isGlobalMode
+                ? 'Joue des parties pour inaugurer le classement mondial !'
                 : 'Sois le premier à jouer le Défi du Jour sur cette période.'
             }
           />
@@ -386,7 +464,6 @@ export default function RankingsScreen() {
                 ? index + 4
                 : currentPage * PAGE_SIZE + (index + 1);
               const isMe = item.isMe;
-              const score = item.points;
 
               return (
                 <View
@@ -430,8 +507,8 @@ export default function RankingsScreen() {
                       >
                         {item.username} {isMe ? '(toi)' : ''}
                       </Text>
-                      <Text style={{ fontSize: 11, color: palette.inkSoft, marginTop: 1 }}>
-                        {item.challengesPlayed} défis · {item.correctAnswers} bonnes réponses
+                      <Text style={{ fontSize: 11, color: palette.inkSoft, marginTop: 1 }} numberOfLines={1}>
+                        {item.subtitle}
                       </Text>
                     </View>
                   </View>
@@ -443,7 +520,7 @@ export default function RankingsScreen() {
                       color: palette.txt,
                     }}
                   >
-                    {score.toLocaleString('fr-FR')} pts
+                    {item.score.toLocaleString('fr-FR')} pts
                   </Text>
                 </View>
               );
@@ -451,7 +528,7 @@ export default function RankingsScreen() {
           </View>
         )}
 
-        {/* Pagination Bar at the bottom (1 2 3 ... 67) */}
+        {/* Barre de pagination */}
         {totalPages > 1 && (
           <View
             style={{
@@ -468,10 +545,9 @@ export default function RankingsScreen() {
               marginTop: 4,
             }}
           >
-            {/* Prev Button */}
             <TouchableOpacity
               onPress={() => goToPage(currentPage - 1)}
-              disabled={currentPage === 0 || isLoading}
+              disabled={currentPage === 0 || activeQuery.isLoading}
               activeOpacity={0.7}
               style={{
                 width: 36,
@@ -488,7 +564,6 @@ export default function RankingsScreen() {
               <ChevronLeft size={18} color={palette.txt} />
             </TouchableOpacity>
 
-            {/* Numeric Page Buttons & Dots */}
             {paginationItems.map((item, idx) => {
               if (item === 'dots') {
                 return (
@@ -515,7 +590,7 @@ export default function RankingsScreen() {
                 <TouchableOpacity
                   key={`page-${item}`}
                   onPress={() => goToPage(pageIdx)}
-                  disabled={isLoading}
+                  disabled={activeQuery.isLoading}
                   activeOpacity={0.75}
                   style={{
                     minWidth: 36,
@@ -542,10 +617,9 @@ export default function RankingsScreen() {
               );
             })}
 
-            {/* Next Button */}
             <TouchableOpacity
               onPress={() => goToPage(currentPage + 1)}
-              disabled={currentPage >= totalPages - 1 || isLoading}
+              disabled={currentPage >= totalPages - 1 || activeQuery.isLoading}
               activeOpacity={0.7}
               style={{
                 width: 36,
@@ -563,12 +637,11 @@ export default function RankingsScreen() {
             </TouchableOpacity>
           </View>
         )}
-      
-        {/* Carte partenaire — en fin de contenu, hors de tout parcours de jeu. */}
+
         <AdSlot placement="RANKINGS" />
       </AdAwareScrollView>
 
-      {/* Info Modal */}
+      {/* Modale d'explication */}
       <Modal visible={showInfoModal} transparent animationType="fade" onRequestClose={() => setShowInfoModal(false)}>
         <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.55)', justifyContent: 'center', padding: 20 }}>
           <View
@@ -604,23 +677,18 @@ export default function RankingsScreen() {
               </TouchableOpacity>
             </View>
 
-            {/* La cote Glicko-2 n'est plus exposée : le §2.2 la reporte après la V1, et
-                rien dans l'application ne l'expliquait au joueur. Elle continue d'ordonner
-                le classement global côté serveur. */}
             <Text style={{ color: palette.inkSoft, fontSize: 13.5, lineHeight: 20, marginBottom: 12 }}>
-              Chaque Défi du Jour rapporte des points. Ils alimentent trois classements :
-              le <Text style={{ color: palette.txt, fontWeight: '700' }}>jour</Text>,
-              la <Text style={{ color: palette.txt, fontWeight: '700' }}>semaine</Text>,
-              et la <Text style={{ color: palette.txt, fontWeight: '700' }}>saison</Text>, qui dure un mois.
+              <Text style={{ color: palette.txt, fontWeight: '700' }}>Classement Mondial :</Text> Cumule
+              les points et victoires de toutes les parties multijoueurs disputées sur Xalaat.
             </Text>
 
             <Text style={{ color: palette.inkSoft, fontSize: 13.5, lineHeight: 20, marginBottom: 12 }}>
-              <Text style={{ color: palette.primary, fontWeight: '700' }}>À égalité de points :</Text> le
-              nombre de bonnes réponses départage, puis le temps de réflexion cumulé.
+              <Text style={{ color: palette.txt, fontWeight: '700' }}>Classement Défis (Jour / Semaine / Saison) :</Text> Se base sur vos performances au Défi du Jour quotidien. La saison repart de zéro chaque mois.
             </Text>
 
             <Text style={{ color: palette.inkSoft, fontSize: 13.5, lineHeight: 20 }}>
-              La saison repart de zéro chaque mois : personne n&apos;est jamais distancé pour de bon.
+              <Text style={{ color: palette.primary, fontWeight: '700' }}>À égalité de points :</Text> Le
+              taux de victoire et le nombre de bonnes réponses départagent les joueurs.
             </Text>
           </View>
         </View>
