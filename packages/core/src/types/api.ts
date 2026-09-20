@@ -607,6 +607,10 @@ export interface UserStatsResponse {
   /** L'avatar structuré — permet un rendu local instantané, sans requête réseau. */
   avatarSpec?: string | null;
   globalRank: number;
+  glickoRating?: number;
+  seasonRank?: number | null;
+  seasonPoints?: number;
+  seasonLabel?: string | null;
   totalScore: number;
   totalGames: number;
   totalWins: number;

@@ -20,6 +20,8 @@ import {
   Swords,
   Sparkles,
   Flame,
+  Zap,
+  Globe,
 } from 'lucide-react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
@@ -147,7 +149,11 @@ export function PlayerProfileModal({ userId, onClose }: PlayerProfileModalProps)
   const totalWins = profile?.totalWins || 0;
   const totalGames = profile?.totalGames || 0;
   const totalScore = profile?.totalScore || 0;
-  const rank = profile?.globalRank;
+  const globalRank = profile?.globalRank;
+  const glickoRating = profile?.glickoRating != null ? Math.round(profile.glickoRating) : 1500;
+  const seasonRank = profile?.seasonRank;
+  const seasonPoints = profile?.seasonPoints ?? 0;
+  const seasonLabel = profile?.seasonLabel || 'Saison en cours';
   const winRate =
     profile?.winRate != null
       ? Math.round(profile.winRate)
@@ -302,7 +308,7 @@ export function PlayerProfileModal({ userId, onClose }: PlayerProfileModalProps)
                     size={72}
                     hue={30}
                   />
-                  {rank && rank <= 3 && (
+                  {globalRank && globalRank <= 3 && (
                     <View
                       style={{
                         position: 'absolute',
@@ -316,7 +322,7 @@ export function PlayerProfileModal({ userId, onClose }: PlayerProfileModalProps)
                       }}
                     >
                       <Text style={{ fontSize: 16 }}>
-                        {rank === 1 ? '🥇' : rank === 2 ? '🥈' : '🥉'}
+                        {globalRank === 1 ? '🥇' : globalRank === 2 ? '🥈' : '🥉'}
                       </Text>
                     </View>
                   )}
@@ -336,11 +342,7 @@ export function PlayerProfileModal({ userId, onClose }: PlayerProfileModalProps)
                   </Text>
 
                   <Text style={{ fontSize: 12, color: palette.inkSoft }}>
-                    {isSelf
-                      ? '(C’est vous)'
-                      : rank && rank > 0
-                      ? `Rang #${rank} mondial`
-                      : 'Joueur Xalaat'}
+                    {isSelf ? '(C’est vous)' : 'Joueur Xalaat'}
                   </Text>
 
                   {isBlocked && (
@@ -449,6 +451,104 @@ export function PlayerProfileModal({ userId, onClose }: PlayerProfileModalProps)
                 )}
               </View>
 
+              {/* Classements: Mondial & Saison */}
+              <View
+                style={{
+                  backgroundColor: palette.bg,
+                  borderRadius: 18,
+                  borderWidth: 1,
+                  borderColor: palette.line,
+                  padding: 14,
+                  gap: 12,
+                }}
+              >
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                  }}
+                >
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                    <View
+                      style={{
+                        width: 34,
+                        height: 34,
+                        borderRadius: 10,
+                        backgroundColor: palette.primary + '18',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <Globe size={17} color={palette.primary} />
+                    </View>
+                    <View>
+                      <Text style={{ fontSize: 13.5, fontWeight: '700', color: palette.txt }}>
+                        Classement mondial
+                      </Text>
+                      <Text style={{ fontSize: 11, color: palette.inkSoft }}>
+                        {glickoRating} ELO
+                      </Text>
+                    </View>
+                  </View>
+                  <View style={{ alignItems: 'flex-end' }}>
+                    <Text
+                      style={{
+                        fontSize: 15,
+                        fontWeight: '800',
+                        color: globalRank && globalRank > 0 ? palette.primary : palette.inkSoft,
+                      }}
+                    >
+                      {globalRank && globalRank > 0 ? `#${globalRank}` : 'Non classé'}
+                    </Text>
+                  </View>
+                </View>
+
+                <View style={{ height: 1, backgroundColor: palette.line }} />
+
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                  }}
+                >
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                    <View
+                      style={{
+                        width: 34,
+                        height: 34,
+                        borderRadius: 10,
+                        backgroundColor: palette.gold + '18',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <Trophy size={17} color={palette.gold} />
+                    </View>
+                    <View>
+                      <Text style={{ fontSize: 13.5, fontWeight: '700', color: palette.txt }}>
+                        {seasonLabel}
+                      </Text>
+                      <Text style={{ fontSize: 11, color: palette.inkSoft }}>
+                        {seasonPoints} pts
+                      </Text>
+                    </View>
+                  </View>
+                  <View style={{ alignItems: 'flex-end' }}>
+                    <Text
+                      style={{
+                        fontSize: 15,
+                        fontWeight: '800',
+                        color: seasonRank && seasonRank > 0 ? palette.gold : palette.inkSoft,
+                      }}
+                    >
+                      {seasonRank && seasonRank > 0 ? `#${seasonRank}` : 'Non classé'}
+                    </Text>
+                  </View>
+                </View>
+              </View>
+
               {/* Stats Grid 1 */}
               <View
                 style={{
@@ -462,12 +562,12 @@ export function PlayerProfileModal({ userId, onClose }: PlayerProfileModalProps)
                 }}
               >
                 <View style={{ alignItems: 'center' }}>
-                  <Trophy size={15} color={palette.gold} style={{ marginBottom: 3 }} />
+                  <Zap size={15} color={palette.gold} style={{ marginBottom: 3 }} />
                   <Text style={{ fontSize: 17, fontWeight: '800', color: palette.gold }}>
-                    {totalScore}
+                    {glickoRating}
                   </Text>
                   <Text style={{ fontSize: 10.5, color: palette.inkSoft, marginTop: 1 }}>
-                    Points
+                    ELO
                   </Text>
                 </View>
 
