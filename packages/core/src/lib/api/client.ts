@@ -8,12 +8,28 @@ import type { TokenResponse } from '../../types/api';
 // ──────────────────────────────────────────────
 
 function getBaseUrl(): string {
+  // 1. Vite environment (import.meta.env)
+  try {
+    // @ts-ignore
+    if (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL) {
+      // @ts-ignore
+      return import.meta.env.VITE_API_URL;
+    }
+  } catch {}
+
+  // 2. Node / Expo / Next environment
   if (typeof process !== 'undefined' && process.env) {
     if (process.env.EXPO_PUBLIC_API_URL) return process.env.EXPO_PUBLIC_API_URL;
     if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
     if (process.env.VITE_API_URL) return process.env.VITE_API_URL;
   }
-  if (typeof window !== 'undefined') {
+
+  // 3. Browser runtime domain inference (fallback in production)
+  if (typeof window !== 'undefined' && window.location) {
+    const host = window.location.hostname;
+    if (host.endsWith('mouhadev.com') || host.endsWith('xalaat.app')) {
+      return 'https://apiquiz.mouhadev.com';
+    }
     if (window.location.port === '3000') {
       return 'http://localhost:8090';
     }
