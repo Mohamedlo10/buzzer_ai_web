@@ -111,17 +111,18 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
-  manifest: '/site.webmanifest',
+  manifest: '/site.webmanifest?v=3',
   icons: {
     icon: [
-      { url: '/favicon.ico', sizes: 'any' },
-      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
-      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
-      { url: '/favicon-48x48.png', sizes: '48x48', type: 'image/png' },
+      { url: '/favicon.ico?v=3', sizes: 'any' },
+      { url: '/favicon-48x48.png?v=3', sizes: '48x48', type: 'image/png' },
+      { url: '/favicon-32x32.png?v=3', sizes: '32x32', type: 'image/png' },
+      { url: '/favicon-16x16.png?v=3', sizes: '16x16', type: 'image/png' },
+      { url: '/android-chrome-192x192.png?v=3', sizes: '192x192', type: 'image/png' },
     ],
-    shortcut: '/favicon.ico',
+    shortcut: '/favicon.ico?v=3',
     apple: [
-      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+      { url: '/apple-touch-icon.png?v=3', sizes: '180x180', type: 'image/png' },
     ],
   },
 };
@@ -166,13 +167,23 @@ export default function RootLayout({
       className={`${boldonse.variable} ${manrope.variable} ${instrumentSerif.variable}`}
     >
       <head>
+        {/* Favicons avec Cache-Busting (?v=3) et conformité Google Search Favicon (48x48, 192x192) */}
+        <link rel="icon" type="image/x-icon" href="/favicon.ico?v=3" sizes="any" />
+        <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png?v=3" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png?v=3" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png?v=3" />
+        <link rel="icon" type="image/png" sizes="192x192" href="/android-chrome-192x192.png?v=3" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=3" />
+        <link rel="shortcut icon" href="/favicon.ico?v=3" />
+
+        {/* OpenGraph & Social Cards */}
         <meta property="og:title" content="Xalaat — Quiz & Jeu de Buzzer Multijoueur" />
         <meta
           property="og:description"
           content="Défiez vos amis, testez vos réflexes au buzzer et grimpez au classement avec le quiz intelligent Xalaat."
         />
-        <meta property="og:image" content={`${APP_URL}/og-image.png`} />
-        <meta property="og:image:secure_url" content={`${APP_URL}/og-image.png`} />
+        <meta property="og:image" content={`${APP_URL}/og-image.png?v=3`} />
+        <meta property="og:image:secure_url" content={`${APP_URL}/og-image.png?v=3`} />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
         <meta property="og:image:type" content="image/png" />
@@ -185,7 +196,7 @@ export default function RootLayout({
           name="twitter:description"
           content="Défiez vos amis, testez vos réflexes au buzzer et grimpez au classement avec le quiz intelligent Xalaat."
         />
-        <meta name="twitter:image" content={`${APP_URL}/og-image.png`} />
+        <meta name="twitter:image" content={`${APP_URL}/og-image.png?v=3`} />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
