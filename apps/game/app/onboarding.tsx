@@ -149,7 +149,8 @@ const slides: Slide[] = [
 export default function OnboardingScreen() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const router = useRouter();
-  const { width } = useWindowDimensions();
+  const { width: windowWidth } = useWindowDimensions();
+  const [containerWidth, setContainerWidth] = useState(() => Math.min(windowWidth || 390, 672));
   const flatListRef = useRef<FlatList<Slide>>(null);
 
   const goTo = async (path: string) => {
@@ -159,7 +160,7 @@ export default function OnboardingScreen() {
 
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const offsetX = event.nativeEvent.contentOffset.x;
-    const index = Math.round(offsetX / width);
+    const index = Math.round(offsetX / containerWidth);
     if (index >= 0 && index < slides.length && index !== currentIndex) {
       setCurrentIndex(index);
     }
@@ -184,7 +185,7 @@ export default function OnboardingScreen() {
   const renderSlideItem = ({ item }: { item: Slide }) => (
     <View
       style={{
-        width,
+        width: containerWidth,
         alignItems: 'center',
         justifyContent: 'center',
         paddingHorizontal: 24,
@@ -322,7 +323,15 @@ export default function OnboardingScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: palette.bg }}>
-      <View style={{ flex: 1, justifyContent: 'space-between' }}>
+      <View
+        onLayout={(e) => {
+          const w = e.nativeEvent.layout.width;
+          if (w > 0 && Math.abs(w - containerWidth) > 1) {
+            setContainerWidth(w);
+          }
+        }}
+        style={{ flex: 1, justifyContent: 'space-between', width: '100%', overflow: 'hidden' }}
+      >
         {/* Header */}
         <View
           style={{
@@ -331,6 +340,9 @@ export default function OnboardingScreen() {
             justifyContent: 'space-between',
             paddingHorizontal: 24,
             paddingTop: 12,
+            width: '100%',
+            maxWidth: 672,
+            alignSelf: 'center',
           }}
         >
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
@@ -387,8 +399,8 @@ export default function OnboardingScreen() {
           bounces={false}
           onMomentumScrollEnd={handleScroll}
           getItemLayout={(_, index) => ({
-            length: width,
-            offset: width * index,
+            length: containerWidth,
+            offset: containerWidth * index,
             index,
           })}
           contentContainerStyle={{ alignItems: 'center' }}
@@ -396,7 +408,16 @@ export default function OnboardingScreen() {
         />
 
         {/* Bottom Pagination & CTAs */}
-        <View style={{ paddingHorizontal: 24, paddingBottom: 24 }} className="flex-col gap-6">
+        <View
+          style={{
+            paddingHorizontal: 24,
+            paddingBottom: 24,
+            width: '100%',
+            maxWidth: 440,
+            alignSelf: 'center',
+          }}
+          className="flex-col gap-6"
+        >
           {/* Dots Indicator */}
           <View className="flex-row items-center justify-center gap-2">
             {slides.map((_, i) => (
@@ -407,8 +428,9 @@ export default function OnboardingScreen() {
                 hitSlop={{ top: 10, bottom: 10, left: 5, right: 5 }}
               >
                 <View
-                  className={`h-2 rounded-full transition-all ${i === currentIndex ? 'w-8 bg-host' : 'w-2 bg-line'
-                    }`}
+                  className={`h-2 rounded-full transition-all ${
+                    i === currentIndex ? 'w-8 bg-host' : 'w-2 bg-line'
+                  }`}
                 />
               </TouchableOpacity>
             ))}
