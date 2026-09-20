@@ -80,7 +80,19 @@ export function Avatar({
         .toUpperCase()
     : '?';
 
-  const svg = useMemo(() => (avatarSpec ? renderCached(avatarSpec) : null), [avatarSpec]);
+  // 1. Tenter d'extraire la spec depuis l'URL si elle n'a pas été fournie directement
+  const effectiveSpec = useMemo(() => {
+    if (avatarSpec) return avatarSpec;
+    if (avatarUrl && avatarUrl.includes('?s=')) {
+      try {
+        const param = avatarUrl.split('?s=')[1]?.split('&')[0];
+        if (param) return decodeURIComponent(param);
+      } catch {}
+    }
+    return null;
+  }, [avatarSpec, avatarUrl]);
+
+  const svg = useMemo(() => (effectiveSpec ? renderCached(effectiveSpec) : null), [effectiveSpec]);
 
   const isSvgUrl = avatarUrl && (avatarUrl.includes('.svg') || avatarUrl.includes('/api/avatars/'));
 
@@ -103,12 +115,21 @@ export function Avatar({
     return (
       <View style={frame}>
         {Platform.OS === 'web' ? (
-          // react-native-svg sait rendre sur le web, mais une data-URI passe par le pipeline
-          // d'images du navigateur : mise en cache et décodage hors du fil principal.
-          <Image
-            source={{ uri: `data:image/svg+xml;utf8,${encodeURIComponent(svg)}` }}
-            style={{ width: size, height: size }}
-            resizeMode="cover"
+          <div
+            style={{
+              width: size,
+              height: size,
+              borderRadius: size / 2,
+              overflow: 'hidden',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+            dangerouslySetInnerHTML={{
+              __html: svg
+                .replace(/width="[^"]*"/, `width="${size}"`)
+                .replace(/height="[^"]*"/, `height="${size}"`),
+            }}
           />
         ) : (
           <SvgXml xml={svg} width={size} height={size} />
@@ -121,11 +142,11 @@ export function Avatar({
     return (
       <View style={frame}>
         {Platform.OS === 'web' ? (
-          <Image
-            source={{ uri: avatarUrl }}
+          <img
+            src={avatarUrl}
+            alt={name}
             onError={() => setLoadError(true)}
-            style={{ width: size, height: size, borderRadius: size / 2 }}
-            resizeMode="cover"
+            style={{ width: size, height: size, borderRadius: size / 2, objectFit: 'cover' }}
           />
         ) : isSvgUrl ? (
           <SvgUri
