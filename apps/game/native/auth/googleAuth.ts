@@ -25,7 +25,7 @@ const isExpoGo =
   Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
 
 export function useNativeGoogleAuth() {
-  const [request, response, promptAsync] = Google.useAuthRequest(
+  const [request, response, promptAsync] = Google.useIdTokenAuthRequest(
     isExpoGo
       ? {
           clientId: webClientId,
@@ -44,11 +44,14 @@ export function useNativeGoogleAuth() {
     if (response) {
       if (response.type === 'success') {
         const idToken = response.params?.id_token || response.authentication?.idToken || null;
-        resolverRef.current?.(idToken);
-      } else {
+        if (idToken) {
+          resolverRef.current?.(idToken);
+          resolverRef.current = null;
+        }
+      } else if (response.type === 'cancel' || response.type === 'dismiss' || response.type === 'error') {
         resolverRef.current?.(null);
+        resolverRef.current = null;
       }
-      resolverRef.current = null;
     }
   }, [response]);
 
@@ -60,26 +63,28 @@ export function useNativeGoogleAuth() {
     return new Promise((resolve) => {
       resolverRef.current = resolve;
 
-      const settle = (token: string | null) => {
-        resolve(token);
-        resolverRef.current = null;
-      };
-
-      // L'executor lui-même ne doit pas être `async` : une exception levée avant le
-      // premier `await` serait alors avalée et la promesse ne se résoudrait jamais —
-      // sur un chemin de connexion, cela fige l'écran sans erreur visible.
       void (async () => {
         try {
           const res = await promptAsync();
           if (res.type === 'success') {
-            settle(res.params?.id_token || res.authentication?.idToken || null);
-          } else if (res.type !== 'dismiss') {
-            settle(null);
+            const idToken = res.params?.id_token || res.authentication?.idToken || null;
+            if (idToken) {
+              resolve(idToken);
+              resolverRef.current = null;
+            }
+            // Si le token n'est pas immédiatement accessible dans le résultat synchrone de promptAsync,
+            // on ne résout pas avec null : on laisse le useEffect sur `response` trancher dès que
+            // l'échange de token asynchrone est terminé.
+          } else if (res.type === 'cancel' || res.type === 'dismiss') {
+            resolve(null);
+            resolverRef.current = null;
+          } else {
+            resolve(null);
+            resolverRef.current = null;
           }
-          // Cas 'dismiss' : volontairement non résolu ici. L'utilisateur peut revenir
-          // de la WebView, et c'est le useEffect sur `response` qui tranchera.
         } catch {
-          settle(null);
+          resolve(null);
+          resolverRef.current = null;
         }
       })();
     });
