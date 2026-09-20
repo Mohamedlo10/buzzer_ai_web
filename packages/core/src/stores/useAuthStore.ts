@@ -30,6 +30,7 @@ export const useAuthStore = create<AuthState>((set, _get) => ({
       const response = await authApi.login({ username, password });
       await tokenStorage.setTokens(response.accessToken, response.refreshToken);
       await appStorage.setUserProfile(response.user);
+      await appStorage.setOnboardingDone();
       set({ user: response.user, isAuthenticated: true });
     } finally {
       set({ isLoading: false });
@@ -42,6 +43,7 @@ export const useAuthStore = create<AuthState>((set, _get) => ({
       const response = await authApi.loginWithGoogle(idToken);
       await tokenStorage.setTokens(response.accessToken, response.refreshToken);
       await appStorage.setUserProfile(response.user);
+      await appStorage.setOnboardingDone();
       set({ user: response.user, isAuthenticated: true });
     } finally {
       set({ isLoading: false });
@@ -54,6 +56,7 @@ export const useAuthStore = create<AuthState>((set, _get) => ({
       const response = await authApi.loginWithApple(identityToken);
       await tokenStorage.setTokens(response.accessToken, response.refreshToken);
       await appStorage.setUserProfile(response.user);
+      await appStorage.setOnboardingDone();
       set({ user: response.user, isAuthenticated: true });
     } finally {
       set({ isLoading: false });
@@ -66,6 +69,7 @@ export const useAuthStore = create<AuthState>((set, _get) => ({
       const response = await authApi.register({ username, email: email || '', password });
       await tokenStorage.setTokens(response.accessToken, response.refreshToken);
       await appStorage.setUserProfile(response.user);
+      await appStorage.setOnboardingDone();
       set({ user: response.user, isAuthenticated: true });
     } finally {
       set({ isLoading: false });
