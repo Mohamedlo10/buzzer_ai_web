@@ -38,17 +38,110 @@ const instrumentSerif = Instrument_Serif({
   display: 'swap',
 });
 
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://quiz.mouhadev.com';
+
 export const metadata: Metadata = {
+  metadataBase: new URL(APP_URL),
   title: {
-    default: 'Xalaat — Quiz by MouhaDev',
+    default: 'Xalaat — Quiz & Jeu de Buzzer Multijoueur en Temps Réel',
     template: '%s · Xalaat',
   },
-  description: 'Xalaat — Quiz by MouhaDev. Le jeu de buzzer multijoueur intelligent.',
+  description:
+    'Xalaat est la plateforme de quiz et de buzzer multijoueur en temps réel propulsée par l’IA. Défiez vos amis, testez vos réflexes, grimpez au classement et jouez en mode Solo ou Sprint.',
   applicationName: 'Xalaat',
+  keywords: [
+    'Xalaat',
+    'quiz en ligne',
+    'jeu de buzzer',
+    'buzzer multijoueur',
+    'quiz multijoueur',
+    'quiz temps réel',
+    'trivia buzzer',
+    'quiz intelligence artificielle',
+    'quiz culture générale',
+    'jeu de société en ligne',
+    'mouhadev',
+  ],
+  authors: [{ name: 'MouhaDev', url: 'https://mouhadev.com' }],
+  creator: 'MouhaDev',
+  publisher: 'Xalaat',
+  category: 'game',
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    title: 'Xalaat — Quiz & Jeu de Buzzer Multijoueur en Temps Réel',
+    description:
+      'Défiez vos amis, testez vos réflexes au buzzer et grimpez au classement avec le quiz intelligent Xalaat.',
+    url: APP_URL,
+    siteName: 'Xalaat',
+    locale: 'fr_FR',
+    type: 'website',
+    images: [
+      {
+        url: '/icon.png',
+        width: 500,
+        height: 500,
+        alt: 'Xalaat Logo',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Xalaat — Quiz & Jeu de Buzzer Multijoueur en Temps Réel',
+    description:
+      'Défiez vos amis, testez vos réflexes au buzzer et grimpez au classement avec le quiz intelligent Xalaat.',
+    images: ['/icon.png'],
+    creator: '@mouhadev',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  manifest: '/site.webmanifest',
   icons: {
-    icon: '/favicon.ico',
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/favicon-48x48.png', sizes: '48x48', type: 'image/png' },
+    ],
     shortcut: '/favicon.ico',
-    apple: '/favicon.png',
+    apple: [
+      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+    ],
+  },
+};
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebApplication',
+  name: 'Xalaat',
+  alternateName: 'Xalaat Quiz',
+  url: APP_URL,
+  applicationCategory: 'GameApplication',
+  genre: 'Trivia / Quiz',
+  operatingSystem: 'All',
+  browserRequirements: 'Requires JavaScript. Requires HTML5.',
+  inLanguage: 'fr-FR',
+  description:
+    'Plateforme de quiz et jeu de buzzer multijoueur en temps réel propulsée par l’intelligence artificielle.',
+  offers: {
+    '@type': 'Offer',
+    price: '0',
+    priceCurrency: 'EUR',
+  },
+  author: {
+    '@type': 'Person',
+    name: 'MouhaDev',
+    url: 'https://mouhadev.com',
   },
 };
 
@@ -66,6 +159,12 @@ export default function RootLayout({
       data-theme="light"
       className={`${boldonse.variable} ${manrope.variable} ${instrumentSerif.variable}`}
     >
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      </head>
       <body className="bg-bg h-[100dvh] max-h-[100dvh] w-full overflow-hidden items-center justify-center md:py-2 md:px-12 md:min-w-2xl text-txt antialiased font-ui">
         <AppProviders>{children}</AppProviders>
       </body>
