@@ -4,15 +4,17 @@ import { useRouter } from 'expo-router';
 import { X, Search, ArrowRight } from 'lucide-react-native';
 import { palette, font } from '~/lib/theme/tokens';
 import { Avatar } from './Avatar';
-import type { LastRoom } from '~/types/api';
+import type { LastRoom, RoomSummaryResponse } from '~/types/api';
+
+export type RoomItemType = LastRoom | RoomSummaryResponse;
 
 interface AllRoomsModalProps {
   visible: boolean;
   onClose: () => void;
-  rooms: LastRoom[];
+  rooms?: RoomItemType[];
 }
 
-export function AllRoomsModal({ visible, onClose, rooms }: AllRoomsModalProps) {
+export function AllRoomsModal({ visible, onClose, rooms = [] }: AllRoomsModalProps) {
   const router = useRouter();
   const [search, setSearch] = useState('');
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'active'>('all');

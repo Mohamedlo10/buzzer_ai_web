@@ -37,6 +37,7 @@ export default function RoomsScreen() {
     isError,
     refetch,
     recentRooms,
+    allRooms,
     activeSessionInfo,
     showJoinModal,
     setShowJoinModal,
@@ -287,7 +288,7 @@ export default function RoomsScreen() {
                 color: palette.txt,
               }}
             >
-              Mes Salons ({recentRooms.length})
+              Mes Salons ({allRooms.length})
             </Text>
             <Text style={{ fontSize: 11.5, color: palette.inkSoft, marginTop: 2 }}>
               Rejoins et consulte les détails de tes salons
@@ -305,7 +306,7 @@ export default function RoomsScreen() {
             }}
           >
             <Text style={{ fontSize: 12, fontWeight: '700', color: palette.primary }}>
-              Tous les salons →
+              Tous les salons ({allRooms.length}) →
             </Text>
           </TouchableOpacity>
         </View>
@@ -396,7 +397,7 @@ export default function RoomsScreen() {
       <AllRoomsModal
         visible={showAllRoomsModal}
         onClose={() => setShowAllRoomsModal(false)}
-        rooms={recentRooms}
+        rooms={allRooms}
       />
 
       {/* Join Modal */}

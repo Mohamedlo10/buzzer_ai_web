@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useDashboardV2 } from '~/lib/query/hooks';
+import { useDashboardV2, useRooms } from '~/lib/query/hooks';
 import * as roomsApi from '~/lib/api/rooms';
 import * as sessionsApi from '~/lib/api/sessions';
 import { appStorage } from '~/lib/utils/storage';
@@ -16,8 +16,21 @@ export interface UseRoomsDataOptions {
 }
 
 export function useRoomsData(options?: UseRoomsDataOptions) {
-  const { data, isLoading, isError, refetch } = useDashboardV2();
+  const { data, isLoading: isDashboardLoading, isError: isDashboardError, refetch: refetchDashboard } = useDashboardV2();
+  const { data: userRooms, isLoading: isRoomsLoading, isError: isRoomsError, refetch: refetchRooms } = useRooms();
   const user = useAuthStore((s) => s.user);
+
+  const isLoading = isDashboardLoading && isRoomsLoading;
+  const isError = isDashboardError && isRoomsError;
+
+  const allRooms = userRooms ?? (data?.recentRooms as any[]) ?? [];
+  const recentRooms = (data?.recentRooms && data.recentRooms.length > 0)
+    ? data.recentRooms
+    : allRooms.slice(0, 3);
+
+  const refetch = useCallback(async () => {
+    await Promise.all([refetchDashboard(), refetchRooms()]);
+  }, [refetchDashboard, refetchRooms]);
 
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [showAllRoomsModal, setShowAllRoomsModal] = useState(false);
@@ -208,7 +221,8 @@ export function useRoomsData(options?: UseRoomsDataOptions) {
     isError,
     refetch,
     user,
-    recentRooms: data?.recentRooms ?? [],
+    recentRooms,
+    allRooms,
     rank: data?.globalStats?.rank ?? 0,
     activeSessionInfo,
     showJoinModal,
