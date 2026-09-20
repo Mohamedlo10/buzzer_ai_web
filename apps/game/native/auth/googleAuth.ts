@@ -1,10 +1,8 @@
 import { useEffect, useRef } from 'react';
-import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
 import Constants, { ExecutionEnvironment } from 'expo-constants';
 import { notify } from '~/lib/ui/notify';
-
-WebBrowser.maybeCompleteAuthSession();
+import { rememberGoogleAuthState } from '~/native/auth/webGoogleRedirect';
 
 // Fallback dummy client IDs if environment variables are not set, preventing Google.useAuthRequest from crashing on app startup
 const fallbackClientId = '1234567890-placeholder.apps.googleusercontent.com';
@@ -60,6 +58,11 @@ export function useNativeGoogleAuth() {
       notify.error('La connexion Google n’est pas configurée dans cet environnement.');
       return null;
     }
+    // Sur le web, la réponse de Google peut revenir dans une fenêtre qui n'a plus ce code en
+    // mémoire : on laisse le `state` en dépôt pour que `webGoogleRedirect.ts` puisse vérifier
+    // que le token reçu répond bien à cette demande.
+    rememberGoogleAuthState(request?.state);
+
     return new Promise((resolve) => {
       resolverRef.current = resolve;
 

@@ -1,11 +1,16 @@
-import { useEffect, useState, useRef } from 'react';
+import { useCallback, useEffect, useState, useRef } from 'react';
 import { View, Text, Animated, Easing } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuthStore } from '~/stores/useAuthStore';
 import { appStorage } from '~/lib/utils/storage';
+import { notifyApiError } from '~/lib/ui/notify';
 import { palette, font } from '~/lib/theme/tokens';
 import { XalaatMark } from '~/components/shared/XalaatMark';
+import {
+  clearPendingGoogleIdToken,
+  getPendingGoogleIdToken,
+} from '~/native/auth/webGoogleRedirect';
 
 const FADE_IN_DURATION = 600;
 const FADE_OUT_DURATION = 350;
@@ -14,7 +19,12 @@ export default function SplashScreen() {
   const router = useRouter();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const isLoading = useAuthStore((s) => s.isLoading);
+  const loginWithGoogle = useAuthStore((s) => s.loginWithGoogle);
   const [onboardingDone, setOnboardingDone] = useState<boolean | null>(null);
+
+  // Connexion Google revenue par redirection de l'onglet principal (navigateur in-app) : le
+  // token attend ici, personne d'autre ne peut le consommer. Voir webGoogleRedirect.ts.
+  const [googleIdToken] = useState(getPendingGoogleIdToken);
 
   // Animation values
   const logoOpacity = useRef(new Animated.Value(0)).current;
@@ -61,8 +71,48 @@ export default function SplashScreen() {
     pulseAnim(dotScale3, 300).start();
   }, []);
 
+  const redirectTo = useCallback(
+    (destination: string) => {
+      // Fade out screen, then navigate
+      Animated.timing(screenOpacity, {
+        toValue: 0,
+        duration: FADE_OUT_DURATION,
+        easing: Easing.in(Easing.ease),
+        useNativeDriver: true,
+      }).start(() => {
+        router.replace(destination as any);
+      });
+    },
+    [router, screenOpacity],
+  );
+
+  // Terminer la connexion en attente avant toute autre décision de navigation.
+  useEffect(() => {
+    if (!googleIdToken) return;
+
+    let cancelled = false;
+    (async () => {
+      try {
+        await loginWithGoogle(googleIdToken);
+        if (!cancelled) redirectTo('/(tabs)/rooms');
+      } catch (err) {
+        notifyApiError(err, 'Erreur de connexion Google');
+        if (!cancelled) redirectTo('/(auth)/login');
+      } finally {
+        clearPendingGoogleIdToken();
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [googleIdToken, loginWithGoogle, redirectTo]);
+
   // Trigger redirect when both session and onboarding are resolved
   useEffect(() => {
+    // Une connexion Google est en cours : la session n'est pas encore ouverte, partir maintenant
+    // enverrait l'utilisateur sur l'onboarding au milieu de l'appel réseau.
+    if (googleIdToken) return;
     if (isLoading || onboardingDone === null) return;
 
     const destination = !onboardingDone
@@ -71,16 +121,8 @@ export default function SplashScreen() {
         ? '/(tabs)/rooms'
         : '/(auth)/login';
 
-    // Fade out screen, then navigate
-    Animated.timing(screenOpacity, {
-      toValue: 0,
-      duration: FADE_OUT_DURATION,
-      easing: Easing.in(Easing.ease),
-      useNativeDriver: true,
-    }).start(() => {
-      router.replace(destination as any);
-    });
-  }, [isAuthenticated, isLoading, onboardingDone]);
+    redirectTo(destination);
+  }, [isAuthenticated, isLoading, onboardingDone, googleIdToken, redirectTo]);
 
   return (
     <Animated.View style={{ flex: 1, opacity: screenOpacity }}>

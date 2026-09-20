@@ -1,4 +1,11 @@
-import { useEffect } from 'react';
+// En premier : l'import déclenche le traitement du retour de Google sur le web, qui doit avoir
+// lieu avant que l'application ne démarre (voir webGoogleRedirect.ts).
+import {
+  getWebGoogleRedirectMode,
+  promoteHandoffToToken,
+} from '~/native/auth/webGoogleRedirect';
+
+import { useEffect, useState } from 'react';
 import { Stack, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { QueryClientProvider } from '@tanstack/react-query';
@@ -32,7 +39,13 @@ configureReanimatedLogger({
 
 SplashScreen.preventAutoHideAsync();
 
-import { Platform, View } from 'react-native';
+/**
+ * Délai laissé à l'onglet d'origine pour refermer la fenêtre de connexion Google. Il le fait
+ * normalement en quelques millisecondes ; passé ce délai on considère qu'il ne répondra plus.
+ */
+const AUTH_HANDOFF_TIMEOUT_MS = 5000;
+
+import { ActivityIndicator, Platform, Text, View } from 'react-native';
 import { apiClient } from '@xalaat/core';
 
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -43,6 +56,21 @@ export default function RootLayout() {
   const router = useRouter();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const restoreSession = useAuthStore((state) => state.restoreSession);
+
+  // Fenêtre ouverte par la connexion Google : elle rend la main à l'onglet d'origine et ne doit
+  // surtout pas démarrer l'application — `restoreSession()` y effacerait le drapeau d'onboarding
+  // partagé, et l'utilisateur verrait l'accueil au lieu d'être connecté.
+  const [authRedirect, setAuthRedirect] = useState(getWebGoogleRedirectMode);
+  const isAuthHandoff = authRedirect === 'handoff';
+
+  useEffect(() => {
+    if (!isAuthHandoff) return;
+    const timer = setTimeout(
+      () => setAuthRedirect(promoteHandoffToToken()),
+      AUTH_HANDOFF_TIMEOUT_MS,
+    );
+    return () => clearTimeout(timer);
+  }, [isAuthHandoff]);
 
   // Doit vivre à la racine : un refus d'authentification du WebSocket peut survenir sur
   // n'importe quel écran, y compris pendant une partie.
@@ -65,8 +93,9 @@ export default function RootLayout() {
 
   // Restore auth session once on app start
   useEffect(() => {
+    if (isAuthHandoff) return;
     restoreSession();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isAuthHandoff]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (loaded || error) {
@@ -76,6 +105,7 @@ export default function RootLayout() {
 
   // Server maintenance check
   useEffect(() => {
+    if (isAuthHandoff) return;
     const checkHealth = async () => {
       try {
         const res = await apiClient.get<{ status: string; maintenance?: boolean }>('/api/health');
@@ -87,7 +117,7 @@ export default function RootLayout() {
     checkHealth();
     const interval = setInterval(checkHealth, 60000);
     return () => clearInterval(interval);
-  }, [router]);
+  }, [router, isAuthHandoff]);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -124,6 +154,27 @@ export default function RootLayout() {
     });
     return () => subscription.remove();
   }, []);
+
+  // Avant le garde-fou des polices : cette fenêtre est éphémère, elle doit afficher quelque
+  // chose tout de suite plutôt que d'attendre un chargement dont elle n'a pas besoin.
+  if (isAuthHandoff) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 14,
+          backgroundColor: palette.bg,
+        }}
+      >
+        <ActivityIndicator size="large" color={palette.primary} />
+        <Text style={{ fontSize: 15, fontWeight: '600', color: palette.txt }}>
+          Connexion en cours…
+        </Text>
+      </View>
+    );
+  }
 
   if (!loaded && !error) {
     return null;
