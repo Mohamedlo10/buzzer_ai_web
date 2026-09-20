@@ -1,0 +1,10 @@
+node_modules
+.git
+.expo
+.next
+apps/game/ios
+apps/game/android
+apps/game/dist
+apps/admin/dist
+.DS_Store
+*.log
