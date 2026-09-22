@@ -1326,6 +1326,32 @@ export interface PartnerDetailResponse extends PartnerSummaryResponse {
   tiktokUrl: string | null;
 }
 
+/**
+ * Source : model/dto/request/PartnerApplicationRequest.java — « devenir partenaire ».
+ *
+ * Le serveur recopie la demande dans un ticket de support et renvoie un `SupportTicketResponse`.
+ * Les bornes reproduisent celles des annotations `@Size` : dépasser côté client ne produirait
+ * qu'un 400 après un aller-retour réseau.
+ */
+export interface PartnerApplicationRequest {
+  /** 120 caractères max. */
+  fullName: string;
+  /** 255 caractères max. Obligatoire : c'est le seul moyen de recontacter le candidat. */
+  email: string;
+  /** 3 000 caractères max. */
+  companyDescription: string;
+  /** 40 caractères max. */
+  phone?: string;
+  /** 200 caractères max. */
+  instagram?: string;
+  /** 200 caractères max. */
+  tiktok?: string;
+  /** 40 caractères max. */
+  whatsapp?: string;
+  /** 300 caractères max. */
+  linkedin?: string;
+}
+
 /** Source : model/dto/request/PartnerRequest.java */
 export interface AdminPartnerRequest {
   name: string;

@@ -1,8 +1,10 @@
 import { apiClient } from './client';
 import type {
   Page,
+  PartnerApplicationRequest,
   PartnerDetailResponse,
   PartnerSummaryResponse,
+  SupportTicketResponse,
 } from '../../types/api';
 
 /**
@@ -53,4 +55,20 @@ export async function addPartnerFavorite(id: string): Promise<void> {
 /** Retire des favoris. Idempotent également. */
 export async function removePartnerFavorite(id: string): Promise<void> {
   await apiClient.delete(`/api/partners/${id}/favorite`);
+}
+
+/**
+ * Candidature « devenir partenaire » (POST /api/partners/applications).
+ *
+ * Le serveur recopie la demande dans un ticket de support, d'où le `SupportTicketResponse` en
+ * retour. Conséquence à connaître côté appelant : la garde anti-spam du support s'applique, donc
+ * un 429 `TOO_MANY_OPEN_TICKETS` est un refus attendu, pas une panne.
+ *
+ * Source Java : PartnerController.apply
+ */
+export async function submitPartnerApplication(
+  payload: PartnerApplicationRequest,
+): Promise<SupportTicketResponse> {
+  const res = await apiClient.post<SupportTicketResponse>('/api/partners/applications', payload);
+  return res.data;
 }

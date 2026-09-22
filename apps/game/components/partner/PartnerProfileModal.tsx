@@ -1,9 +1,12 @@
+import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
   ActivityIndicator,
   Image,
+  KeyboardAvoidingView,
   Linking,
   Modal,
+  Platform,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -15,8 +18,10 @@ import * as WebBrowser from 'expo-web-browser';
 // On prend des icônes neutres — le libellé de chaque ligne nomme déjà le réseau, l'icône
 // n'est que décorative.
 import {
+  ArrowLeft,
   Camera,
   Globe,
+  Handshake,
   Heart,
   MapPin,
   MessageCircle,
@@ -27,6 +32,7 @@ import {
 } from 'lucide-react-native';
 
 import { MediaCarousel } from './MediaCarousel';
+import { PartnerApplyForm } from './PartnerApplyForm';
 import { palette, font } from '~/lib/theme/tokens';
 import { partnersApi } from '~/lib/api';
 import { queryKeys } from '~/lib/query/keys';
@@ -49,6 +55,10 @@ interface PartnerProfileModalProps {
  * Les liens web passent par `WebBrowser` plutôt que `Linking` : `expo-web-browser` est déjà
  * installé, et garder le joueur dans l'application vaut mieux que le renvoyer dans Safari.
  * Les schémas `tel:` et `wa.me` passent par `Linking`, seul capable de les traiter.
+ *
+ * La feuille porte deux vues : la fiche, et le formulaire « devenir partenaire ». C'est une
+ * bascule du contenu, pas un second `Modal` — empiler deux `Modal` natifs laisse sur iOS un
+ * view controller orphelin qui avale les touchers, piège documenté dans `shared/ConfirmHost.tsx`.
  */
 export function PartnerProfileModal({
   partnerId,
@@ -57,6 +67,15 @@ export function PartnerProfileModal({
   onToggleFavorite,
 }: PartnerProfileModalProps) {
   const { width } = useWindowDimensions();
+  const [mode, setMode] = useState<'profile' | 'apply'>('profile');
+  const [applyDirty, setApplyDirty] = useState(false);
+
+  // Sans cette remise à zéro, ouvrir la fiche d'un autre partenaire afficherait le formulaire
+  // laissé ouvert sur la précédente.
+  useEffect(() => {
+    setMode('profile');
+    setApplyDirty(false);
+  }, [visible, partnerId]);
 
   const { data: partner, isLoading } = useQuery({
     queryKey: queryKeys.partnerDetail(partnerId ?? ''),
@@ -67,12 +86,36 @@ export function PartnerProfileModal({
   // Largeur du carrousel : la feuille occupe toute la largeur moins ses marges internes.
   const carouselWidth = width - 40;
 
+  function backToProfile() {
+    setMode('profile');
+    setApplyDirty(false);
+  }
+
+  /**
+   * Fermeture « douce » : tap sur le fond, ou retour matériel Android.
+   *
+   * Sur le formulaire, elle revient à la fiche au lieu de tout fermer, et ne fait rien du tout
+   * si la saisie est entamée : huit champs perdus sur un tap à côté, c'est une candidature
+   * perdue. La croix, elle, ferme toujours.
+   */
+  function requestClose() {
+    if (mode === 'apply') {
+      if (!applyDirty) backToProfile();
+      return;
+    }
+    onClose();
+  }
+
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <View
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={requestClose}>
+      {/* Le `KeyboardAvoidingView` tient la racine, et non la feuille : `maxHeight: '85%'` ne se
+          résout que contre un parent de hauteur définie. En `padding`, c'est la zone tactile
+          `flex: 1` au-dessus qui cède la place au clavier — la feuille, elle, remonte. */}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.65)', justifyContent: 'flex-end' }}
       >
-        <TouchableOpacity style={{ flex: 1 }} activeOpacity={1} onPress={onClose} />
+        <TouchableOpacity style={{ flex: 1 }} activeOpacity={1} onPress={requestClose} />
 
         <View
           style={{
@@ -99,7 +142,49 @@ export function PartnerProfileModal({
             }}
           />
 
-          {isLoading || !partner ? (
+          {mode === 'apply' ? (
+            <>
+              <View
+                style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 14 }}
+              >
+                <TouchableOpacity
+                  onPress={backToProfile}
+                  activeOpacity={0.7}
+                  hitSlop={8}
+                  accessibilityLabel="Revenir à la fiche"
+                >
+                  <ArrowLeft size={20} color={palette.txt} />
+                </TouchableOpacity>
+                <Text
+                  style={{
+                    flex: 1,
+                    fontFamily: font.nativeFamily.display,
+                    fontSize: 20,
+                    color: palette.txt,
+                    paddingTop: 3,
+                  }}
+                >
+                  Devenir partenaire
+                </Text>
+                <TouchableOpacity
+                  onPress={onClose}
+                  activeOpacity={0.7}
+                  hitSlop={8}
+                  accessibilityLabel="Fermer"
+                >
+                  <X size={20} color={palette.inkSoft} />
+                </TouchableOpacity>
+              </View>
+
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+                keyboardShouldPersistTaps="handled"
+                contentContainerStyle={{ paddingBottom: 8 }}
+              >
+                <PartnerApplyForm onDone={onClose} onDirtyChange={setApplyDirty} />
+              </ScrollView>
+            </>
+          ) : isLoading || !partner ? (
             <View style={{ paddingVertical: 40, alignItems: 'center' }}>
               <ActivityIndicator color={palette.primary} />
             </View>
@@ -271,10 +356,61 @@ export function PartnerProfileModal({
                   />
                 ) : null}
               </View>
+
+              {/* Appel à candidature. Accent terracotta et sous-titre : sans cela, il se lirait
+                  comme un lien de contact du partenaire affiché, alors qu'il s'adresse au joueur. */}
+              <View
+                style={{
+                  height: 1,
+                  backgroundColor: palette.line,
+                  marginTop: 20,
+                  marginBottom: 16,
+                }}
+              />
+
+              <TouchableOpacity
+                onPress={() => setMode('apply')}
+                activeOpacity={0.8}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 12,
+                  paddingVertical: 13,
+                  paddingHorizontal: 14,
+                  borderRadius: 16,
+                  backgroundColor: palette.primary + '14',
+                  borderWidth: 1,
+                  borderColor: palette.primary + '4D',
+                }}
+              >
+                <Handshake size={19} color={palette.primary} />
+                <View style={{ flex: 1 }}>
+                  <Text
+                    style={{
+                      fontFamily: font.nativeFamily.ui,
+                      fontSize: 14,
+                      fontWeight: '700',
+                      color: palette.primary,
+                    }}
+                  >
+                    Devenir partenaire
+                  </Text>
+                  <Text
+                    style={{
+                      fontFamily: font.nativeFamily.ui,
+                      fontSize: 12,
+                      color: palette.inkSoft,
+                      marginTop: 2,
+                    }}
+                  >
+                    Vous aussi, rejoignez les partenaires de Xalaat
+                  </Text>
+                </View>
+              </TouchableOpacity>
             </ScrollView>
           )}
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }

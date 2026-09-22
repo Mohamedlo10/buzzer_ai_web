@@ -6,6 +6,7 @@ import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Handshake, Heart, Search, X } from 'lucide-react-native';
 
 import { AdAwareFlatList } from '~/components/partner/AdAwareScrollView';
+import { PartnerApplyModal } from '~/components/partner/PartnerApplyModal';
 import { PartnerCard } from '~/components/partner/PartnerCard';
 import { PartnerProfileModal } from '~/components/partner/PartnerProfileModal';
 import { EmptyState, ErrorState, LoadingState } from '~/components/ui/StateViews';
@@ -33,6 +34,7 @@ export default function PartnersScreen() {
   const [searchInput, setSearchInput] = useState('');
   const [query, setQuery] = useState('');
   const [openPartnerId, setOpenPartnerId] = useState<string | null>(null);
+  const [applyOpen, setApplyOpen] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Débounce de 400 ms, comme partout ailleurs dans l'application : on n'interroge pas le
@@ -117,6 +119,7 @@ export default function PartnersScreen() {
         </TouchableOpacity>
         <Text
           style={{
+            flex: 1,
             fontFamily: font.nativeFamily.display,
             fontSize: 20,
             color: palette.txt,
@@ -125,6 +128,26 @@ export default function PartnersScreen() {
         >
           Partenaires de Xalaat
         </Text>
+
+        {/* Un visiteur qui parcourt l'annuaire sans ouvrir de fiche doit voir l'appel à
+            candidature : le même bouton existe au bas de chaque fiche partenaire. */}
+        <TouchableOpacity
+          onPress={() => setApplyOpen(true)}
+          activeOpacity={0.7}
+          accessibilityLabel="Devenir partenaire"
+          style={{
+            width: 36,
+            height: 36,
+            borderRadius: 18,
+            backgroundColor: palette.primary + '14',
+            borderWidth: 1,
+            borderColor: palette.primary + '4D',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Handshake size={18} color={palette.primary} />
+        </TouchableOpacity>
       </View>
 
       <View style={{ paddingHorizontal: 16, paddingTop: 14, gap: 12 }}>
@@ -250,6 +273,11 @@ export default function PartnersScreen() {
           toggleFavorite({ id, favorite: currentlyFavorite } as PartnerSummaryResponse)
         }
       />
+
+      {/* Frère de la fiche, jamais imbriqué dedans : deux `Modal` natifs empilés se neutralisent
+          sur iOS. Les deux ne peuvent pas être ouverts en même temps, la fiche couvrant la
+          barre supérieure d'où celui-ci s'ouvre. */}
+      <PartnerApplyModal visible={applyOpen} onClose={() => setApplyOpen(false)} />
     </SafeAreaView>
   );
 }
