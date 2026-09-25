@@ -427,7 +427,10 @@ export function DailyChallengesPage() {
       if (selectedId === id) setSelectedId(null);
       // Supprimer la dernière ligne d'une page laisserait l'écran sur une page vide.
       if (list?.content.length === 1 && page > 0) setPage((p) => p - 1);
-      invalidate();
+      // Pas invalidate() : il capture encore l'ancien selectedId et relancerait le détail de
+      // l'édition supprimée, donc une 404.
+      queryClient.removeQueries({ queryKey: ['admin', 'daily-challenge', id] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'daily-challenges'] });
     },
     onError: (e: Error) => toast.error(e.message),
   });

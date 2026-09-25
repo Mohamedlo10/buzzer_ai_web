@@ -18,6 +18,7 @@ import { AdvertisementsPage } from './pages/AdvertisementsPage';
 import { PartnersPage } from './pages/PartnersPage';
 import { DailyChallengesPage } from './pages/DailyChallengesPage';
 import { SupportPage } from './pages/SupportPage';
+import { ConfirmHost } from './components/ui/ConfirmHost';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -59,6 +60,7 @@ export function App() {
           </Route>
         </Routes>
       </BrowserRouter>
+      <ConfirmHost />
     </QueryClientProvider>
   );
 }
