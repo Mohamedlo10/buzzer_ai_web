@@ -201,41 +201,7 @@ export function SessionsPage() {
         </div>
       </div>
 
-      {/* Active Sessions Live Row */}
-      {activeSessions && activeSessions.length > 0 && (
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-accent animate-pulse" />
-            <h2 className="text-txt font-bold text-sm uppercase tracking-wider">
-              En direct ({activeSessions.length})
-            </h2>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {activeSessions.map((session) => (
-              <Card
-                key={session.id}
-                className="cursor-pointer hover:border-host transition-colors p-4"
-                onClick={() => navigate(`/sessions/${session.id}`)}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <span className="font-bold text-txt">#{session.code}</span>
-                  <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-accent/15 text-accent">
-                    {session.status}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between text-xs text-txt-60">
-                  <span>
-                    {session.playerCount}/{session.maxPlayers} joueurs
-                  </span>
-                  <span>
-                    Q{session.currentQuestionIndex}/{session.totalQuestions}
-                  </span>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </div>
-      )}
+
 
       {/* Filters Bar */}
       <div className="flex flex-wrap items-center gap-3 bg-surface p-4 rounded-2xl border border-line">
@@ -277,6 +243,42 @@ export function SessionsPage() {
         isLoading={sessionsLoading}
         onRowClick={(s) => navigate(`/sessions/${s.id}`)}
       />
+
+      {/* Active Sessions Live Row */}
+      {activeSessions && activeSessions.length > 0 && (
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-accent animate-pulse" />
+            <h2 className="text-txt font-bold text-sm uppercase tracking-wider">
+              En direct ({activeSessions.length})
+            </h2>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {activeSessions.map((session) => (
+              <Card
+                key={session.id}
+                className="cursor-pointer hover:border-host transition-colors p-4"
+                onClick={() => navigate(`/sessions/${session.id}`)}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-bold text-txt">#{session.code}</span>
+                  <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-accent/15 text-accent">
+                    {session.status}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-xs text-txt-60">
+                  <span>
+                    {session.playerCount}/{session.maxPlayers} joueurs
+                  </span>
+                  <span>
+                    Q{session.currentQuestionIndex}/{session.totalQuestions}
+                  </span>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
