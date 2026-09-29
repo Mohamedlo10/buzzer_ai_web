@@ -332,7 +332,7 @@ export default function RankingsPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 7, marginBottom: 20 }}>
           {rankings.map((p, index) => {
             const isMe = p.userId === user?.id;
-            const rankPosition = p.rank ?? index + 1;
+            const rankPosition = p.rank || currentPage * PAGE_SIZE + index + 1;
             const score = Math.round(p.glickoRating ?? p.totalScore ?? 0);
 
             return (

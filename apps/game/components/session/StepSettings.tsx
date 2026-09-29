@@ -27,7 +27,8 @@ export interface StepSettingsProps {
 }
 
 const LABEL_STYLE = {
-  color: palette.inkSoft,
+  // Accesseur : lu au rendu, pour suivre le thème courant (cf. `palette` dans tokens.ts).
+  get color() { return palette.inkSoft; },
   fontSize: 9.5,
   fontWeight: '700' as const,
   letterSpacing: 1.5,

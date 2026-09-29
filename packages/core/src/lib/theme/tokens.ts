@@ -5,7 +5,7 @@
  * `palette.js` fournit les mêmes valeurs pour Tailwind (CommonJS `require()`).
  */
 
-export const palette = {
+export const lightPalette = {
   // Surfaces & texte
   bg: '#F1E5C9',
   bgDeep: '#EADCB8',
@@ -36,7 +36,7 @@ export const palette = {
   bronze: '#CD7F32',
 };
 
-export const darkPalette = {
+export const darkPalette: typeof lightPalette = {
   bg: '#1A1410',
   bgDeep: '#120E0A',
   surface: '#241B14',
@@ -58,6 +58,21 @@ export const darkPalette = {
   silver: '#C0C0C0',
   bronze: '#CD7F32',
 };
+
+/**
+ * Palette du thème COURANT — c'est elle que lisent les écrans.
+ *
+ * Objet mutable, et c'est voulu : ~150 fichiers de l'app mobile lisent `palette.x` dans leurs
+ * styles inline. Plutôt que de les faire tous passer par un hook, `applyPalette()` réécrit ses
+ * valeurs en place, puis la racine de l'app remonte le contenu des écrans (voir `screenLayout`
+ * dans app/_layout.tsx) pour qu'ils relisent la palette.
+ *
+ * Conséquence à garder en tête : une valeur copiée au chargement du module
+ * (`const X = palette.surface` hors d'un composant) reste figée sur le thème de départ.
+ */
+export const palette: typeof lightPalette = { ...lightPalette };
+
+export type ThemeMode = 'light' | 'dark';
 
 export const alpha = {
   txt60: 0.66,
@@ -107,7 +122,7 @@ function kebab(key: string): string {
 }
 
 export function cssVars(): Record<string, string> {
-  const p = palette;
+  const p = lightPalette;
   const vars: Record<string, string> = {};
 
   // 1. Canaux nus
@@ -172,4 +187,12 @@ export const inkAlpha = {
   soft: withAlpha(palette.txt, alpha.txt60),
   muted: withAlpha(palette.txt, alpha.txt40),
   faint: withAlpha(palette.txt, alpha.txt25),
-} as const;
+};
+
+/** Bascule `palette` et `inkAlpha` sur le thème demandé, en place. */
+export function applyPalette(mode: ThemeMode): void {
+  Object.assign(palette, mode === 'dark' ? darkPalette : lightPalette);
+  inkAlpha.soft = withAlpha(palette.txt, alpha.txt60);
+  inkAlpha.muted = withAlpha(palette.txt, alpha.txt40);
+  inkAlpha.faint = withAlpha(palette.txt, alpha.txt25);
+}

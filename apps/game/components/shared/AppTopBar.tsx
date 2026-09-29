@@ -2,11 +2,21 @@ import React from 'react';
 import { View, Text, TouchableOpacity, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { Bell, ArrowLeft } from 'lucide-react-native';
+import { Bell, ArrowLeft, Moon, Sun } from 'lucide-react-native';
 import { XalaatMark } from './XalaatMark';
 import { Avatar } from './Avatar';
 import { useAuthStore } from '~/stores/useAuthStore';
 import { palette, font } from '~/lib/theme/tokens';
+import { useThemeStore } from '~/native/theme/useThemeStore';
+
+const ROUND_BUTTON = {
+  width: 36,
+  height: 36,
+  borderRadius: 18,
+  borderWidth: 1,
+  alignItems: 'center',
+  justifyContent: 'center',
+} as const;
 
 export function AppTopBar({
   title = 'Xalaat',
@@ -21,6 +31,8 @@ export function AppTopBar({
 }) {
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
+  const theme = useThemeStore((s) => s.theme);
+  const toggleTheme = useThemeStore((s) => s.toggleTheme);
   const insets = useSafeAreaInsets();
 
   const topInset = Math.max(insets.top, Platform.OS === 'ios' ? 48 : 16);
@@ -103,18 +115,19 @@ export function AppTopBar({
       {/* Right actions: Notifications & Avatar */}
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
         <TouchableOpacity
+          onPress={toggleTheme}
+          activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel={theme === 'dark' ? 'Passer en mode clair' : 'Passer en mode sombre'}
+          style={{ ...ROUND_BUTTON, backgroundColor: palette.surface, borderColor: palette.line }}
+        >
+          {theme === 'dark' ? <Sun size={16} color={palette.txt} /> : <Moon size={16} color={palette.txt} />}
+        </TouchableOpacity>
+
+        <TouchableOpacity
           onPress={() => router.push('/notifications' as any)}
           activeOpacity={0.7}
-          style={{
-            width: 36,
-            height: 36,
-            borderRadius: 18,
-            backgroundColor: palette.surface,
-            borderWidth: 1,
-            borderColor: palette.line,
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
+          style={{ ...ROUND_BUTTON, backgroundColor: palette.surface, borderColor: palette.line }}
         >
           <Bell size={16} color={palette.txt} />
         </TouchableOpacity>

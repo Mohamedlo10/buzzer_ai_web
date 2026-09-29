@@ -473,9 +473,9 @@ export default function RankingsScreen() {
         ) : (
           <View style={{ gap: 8, marginBottom: 16 }}>
             {listItems.map((item, index) => {
-              const rankNumber = showPodium
-                ? index + 4
-                : currentPage * PAGE_SIZE + (index + 1);
+              // Rang réel au classement, renvoyé par le serveur. Pas la position dans la liste :
+              // pendant une recherche, le 1er résultat n'est pas le 1er du classement.
+              const rankNumber = item.rank;
               const isMe = item.isMe;
 
               return (

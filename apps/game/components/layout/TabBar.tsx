@@ -5,6 +5,7 @@ import { Tabs } from 'expo-router';
 import { Grid, Gamepad2, Trophy, Users, User } from 'lucide-react-native';
 import { useAuthStore } from '~/stores/useAuthStore';
 import { palette } from '~/lib/theme/tokens';
+import { useThemeStore } from '~/native/theme/useThemeStore';
 
 export type TabBarProps = Parameters<
   NonNullable<React.ComponentProps<typeof Tabs>['tabBar']>
@@ -25,6 +26,8 @@ const TAB_CONFIG: Record<
 export function TabBar({ state, descriptors, navigation }: TabBarProps) {
   const insets = useSafeAreaInsets();
   const user = useAuthStore((s) => s.user);
+  // La barre n'est pas un écran : elle n'est pas remontée à la bascule, elle se re-rend.
+  useThemeStore((s) => s.theme);
   const showUnconfirmedBadge = Boolean(user && (!user.email || !user.emailVerified));
 
   return (

@@ -46,11 +46,12 @@ const BADGE_CONFIGS: Record<TrainingBadge, BadgeConfig> = {
     borderColor: 'rgba(217, 119, 6, 0.3)',
     icon: '🥉',
   },
+  // Accesseurs : lus au rendu, pour suivre le thème courant (cf. `palette` dans tokens.ts).
   NONE: {
     label: 'Apprenti',
-    color: palette.inkSoft,
-    bg: palette.surface2,
-    borderColor: palette.line,
+    get color() { return palette.inkSoft; },
+    get bg() { return palette.surface2; },
+    get borderColor() { return palette.line; },
     icon: '🌱',
   },
 };

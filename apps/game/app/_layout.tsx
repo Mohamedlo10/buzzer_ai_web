@@ -5,8 +5,9 @@ import {
   promoteHandoffToToken,
 } from '~/native/auth/webGoogleRedirect';
 
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { Stack, useRouter } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from '~/lib/query/queryClient';
@@ -51,11 +52,18 @@ import { apiClient } from '@xalaat/core';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ConfirmHost } from '~/components/shared/ConfirmHost';
 import { useWebSocketAuthRecovery } from '~/native/websocket/useWebSocketAuthRecovery';
+import { useThemeStore } from '~/native/theme/useThemeStore';
 
 export default function RootLayout() {
   const router = useRouter();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const restoreSession = useAuthStore((state) => state.restoreSession);
+  const theme = useThemeStore((state) => state.theme);
+  const themeHydrated = useThemeStore((state) => state.hydrated);
+
+  useEffect(() => {
+    useThemeStore.getState().hydrate();
+  }, []);
 
   // Fenêtre ouverte par la connexion Google : elle rend la main à l'onglet d'origine et ne doit
   // surtout pas démarrer l'application — `restoreSession()` y effacerait le drapeau d'onboarding
@@ -98,10 +106,10 @@ export default function RootLayout() {
   }, [isAuthHandoff]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (loaded || error) {
+    if ((loaded || error) && themeHydrated) {
       SplashScreen.hideAsync();
     }
-  }, [loaded, error]);
+  }, [loaded, error, themeHydrated]);
 
   // Server maintenance check
   useEffect(() => {
@@ -176,7 +184,9 @@ export default function RootLayout() {
     );
   }
 
-  if (!loaded && !error) {
+  // Le thème enregistré est relu avant le premier écran : sinon un joueur en sombre verrait
+  // l'app s'afficher en clair puis basculer.
+  if ((!loaded && !error) || !themeHydrated) {
     return null;
   }
 
@@ -186,14 +196,21 @@ export default function RootLayout() {
         headerShown: false,
         contentStyle: { backgroundColor: palette.bg },
       }}
+      // Au changement de thème, le contenu des écrans est remonté pour relire `palette`
+      // (voir tokens.ts). La navigation, elle, est conservée. Le groupe (tabs) est laissé
+      // intact ici : son propre layout remonte ses onglets, ce qui garde l'onglet actif.
+      screenLayout={({ route, children }) =>
+        route.name === '(tabs)' ? children : <Fragment key={theme}>{children}</Fragment>
+      }
     />
   );
 
   return (
     <SafeAreaProvider>
+      <StatusBar style={theme === 'dark' ? 'light' : 'dark'} />
       <QueryClientProvider client={queryClient}>
         {Platform.OS === 'web' ? (
-          <View style={{ flex: 1, width: '100%', backgroundColor: '#EAD7BA', alignItems: 'center' }}>
+          <View style={{ flex: 1, width: '100%', backgroundColor: palette.bgDeep, alignItems: 'center' }}>
             <View style={{ flex: 1, width: '100%', maxWidth: 672, backgroundColor: palette.bg }}>
               {stackContent}
             </View>
